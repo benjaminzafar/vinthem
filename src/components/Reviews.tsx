@@ -1,0 +1,191 @@
+"use client";
+import React, { useEffect, useState } from 'react';
+import { collection, query, where, orderBy, onSnapshot, addDoc, getDocs } from 'firebase/firestore';
+import { db, auth } from '@/lib/firebase';
+import { Review } from '@/types';
+import { Star, CheckCircle2, AlertCircle } from 'lucide-react';
+import { toast } from 'sonner';
+
+import { useSettingsStore } from '@/store/useSettingsStore';
+import { useTranslation } from 'react-i18next';
+
+interface ReviewsProps {
+  productId: string;
+}
+
+export default function Reviews({ productId }: ReviewsProps) {
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [hasPurchased, setHasPurchased] = useState<boolean | null>(null);
+  const { settings } = useSettingsStore();
+  const { i18n } = useTranslation();
+  const lang = i18n.language || 'en';
+
+  useEffect(() => {
+    const q = query(
+      collection(db, `products/${productId}/reviews`),
+      orderBy('createdAt', 'desc')
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const reviewsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Review));
+      setReviews(reviewsData);
+      setLoading(false);
+    }, (error) => {
+      console.error("Error fetching reviews:", error);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [productId]);
+
+  useEffect(() => {
+    const checkPurchase = async () => {
+      if (!auth.currentUser) {
+        setHasPurchased(false);
+        return;
+      }
+
+      try {
+        const q = query(
+          collection(db, 'orders'),
+          where('userId', '==', auth.currentUser.uid)
+        );
+        const querySnapshot = await getDocs(q);
+        const orders = querySnapshot.docs.map(doc => doc.data());
+        
+        const purchased = orders.some(order => 
+          order.items?.some((item: any) => item.id === productId)
+        );
+        
+        setHasPurchased(purchased);
+      } catch (error) {
+        console.error("Error checking purchase status:", error);
+        setHasPurchased(false);
+      }
+    };
+
+    checkPurchase();
+  }, [productId, auth.currentUser]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!auth.currentUser) {
+      toast.error(settings.pleaseLoginToReviewText?.[lang] || 'Please log in to leave a review.');
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, `products/${productId}/reviews`), {
+        productId,
+        userId: auth.currentUser.uid,
+        userName: auth.currentUser.displayName || 'Anonymous',
+        rating,
+        comment,
+        createdAt: new Date().toISOString()
+      });
+      setComment('');
+      toast.success(settings.reviewSubmittedText?.[lang] || 'Review submitted successfully!');
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      toast.error(settings.failedToSubmitReviewText?.[lang] || 'Failed to submit review.');
+    }
+  };
+
+  return (
+    <div className="mt-16 mb-16">
+      <h2 className="text-2xl font-sans font-medium text-brand-ink mb-8 tracking-tight">{settings.customerReviewsText?.[lang] || 'Customer Reviews'}</h2>
+      
+      {auth.currentUser ? (
+        hasPurchased === true ? (
+          <form onSubmit={handleSubmit} className="mb-12 bg-zinc-50/50 p-6 sm:p-8 rounded-3xl border border-zinc-100">
+            <div className="flex items-center gap-2 mb-6">
+              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600">Verified Purchase</span>
+            </div>
+            <h3 className="font-black text-xs mb-4 text-brand-ink uppercase tracking-[0.2em]">{settings.leaveReviewText?.[lang] || 'Leave a Review'}</h3>
+            <div className="flex gap-1 mb-6">
+              {[1, 2, 3, 4, 5].map((r) => (
+                <Star 
+                  key={r} 
+                  className={`w-6 h-6 cursor-pointer transition-all hover:scale-110 ${r <= rating ? 'fill-yellow-400 text-yellow-400' : 'text-zinc-200 hover:text-yellow-300'}`}
+                  onClick={() => setRating(r)}
+                />
+              ))}
+            </div>
+            <textarea
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              className="w-full p-5 bg-white border border-zinc-200 rounded-2xl mb-6 focus:ring-2 focus:ring-brand-ink/5 focus:border-brand-ink transition-all text-sm font-medium placeholder:text-zinc-300"
+              placeholder={settings.shareThoughtsPlaceholder?.[lang] || "Share your thoughts..."}
+              rows={4}
+              required
+            />
+            <button type="submit" className="bg-brand-ink text-white px-10 py-4 rounded-full font-black text-[10px] uppercase tracking-[0.2em] hover:opacity-90 transition-all active:scale-[0.98] shadow-lg shadow-brand-ink/10">
+              {settings.submitReviewButtonText?.[lang] || 'Submit Review'}
+            </button>
+          </form>
+        ) : hasPurchased === false ? (
+          <div className="mb-12 p-8 rounded-3xl border border-dashed border-zinc-200 bg-zinc-50/30 text-center">
+            <AlertCircle className="w-8 h-8 text-zinc-300 mx-auto mb-4" />
+            <h3 className="text-sm font-black text-zinc-900 uppercase tracking-widest mb-2">Verified Reviews Only</h3>
+            <p className="text-xs text-zinc-500 font-medium max-w-xs mx-auto leading-relaxed">
+              To ensure the highest quality of feedback, only customers who have purchased this product can leave a review.
+            </p>
+          </div>
+        ) : (
+          <div className="mb-12 h-32 flex items-center justify-center">
+            <div className="w-6 h-6 border-2 border-zinc-200 border-t-zinc-900 rounded-full animate-spin" />
+          </div>
+        )
+      ) : (
+        <div className="mb-12 p-8 rounded-3xl border border-dashed border-zinc-200 bg-zinc-50/30 text-center">
+          <p className="text-xs text-zinc-500 font-medium mb-4">Please log in to leave a review.</p>
+          <button 
+            onClick={() => window.location.href = '/auth'}
+            className="text-[10px] font-black uppercase tracking-widest text-brand-ink border-b-2 border-brand-ink pb-1 hover:opacity-70 transition-opacity"
+          >
+            Sign In Now
+          </button>
+        </div>
+      )}
+
+      {loading ? (
+        <p className="text-gray-500 text-sm">{settings.loadingReviewsText?.[lang] || 'Loading reviews...'}</p>
+      ) : reviews.length === 0 ? (
+        <p className="text-gray-500 text-sm">{settings.noReviewsText?.[lang] || 'No reviews yet. Be the first to review!'}</p>
+      ) : (
+        <div className="space-y-6">
+          {reviews.map(review => (
+            <div key={review.id} className="pb-6 border-b border-gray-100">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex text-yellow-400">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className={`w-3 h-3 ${i < review.rating ? 'fill-current' : 'text-gray-200'}`} />
+                    ))}
+                  </div>
+                  <span className="font-medium text-sm text-brand-ink">{review.userName}</span>
+                </div>
+                <span className="text-xs text-gray-400 font-mono">{review.createdAt ? new Date(review.createdAt).toLocaleDateString() : ''}</span>
+              </div>
+              <p className="text-gray-600 leading-relaxed text-sm font-light">{review.comment}</p>
+              
+              {review.adminReply && (
+                <div className="mt-4 ml-6 p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-900">Admin Response</span>
+                    <span className="text-[10px] text-zinc-400 font-mono">{review.adminReplyAt ? new Date(review.adminReplyAt).toLocaleDateString() : ''}</span>
+                  </div>
+                  <p className="text-zinc-600 text-sm font-medium italic">"{review.adminReply}"</p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

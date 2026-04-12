@@ -1,0 +1,76 @@
+"use client";
+import React, { useEffect, useState, useRef } from 'react';
+import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
+import { ShoppingBag, User, LogOut, Settings, Globe, Menu, X, ChevronRight, ChevronDown, Search, Filter, ArrowRight } from 'lucide-react';
+import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
+import { auth, db } from '@/lib/firebase';
+import { useAuthStore } from '@/store/useAuthStore';
+import { useCartStore } from '@/store/useCartStore';
+import { useSettingsStore } from '@/store/useSettingsStore';
+import i18nInstance from '@/i18n';
+import { useTranslation } from 'react-i18next';
+import { Toaster, toast } from 'sonner';
+import { motion, AnimatePresence } from 'motion/react';
+
+export default function Footer() {
+  const { settings } = useSettingsStore();
+  const { i18n } = useTranslation();
+  const lang = i18n.language || 'en';
+
+  return (
+    <footer className="bg-white border-t border-gray-200 pt-24 pb-12 mt-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8 mb-20">
+          <div className="col-span-1 md:col-span-4 lg:col-span-5 pr-8">
+            <Link href="/" className="inline-block mb-8 group">
+              {settings.logoImage ? (
+                <img 
+                  src={settings.logoImage} 
+                  alt={settings.storeName?.[lang]} 
+                  className="h-10 w-auto object-contain transition-transform group-hover:scale-105" 
+                  referrerPolicy="no-referrer" 
+                />
+              ) : (
+                <span className="text-xl font-normal text-gray-900">{settings.storeName?.[lang]}</span>
+              )}
+            </Link>
+            <p className="text-gray-500 text-sm leading-relaxed max-w-sm">
+              {settings.footerDescription?.[lang]}
+            </p>
+          </div>
+          
+          <div className="col-span-1 md:col-span-8 lg:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-8">
+            {(settings.footerSections || []).map((section, index) => (
+              <div key={index}>
+                <h3 className="text-sm font-bold text-brand-ink mb-6">{section.title?.[lang]}</h3>
+                <ul className="space-y-4 text-sm text-gray-500">
+                  {(section.links || []).map((link, lIndex) => (
+                    <li key={lIndex}>
+                      <Link href={link.href || '#'} className="hover:text-brand-ink transition-colors">
+                        {link.label?.[lang]}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        <div className="pt-8 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6">
+          <p className="text-sm text-gray-400">
+            &copy; {new Date().getFullYear()} {settings.storeName?.[lang]}. {settings.footerCopyright?.[lang]}
+          </p>
+          <div className="flex space-x-6 text-sm text-gray-400">
+            {settings.socialInstagram && <a href={settings.socialInstagram} target="_blank" rel="noopener noreferrer" className="hover:text-brand-ink transition-colors">{settings.instagramText?.[lang] || 'Instagram'}</a>}
+            {settings.socialTikTok && <a href={settings.socialTikTok} target="_blank" rel="noopener noreferrer" className="hover:text-brand-ink transition-colors">{settings.tiktokText?.[lang] || 'TikTok'}</a>}
+            {settings.socialFacebook && <a href={settings.socialFacebook} target="_blank" rel="noopener noreferrer" className="hover:text-brand-ink transition-colors">{settings.facebookText?.[lang] || 'Facebook'}</a>}
+            {settings.socialTwitter && <a href={settings.socialTwitter} target="_blank" rel="noopener noreferrer" className="hover:text-brand-ink transition-colors">{settings.twitterText?.[lang] || 'Twitter'}</a>}
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}

@@ -1,0 +1,199 @@
+"use client";
+import React, { useState, useEffect } from 'react';
+import { collection, query, onSnapshot, doc, updateDoc, orderBy } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { handleFirestoreError, OperationType } from '@/utils/firestoreErrorHandler';
+import { toast } from 'sonner';
+import { RefreshCcw, Search, CheckCircle, XCircle, Clock, DollarSign } from 'lucide-react';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+
+const COLORS = ['#18181b', '#3f3f46', '#71717a', '#a1a1aa', '#d4d4d8'];
+
+import { AdminHeader } from './admin/AdminHeader';
+
+export function RefundManager() {
+  const [requests, setRequests] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    const q = query(collection(db, 'refund_requests'), orderBy('createdAt', 'desc'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setRequests(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      setLoading(false);
+    }, (error) => {
+      setLoading(false);
+      handleFirestoreError(error, OperationType.LIST, 'refund_requests');
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const reasonData = React.useMemo(() => {
+    const counts: Record<string, number> = {};
+    requests.forEach(req => {
+      const reason = req.reason || 'Other';
+      counts[reason] = (counts[reason] || 0) + 1;
+    });
+    return Object.entries(counts).map(([name, value]) => ({ name, value }));
+  }, [requests]);
+
+  const handleUpdateStatus = async (id: string, newStatus: string) => {
+    try {
+      await updateDoc(doc(db, 'refund_requests', id), { status: newStatus });
+      toast.success(`Request marked as ${newStatus}`);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, 'refund_requests');
+      toast.error('Failed to update status');
+    }
+  };
+
+  const filteredRequests = requests.filter(req => {
+    const searchLower = searchQuery.toLowerCase();
+    return (
+      (req.orderId && req.orderId.toLowerCase().includes(searchLower)) ||
+      (req.id && req.id.toLowerCase().includes(searchLower)) ||
+      (req.reason && req.reason.toLowerCase().includes(searchLower))
+    );
+  });
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'Approved':
+      case 'Refunded':
+        return <span className="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1"><CheckCircle className="w-3 h-3" /> {status}</span>;
+      case 'Rejected':
+        return <span className="px-3 py-1 bg-red-50 text-red-700 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1"><XCircle className="w-3 h-3" /> {status}</span>;
+      default:
+        return <span className="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1"><Clock className="w-3 h-3" /> {status}</span>;
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <AdminHeader 
+        title="Refund & Return Requests"
+        description="Manage customer returns and process refunds"
+        search={{
+          value: searchQuery,
+          onChange: setSearchQuery,
+          placeholder: "Search Order ID, Reason..."
+        }}
+        secondaryActions={[
+          { label: 'Refresh Data', icon: RefreshCcw, onClick: () => {} }
+        ]}
+        statsLabel={`${filteredRequests.length} requests`}
+      />
+
+      {reasonData.length > 0 && (
+        <div className="py-8 border-b border-gray-200/60 last:border-0">
+          <h3 className="text-sm font-bold text-zinc-900 uppercase tracking-wider mb-6">Refund Reasons Breakdown</h3>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={reasonData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  {reasonData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  contentStyle={{ borderRadius: '12px', border: '1px solid #e4e4e7', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                />
+                <Legend verticalAlign="bottom" height={36} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
+      <div className="py-8 border-b border-gray-200/60 last:border-0 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead className="bg-zinc-50 border-b border-zinc-200 text-xs uppercase tracking-wider text-zinc-500">
+              <tr>
+                <th className="p-4 font-semibold">Request ID / Date</th>
+                <th className="p-4 font-semibold">Order ID</th>
+                <th className="p-4 font-semibold">Reason</th>
+                <th className="p-4 font-semibold">Comments</th>
+                <th className="p-4 font-semibold">Status</th>
+                <th className="p-4 font-semibold text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-100">
+              {loading ? (
+                <tr>
+                  <td colSpan={6} className="p-8 text-center text-zinc-500">Loading requests...</td>
+                </tr>
+              ) : filteredRequests.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="p-8 text-center text-zinc-500">
+                    <div className="flex flex-col items-center justify-center">
+                      <RefreshCcw className="w-8 h-8 text-zinc-300 mb-3" />
+                      <p>No refund requests found.</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                filteredRequests.map((req) => (
+                  <tr key={req.id} className="hover:bg-zinc-50/50 transition-colors">
+                    <td className="p-4">
+                      <div className="font-mono text-xs text-zinc-900">{req.id.substring(0, 8)}...</div>
+                      <div className="text-xs text-zinc-500 mt-1">{new Date(req.createdAt).toLocaleDateString()}</div>
+                    </td>
+                    <td className="p-4">
+                      <span className="font-mono text-sm font-medium text-zinc-900">{req.orderId}</span>
+                    </td>
+                    <td className="p-4">
+                      <span className="text-sm text-zinc-900">{req.reason}</span>
+                    </td>
+                    <td className="p-4 max-w-xs truncate text-sm text-zinc-500" title={req.comments}>
+                      {req.comments || '-'}
+                    </td>
+                    <td className="p-4">
+                      {getStatusBadge(req.status)}
+                    </td>
+                    <td className="p-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        {req.status === 'Pending' && (
+                          <>
+                            <button
+                              onClick={() => handleUpdateStatus(req.id, 'Approved')}
+                              className="w-full sm:w-auto flex items-center justify-center bg-zinc-900 text-white hover:bg-zinc-800 border border-transparent px-6 py-3 text-sm font-medium rounded-md transition-colors"
+                            >
+                              Approve
+                            </button>
+                            <button
+                              onClick={() => handleUpdateStatus(req.id, 'Rejected')}
+                              className="w-full sm:w-auto flex items-center justify-center bg-white text-zinc-700 hover:bg-gray-50 border border-gray-200/60 px-6 py-3 text-sm font-medium rounded-md transition-colors"
+                            >
+                              Reject
+                            </button>
+                          </>
+                        )}
+                        {req.status === 'Approved' && (
+                          <button
+                            onClick={() => handleUpdateStatus(req.id, 'Refunded')}
+                            className="w-full sm:w-auto flex items-center justify-center bg-zinc-900 text-white hover:bg-zinc-800 border border-transparent px-6 py-3 text-sm font-medium rounded-md transition-colors"
+                          >
+                            <DollarSign className="w-3 h-3" /> Process Refund
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}

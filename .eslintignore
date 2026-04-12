@@ -1,0 +1,5 @@
+.next
+.firebase
+node_modules
+dist
+out
