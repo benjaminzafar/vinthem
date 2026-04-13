@@ -148,8 +148,14 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, c
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // Generate slug from name
+      const slug = name.toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)+/g, '');
+
       const categoryData = { 
         name, 
+        slug,
         description, 
         is_featured: isFeatured, 
         show_in_hero: showInHero, 
