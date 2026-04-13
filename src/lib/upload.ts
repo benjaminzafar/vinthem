@@ -1,23 +1,26 @@
-import { auth } from '@/lib/firebase';
+import { createClient } from '@/utils/supabase/client';
 
-export async function uploadImageWithTimeout(file: File, path: string, timeoutMs: number = 15000): Promise<string> {
-  const user = auth.currentUser;
-  const token = user ? await user.getIdToken() : '';
-  
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('path', path);
-  formData.append('token', token);
+export async function uploadImageWithTimeout(
+  file: File,
+  path: string,
+  timeoutMs: number = 15000
+): Promise<string> {
+  const uploadPromise = new Promise<string>(async (resolve, reject) => {
+    try {
+      const supabase = createClient();
 
-  const uploadPromise = fetch('/api/upload', {
-    method: 'POST',
-    body: formData,
-  }).then(async (res) => {
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.error || 'Upload failed');
+      const { error } = await supabase.storage
+        .from('images')
+        .upload(path, file, { upsert: true });
+
+      if (error) throw error;
+
+      const { data } = supabase.storage.from('images').getPublicUrl(path);
+      resolve(data.publicUrl);
+    } catch (error) {
+      console.error('Supabase Storage Upload Error:', error);
+      reject(error);
     }
-    return data.url;
   });
 
   const timeoutPromise = new Promise<never>((_, reject) => {

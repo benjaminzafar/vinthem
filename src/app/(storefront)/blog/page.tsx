@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
 
 import { motion } from 'motion/react';
@@ -16,19 +15,36 @@ export default function BlogList() {
   const { settings } = useSettingsStore();
   const { i18n } = useTranslation();
   const lang = i18n.language || 'en';
+  const supabase = createClient();
 
   useEffect(() => {
-    const q = query(collection(db, 'blogs'), orderBy('createdAt', 'desc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const postsData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as BlogPost[];
-      setPosts(postsData);
-      setLoading(false);
-    });
+    const fetchPosts = async () => {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('blog_posts')
+          .select('*, imageUrl:image_url, createdAt:created_at')
+          .order('created_at', { ascending: false });
 
-    return () => unsubscribe();
+        if (error) throw error;
+        setPosts(data as BlogPost[]);
+      } catch (error) {
+        console.error("Error fetching posts:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPosts();
+
+    const channel = supabase
+      .channel('blog_posts_all')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'blog_posts' }, fetchPosts)
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   if (loading) {
@@ -77,7 +93,7 @@ export default function BlogList() {
                   )}
                 </div>
                 <div className="flex items-center text-sm text-brand-muted mb-3 space-x-4">
-                  <span className="flex items-center"><Calendar className="w-4 h-4 mr-1" /> {new Date(post.createdAt).toLocaleDateString(lang === 'sv' ? 'sv-SE' : lang)}</span>
+                  <span className="flex items-center"><Calendar className="w-4 h-4 mr-1" /> {post.createdAt ? new Date(post.createdAt).toLocaleDateString(lang === 'sv' ? 'sv-SE' : lang) : ''}</span>
                   <span>{settings.byAuthorText?.[lang]} {post.author}</span>
                 </div>
                 <h2 className="text-2xl font-sans font-bold text-brand-ink mb-3 group-hover:text-brand-accent transition-colors">

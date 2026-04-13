@@ -1,7 +1,5 @@
 "use client";
 import React, { useEffect, useState, useMemo } from 'react';
-import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Product } from '@/store/useCartStore';
@@ -9,7 +7,7 @@ import { Category } from '@/types';
 import { motion, AnimatePresence } from 'motion/react';
 import { Search, Filter, X, SlidersHorizontal, ChevronRight, ChevronDown, Folder, ListFilter, Check, ShoppingBag } from 'lucide-react';
 import { IconRenderer } from '@/components/IconRenderer';
-import { handleFirestoreError, OperationType } from '@/utils/firestoreErrorHandler';
+import { createClient } from '@/utils/supabase/client';
 
 import { useCartStore } from '@/store/useCartStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
@@ -55,36 +53,54 @@ function ProductsContent() {
   const { addItem } = useCartStore();
   const { i18n } = useTranslation();
   const lang = i18n.language || 'en';
+  const supabase = createClient();
 
   useEffect(() => {
-    const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const productsData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Product[];
-      setProducts(productsData);
-      setLoading(false);
-    }, (error) => {
-      setLoading(false);
-      handleFirestoreError(error, OperationType.LIST, 'products');
-    });
+    const fetchProducts = async () => {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*, imageUrl:image_url, isFeatured:is_featured, createdAt:created_at')
+          .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        setProducts(data as Product[]);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    return () => unsubscribe();
+    fetchProducts();
+    
+    // Subscribe to changes
+    const channel = supabase
+      .channel('products_all')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, fetchProducts)
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   useEffect(() => {
-    const q = query(collection(db, 'categories'), orderBy('name', 'asc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Category[];
-      setCategoriesData(data);
-    }, (error) => {
-      handleFirestoreError(error, OperationType.LIST, 'categories');
-    });
-    return () => unsubscribe();
+    const fetchCategories = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('categories')
+          .select('*, imageUrl:image_url, isFeatured:is_featured, iconUrl:icon_url, parentId:parent_id')
+          .order('name', { ascending: true });
+        
+        if (error) throw error;
+        setCategoriesData(data as Category[]);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+    fetchCategories();
   }, []);
 
   useEffect(() => {
@@ -133,8 +149,8 @@ function ProductsContent() {
       result.sort((a, b) => b.price - a.price);
     } else if (sortBy === 'newest') {
       result.sort((a, b) => {
-        const dateA = a.createdAt?.seconds || 0;
-        const dateB = b.createdAt?.seconds || 0;
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
         return dateB - dateA;
       });
     }
@@ -565,12 +581,16 @@ function ProductsContent() {
                       {activeCategory === 'All' && <Check className="w-5 h-5" />}
                     </button>
                     {categoryTree.map(cat => (
-                      <button key={cat.id} className="w-full flex items-center justify-between p-4 rounded-xl">
+                      <button 
+                        key={cat.id} 
+                        onClick={() => { setActiveCategory(cat.name); setIsMobileFiltersOpen(false); }}
+                        className={`w-full flex items-center justify-between p-4 rounded-xl ${activeCategory === cat.name ? 'bg-gray-100 font-bold' : ''}`}
+                      >
                         <div className="flex items-center gap-3">
                           <Folder className="w-5 h-5" />
                           <span>{cat.name}</span>
                         </div>
-                        <ChevronRight className="w-5 h-5" />
+                        {activeCategory === cat.name ? <Check className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
                       </button>
                     ))}
                   </div>
@@ -588,7 +608,7 @@ function ProductsContent() {
                       <button
                         key={option.id}
                         onClick={() => setSortBy(option.id)}
-                        className={`w-full text-right p-4 rounded-xl ${sortBy === option.id ? 'bg-gray-100 font-bold' : ''}`}
+                        className={`w-full text-left p-4 rounded-xl ${sortBy === option.id ? 'bg-gray-100 font-bold' : ''}`}
                       >
                         {option.label}
                       </button>
@@ -613,7 +633,7 @@ function ProductsContent() {
                 </button>
                 <button
                   onClick={() => setIsMobileFiltersOpen(false)}
-                  className="flex-1 py-4 rounded-full bg-brand-accent text-white font-bold"
+                  className="flex-1 py-4 rounded-full bg-brand-ink text-white font-bold"
                 >
                   Show {allFilteredProducts.length} results
                 </button>

@@ -1,14 +1,12 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { collection, query, orderBy, onSnapshot, where, updateDoc, doc, arrayUnion } from 'firebase/firestore';
-import { db, auth } from '@/lib/firebase';
-import { handleFirestoreError, OperationType } from '../../utils/firestoreErrorHandler';
 import { AdminHeader } from './AdminHeader';
 import { Mail, Send, X, Calendar, ChevronRight, ChevronDown, Package, ArrowLeft, Users, MessageSquare, Target, Megaphone, BarChart3, Zap, RefreshCcw, Search, Star } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { useDebounce } from '../../hooks/useDebounce';
+import { createClient } from '@/utils/supabase/client';
 
 const CRM_PILLARS = [
   { id: 'data', title: 'Customer Data Management', icon: Users, description: 'Centralized customer profiles and history.' },
@@ -21,6 +19,7 @@ const CRM_PILLARS = [
 ];
 
 export function CustomersAndCRMManager() {
+  const supabase = createClient();
   const [customers, setCustomers] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
@@ -56,8 +55,9 @@ export function CustomersAndCRMManager() {
   const ticketStatusData = React.useMemo(() => {
     const counts: Record<string, number> = { open: 0, 'in-progress': 0, resolved: 0, closed: 0 };
     tickets.forEach(ticket => {
-      if (counts[ticket.status] !== undefined) {
-        counts[ticket.status]++;
+      const status = ticket.status as string;
+      if (counts[status] !== undefined) {
+        counts[status]++;
       }
     });
     return Object.entries(counts).map(([name, value]) => ({ name, value }));
@@ -66,85 +66,182 @@ export function CustomersAndCRMManager() {
   const COLORS = ['#ef4444', '#f59e0b', '#10b981', '#6b7280']; // Red, Amber, Emerald, Gray
 
   useEffect(() => {
-    const q = query(collection(db, 'users'), orderBy('createdAt', 'desc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setCustomers(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    const fetchCustomers = async () => {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (!error) {
+        setCustomers(data.map(user => ({
+          ...user,
+          createdAt: user.created_at,
+          displayName: user.display_name
+        })));
+      }
       setLoading(false);
-    }, (error) => {
-      setLoading(false);
-      handleFirestoreError(error, OperationType.LIST, 'users');
-    });
-    return () => unsubscribe();
+    };
+
+    fetchCustomers();
+    const channel = supabase
+      .channel('users_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, fetchCustomers)
+      .subscribe();
+    
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   useEffect(() => {
-    const q = query(collection(db, 'tickets'), orderBy('createdAt', 'desc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setTickets(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    const fetchTickets = async () => {
+      const { data, error } = await supabase
+        .from('support_tickets')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (!error) {
+        setTickets(data.map(t => ({
+          ...t,
+          id: t.id,
+          customerEmail: t.customer_email,
+          createdAt: t.created_at,
+          updatedAt: t.updated_at,
+          imageUrl: t.image_url
+        })));
+      }
       setLoadingTickets(false);
-    }, (error) => {
-      setLoadingTickets(false);
-      handleFirestoreError(error, OperationType.LIST, 'tickets');
-    });
-    return () => unsubscribe();
+    };
+
+    fetchTickets();
+    const channel = supabase
+      .channel('tickets_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'support_tickets' }, fetchTickets)
+      .subscribe();
+    
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   useEffect(() => {
-    const q = query(collection(db, 'refund_requests'), orderBy('createdAt', 'desc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setRefunds(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    const fetchRefunds = async () => {
+      const { data, error } = await supabase
+        .from('refund_requests')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (!error) {
+        setRefunds(data.map(r => ({
+          ...r,
+          userId: r.user_id,
+          orderId: r.order_id,
+          createdAt: r.created_at
+        })));
+      }
       setLoadingRefunds(false);
-    }, (error) => {
-      setLoadingRefunds(false);
-      handleFirestoreError(error, OperationType.LIST, 'refund_requests');
-    });
-    return () => unsubscribe();
+    };
+
+    fetchRefunds();
+    const channel = supabase
+      .channel('refunds_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'refund_requests' }, fetchRefunds)
+      .subscribe();
+    
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   useEffect(() => {
-    const q = query(collection(db, 'newsletter_subscribers'), orderBy('subscribedAt', 'desc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setSubscribers(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    const fetchSubscribers = async () => {
+      const { data, error } = await supabase
+        .from('newsletter_subscribers')
+        .select('*')
+        .order('subscribed_at', { ascending: false });
+      
+      if (!error) {
+        setSubscribers(data.map(s => ({
+          ...s,
+          subscribedAt: s.subscribed_at
+        })));
+      }
       setLoadingSubscribers(false);
-    }, (error) => {
-      setLoadingSubscribers(false);
-      handleFirestoreError(error, OperationType.LIST, 'newsletter_subscribers');
-    });
-    return () => unsubscribe();
+    };
+
+    fetchSubscribers();
+    const channel = supabase
+      .channel('newsletter_subscribers_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'newsletter_subscribers' }, fetchSubscribers)
+      .subscribe();
+    
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   useEffect(() => {
-    const q = query(collection(db, 'newsletter_campaigns'), orderBy('sentAt', 'desc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setCampaigns(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    const fetchCampaigns = async () => {
+      const { data, error } = await supabase
+        .from('newsletter_campaigns')
+        .select('*')
+        .order('sent_at', { ascending: false });
+      
+      if (!error) {
+        setCampaigns(data.map(c => ({
+          ...c,
+          sentAt: c.sent_at,
+          recipientCount: c.recipient_count
+        })));
+      }
       setLoadingCampaigns(false);
-    }, (error) => {
-      setLoadingCampaigns(false);
-      handleFirestoreError(error, OperationType.LIST, 'newsletter_campaigns');
-    });
-    return () => unsubscribe();
+    };
+
+    fetchCampaigns();
+    const channel = supabase
+      .channel('newsletter_campaigns_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'newsletter_campaigns' }, fetchCampaigns)
+      .subscribe();
+    
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   useEffect(() => {
-    // Using collectionGroup to fetch all reviews from all products
-    import('firebase/firestore').then(({ collectionGroup }) => {
-      const q = query(collectionGroup(db, 'reviews'), orderBy('createdAt', 'desc'));
-      const unsubscribe = onSnapshot(q, (snapshot) => {
-        setReviews(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-        setLoadingReviews(false);
-      }, (error) => {
-        setLoadingReviews(false);
-        handleFirestoreError(error, OperationType.LIST, 'reviews');
-      });
-      return () => unsubscribe();
-    });
+    const fetchReviews = async () => {
+      const { data, error } = await supabase
+        .from('reviews')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (!error) {
+        setReviews(data.map(r => ({
+          ...r,
+          productId: r.product_id,
+          userId: r.user_id,
+          userName: r.user_name,
+          createdAt: r.created_at,
+          adminReply: r.admin_reply,
+          adminReplyAt: r.admin_reply_at
+        })));
+      }
+      setLoadingReviews(false);
+    };
+
+    fetchReviews();
+    const channel = supabase
+      .channel('reviews_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'reviews' }, fetchReviews)
+      .subscribe();
+    
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   const handleUpdateTicket = async (ticketId: string, updates: any) => {
     setUpdatingTicketId(ticketId);
     const toastId = toast.loading('Updating ticket...');
     try {
-      await updateDoc(doc(db, 'tickets', ticketId), updates);
+      const mappedUpdates = {
+        status: updates.status,
+        priority: updates.priority,
+        updated_at: new Date().toISOString()
+      };
+      const { error } = await supabase
+        .from('support_tickets')
+        .update(mappedUpdates)
+        .eq('id', ticketId);
+      if (error) throw error;
       toast.success('Ticket updated successfully', { id: toastId });
     } catch (error: any) {
       console.error('Error updating ticket:', error);
@@ -158,7 +255,11 @@ export function CustomersAndCRMManager() {
     setUpdatingRefundId(refundId);
     const toastId = toast.loading('Updating refund request...');
     try {
-      await updateDoc(doc(db, 'refund_requests', refundId), updates);
+      const { error } = await supabase
+        .from('refund_requests')
+        .update({ status: updates.status })
+        .eq('id', refundId);
+      if (error) throw error;
       toast.success('Refund request updated successfully', { id: toastId });
     } catch (error: any) {
       console.error('Error updating refund:', error);
@@ -173,15 +274,24 @@ export function CustomersAndCRMManager() {
     setUpdatingTicketId(ticketId);
     const toastId = toast.loading('Sending reply...');
     try {
-      await updateDoc(doc(db, 'tickets', ticketId), {
-        messages: arrayUnion({
+      const ticket = tickets.find(t => t.id === ticketId);
+      const newMessages = [
+        ...(ticket?.messages || []),
+        {
           sender: 'admin',
           text: ticketReplyText,
           createdAt: new Date().toISOString()
-        }),
-        status: 'in-progress', // Auto-update status when replying
-        updatedAt: new Date().toISOString()
-      });
+        }
+      ];
+      const { error } = await supabase
+        .from('support_tickets')
+        .update({
+          messages: newMessages,
+          status: 'in-progress',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', ticketId);
+      if (error) throw error;
       toast.success('Reply sent successfully', { id: toastId });
       setTicketReplyText('');
     } catch (error: any) {
@@ -201,7 +311,8 @@ export function CustomersAndCRMManager() {
 
     setIsSendingCampaign(true);
     try {
-      const token = await auth.currentUser?.getIdToken();
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
       const response = await fetch('/api/newsletter/send', {
         method: 'POST',
         headers: { 
@@ -234,20 +345,22 @@ export function CustomersAndCRMManager() {
     const toastId = toast.loading('Saving reply...');
     
     try {
-      const { updateDoc, doc } = await import('firebase/firestore');
-      const reviewRef = doc(db, 'products', review.productId, 'reviews', review.id!);
+      const { error } = await supabase
+        .from('reviews')
+        .update({
+          admin_reply: replyText,
+          admin_reply_at: new Date().toISOString()
+        })
+        .eq('id', review.id);
       
-      await updateDoc(reviewRef, {
-        adminReply: replyText,
-        adminReplyAt: new Date().toISOString()
-      });
+      if (error) throw error;
       
       toast.success('Reply saved successfully!', { id: toastId });
       setReplyingTo(null);
       setReplyText('');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving reply:', error);
-      toast.error('Failed to save reply.', { id: toastId });
+      toast.error(error.message || 'Failed to save reply.', { id: toastId });
     } finally {
       setIsSavingReply(false);
     }
@@ -262,18 +375,32 @@ export function CustomersAndCRMManager() {
 
   useEffect(() => {
     if (selectedCustomer) {
-      setLoadingOrders(true);
-      const q = query(collection(db, 'orders'), where('customerEmail', '==', selectedCustomer.email));
-      const unsubscribe = onSnapshot(q, (snapshot) => {
-        const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as any }));
-        orders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        setCustomerOrders(orders);
+      const fetchOrders = async () => {
+        setLoadingOrders(true);
+        const { data, error } = await supabase
+          .from('orders')
+          .select('*')
+          .eq('customer_email', selectedCustomer.email)
+          .order('created_at', { ascending: false });
+        
+        if (!error) {
+          setCustomerOrders(data.map(o => ({
+            ...o,
+            orderId: o.order_id,
+            createdAt: o.created_at,
+            items: o.items
+          })));
+        }
         setLoadingOrders(false);
-      }, (error) => {
-        setLoadingOrders(false);
-        handleFirestoreError(error, OperationType.LIST, 'orders');
-      });
-      return () => unsubscribe();
+      };
+
+      fetchOrders();
+      const channel = supabase
+        .channel('customer_orders_changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'orders', filter: `customer_email=eq.${selectedCustomer.email}` }, fetchOrders)
+        .subscribe();
+      
+      return () => { supabase.removeChannel(channel); };
     }
   }, [selectedCustomer]);
 

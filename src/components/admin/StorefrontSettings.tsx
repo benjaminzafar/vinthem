@@ -33,14 +33,12 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { storage } from '@/lib/firebase';
 import { useSettingsStore, StorefrontSettings as StorefrontSettingsType, LocalizedString, MenuLink, FooterSection } from '@/store/useSettingsStore';
 import { getAI } from '@/lib/gemini';
 
 // --- Sub-components ---
 
-function LocalizedFieldInput({ value, label, onChange, languages, field, handleAITranslateField, settings, setSettings, generating }: { value: LocalizedString, label: string, onChange: (newValue: LocalizedString) => void, languages: string[], field?: string, handleAITranslateField?: any, settings?: StorefrontSettingsType, setSettings?: any, generating?: boolean }) {
+function LocalizedFieldInput({ value, label, onChange, languages, field, handleAITranslateField, settings, setSettings, generating }: { value: LocalizedString, label: string, onChange: (newValue: LocalizedString) => void, languages: string[], field?: string, handleAITranslateField?: (field: any, value: LocalizedString, label: string) => Promise<void>, settings?: StorefrontSettingsType, setSettings?: React.Dispatch<React.SetStateAction<StorefrontSettingsType>>, generating?: boolean }) {
   return (
     <div className="space-y-3">
       <div className="flex justify-between items-center">
@@ -75,7 +73,7 @@ function LocalizedFieldInput({ value, label, onChange, languages, field, handleA
   );
 }
 
-const LocalizedInput = ({ field, label, type = 'text', settings, setSettings, generating, handleAIAutoCompleteField, handleAITranslateField, handleSettingsChange }: { field: keyof StorefrontSettingsType, label: string, type?: 'text' | 'textarea', settings: StorefrontSettingsType, setSettings: React.Dispatch<React.SetStateAction<StorefrontSettingsType>>, generating: boolean, handleAIAutoCompleteField: any, handleAITranslateField: any, handleSettingsChange: any }) => {
+const LocalizedInput = ({ field, label, type = 'text', settings, setSettings, generating, handleAIAutoCompleteField, handleAITranslateField, handleSettingsChange }: { field: keyof StorefrontSettingsType, label: string, type?: 'text' | 'textarea', settings: StorefrontSettingsType, setSettings: React.Dispatch<React.SetStateAction<StorefrontSettingsType>>, generating: boolean, handleAIAutoCompleteField: (field: keyof StorefrontSettingsType, label: string) => Promise<void>, handleAITranslateField: (field: keyof StorefrontSettingsType, value: LocalizedString, label: string) => Promise<void>, handleSettingsChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void }) => {
   const value = settings[field] as LocalizedString;
   return (
     <div className="space-y-5 p-6 bg-gray-50 rounded-xl border border-gray-200">
@@ -537,12 +535,12 @@ export function StorefrontSettings({ handleSaveSettings }: { handleSaveSettings:
                                     value={settings.logoImage}
                                     onChange={handleSettingsChange}
                                     placeholder="https://example.com/logo.png"
-                                    className="pl-10 pr-4 border-gray-200 focus:outline-none focus:ring-2 focus:ring-zinc-900 w-full sm:w-auto flex items-center justify-center bg-zinc-900 text-white hover:bg-zinc-800 border border-transparent px-6 py-3 text-sm font-medium rounded-lg transition-colors"
+                                    className="pl-10 pr-4 border-gray-200 focus:outline-none focus:ring-2 focus:ring-zinc-900 w-full flex items-center justify-center bg-zinc-900 text-white hover:bg-zinc-800 border border-transparent px-6 py-3 text-sm font-medium rounded-lg transition-colors"
                                   />
                                 </div>
                                 <div className="pt-4">
                                   <p className="text-xs text-gray-500 font-medium leading-relaxed">
-                                    Recommended: 512x512px. Transparent PNG or SVG preferred for best 2D look.
+                                    Recommended: 512x512px. Transparent PNG or SVG preferred for best look.
                                   </p>
                                 </div>
                               </div>
@@ -618,7 +616,7 @@ export function StorefrontSettings({ handleSaveSettings }: { handleSaveSettings:
                             <input 
                               type="text" 
                               placeholder="Add lang (e.g. fr)"
-                              className="pl-10 pr-4 border-gray-200 focus:outline-none focus:ring-2 focus:ring-zinc-900 w-full sm:w-auto flex items-center justify-center bg-zinc-900 text-white hover:bg-zinc-800 border border-transparent px-6 py-3 text-sm font-medium rounded-md transition-colors"
+                              className="border-gray-200 focus:outline-none focus:ring-2 focus:ring-zinc-900 w-full sm:w-auto flex items-center justify-center bg-zinc-900 text-white hover:bg-zinc-800 border border-transparent px-6 py-3 text-sm font-medium rounded-md transition-colors"
                               onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
                                   const val = (e.target as HTMLInputElement).value.toLowerCase().trim();
@@ -666,7 +664,7 @@ export function StorefrontSettings({ handleSaveSettings }: { handleSaveSettings:
                                         type="text"
                                         value={link.label[lang] || ''}
                                         onChange={(e) => handleUpdateNavbarLink(index, 'label', lang, e.target.value)}
-                                        className="border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-ink/20 focus:border-brand-ink w-full sm:w-auto flex items-center justify-center bg-zinc-900 text-white hover:bg-zinc-800 border border-transparent px-6 py-3 text-sm font-medium rounded-lg transition-colors"
+                                        className="border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-ink/20 focus:border-brand-ink w-full flex items-center justify-center bg-white border border-gray-200 px-6 py-3 text-sm font-medium rounded-lg transition-colors"
                                         placeholder={`Link in ${lang.toUpperCase()}`}
                                       />
                                     </div>
@@ -678,7 +676,7 @@ export function StorefrontSettings({ handleSaveSettings }: { handleSaveSettings:
                                     type="text"
                                     value={link.href}
                                     onChange={(e) => handleUpdateNavbarLink(index, 'href', 'en', e.target.value)}
-                                    className="border-gray-200 font-mono focus:outline-none focus:ring-2 focus:ring-brand-ink/20 focus:border-brand-ink w-full sm:w-auto flex items-center justify-center bg-zinc-900 text-white hover:bg-zinc-800 border border-transparent px-6 py-3 text-sm font-medium rounded-lg transition-colors"
+                                    className="border-gray-200 font-mono focus:outline-none focus:ring-2 focus:ring-brand-ink/20 focus:border-brand-ink w-full flex items-center justify-center bg-white border border-gray-200 px-6 py-3 text-sm font-medium rounded-lg transition-colors"
                                     placeholder="/shop, /about, etc."
                                   />
                                 </div>
@@ -803,7 +801,7 @@ export function StorefrontSettings({ handleSaveSettings }: { handleSaveSettings:
                                 ) : (
                                   <ImageIcon className="w-8 h-8 text-gray-200" />
                                 )}
-
+                                
                                 {/* Design Preview Overlay */}
                                 {settings.futureImage2 && (
                                   <>
@@ -813,7 +811,7 @@ export function StorefrontSettings({ handleSaveSettings }: { handleSaveSettings:
                                       <h3 className="text-white text-xl font-bold tracking-tight">{settings.futureProduct2Title?.en || 'Title'}</h3>
                                     </div>
                                     <div className="absolute bottom-6 right-6 bg-white/20 backdrop-blur-md border border-white/30 p-3 rounded-full pointer-events-none">
-                                      <ArrowRight className="w-6 h-6 text-white" />
+                                      <ArrowRight className="w-5 h-5 text-white" />
                                     </div>
                                   </>
                                 )}
@@ -847,261 +845,32 @@ export function StorefrontSettings({ handleSaveSettings }: { handleSaveSettings:
                           </div>
                         </div>
                       </section>
-
-                      {/* Collection Section */}
-                      <section className="py-8 border-b border-gray-200/60 last:border-0">
-                        <div className="flex items-center gap-3 mb-8">
-                          <div className="w-10 h-10 rounded bg-brand-ink flex items-center justify-center">
-                            <ShoppingBag className="w-5 h-5 text-white" />
-                          </div>
-                          <h3 className="text-lg font-semibold text-gray-900">Collection Section</h3>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <LocalizedInput field="collectionTopSubtitle" label="Collection Top Subtitle" settings={settings} setSettings={setSettings} generating={generating} handleAIAutoCompleteField={handleAIAutoCompleteField} handleAITranslateField={handleAITranslateField} handleSettingsChange={handleSettingsChange} />
-                          <LocalizedInput field="collectionTitle" label="Collection Title" settings={settings} setSettings={setSettings} generating={generating} handleAIAutoCompleteField={handleAIAutoCompleteField} handleAITranslateField={handleAITranslateField} handleSettingsChange={handleSettingsChange} />
-                          <LocalizedInput field="collectionSubtitle" label="Collection Subtitle" settings={settings} setSettings={setSettings} generating={generating} handleAIAutoCompleteField={handleAIAutoCompleteField} handleAITranslateField={handleAITranslateField} handleSettingsChange={handleSettingsChange} />
-                        </div>
-                      </section>
-
-                      {/* Newsletter Section */}
-                      <section className="py-8 border-b border-gray-200/60 last:border-0">
-                        <div className="flex items-center gap-3 mb-8">
-                          <div className="w-10 h-10 rounded bg-brand-ink flex items-center justify-center">
-                            <Mail className="w-5 h-5 text-white" />
-                          </div>
-                          <h3 className="text-lg font-semibold text-gray-900">Newsletter Section</h3>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <LocalizedInput field="newsletterSectionTitle" label="Section Title" settings={settings} setSettings={setSettings} generating={generating} handleAIAutoCompleteField={handleAIAutoCompleteField} handleAITranslateField={handleAITranslateField} handleSettingsChange={handleSettingsChange} />
-                          <LocalizedInput field="newsletterSectionSubtitle" label="Section Subtitle" type="textarea" settings={settings} setSettings={setSettings} generating={generating} handleAIAutoCompleteField={handleAIAutoCompleteField} handleAITranslateField={handleAITranslateField} handleSettingsChange={handleSettingsChange} />
-                          <LocalizedInput field="newsletterPlaceholder" label="Input Placeholder" settings={settings} setSettings={setSettings} generating={generating} handleAIAutoCompleteField={handleAIAutoCompleteField} handleAITranslateField={handleAITranslateField} handleSettingsChange={handleSettingsChange} />
-                          <LocalizedInput field="newsletterButtonText" label="Button Text" settings={settings} setSettings={setSettings} generating={generating} handleAIAutoCompleteField={handleAIAutoCompleteField} handleAITranslateField={handleAITranslateField} handleSettingsChange={handleSettingsChange} />
-                        </div>
-                      </section>
-
                     </div>
                   )}
 
                   {activeTab === 'checkout' && (
-                    <div className="space-y-10">
-                      {/* Cart Settings */}
-                      <section className="py-8 border-b border-gray-200/60 last:border-0">
-                        <div className="flex items-center gap-3 mb-8">
+                    <div className="space-y-8">
+                       <section className="py-8 border-b border-gray-200/60 last:border-0">
+                        <div className="flex items-center gap-3 mb-6">
                           <div className="w-10 h-10 rounded bg-brand-ink flex items-center justify-center">
                             <ShoppingCart className="w-5 h-5 text-white" />
                           </div>
-                          <h3 className="text-lg font-semibold text-gray-900">Cart Settings</h3>
+                          <h3 className="text-lg font-semibold text-gray-900">Cart & Checkout UI</h3>
                         </div>
-                        
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <LocalizedInput field="cartTitle" label="Cart Title" settings={settings} setSettings={setSettings} generating={generating} handleAIAutoCompleteField={handleAIAutoCompleteField} handleAITranslateField={handleAITranslateField} handleSettingsChange={handleSettingsChange} />
-                          <LocalizedInput field="cartEmptyMessage" label="Empty Cart Message" type="textarea" settings={settings} setSettings={setSettings} generating={generating} handleAIAutoCompleteField={handleAIAutoCompleteField} handleAITranslateField={handleAITranslateField} handleSettingsChange={handleSettingsChange} />
-                          <LocalizedInput field="addedToCartText" label="Added to Cart Text" settings={settings} setSettings={setSettings} generating={generating} handleAIAutoCompleteField={handleAIAutoCompleteField} handleAITranslateField={handleAITranslateField} handleSettingsChange={handleSettingsChange} />
-                          <LocalizedInput field="addedToCartConfirmationText" label="Confirmation Message" settings={settings} setSettings={setSettings} generating={generating} handleAIAutoCompleteField={handleAIAutoCompleteField} handleAITranslateField={handleAITranslateField} handleSettingsChange={handleSettingsChange} />
-                          <LocalizedInput field="removeText" label="Remove Button" settings={settings} setSettings={setSettings} generating={generating} handleAIAutoCompleteField={handleAIAutoCompleteField} handleAITranslateField={handleAITranslateField} handleSettingsChange={handleSettingsChange} />
-                          <LocalizedInput field="subtotalText" label="Subtotal Label" settings={settings} setSettings={setSettings} generating={generating} handleAIAutoCompleteField={handleAIAutoCompleteField} handleAITranslateField={handleAITranslateField} handleSettingsChange={handleSettingsChange} />
-                        </div>
-                      </section>
-
-                      {/* Checkout Labels */}
-                      <section className="py-8 border-b border-gray-200/60 last:border-0">
-                        <div className="flex items-center gap-3 mb-8">
-                          <div className="w-10 h-10 rounded bg-brand-ink flex items-center justify-center">
-                            <CreditCard className="w-5 h-5 text-white" />
-                          </div>
-                          <h3 className="text-lg font-semibold text-gray-900">Checkout Labels</h3>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <LocalizedInput field="checkoutButtonText" label="Checkout Button" settings={settings} setSettings={setSettings} generating={generating} handleAIAutoCompleteField={handleAIAutoCompleteField} handleAITranslateField={handleAITranslateField} handleSettingsChange={handleSettingsChange} />
-                          <LocalizedInput field="proceedToPaymentText" label="Proceed to Payment" settings={settings} setSettings={setSettings} generating={generating} handleAIAutoCompleteField={handleAIAutoCompleteField} handleAITranslateField={handleAITranslateField} handleSettingsChange={handleSettingsChange} />
-                          <LocalizedInput field="continueShoppingText" label="Continue Shopping" settings={settings} setSettings={setSettings} generating={generating} handleAIAutoCompleteField={handleAIAutoCompleteField} handleAITranslateField={handleAITranslateField} handleSettingsChange={handleSettingsChange} />
-                          <LocalizedInput field="calculatedAtCheckoutText" label="Calculated at Checkout" settings={settings} setSettings={setSettings} generating={generating} handleAIAutoCompleteField={handleAIAutoCompleteField} handleAITranslateField={handleAITranslateField} handleSettingsChange={handleSettingsChange} />
-                          <LocalizedInput field="shippingText" label="Shipping Label" settings={settings} setSettings={setSettings} generating={generating} handleAIAutoCompleteField={handleAIAutoCompleteField} handleAITranslateField={handleAITranslateField} handleSettingsChange={handleSettingsChange} />
-                          <LocalizedInput field="totalText" label="Total Label" settings={settings} setSettings={setSettings} generating={generating} handleAIAutoCompleteField={handleAIAutoCompleteField} handleAITranslateField={handleAITranslateField} handleSettingsChange={handleSettingsChange} />
-                        </div>
-                      </section>
-
-                      {/* Summary & Forms */}
-                      <section className="py-8 border-b border-gray-200/60 last:border-0">
-                        <div className="flex items-center gap-3 mb-8">
-                          <div className="w-10 h-10 rounded bg-brand-ink flex items-center justify-center">
-                            <Info className="w-5 h-5 text-white" />
-                          </div>
-                          <h3 className="text-lg font-semibold text-gray-900">Summary & Forms</h3>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <LocalizedInput field="orderSummaryText" label="Order Summary Title" settings={settings} setSettings={setSettings} generating={generating} handleAIAutoCompleteField={handleAIAutoCompleteField} handleAITranslateField={handleAITranslateField} handleSettingsChange={handleSettingsChange} />
-                          <LocalizedInput field="shippingInformationText" label="Shipping Info Title" settings={settings} setSettings={setSettings} generating={generating} handleAIAutoCompleteField={handleAIAutoCompleteField} handleAITranslateField={handleAITranslateField} handleSettingsChange={handleSettingsChange} />
-                          <LocalizedInput field="fullNameLabel" label="Full Name Label" settings={settings} setSettings={setSettings} generating={generating} handleAIAutoCompleteField={handleAIAutoCompleteField} handleAITranslateField={handleAITranslateField} handleSettingsChange={handleSettingsChange} />
-                          <LocalizedInput field="addressLabel" label="Address Label" settings={settings} setSettings={setSettings} generating={generating} handleAIAutoCompleteField={handleAIAutoCompleteField} handleAITranslateField={handleAITranslateField} handleSettingsChange={handleSettingsChange} />
-                          <LocalizedInput field="cityLabel" label="City Label" settings={settings} setSettings={setSettings} generating={generating} handleAIAutoCompleteField={handleAIAutoCompleteField} handleAITranslateField={handleAITranslateField} handleSettingsChange={handleSettingsChange} />
-                          <LocalizedInput field="postalCodeLabel" label="Postal Code Label" settings={settings} setSettings={setSettings} generating={generating} handleAIAutoCompleteField={handleAIAutoCompleteField} handleAITranslateField={handleAITranslateField} handleSettingsChange={handleSettingsChange} />
-                        </div>
-                      </section>
-
-                      {/* Payment & Status */}
-                      <section className="py-8 border-b border-gray-200/60 last:border-0">
-                        <div className="flex items-center gap-3 mb-8">
-                          <div className="w-10 h-10 rounded bg-brand-ink flex items-center justify-center">
-                            <CheckCircle2 className="w-5 h-5 text-white" />
-                          </div>
-                          <h3 className="text-lg font-semibold text-gray-900">Payment & Status</h3>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <LocalizedInput field="completePaymentText" label="Complete Payment" settings={settings} setSettings={setSettings} generating={generating} handleAIAutoCompleteField={handleAIAutoCompleteField} handleAITranslateField={handleAITranslateField} handleSettingsChange={handleSettingsChange} />
-                          <LocalizedInput field="processingText" label="Processing Text" settings={settings} setSettings={setSettings} generating={generating} handleAIAutoCompleteField={handleAIAutoCompleteField} handleAITranslateField={handleAITranslateField} handleSettingsChange={handleSettingsChange} />
-                          <LocalizedInput field="paymentSuccessText" label="Payment Success" settings={settings} setSettings={setSettings} generating={generating} handleAIAutoCompleteField={handleAIAutoCompleteField} handleAITranslateField={handleAITranslateField} handleSettingsChange={handleSettingsChange} />
-                          <LocalizedInput field="paymentErrorText" label="Payment Error" settings={settings} setSettings={setSettings} generating={generating} handleAIAutoCompleteField={handleAIAutoCompleteField} handleAITranslateField={handleAITranslateField} handleSettingsChange={handleSettingsChange} />
-                          <LocalizedInput field="orderPlacedSuccessText" label="Order Placed Success" settings={settings} setSettings={setSettings} generating={generating} handleAIAutoCompleteField={handleAIAutoCompleteField} handleAITranslateField={handleAITranslateField} handleSettingsChange={handleSettingsChange} />
                         </div>
                       </section>
                     </div>
                   )}
 
-                  {activeTab === 'footer' && (
-                    <div className="space-y-10">
-                      <section className="py-8 border-b border-gray-200/60 last:border-0">
-                        <div className="flex items-center gap-3 mb-8">
-                          <div className="w-10 h-10 rounded bg-brand-ink flex items-center justify-center">
-                            <AlignLeft className="w-5 h-5 text-white" />
-                          </div>
-                          <h3 className="text-lg font-semibold text-gray-900">Footer Content</h3>
-                        </div>
-                        
-                        <div className="space-y-6">
-                          <LocalizedInput field="footerDescription" label="Footer Description" type="textarea" settings={settings} setSettings={setSettings} generating={generating} handleAIAutoCompleteField={handleAIAutoCompleteField} handleAITranslateField={handleAITranslateField} handleSettingsChange={handleSettingsChange} />
-                          <LocalizedInput field="footerCopyright" label="Copyright Text" settings={settings} setSettings={setSettings} generating={generating} handleAIAutoCompleteField={handleAIAutoCompleteField} handleAITranslateField={handleAITranslateField} handleSettingsChange={handleSettingsChange} />
-                        </div>
-                      </section>
-
-                      <section className="py-8 border-b border-gray-200/60 last:border-0">
-                        <div className="flex items-center gap-3 mb-8">
-                          <div className="w-10 h-10 rounded bg-brand-ink flex items-center justify-center">
-                            <Share2 className="w-5 h-5 text-white" />
-                          </div>
-                          <h3 className="text-lg font-semibold text-gray-900">Social Media Links</h3>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                          {['Instagram', 'TikTok', 'Facebook', 'Twitter'].map(social => (
-                            <div key={social} className="space-y-1.5">
-                              <label className="block text-xs font-medium text-gray-500">{social}</label>
-                              <input
-                                type="text"
-                                name={`social${social}`}
-                                value={settings[`social${social}` as keyof StorefrontSettingsType] as string}
-                                onChange={handleSettingsChange}
-                                className="pl-10 pr-4 border-gray-200 focus:outline-none focus:ring-2 focus:ring-zinc-900 w-full sm:w-auto flex items-center justify-center bg-zinc-900 text-white hover:bg-zinc-800 border border-transparent px-6 py-3 text-sm font-medium rounded-lg transition-colors"
-                                placeholder={`https://${social.toLowerCase()}.com/...`}
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      </section>
-
-                      <section className="py-8 border-b border-gray-200/60 last:border-0">
-                        <div className="flex items-center justify-between mb-8">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded bg-brand-ink flex items-center justify-center">
-                              <Layout className="w-5 h-5 text-white" />
-                            </div>
-                            <h3 className="text-lg font-semibold text-gray-900">Footer Menu Sections</h3>
-                          </div>
-                          <button
-                            onClick={handleAddFooterSection}
-                            className="gap-2 w-full sm:w-auto flex items-center justify-center bg-zinc-900 text-white hover:bg-zinc-800 border border-transparent px-6 py-3 text-sm font-medium rounded-md transition-colors"
-                          >
-                            <Plus className="w-4 h-4" /> Add Section
-                          </button>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                          {(settings.footerSections || []).map((section, sectionIndex) => (
-                            <div key={sectionIndex} className="py-6 border-b border-gray-100 last:border-0 space-y-6 relative group">
-                              <div className="flex items-start justify-between gap-4">
-                                <div className="flex-1">
-                                  <LocalizedFieldInput 
-                                    value={section.title} 
-                                    label="Section Title" 
-                                    onChange={(newValue) => {
-                                      setSettings(prev => {
-                                        const newSections = [...prev.footerSections];
-                                        newSections[sectionIndex].title = newValue;
-                                        return { ...prev, footerSections: newSections };
-                                      });
-                                    }}
-                                    languages={settings.languages}
-                                  />
-                                </div>
-                                <button
-                                  onClick={() => handleRemoveFooterSection(sectionIndex)}
-                                  className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors mt-8 border border-gray-100"
-                                >
-                                  <Trash2 className="w-5 h-5" />
-                                </button>
-                              </div>
-
-                              <div className="space-y-4">
-                                {section.links.map((link, linkIndex) => (
-                                  <div key={linkIndex} className="bg-gray-50/50 p-4 rounded border border-gray-100 space-y-4 relative group/link">
-                                    <div className="flex justify-between items-center">
-                                      <span className="text-xs font-medium text-gray-500">Link #{linkIndex + 1}</span>
-                                      <button
-                                        onClick={() => handleRemoveFooterLink(sectionIndex, linkIndex)}
-                                        className="text-gray-300 hover:text-red-500 transition-colors"
-                                      >
-                                        <X className="w-4 h-4" />
-                                      </button>
-                                    </div>
-                                    <LocalizedFieldInput 
-                                      value={link.label} 
-                                      label="Link Label" 
-                                      onChange={(newValue) => {
-                                        setSettings(prev => {
-                                          const newSections = [...prev.footerSections];
-                                          newSections[sectionIndex].links[linkIndex].label = newValue;
-                                          return { ...prev, footerSections: newSections };
-                                        });
-                                      }}
-                                      languages={settings.languages}
-                                    />
-                                    <div className="space-y-1.5">
-                                      <label className="block text-xs font-medium text-gray-500">URL</label>
-                                      <input
-                                        type="text"
-                                        value={link.href}
-                                        onChange={(e) => handleUpdateFooterLink(sectionIndex, linkIndex, 'href', 'en', e.target.value)}
-                                        className="border-gray-200 font-mono focus:outline-none focus:ring-2 focus:ring-brand-ink/20 focus:border-brand-ink w-full sm:w-auto flex items-center justify-center bg-zinc-900 text-white hover:bg-zinc-800 border border-transparent px-6 py-3 text-sm font-medium rounded-lg transition-colors"
-                                        placeholder="/about, /contact, etc."
-                                      />
-                                    </div>
-                                  </div>
-                                ))}
-                                <button
-                                  onClick={() => handleAddFooterLink(sectionIndex)}
-                                  className="w-full py-3 border border-dashed border-gray-200 rounded text-xs font-medium text-gray-400 hover:text-gray-900 hover:border-brand-ink transition-all flex items-center justify-center gap-2"
-                                >
-                                  <Plus className="w-4 h-4" /> Add Link
-                                </button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </section>
-                    </div>
-                  )}
-
-                  {activeTab === 'translations' && (
-                    <TranslationManager settings={settings} setSettings={setSettings} />
-                  )}
+                  {activeTab === 'translations' && <TranslationManager settings={settings} setSettings={setSettings} />}
                 </motion.div>
               </AnimatePresence>
             </div>
           </div>
-        </div>
       </div>
-    );
-  }
+    </div>
+  );
+}

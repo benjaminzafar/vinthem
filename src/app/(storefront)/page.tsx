@@ -1,8 +1,7 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import { collection, onSnapshot, query, orderBy, doc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import Link from 'next/link';
+import { createClient } from '@/utils/supabase/client';
 
 import { useCartStore } from '@/store/useCartStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
@@ -12,7 +11,6 @@ import { Category } from '@/types';
 import { motion } from 'motion/react';
 import { ArrowRight, ShoppingBag, Check } from 'lucide-react';
 import { toast } from 'sonner';
-import { handleFirestoreError, OperationType } from '@/utils/firestoreErrorHandler';
 import { HeroSlider } from '@/components/HeroSlider';
 import { formatPrice } from '@/lib/currency';
 
@@ -20,40 +18,57 @@ export default function Storefront() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState('All');
   const { settings: storefrontSettings } = useSettingsStore();
   const { addItem } = useCartStore();
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const lang = i18n.language || 'en';
+  const supabase = createClient();
 
   useEffect(() => {
-    const qProducts = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
-    const unsubscribeProducts = onSnapshot(qProducts, (snapshot) => {
-      const productsData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Product[];
-      setProducts(productsData);
-      setLoading(false);
-    }, (error) => {
-      setLoading(false);
-      handleFirestoreError(error, OperationType.LIST, 'products');
-    });
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // Fetch products
+        const { data: productsData, error: productsError } = await supabase
+          .from('products')
+          .select('*, imageUrl:image_url, isFeatured:is_featured, createdAt:created_at')
+          .order('created_at', { ascending: false });
 
-    const qCategories = query(collection(db, 'categories'), orderBy('name'));
-    const unsubscribeCategories = onSnapshot(qCategories, (snapshot) => {
-      const categoriesData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Category[];
-      setCategories(categoriesData);
-    }, (error) => {
-      handleFirestoreError(error, OperationType.LIST, 'categories');
-    });
+        if (productsError) throw productsError;
+        setProducts(productsData as Product[]);
+
+        // Fetch categories
+        const { data: categoriesData, error: categoriesError } = await supabase
+          .from('categories')
+          .select('*, imageUrl:image_url, isFeatured:is_featured, showInHero:show_in_hero')
+          .order('name');
+
+        if (categoriesError) throw categoriesError;
+        setCategories(categoriesData as Category[]);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        toast.error("Failed to load store data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+
+    // Setup real-time listeners if desired, but for now just one-time fetch
+    const productsChannel = supabase
+      .channel('public:products')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, fetchData)
+      .subscribe();
+
+    const categoriesChannel = supabase
+      .channel('public:categories')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, fetchData)
+      .subscribe();
 
     return () => {
-      unsubscribeProducts();
-      unsubscribeCategories();
+      supabase.removeChannel(productsChannel);
+      supabase.removeChannel(categoriesChannel);
     };
   }, []);
 
@@ -164,8 +179,6 @@ export default function Storefront() {
             </div>
           </div>
 
-          {/* Filters Removed */}
-
           {categories.filter(c => c.isFeatured).length === 0 ? (
             <div className="text-center py-24 md:py-32 bg-white/50 rounded-2xl border border-white/20">
               <ShoppingBag className="w-12 h-12 md:w-16 md:h-16 text-gray-400 mx-auto mb-6" />
@@ -176,7 +189,7 @@ export default function Storefront() {
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 md:gap-x-8 gap-y-10 md:gap-y-16">
               {categories.filter(c => c.isFeatured).map((category, index) => (
                 <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
+                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: index * 0.05 }}

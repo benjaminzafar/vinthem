@@ -1,10 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { X, Star, Wand2, Image, Search } from 'lucide-react';
-import { icons } from 'lucide-react';
 import { Category } from '@/types';
-import { db } from '@/lib/firebase';
-import { collection, addDoc, updateDoc, doc } from 'firebase/firestore';
 import { toast } from 'sonner';
 import { CategoryDeleteModal } from './CategoryDeleteModal';
 import { IconSelector } from './IconSelector';
@@ -12,7 +9,7 @@ import { IconRenderer } from './IconRenderer';
 import { Product } from '@/store/useCartStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { getAI } from '@/lib/gemini';
-import { Type } from '@google/genai';
+import { createClient } from '@/utils/supabase/client';
 
 interface CategoryModalProps {
   isOpen: boolean;
@@ -24,6 +21,7 @@ interface CategoryModalProps {
 }
 
 export const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, category, categories, products, onUpload }) => {
+  const supabase = createClient();
   const { settings } = useSettingsStore();
   const [name, setName] = useState(category?.name || '');
   const [description, setDescription] = useState(category?.description || '');
@@ -65,15 +63,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, c
         model: 'gemini-3.1-pro-preview',
         contents: prompt,
         config: {
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              name: { type: Type.STRING },
-              description: { type: Type.STRING }
-            },
-            required: ['name', 'description']
-          }
+          responseMimeType: 'application/json'
         }
       });
       
@@ -145,16 +135,6 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, c
     }
   };
 
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUploading(true);
-    try {
-      const url = await onUpload(e);
-      if (url) setImageUrl(url);
-    } finally {
-      setUploading(false);
-    }
-  };
-
   const handleIconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setUploading(true);
     try {
@@ -168,19 +148,35 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, c
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const categoryData = { name, description, isFeatured, showInHero, parentId: parentId || null, imageUrl: imageUrl || null, iconUrl: iconUrl || null, translations };
-      console.log('Saving Category Data:', categoryData);
+      const categoryData = { 
+        name, 
+        description, 
+        is_featured: isFeatured, 
+        show_in_hero: showInHero, 
+        parent_id: parentId || null, 
+        image_url: imageUrl || null, 
+        icon_url: iconUrl || null, 
+        translations 
+      };
+      
       if (category?.id) {
-        await updateDoc(doc(db, 'categories', category.id!), categoryData);
+        const { error } = await supabase
+          .from('categories')
+          .update(categoryData)
+          .eq('id', category.id);
+        if (error) throw error;
         toast.success('Category updated successfully');
       } else {
-        await addDoc(collection(db, 'categories'), categoryData);
+        const { error } = await supabase
+          .from('categories')
+          .insert(categoryData);
+        if (error) throw error;
         toast.success('Category added successfully');
       }
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving category:', error);
-      toast.error('Failed to save category');
+      toast.error(error.message || 'Failed to save category');
     }
   };
 

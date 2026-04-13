@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { motion } from 'motion/react';
 import { formatPrice } from '@/lib/currency';
+import { createClient } from '@/utils/supabase/client';
 
 const stripePromise = fetch('/api/config/stripe-public-key')
   .then(res => res.json())
@@ -273,6 +274,7 @@ export default function Payment() {
   const [isMock, setIsMock] = useState(false);
   const { total, items } = useCartStore();
   const { user } = useAuthStore();
+  const supabase = createClient();
   const { i18n } = useTranslation();
   const { settings } = useSettingsStore();
   const lang = i18n.language || 'en';
@@ -286,7 +288,7 @@ export default function Payment() {
   }, []);
 
   const [shippingDetails, setShippingDetails] = useState({
-    name: user?.displayName || '',
+    name: user?.user_metadata?.full_name || '',
     email: user?.email || '',
     address: '',
     city: '',
@@ -315,7 +317,7 @@ export default function Payment() {
             items,
             shippingDetails,
             shippingCost,
-            userId: user?.uid,
+            userId: user?.id,
             currency: lang === 'en' ? 'usd' : (lang === 'fi' ? 'eur' : (lang === 'da' ? 'dkk' : 'sek'))
           }),
         })

@@ -3,9 +3,8 @@ import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { Category } from '@/types';
 import { Product } from '@/store/useCartStore';
-import { db } from '@/lib/firebase';
-import { doc, updateDoc, deleteDoc, writeBatch, collection } from 'firebase/firestore';
 import { toast } from 'sonner';
+import { createClient } from '@/utils/supabase/client';
 
 interface CategoryDeleteModalProps {
   isOpen: boolean;
@@ -19,37 +18,60 @@ interface CategoryDeleteModalProps {
 export const CategoryDeleteModal: React.FC<CategoryDeleteModalProps> = ({ 
   isOpen, onClose, category, categories, products, onDeleted 
 }) => {
+  const supabase = createClient();
   const [action, setAction] = useState<'reassign' | 'delete'>('reassign');
   const [reassignTo, setReassignTo] = useState('');
 
   const associatedProducts = products.filter(p => p.categoryId === category.id || p.parentCategoryId === category.id);
 
   const handleConfirm = async () => {
-    const batch = writeBatch(db);
-    
+    const toastId = toast.loading('Processing category deletion...');
     try {
       if (action === 'delete') {
-        associatedProducts.forEach(p => {
-          batch.delete(doc(db, 'products', p.id!));
-        });
+        // Delete all products in this category
+        const productIds = associatedProducts.map(p => p.id!);
+        if (productIds.length > 0) {
+          const { error: pError } = await supabase
+            .from('products')
+            .delete()
+            .in('id', productIds);
+          if (pError) throw pError;
+        }
       } else if (action === 'reassign' && reassignTo) {
-        associatedProducts.forEach(p => {
-          batch.update(doc(db, 'products', p.id!), { 
-            categoryId: p.categoryId === category.id ? reassignTo : p.categoryId,
-            parentCategoryId: p.parentCategoryId === category.id ? reassignTo : p.parentCategoryId
-          });
-        });
+        // Reassign products to a new category
+        const directProductIds = associatedProducts.filter(p => p.categoryId === category.id).map(p => p.id!);
+        const parentProductIds = associatedProducts.filter(p => p.parentCategoryId === category.id).map(p => p.id!);
+
+        if (directProductIds.length > 0) {
+          const { error: dError } = await supabase
+            .from('products')
+            .update({ category_id: reassignTo })
+            .in('id', directProductIds);
+          if (dError) throw dError;
+        }
+
+        if (parentProductIds.length > 0) {
+          const { error: paError } = await supabase
+            .from('products')
+            .update({ parent_category_id: reassignTo })
+            .in('id', parentProductIds);
+          if (paError) throw paError;
+        }
       }
 
-      batch.delete(doc(db, 'categories', category.id!));
-      await batch.commit();
+      // Finally delete the category itself
+      const { error: cError } = await supabase
+        .from('categories')
+        .delete()
+        .eq('id', category.id!);
+      if (cError) throw cError;
       
-      toast.success('Category deleted successfully');
+      toast.success('Category deleted successfully', { id: toastId });
       onDeleted();
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting category:', error);
-      toast.error('Failed to delete category');
+      toast.error(error.message || 'Failed to delete category', { id: toastId });
     }
   };
 

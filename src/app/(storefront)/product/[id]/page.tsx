@@ -3,9 +3,8 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { BackButton } from '@/components/BackButton';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { createClient } from '@/utils/supabase/client';
 
-import { doc, getDoc, collection, getDocs, query, where, limit } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import { Product, ProductVariant, useCartStore } from '@/store/useCartStore';
 import { ArrowLeft, ShoppingBag, Share2, Star, CheckCircle2, X } from 'lucide-react';
 import { FaTelegramPlane, FaFacebook, FaWhatsapp } from 'react-icons/fa';
@@ -32,73 +31,69 @@ export default function ProductDetail() {
   const { settings } = useSettingsStore();
   const { i18n } = useTranslation();
   const lang = i18n.language || 'en';
+  const supabase = createClient();
 
   useEffect(() => {
     const fetchProduct = async () => {
       if (!id) return;
       setLoading(true);
       try {
-        const docRef = doc(db, 'products', id);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          const data = { id: docSnap.id, ...docSnap.data() } as Product;
-          setProduct(data);
-          setActiveImage(data.imageUrl || '');
-          
-          // Initialize selected options and variant
-          if (data.options && data.options.length > 0) {
-            const initialOptions: Record<string, string> = {};
-            data.options.forEach(opt => {
-              if (opt.values && opt.values.length > 0) {
-                initialOptions[opt.name] = opt.values[0];
-              }
-            });
-            setSelectedOptions(initialOptions);
-            
-            if (data.variants && data.variants.length > 0) {
-              const matchingVariant = data.variants.find(v => 
-                v.options && Object.keys(initialOptions).every(k => v.options![k] === initialOptions[k])
-              );
-              if (matchingVariant) {
-                setSelectedVariant(matchingVariant);
-                if (matchingVariant.imageUrl) setActiveImage(matchingVariant.imageUrl);
-              }
-            }
-          } else if (data.variants && data.variants.length > 0) {
-            setSelectedVariant(data.variants[0]);
-            if (data.variants[0].imageUrl) {
-              setActiveImage(data.variants[0].imageUrl);
-            }
-          }
+        const { data: productData, error } = await supabase
+          .from('products')
+          .select('*, imageUrl:image_url, isFeatured:is_featured, createdAt:created_at')
+          .eq('id', id)
+          .single();
 
-          // Fetch related products
-          console.log("Fetching products to find related for category:", data.category);
-          const q = query(
-            collection(db, 'products'),
-            limit(20) // Fetch more products to increase chance of finding related ones
-          );
-          const querySnapshot = await getDocs(q);
-          console.log("Query snapshot size:", querySnapshot.size);
-          const related: Product[] = [];
-          querySnapshot.forEach((doc) => {
-            const p = { id: doc.id, ...doc.data() } as Product;
-            if (p.category === data.category && doc.id !== data.id) {
-              related.push(p);
+        if (error) throw error;
+        
+        const data = productData as Product;
+        setProduct(data);
+        setActiveImage(data.imageUrl || '');
+        
+        // Initialize selected options and variant
+        if (data.options && data.options.length > 0) {
+          const initialOptions: Record<string, string> = {};
+          data.options.forEach(opt => {
+            if (opt.values && opt.values.length > 0) {
+              initialOptions[opt.name] = opt.values[0];
             }
           });
+          setSelectedOptions(initialOptions);
           
-          // Fallback: if no related products found, just take any 3 products
-          if (related.length === 0) {
-            querySnapshot.forEach((doc) => {
-              const p = { id: doc.id, ...doc.data() } as Product;
-              if (doc.id !== data.id && related.length < 3) {
-                related.push(p);
-              }
-            });
+          if (data.variants && data.variants.length > 0) {
+            const matchingVariant = data.variants.find(v => 
+              v.options && Object.keys(initialOptions).every(k => v.options![k] === initialOptions[k])
+            );
+            if (matchingVariant) {
+              setSelectedVariant(matchingVariant);
+              if (matchingVariant.imageUrl) setActiveImage(matchingVariant.imageUrl);
+            }
           }
-          
-          console.log("Related products found:", related);
-          setRelatedProducts(related.slice(0, 3));
+        } else if (data.variants && data.variants.length > 0) {
+          setSelectedVariant(data.variants[0]);
+          if (data.variants[0].imageUrl) {
+            setActiveImage(data.variants[0].imageUrl);
+          }
+        }
+
+        // Fetch related products
+        const { data: relatedData } = await supabase
+          .from('products')
+          .select('*, imageUrl:image_url, isFeatured:is_featured, createdAt:created_at')
+          .eq('category', data.category)
+          .neq('id', data.id)
+          .limit(4);
+
+        if (relatedData) {
+          setRelatedProducts(relatedData as Product[]);
+        } else {
+          // Fallback
+          const { data: fallbackData } = await supabase
+            .from('products')
+            .select('*, imageUrl:image_url, isFeatured:is_featured, createdAt:created_at')
+            .neq('id', data.id)
+            .limit(4);
+          if (fallbackData) setRelatedProducts(fallbackData as Product[]);
         }
       } catch (error) {
         console.error("Error fetching product:", error);

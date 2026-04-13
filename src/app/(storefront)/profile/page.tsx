@@ -7,12 +7,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { motion, AnimatePresence } from 'motion/react';
-import { collection, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
-import { signOut } from 'firebase/auth';
-import { db, auth } from '@/lib/firebase';
-import { handleFirestoreError, OperationType } from '@/utils/firestoreErrorHandler';
+import { createClient } from '@/utils/supabase/client';
 import { toast } from 'sonner';
 import { formatPrice } from '@/lib/currency';
+import { useSettingsStore } from '@/store/useSettingsStore';
 
 interface Order {
   id: string;
@@ -38,10 +36,8 @@ interface Address {
   isDefault: boolean;
 }
 
-import { useSettingsStore } from '@/store/useSettingsStore';
-
 export default function CustomerPanel() {
-  const { user } = useAuthStore();
+  const { user, setUser, setIsAdmin } = useAuthStore();
   const { t, i18n } = useTranslation();
   const lang = i18n.language || 'en';
   const { settings } = useSettingsStore();
@@ -65,50 +61,61 @@ export default function CustomerPanel() {
     isDefault: false
   });
 
+  const supabase = createClient();
+
   useEffect(() => {
     if (!user) return;
 
-    const q = query(
-      collection(db, 'orders'),
-      where('userId', '==', user.uid)
-    );
+    const fetchOrders = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('orders')
+          .select('*, orderId:order_id, createdAt:created_at, shippingCost:shipping_cost')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
 
-    const unsubscribeOrders = onSnapshot(q, (snapshot) => {
-      const fetchedOrders = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Order[];
-      
-      // Sort client-side to avoid needing a composite index
-      fetchedOrders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-      
-      setOrders(fetchedOrders);
-      setLoading(false);
-    }, (error) => {
-      setLoading(false);
-      handleFirestoreError(error, OperationType.LIST, 'orders');
-    });
+        if (error) throw error;
+        setOrders(data as Order[]);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    const qAddresses = query(
-      collection(db, 'addresses'),
-      where('userId', '==', user.uid)
-    );
+    const fetchAddresses = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('addresses')
+          .select('*, userId:user_id, firstName:first_name, lastName:last_name, postalCode:postal_code, isDefault:is_default')
+          .eq('user_id', user.id);
 
-    const unsubscribeAddresses = onSnapshot(qAddresses, (snapshot) => {
-      const fetchedAddresses = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Address[];
-      setAddresses(fetchedAddresses);
-      setAddressesLoading(false);
-    }, (error) => {
-      setAddressesLoading(false);
-      handleFirestoreError(error, OperationType.LIST, 'addresses');
-    });
+        if (error) throw error;
+        setAddresses(data as Address[]);
+      } catch (error) {
+        console.error("Error fetching addresses:", error);
+      } finally {
+        setAddressesLoading(false);
+      }
+    };
+
+    fetchOrders();
+    fetchAddresses();
+
+    // Subscribe to changes
+    const ordersChannel = supabase
+      .channel(`orders:${user.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders', filter: `user_id=eq.${user.id}` }, fetchOrders)
+      .subscribe();
+
+    const addressesChannel = supabase
+      .channel(`addresses:${user.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'addresses', filter: `user_id=eq.${user.id}` }, fetchAddresses)
+      .subscribe();
 
     return () => {
-      unsubscribeOrders();
-      unsubscribeAddresses();
+      supabase.removeChannel(ordersChannel);
+      supabase.removeChannel(addressesChannel);
     };
   }, [user]);
 
@@ -120,7 +127,7 @@ export default function CustomerPanel() {
         </div>
         <h2 className="text-4xl font-sans text-brand-ink mb-4 tracking-tight">{settings.accessRestrictedText?.[lang] || 'Access Restricted'}</h2>
         <p className="text-lg text-brand-muted mb-8">{settings.pleaseLoginText?.[lang] || 'Please log in to view your account.'}</p>
-        <button onClick={() => navigate.push('/login')} className="bg-brand-ink text-white px-10 py-4 rounded-2xl font-medium text-sm uppercase tracking-wide hover:bg-gray-800 transition-all">
+        <button onClick={() => navigate.push('/auth')} className="bg-brand-ink text-white px-10 py-4 rounded-2xl font-medium text-sm uppercase tracking-wide hover:bg-gray-800 transition-all">
           Log In
         </button>
       </div>
@@ -132,7 +139,6 @@ export default function CustomerPanel() {
   };
 
   const generateMockTracking = (orderId: string) => {
-    // Generate a consistent mock tracking number based on order ID
     const hash = orderId.split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a }, 0);
     return `PN${Math.abs(hash).toString().substring(0, 9)}SE`;
   };
@@ -162,65 +168,86 @@ export default function CustomerPanel() {
     if (!user) return;
 
     try {
-      // If setting as default, unset other defaults first
       if (addressForm.isDefault) {
-        const defaultAddresses = addresses.filter(a => a.isDefault && a.id !== editingAddressId);
-        for (const addr of defaultAddresses) {
-          await updateDoc(doc(db, 'addresses', addr.id!), { isDefault: false });
-        }
+        await supabase
+          .from('addresses')
+          .update({ is_default: false })
+          .eq('user_id', user.id);
       }
 
-      // If it's the first address, make it default automatically
       const isFirstAddress = addresses.length === 0;
       const finalIsDefault = addressForm.isDefault || isFirstAddress;
 
       const addressData = {
-        ...addressForm,
-        isDefault: finalIsDefault,
-        userId: user.uid
+        first_name: addressForm.firstName,
+        last_name: addressForm.lastName,
+        street: addressForm.street,
+        city: addressForm.city,
+        postal_code: addressForm.postalCode,
+        country: addressForm.country,
+        is_default: finalIsDefault,
+        user_id: user.id
       };
 
       if (editingAddressId) {
-        await updateDoc(doc(db, 'addresses', editingAddressId), addressData);
+        const { error } = await supabase
+          .from('addresses')
+          .update(addressData)
+          .eq('id', editingAddressId);
+        if (error) throw error;
         toast.success(settings.addressUpdatedText?.[lang] || 'Address updated successfully');
       } else {
-        await addDoc(collection(db, 'addresses'), addressData);
+        const { error } = await supabase
+          .from('addresses')
+          .insert(addressData);
+        if (error) throw error;
         toast.success(settings.addressAddedText?.[lang] || 'Address added successfully');
       }
       resetAddressForm();
     } catch (error) {
-      handleFirestoreError(error, editingAddressId ? OperationType.UPDATE : OperationType.CREATE, 'addresses');
+      console.error("Error saving address:", error);
       toast.error(settings.failedToSaveAddressText?.[lang] || 'Failed to save address');
     }
   };
 
   const handleDeleteAddress = async (id: string) => {
     try {
-      await deleteDoc(doc(db, 'addresses', id));
+      const { error } = await supabase
+        .from('addresses')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
       toast.success(settings.addressDeletedText?.[lang] || 'Address deleted');
     } catch (error) {
-      handleFirestoreError(error, OperationType.DELETE, 'addresses');
+      console.error("Error deleting address:", error);
       toast.error(settings.failedToDeleteAddressText?.[lang] || 'Failed to delete address');
     }
   };
 
   const handleSetDefaultAddress = async (id: string) => {
     try {
-      const defaultAddresses = addresses.filter(a => a.isDefault);
-      for (const addr of defaultAddresses) {
-        await updateDoc(doc(db, 'addresses', addr.id!), { isDefault: false });
-      }
-      await updateDoc(doc(db, 'addresses', id), { isDefault: true });
+      await supabase
+        .from('addresses')
+        .update({ is_default: false })
+        .eq('user_id', user.id);
+      
+      const { error } = await supabase
+        .from('addresses')
+        .update({ is_default: true })
+        .eq('id', id);
+      if (error) throw error;
       toast.success(settings.defaultAddressUpdatedText?.[lang] || 'Default address updated');
     } catch (error) {
-      handleFirestoreError(error, OperationType.UPDATE, 'addresses');
+      console.error("Error setting default address:", error);
       toast.error(settings.failedToUpdateDefaultAddressText?.[lang] || 'Failed to update default address');
     }
   };
 
   const handleSignOut = async () => {
     try {
-      await signOut(auth);
+      await supabase.auth.signOut();
+      setUser(null);
+      setIsAdmin(false);
       navigate.push('/');
       toast.success('Signed out successfully');
     } catch (error) {
@@ -230,7 +257,6 @@ export default function CustomerPanel() {
 
   return (
     <div className="bg-[#fcfcfc] min-h-screen pb-24 font-sans">
-      {/* Premium Header */}
       <div className="pt-24 pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <motion.h1 
           initial={{ opacity: 0, y: 20 }}
@@ -257,9 +283,7 @@ export default function CustomerPanel() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row gap-12 lg:gap-16">
-          {/* Minimal Sidebar */}
           <div className="w-full lg:w-64 shrink-0">
-            {/* Mobile Dropdown */}
             <div className="lg:hidden mb-6 relative">
               <select
                 value={activeTab}
@@ -275,7 +299,6 @@ export default function CustomerPanel() {
               </div>
             </div>
 
-            {/* Desktop Sidebar */}
             <div className="hidden lg:block sticky top-32 space-y-2 py-8 border-b border-gray-200/60 last:border-0">
               <button
                 onClick={() => setActiveTab('orders')}
@@ -322,7 +345,6 @@ export default function CustomerPanel() {
             </div>
           </div>
 
-          {/* Content Area */}
           <div className="flex-1">
             {activeTab === 'orders' && (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
@@ -351,7 +373,6 @@ export default function CustomerPanel() {
                       
                       return (
                         <div key={order.id} className="border-b border-gray-200/60 last:border-0 overflow-hidden transition-shadow">
-                          {/* Order Header (Clickable) */}
                           <div 
                             className="p-6 sm:p-8 cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-6 group transition-colors"
                             onClick={() => setExpandedOrderId(isExpanded ? null : order.id)}
@@ -363,7 +384,7 @@ export default function CustomerPanel() {
                               </div>
                               <div>
                                 <p className="text-xs text-brand-muted uppercase tracking-widest font-bold mb-1">{settings.dateLabelText?.[lang] || 'Date'}</p>
-                                <p className="text-sm text-brand-ink font-medium">{new Date(order.createdAt).toLocaleDateString(lang === 'sv' ? 'sv-SE' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                                <p className="text-sm text-brand-ink font-medium">{order.createdAt ? new Date(order.createdAt).toLocaleDateString(lang === 'sv' ? 'sv-SE' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}</p>
                               </div>
                               <div className="hidden sm:block">
                                 <p className="text-xs text-brand-muted uppercase tracking-widest font-bold mb-1">{settings.totalLabelText?.[lang] || 'Total'}</p>
@@ -389,7 +410,6 @@ export default function CustomerPanel() {
                             </div>
                           </div>
                           
-                          {/* Expanded Details */}
                           <AnimatePresence>
                             {isExpanded && (
                               <motion.div 
@@ -399,7 +419,6 @@ export default function CustomerPanel() {
                                 className="border-t border-gray-100 bg-gray-50/50"
                               >
                                 <div className="p-6 sm:p-8">
-                                  {/* Status Timeline */}
                                   <div className="mb-12 max-w-2xl mx-auto px-4">
                                     <div className="flex items-center justify-between relative">
                                       <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-gray-200 z-0 rounded-full"></div>
@@ -431,7 +450,6 @@ export default function CustomerPanel() {
                                   </div>
 
                                   <div className="flex flex-col xl:flex-row gap-8 xl:gap-12 mt-16">
-                                    {/* Items List */}
                                     <div className="flex-1">
                                       <h4 className="text-sm font-bold text-brand-ink uppercase tracking-wider mb-6 flex items-center justify-between">
                                         <span>{settings.orderItemsText?.[lang] || 'Order Items'}</span>
@@ -462,7 +480,6 @@ export default function CustomerPanel() {
                                         ))}
                                       </div>
                                       
-                                      {/* Order Totals */}
                                       <div className="mt-6 py-6 border-b border-gray-200/60 last:border-0">
                                         <div className="space-y-3 text-sm">
                                           <div className="flex justify-between text-brand-muted">
@@ -481,9 +498,7 @@ export default function CustomerPanel() {
                                       </div>
                                     </div>
                                     
-                                    {/* Shipping & Actions */}
                                     <div className="w-full xl:w-[340px] shrink-0 space-y-6">
-                                      {/* PostNord Tracking Widget */}
                                       <div className="py-6 relative overflow-hidden border-b border-gray-200/60 last:border-0">
                                         <div className="absolute top-0 left-0 w-1.5 h-full bg-[#00529C]"></div>
                                         <div className="flex items-center justify-between mb-6">
@@ -515,7 +530,6 @@ export default function CustomerPanel() {
                                         )}
                                       </div>
                                       
-                                      {/* Returns & Refunds Widget */}
                                       <div className="py-6 border-b border-gray-200/60 last:border-0">
                                         <div className="flex items-center space-x-3 mb-4">
                                           <div className="w-10 h-10 rounded-2xl bg-gray-50 flex items-center justify-center">
@@ -559,13 +573,13 @@ export default function CustomerPanel() {
                 <h2 className="text-3xl font-sans text-brand-ink mb-8 tracking-tight">{settings.profileDetailsTitleText?.[lang] || 'Profile Details'}</h2>
                 <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-6 sm:space-y-0 sm:space-x-8 mb-10 pb-10 border-b border-gray-100">
                   <div className="relative">
-                    <img src={(user.photoURL && user.photoURL.trim() !== "") ? user.photoURL : 'https://ui-avatars.com/api/?name=' + (user.displayName || 'User') + '&background=141414&color=fff'} alt="Profile" className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-md" referrerPolicy="no-referrer" />
+                    <img src={(user.user_metadata?.avatar_url || user.user_metadata?.picture) ? (user.user_metadata?.avatar_url || user.user_metadata?.picture) : 'https://ui-avatars.com/api/?name=' + (user.user_metadata?.full_name || 'User') + '&background=141414&color=fff'} alt="Profile" className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-md" referrerPolicy="no-referrer" />
                     <button className="absolute bottom-0 right-0 bg-white border border-gray-200 p-2.5 rounded-full hover:bg-gray-50 text-brand-ink transition-colors shadow-sm">
                       <Edit className="w-4 h-4" />
                     </button>
                   </div>
                   <div className="text-center sm:text-left pt-2">
-                    <h3 className="text-3xl font-sans text-brand-ink mb-2">{user.displayName || settings.guestUserText?.[lang] || 'Guest User'}</h3>
+                    <h3 className="text-3xl font-sans text-brand-ink mb-2">{user.user_metadata?.full_name || settings.guestUserText?.[lang] || 'Guest User'}</h3>
                     <p className="text-brand-muted text-lg">{user.email}</p>
                     <span className="inline-block mt-4 px-4 py-1.5 bg-green-50 text-green-700 text-xs font-bold uppercase tracking-wider rounded-2xl">{settings.verifiedAccountText?.[lang] || 'Verified Account'}</span>
                   </div>
@@ -575,7 +589,7 @@ export default function CustomerPanel() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div>
                       <label className="block text-xs font-bold text-brand-muted uppercase tracking-wider mb-2">{settings.fullNameLabelText?.[lang] || 'Full Name'}</label>
-                      <input type="text" disabled value={user.displayName || ''} className="w-full border-gray-200 rounded-2xl bg-gray-50 px-4 py-3.5 border text-brand-ink focus:ring-0 cursor-not-allowed font-medium" />
+                      <input type="text" disabled value={user.user_metadata?.full_name || ''} className="w-full border-gray-200 rounded-2xl bg-gray-50 px-4 py-3.5 border text-brand-ink focus:ring-0 cursor-not-allowed font-medium" />
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-brand-muted uppercase tracking-wider mb-2">{settings.emailAddressLabelText?.[lang] || 'Email Address'}</label>

@@ -3,8 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { createClient } from '@/utils/supabase/client';
 import { ArrowLeft, Calendar, User } from 'lucide-react';
 import { BlogPost } from '@/types';
 import { motion } from 'motion/react';
@@ -18,16 +17,20 @@ export default function BlogPostDetail() {
   const { settings } = useSettingsStore();
   const { i18n } = useTranslation();
   const lang = i18n.language || 'en';
+  const supabase = createClient();
 
   useEffect(() => {
     const fetchPost = async () => {
       if (!id) return;
       try {
-        const docRef = doc(db, 'blogs', id);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setPost({ id: docSnap.id, ...docSnap.data() } as BlogPost);
-        }
+        const { data, error } = await supabase
+          .from('blog_posts')
+          .select('*, imageUrl:image_url, createdAt:created_at')
+          .eq('id', id)
+          .single();
+
+        if (error) throw error;
+        setPost(data as BlogPost);
       } catch (error) {
         console.error("Error fetching blog post:", error);
       } finally {
@@ -75,7 +78,7 @@ export default function BlogPostDetail() {
         <div className="flex items-center text-brand-muted space-x-6 mb-10 pb-10 border-b border-gray-200">
           <div className="flex items-center">
             <Calendar className="w-5 h-5 mr-2" />
-            <span>{new Date(post.createdAt).toLocaleDateString(lang === 'sv' ? 'sv-SE' : lang)}</span>
+            <span>{post.createdAt ? new Date(post.createdAt).toLocaleDateString(lang === 'sv' ? 'sv-SE' : lang) : ''}</span>
           </div>
           <div className="flex items-center">
             <User className="w-5 h-5 mr-2" />

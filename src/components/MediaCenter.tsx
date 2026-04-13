@@ -1,29 +1,33 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { ref, listAll, getMetadata, deleteObject, getDownloadURL } from 'firebase/storage';
-import { storage } from '@/lib/firebase';
 import { Trash2, Image as ImageIcon, Loader2, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
+import { createClient } from '@/utils/supabase/client';
 
 export function MediaCenter() {
+  const supabase = createClient();
   const [files, setFiles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [storageUsage, setStorageUsage] = useState(0);
 
   const fetchFiles = async () => {
     setLoading(true);
-    console.log('Fetching files...');
+    console.log('Fetching files from Supabase...');
     
     try {
-      const storageRef = ref(storage);
-      console.log('Storage ref created:', storageRef.fullPath);
-      
-      const result = await listAll(storageRef);
-      console.log('listAll result:', result);
-      
-      const items = result.items;
-      
-      if (items.length === 0) {
+      // Supabase storage list
+      const { data, error } = await supabase
+        .storage
+        .from('uploads')
+        .list('', {
+          limit: 100,
+          offset: 0,
+          sortBy: { column: 'name', order: 'desc' },
+        });
+
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
         setFiles([]);
         setStorageUsage(0);
         setLoading(false);
@@ -31,50 +35,28 @@ export function MediaCenter() {
       }
 
       let totalSize = 0;
-      const fileDetails = [];
-      
-      // Process in batches to avoid rate limiting
-      const BATCH_SIZE = 3;
-      const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-      
-      for (let i = 0; i < items.length; i += BATCH_SIZE) {
-        if (i > 0) await delay(1000); // 1000ms delay between batches
-        const batch = items.slice(i, i + BATCH_SIZE);
-        const batchDetails = await Promise.all(batch.map(async (itemRef: any) => {
-          try {
-            // Use a timeout for metadata and download URL to avoid hanging
-            const metadataPromise = getMetadata(itemRef);
-            const urlPromise = getDownloadURL(itemRef);
-            
-            const [metadata, url] = await Promise.all([metadataPromise, urlPromise]);
-            
-            return {
-              name: itemRef.name,
-              size: metadata.size,
-              contentType: metadata.contentType,
-              url,
-              ref: itemRef
-            };
-          } catch (error) {
-            console.error(`Error fetching details for ${itemRef.name}:`, error);
-            return null;
-          }
-        }));
-        
-        const successfulDetails = batchDetails.filter(detail => detail !== null);
-        fileDetails.push(...successfulDetails);
-        totalSize += successfulDetails.reduce((sum, file) => sum! + file!.size, 0);
-      }
+      const fileDetails = data.map(file => {
+        const { data: { publicUrl } } = supabase
+          .storage
+          .from('uploads')
+          .getPublicUrl(file.name);
+
+        totalSize += file.metadata?.size || 0;
+
+        return {
+          name: file.name,
+          size: file.metadata?.size || 0,
+          contentType: file.metadata?.mimetype,
+          url: publicUrl,
+          id: file.id
+        };
+      });
       
       setFiles(fileDetails);
       setStorageUsage(totalSize);
     } catch (error: any) {
       console.error('Error fetching files:', error);
-      if (error.code === 'storage/retry-limit-exceeded') {
-        toast.error('Storage connection timed out. Please check your internet or Firebase setup.');
-      } else {
-        toast.error('Failed to load media files: ' + (error.message || String(error)));
-      }
+      toast.error('Failed to load media files: ' + (error.message || String(error)));
     } finally {
       setLoading(false);
     }
@@ -84,14 +66,21 @@ export function MediaCenter() {
     fetchFiles();
   }, []);
 
-  const handleDelete = async (fileRef: any) => {
+  const handleDelete = async (fileName: string) => {
+    const toastId = toast.loading('Deleting file...');
     try {
-      await deleteObject(fileRef);
-      toast.success('File deleted');
+      const { error } = await supabase
+        .storage
+        .from('uploads')
+        .remove([fileName]);
+      
+      if (error) throw error;
+      
+      toast.success('File deleted', { id: toastId });
       fetchFiles();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting file:', error);
-      toast.error('Failed to delete file');
+      toast.error('Failed to delete file: ' + error.message, { id: toastId });
     }
   };
 
@@ -126,12 +115,18 @@ export function MediaCenter() {
               <p className="text-xs truncate" title={file.name}>{file.name}</p>
               <div className="flex justify-between items-center">
                 <span className="text-xs text-gray-500">{formatSize(file.size)}</span>
-                <button onClick={() => handleDelete(file.ref)} className="text-red-500 hover:text-red-700">
+                <button onClick={() => handleDelete(file.name)} className="text-red-500 hover:text-red-700">
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
             </div>
           ))}
+          {files.length === 0 && !loading && (
+             <div className="col-span-full py-20 text-center text-zinc-500">
+                <ImageIcon className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                <p>No media files found in 'uploads' bucket.</p>
+             </div>
+          )}
         </div>
       )}
     </div>

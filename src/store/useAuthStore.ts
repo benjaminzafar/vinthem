@@ -1,6 +1,6 @@
 "use client";
 import { create } from 'zustand';
-import { User } from 'firebase/auth';
+import type { User } from '@supabase/supabase-js';
 
 interface AuthStore {
   user: User | null;

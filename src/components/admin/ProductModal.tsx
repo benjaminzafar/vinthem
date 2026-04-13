@@ -6,9 +6,7 @@ import { X, DollarSign, Package, Palette, Languages, ChevronUp, ChevronDown, Spa
 import { SearchableSelect } from '../SearchableSelect';
 import { VariantEditor } from '../VariantEditor';
 import { toast } from 'sonner';
-import { db, storage } from '@/lib/firebase';
-import { doc, updateDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { createClient } from '@/utils/supabase/client';
 import { getAI } from '@/lib/gemini';
 
 interface ProductModalProps {
@@ -20,6 +18,7 @@ interface ProductModalProps {
 }
 
 export function ProductModal({ isOpen, onClose, product, categories, settings }: ProductModalProps) {
+  const supabase = createClient();
   const [formData, setFormData] = useState<Partial<Product>>({
     title: '',
     description: '',
@@ -159,7 +158,7 @@ export function ProductModal({ isOpen, onClose, product, categories, settings }:
       }`;
 
       const aiResponse = await ai.models.generateContent({
-        model: 'gemini-2.5-flash-preview',
+        model: 'gemini-2.0-flash-exp',
         contents: [
           { text: prompt },
           { inlineData: { data: base64Data, mimeType: blob.type } }
@@ -213,16 +212,10 @@ export function ProductModal({ isOpen, onClose, product, categories, settings }:
       Title: ${formData.title}
       Description: ${formData.description}
       
-      Return ONLY a JSON object where keys are language codes and values are objects with 'title' and 'description'.
-      Example:
-      {
-        "sv": { "title": "...", "description": "..." },
-        "en": { "title": "...", "description": "..." },
-        "fi": { "title": "...", "description": "..." }
-      }`;
+      Return ONLY a JSON object where keys are language codes and values are objects with 'title' and 'description'.`;
 
       const aiResponse = await ai.models.generateContent({
-        model: 'gemini-2.5-flash-preview',
+        model: 'gemini-2.0-flash-exp',
         contents: prompt,
         config: {
           responseMimeType: 'application/json',
@@ -255,26 +248,48 @@ export function ProductModal({ isOpen, onClose, product, categories, settings }:
     
     try {
       const productData = {
-        ...formData,
+        title: formData.title,
+        description: formData.description,
         price: Number(formData.price),
         stock: Number(formData.stock),
-        discountPrice: formData.discountPrice ? Number(formData.discountPrice) : 0,
+        sku: formData.sku,
+        image_url: formData.imageUrl,
+        category_id: formData.categoryId,
+        category_name: formData.category,
+        variants: formData.variants,
+        translations: formData.translations,
+        sizes: formData.sizes,
+        colors: formData.colors,
+        tags: formData.tags,
+        is_featured: formData.isFeatured || false,
+        is_new_arrival: formData.isNewArrival || false,
+        is_best_seller: formData.isBestSeller || false,
+        is_coming_soon: formData.isComingSoon || false,
+        is_sale: formData.isSale || false,
+        discount_price: formData.discountPrice ? Number(formData.discountPrice) : 0,
+        additional_images: formData.additionalImages || [],
+        weight: formData.weight || 0,
+        shipping_class: formData.shippingClass || ''
       };
 
       if (product) {
-        await updateDoc(doc(db, 'products', product.id!), productData);
+        const { error } = await supabase
+          .from('products')
+          .update(productData)
+          .eq('id', product.id);
+        if (error) throw error;
         toast.success('Product updated successfully', { id: toastId });
       } else {
-        await addDoc(collection(db, 'products'), {
-          ...productData,
-          createdAt: serverTimestamp()
-        });
+        const { error } = await supabase
+          .from('products')
+          .insert([productData]);
+        if (error) throw error;
         toast.success('Product added successfully', { id: toastId });
       }
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving product:", error);
-      toast.error('Failed to save product', { id: toastId });
+      toast.error(error.message || 'Failed to save product', { id: toastId });
     }
   };
 

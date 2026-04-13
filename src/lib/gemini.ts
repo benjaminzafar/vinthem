@@ -1,10 +1,14 @@
-import { auth } from '@/lib/firebase';
+import { createClient } from '@/utils/supabase/client';
 
 export function getAI() {
+  const supabase = createClient();
+  
   return {
     models: {
       generateContent: async (params: any) => {
-        const token = await auth.currentUser?.getIdToken();
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token;
+        
         const response = await fetch('/api/ai/generate', {
           method: 'POST',
           headers: { 

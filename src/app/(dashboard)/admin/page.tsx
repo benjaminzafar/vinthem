@@ -3,9 +3,8 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useAuthStore } from '@/store/useAuthStore';
 import { useRouter } from 'next/navigation';
 
-import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, onSnapshot, query, orderBy, where, serverTimestamp, setDoc, writeBatch } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage, auth } from '@/lib/firebase';
+import { createClient } from '@/utils/supabase/client';
+const supabase = createClient();
 import { GoogleGenAI, Type } from '@google/genai';
 import { Product } from '@/store/useCartStore';
 import { useSettingsStore, defaultSettings, MenuLink, FooterSection, LocalizedString, StorefrontSettings as StorefrontSettingsType } from '@/store/useSettingsStore';
@@ -21,7 +20,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import * as Sentry from "@sentry/react";
 import * as XLSX from 'xlsx';
 import Papa from 'papaparse';
-import { ReviewGenerator } from '@/components/ReviewGenerator';
 import { AIPostMaker } from '@/components/AIPostMaker';
 import { VariantEditor } from '@/components/VariantEditor';
 import Markdown from 'react-markdown';
@@ -105,7 +103,7 @@ import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, Cartesia
 import { Stage, Layer, Line as KonvaLine } from 'react-konva';
 import { toast } from 'sonner';
 import { getAI } from '@/lib/gemini';
-import { handleFirestoreError, OperationType } from '@/utils/firestoreErrorHandler';
+import { handleSupabaseError, OperationType } from '@/utils/supabaseErrorHandler';
 
 
 
@@ -147,9 +145,10 @@ function CollectionManager() {
 
   const toggleShowInHero = async (category: Category) => {
     try {
-      await updateDoc(doc(db, 'categories', category.id!), {
-        showInHero: !category.showInHero
-      });
+      await supabase
+        .from('categories')
+        .update({ show_in_hero: !category.showInHero })
+        .eq('id', category.id!);
       toast.success('Category updated successfully');
     } catch (error) {
       console.error('Error updating category:', error);
@@ -180,35 +179,34 @@ function CollectionManager() {
 
     const toastId = toast.loading('Deleting collections...');
     try {
-      await Promise.all(selectedCollections.map(id => deleteDoc(doc(db, 'categories', id))));
+      await supabase.from('categories').delete().in('id', selectedCollections);
       toast.success('Collections deleted successfully', { id: toastId });
       setSelectedCollections([]);
     } catch (error) {
-      console.error("Error deleting collections:", error);
+      console.error('Error deleting collections:', error);
       toast.error('Failed to delete collections', { id: toastId });
     }
   };
 
   useEffect(() => {
-    const q = query(collection(db, 'categories'), orderBy('name'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setCategories(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Category)));
-    }, (error) => {
-      console.error("Error fetching categories:", error);
-      toast.error('Failed to load collections. Please check console.');
-    });
-    return unsubscribe;
+    supabase
+      .from('categories')
+      .select('*')
+      .order('name')
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('Error fetching categories:', error);
+          toast.error('Failed to load collections.');
+        } else {
+          setCategories((data || []) as unknown as Category[]);
+        }
+      });
   }, []);
 
   useEffect(() => {
-    const q = query(collection(db, 'products'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setProducts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product)));
-    }, (error) => {
-      console.error("Error fetching products:", error);
-      toast.error('Failed to load products. Please check console.');
+    supabase.from('products').select('*').then(({ data }) => {
+      if (data) setProducts(data as unknown as Product[]);
     });
-    return unsubscribe;
   }, []);
 
   const handleCategoryImageUpload = async (e: React.ChangeEvent<HTMLInputElement>): Promise<string | null> => {
@@ -359,11 +357,9 @@ function ReviewGeneratorNew() {
   const [generatingProductId, setGeneratingProductId] = useState<string | null>(null);
 
   useEffect(() => {
-    const q = query(collection(db, 'products'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setProducts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product)));
+    supabase.from('products').select('*').then(({ data }) => {
+      if (data) setProducts(data as unknown as Product[]);
     });
-    return unsubscribe;
   }, []);
 
   const handleGenerateReview = async (product: Product) => {
@@ -386,13 +382,11 @@ function ReviewGeneratorNew() {
 
       const review = JSON.parse(response.text || '{}');
       
-      await addDoc(collection(db, `products/${product.id}/reviews`), {
-        productId: product.id,
-        userId: 'fake-user',
-        userName: review.userName || 'Anonymous User',
+      await supabase.from('reviews').insert({
+        product_id: product.id,
+        user_id: null,
         rating: review.rating || 5,
         comment: review.comment || 'Great product!',
-        createdAt: serverTimestamp().toString()
       });
 
       toast.success('Fake review generated!', { id: toastId });
@@ -464,36 +458,38 @@ function Overview({ onProductClick, onSeedClick }: { onProductClick: (product: P
     setIsDrawing(false);
   };
 
-  useEffect(() => {
-    const qOrders = query(collection(db, 'orders'));
-    const unsubscribeOrders = onSnapshot(qOrders, (snapshot) => {
-      setOrders(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    }, (error) => {
-      console.error("Error fetching orders:", error);
-    });
-
-    const qProducts = query(collection(db, 'products'));
-    const unsubscribeProducts = onSnapshot(qProducts, (snapshot) => {
-      setProducts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+  const fetchAdminData = useCallback(async () => {
+    try {
+      const [ordersRes, productsRes, refundsRes] = await Promise.all([
+        supabase.from('orders').select('*').order('created_at', { ascending: false }),
+        supabase.from('products').select('*').order('created_at', { ascending: false }),
+        supabase.from('refund_requests').select('*').order('created_at', { ascending: false }),
+      ]);
+      if (ordersRes.data) {
+        setOrders((ordersRes.data as any[]).map(o => ({
+          ...o,
+          createdAt: o.created_at,
+          orderId: o.order_id,
+          customerEmail: o.shipping_details?.email
+        })));
+      }
+      if (productsRes.data) setProducts(productsRes.data as any[]);
+      if (refundsRes.data) {
+        setRefundRequests((refundsRes.data as any[]).map(r => ({
+          ...r,
+          createdAt: r.created_at
+        })));
+      }
+    } catch (error) {
+      console.error('Error fetching admin data:', error);
+    } finally {
       setLoading(false);
-    }, (error) => {
-      console.error("Error fetching products:", error);
-      setLoading(false);
-    });
-
-    const qRefunds = query(collection(db, 'refund_requests'));
-    const unsubscribeRefunds = onSnapshot(qRefunds, (snapshot) => {
-      setRefundRequests(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    }, (error) => {
-      console.error("Error fetching refund requests:", error);
-    });
-
-    return () => {
-      unsubscribeOrders();
-      unsubscribeProducts();
-      unsubscribeRefunds();
-    };
+    }
   }, []);
+
+  useEffect(() => {
+    fetchAdminData();
+  }, [fetchAdminData]);
 
   const filteredOrders = useMemo(() => {
     const now = new Date();
@@ -890,23 +886,13 @@ function OrderManager({ onSeedClick }: { onSeedClick?: () => void }) {
   const [orders, setOrders] = useState<any[]>([]);
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
 
-  useEffect(() => {
-    const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setOrders(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-      setLoading(false);
-    }, (error) => {
-      setLoading(false);
-      handleFirestoreError(error, OperationType.LIST, 'orders');
-    });
-    return () => unsubscribe();
-  }, []);
-
-  const handleUpdateOrder = async (orderId: string, updates: any) => {
+  const handleUpdateOrder = async (orderId: string, updates: Record<string, unknown>) => {
     setUpdatingOrderId(orderId);
     const toastId = toast.loading('Updating order...');
     try {
-      await updateDoc(doc(db, 'orders', orderId), updates);
+      const { error } = await supabase.from('orders').update(updates).eq('id', orderId);
+      if (error) throw error;
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, ...updates } : o));
       toast.success('Order updated successfully', { id: toastId });
     } catch (error: any) {
       console.error('Error updating order:', error);
@@ -915,6 +901,40 @@ function OrderManager({ onSeedClick }: { onSeedClick?: () => void }) {
       setUpdatingOrderId(null);
     }
   };
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching orders:', error);
+        toast.error('Failed to load orders');
+      } else {
+        setOrders((data || []).map(o => ({
+          ...o,
+          createdAt: o.created_at,
+          orderId: o.order_id,
+          customerEmail: o.shipping_details?.email
+        })));
+      }
+      setLoading(false);
+    };
+
+    fetchOrders();
+
+    const channel = supabase
+      .channel('orders_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, fetchOrders)
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const filteredOrders = orders.filter(order => {
     const searchLower = debouncedSearchQuery.toLowerCase();
@@ -1136,7 +1156,7 @@ function PageManager() {
 
     const toastId = toast.loading('Deleting pages...');
     try {
-      await Promise.all(selectedPages.map(id => deleteDoc(doc(db, 'pages', id))));
+      await supabase.from('pages').delete().in('id', selectedPages);
       toast.success('Pages deleted successfully', { id: toastId });
       setSelectedPages([]);
     } catch (error) {
@@ -1241,23 +1261,30 @@ function PageManager() {
   };
 
   useEffect(() => {
-    const q = query(collection(db, 'pages'), orderBy('updatedAt', 'desc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setPages(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as StaticPage[]);
-    }, (error) => {
-      handleFirestoreError(error, OperationType.LIST, 'pages');
-    });
-    return () => unsubscribe();
+    const fetchPages = async () => {
+      const { data, error } = await supabase
+        .from('pages')
+        .select('*')
+        .order('updated_at', { ascending: false });
+      
+      if (error) {
+        handleSupabaseError(error, OperationType.LIST, 'pages');
+      } else {
+        setPages(data as StaticPage[]);
+      }
+    };
+    fetchPages();
   }, []);
 
   const handleDelete = async (id: string) => {
     const confirmed = await customConfirm('Delete Page', 'Are you sure you want to delete this page?');
     if (confirmed) {
       try {
-        await deleteDoc(doc(db, 'pages', id));
+        await supabase.from('pages').delete().eq('id', id);
+        setPages(prev => prev.filter(p => p.id !== id));
         toast.success('Page deleted');
       } catch (error) {
-        handleFirestoreError(error, OperationType.DELETE, 'pages');
+        handleSupabaseError(error, OperationType.DELETE, 'pages');
         toast.error('Failed to delete page');
       }
     }
@@ -1286,16 +1313,21 @@ function PageManager() {
         title: formData.title,
         slug: formData.slug || formData.title.en?.toLowerCase().replace(/\s+/g, '-'),
         content: formData.content,
-        updatedAt: new Date().toISOString()
+        updated_at: new Date().toISOString()
       };
 
       if (editingPage?.id) {
-        await updateDoc(doc(db, 'pages', editingPage.id!), pageData);
+        await supabase.from('pages').update(pageData).eq('id', editingPage.id);
         toast.success('Page updated successfully');
       } else {
-        await addDoc(collection(db, 'pages'), pageData);
+        await supabase.from('pages').insert(pageData);
         toast.success('Page added successfully');
       }
+      
+      // Refresh list
+      const { data } = await supabase.from('pages').select('*').order('updated_at', { ascending: false });
+      if (data) setPages(data as StaticPage[]);
+      
       setIsModalOpen(false);
     } catch (error) {
       console.error("Save error:", error);
@@ -1308,24 +1340,31 @@ function PageManager() {
     const toastId = toast.loading('Seeding default pages...');
     try {
       const defaultPages = [
-        { title: 'Support', slug: 'support', content: '# Support\n\nHow can we help you today?' },
-        { title: 'FAQ', slug: 'faq', content: '# Frequently Asked Questions\n\nFind answers to common questions here.' },
-        { title: 'Shipping & Returns', slug: 'shipping-returns', content: '# Shipping & Returns\n\nOur policies on shipping and returns.' },
-        { title: 'Contact Us', slug: 'contact', content: '# Contact Us\n\nGet in touch with our team.' },
-        { title: 'Privacy Policy', slug: 'privacy-policy', content: '# Privacy Policy\n\nYour privacy is important to us.' }
+        { title: { en: 'Support' }, slug: 'support', content: { en: '# Support\n\nHow can we help you today?' } },
+        { title: { en: 'FAQ' }, slug: 'faq', content: { en: '# Frequently Asked Questions\n\nFind answers to common questions here.' } },
+        { title: { en: 'Shipping & Returns' }, slug: 'shipping-returns', content: { en: '# Shipping & Returns\n\nOur policies on shipping and returns.' } },
+        { title: { en: 'Contact Us' }, slug: 'contact', content: { en: '# Contact Us\n\nGet in touch with our team.' } },
+        { title: { en: 'Privacy Policy' }, slug: 'privacy-policy', content: { en: '# Privacy Policy\n\nYour privacy is important to us.' } }
       ];
 
       for (const page of defaultPages) {
-        // Check if page already exists by slug
-        const q = query(collection(db, 'pages'), where('slug', '==', page.slug));
-        const snapshot = await getDocs(q);
-        if (snapshot.empty) {
-          await addDoc(collection(db, 'pages'), {
+        const { data: existing } = await supabase
+          .from('pages')
+          .select('id')
+          .eq('slug', page.slug)
+          .maybeSingle();
+        
+        if (!existing) {
+          await supabase.from('pages').insert({
             ...page,
-            updatedAt: new Date().toISOString()
+            updated_at: new Date().toISOString()
           });
         }
       }
+      
+      const { data } = await supabase.from('pages').select('*').order('updated_at', { ascending: false });
+      if (data) setPages(data as StaticPage[]);
+      
       toast.success('Default pages seeded successfully!', { id: toastId });
     } catch (error) {
       console.error("Seeding error:", error);
@@ -1601,18 +1640,21 @@ function ProductList({ selectedProductId, onClearSelection }: { selectedProductI
         // Add products to database
         for (const product of productsToAdd) {
           if (product.title) {
-            await addDoc(collection(db, 'products'), {
+            await supabase.from('products').insert({
               title: product.title,
               description: product.description || '',
               price: Number(product.price) || 0,
               stock: Number(product.stock) || 0,
-              imageUrl: product.imageUrl || '',
+              image_url: product.imageUrl || '',
               category: product.category || '',
-              createdAt: serverTimestamp()
+              created_at: new Date().toISOString()
             });
           }
         }
         toast.success('Products imported successfully');
+        // Refresh list
+        const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+        if (data) setProducts(data as unknown as Product[]);
       }
     });
   };
@@ -1649,33 +1691,42 @@ function ProductList({ selectedProductId, onClearSelection }: { selectedProductI
 
   const deleteSelectedProducts = async () => {
     if (await customConfirm('Delete Products', 'Are you sure you want to delete the selected products?')) {
-      for (const id of selectedProducts) {
-        await deleteDoc(doc(db, 'products', id));
+      try {
+        await supabase.from('products').delete().in('id', selectedProducts);
+        setProducts(prev => prev.filter(p => !selectedProducts.includes(p.id)));
+        setSelectedProducts([]);
+        toast.success('Selected products deleted');
+      } catch (error) {
+        console.error("Error deleting selected products:", error);
+        toast.error('Failed to delete selected products');
       }
-      setSelectedProducts([]);
-      toast.success('Selected products deleted');
     }
   };
 
   useEffect(() => {
-    const q = query(collection(db, 'products'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setProducts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product)));
+    const fetchProducts = async () => {
+      const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+      if (error) {
+        console.error("Error fetching products:", error);
+        toast.error('Failed to load products.');
+      } else {
+        setProducts(data as unknown as Product[]);
+      }
       setLoading(false);
-    }, (error) => {
-      console.error("Error fetching products:", error);
-      toast.error('Failed to load products.');
-      setLoading(false);
-    });
-    return unsubscribe;
+    };
+    fetchProducts();
   }, []);
 
   useEffect(() => {
-    const q = query(collection(db, 'categories'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setCategories(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Category)));
-    });
-    return unsubscribe;
+    const fetchCategories = async () => {
+      const { data, error } = await supabase.from('categories').select('*').order('name');
+      if (error) {
+        console.error("Error fetching categories:", error);
+      } else {
+        setCategories(data as Category[]);
+      }
+    };
+    fetchCategories();
   }, []);
 
   const handleDelete = async (id: string) => {
@@ -1684,7 +1735,8 @@ function ProductList({ selectedProductId, onClearSelection }: { selectedProductI
 
     const toastId = toast.loading('Deleting product...');
     try {
-      await deleteDoc(doc(db, 'products', id));
+      await supabase.from('products').delete().eq('id', id);
+      setProducts(prev => prev.filter(p => p.id !== id));
       toast.success('Product deleted successfully', { id: toastId });
     } catch (error) {
       console.error("Error deleting product:", error);
@@ -1766,7 +1818,13 @@ function ProductList({ selectedProductId, onClearSelection }: { selectedProductI
                   <td className="px-4 sm:px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
                       <button 
-                        onClick={() => updateDoc(doc(db, 'products', product.id!), { starred: !product.starred })}
+                        onClick={async () => {
+                          const newStarred = !product.starred;
+                          const { error } = await supabase.from('products').update({ starred: newStarred }).eq('id', product.id!);
+                          if (!error) {
+                            setProducts(prev => prev.map(p => p.id === product.id ? { ...p, starred: newStarred } : p));
+                          }
+                        }}
                         className={`${product.starred ? 'text-amber-500' : 'text-zinc-400'} p-2 hover:text-amber-600 hover:bg-amber-50 rounded transition-colors`}
                         title={product.starred ? "Unstar Product" : "Star Product"}
                       >
@@ -1832,42 +1890,48 @@ function DatabaseManager() {
     setLoading(true);
     const toastId = toast.loading('Seeding test data...');
     try {
-      const batch = writeBatch(db);
-      
       // Seed Support Tickets
       const ticketStatuses = ['open', 'in-progress', 'resolved', 'closed'];
-      ticketStatuses.forEach((status, i) => {
-        const ticketRef = doc(collection(db, 'tickets'));
-        batch.set(ticketRef, {
-          subject: `Test Ticket ${i + 1}`,
-          description: `This is a test support ticket with status ${status}.`,
-          status: status,
-          customerEmail: auth.currentUser?.email || 'test@example.com',
-          createdAt: new Date().toISOString(),
-          isTestData: true
-        });
-      });
+      const tickets = ticketStatuses.map((status, i) => ({
+        subject: `Test Ticket ${i + 1}`,
+        message: `This is a test support ticket with status ${status}.`,
+        status: status,
+        user_id: null, // Since we don't have a specific user for mock data, or use (await supabase.auth.getUser()).data.user?.id
+        is_test_data: true,
+        created_at: new Date().toISOString()
+      }));
+
+      const { error: ticketError } = await supabase.from('support_tickets').insert(tickets);
+      if (ticketError) throw ticketError;
 
       // Seed Orders
       const orderStatuses = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
-      orderStatuses.forEach((status, i) => {
-        const orderRef = doc(collection(db, 'orders'));
-        batch.set(orderRef, {
-          orderId: `TEST-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
-          userId: auth.currentUser?.uid || 'test-user-id',
-          customerEmail: auth.currentUser?.email || 'test-customer@example.com',
-          total: Math.floor(Math.random() * 5000) + 500,
-          status: status,
-          items: [
-            { id: 'test-item-1', name: 'Test Product A', price: 299, quantity: 1 },
-            { id: 'test-item-2', name: 'Test Product B', price: 499, quantity: 2 }
-          ],
-          createdAt: new Date(Date.now() - i * 86400000).toISOString(), // Spread over days
-          isTestData: true
-        });
-      });
+      const orders = orderStatuses.map((status, i) => ({
+        items: [
+          { id: 'test-item-1', name: 'Test Product A', price: 299, quantity: 1 },
+          { id: 'test-item-2', name: 'Test Product B', price: 499, quantity: 2 }
+        ],
+        shipping_details: {
+          name: 'Test Customer',
+          email: 'test-customer@example.com',
+          address: '123 Test St',
+          city: 'Test City',
+          postalCode: '12345',
+          country: 'SE'
+        },
+        shipping_cost: 0,
+        subtotal: 1297,
+        total: 1297,
+        currency: 'sek',
+        status: status,
+        user_id: null,
+        created_at: new Date(Date.now() - i * 86400000).toISOString(),
+        is_test_data: true
+      }));
 
-      await batch.commit();
+      const { error: orderError } = await supabase.from('orders').insert(orders);
+      if (orderError) throw orderError;
+
       toast.success('Test data seeded successfully', { id: toastId });
     } catch (error: any) {
       console.error('Seed error:', error);
@@ -1888,24 +1952,20 @@ function DatabaseManager() {
     setLoading(true);
     const toastId = toast.loading('Clearing test data...');
     try {
-      const collections = ['tickets', 'orders'];
-      let deletedCount = 0;
+      const tables = ['support_tickets', 'orders'];
+      let totalDeleted = 0;
 
-      for (const collName of collections) {
-        const q = query(collection(db, collName), where('isTestData', '==', true));
-        const snapshot = await getDocs(q);
+      for (const tableName of tables) {
+        const { error, count } = await supabase
+          .from(tableName)
+          .delete({ count: 'exact' })
+          .eq('is_test_data', true);
         
-        if (!snapshot.empty) {
-          const batch = writeBatch(db);
-          snapshot.docs.forEach(d => {
-            batch.delete(d.ref);
-            deletedCount++;
-          });
-          await batch.commit();
-        }
+        if (error) throw error;
+        totalDeleted += (count || 0);
       }
 
-      toast.success(`Cleared ${deletedCount} test records.`, { id: toastId });
+      toast.success(`Cleared ${totalDeleted} test records.`, { id: toastId });
     } catch (error: any) {
       console.error('Clear error:', error);
       toast.error(error.message, { id: toastId });
@@ -2006,9 +2066,10 @@ function BlogManager() {
 
     const toastId = toast.loading('Deleting posts...');
     try {
-      await Promise.all(selectedPosts.map(id => deleteDoc(doc(db, 'blogs', id))));
+      await supabase.from('blog_posts').delete().in('id', selectedPosts);
       toast.success('Posts deleted successfully', { id: toastId });
       setSelectedPosts([]);
+      setPosts(prev => prev.filter(p => !selectedPosts.includes(p.id!)));
     } catch (error) {
       console.error("Error deleting posts:", error);
       toast.error('Failed to delete posts', { id: toastId });
@@ -2123,16 +2184,21 @@ function BlogManager() {
   };
 
   useEffect(() => {
-    const q = query(collection(db, 'blogs'), orderBy('createdAt', 'desc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setPosts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlogPost)));
+    const fetchBlogs = async () => {
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error("Error fetching blogs:", error);
+        toast.error('Failed to load blog posts.');
+      } else {
+        setPosts(data as BlogPost[]);
+      }
       setLoading(false);
-    }, (error) => {
-      console.error("Error fetching blogs:", error);
-      toast.error('Failed to load blog posts.');
-      setLoading(false);
-    });
-    return unsubscribe;
+    };
+    fetchBlogs();
   }, []);
 
   const handleOpenModal = (post?: BlogPost) => {
@@ -2183,15 +2249,20 @@ function BlogManager() {
     
     try {
       if (editingPost) {
-        await updateDoc(doc(db, 'blogs', editingPost.id!), formData);
+        await supabase.from('blog_posts').update(formData).eq('id', editingPost.id);
         toast.success('Post updated successfully', { id: toastId });
       } else {
-        await addDoc(collection(db, 'blogs'), {
+        await supabase.from('blog_posts').insert({
           ...formData,
-          createdAt: new Date().toISOString()
+          created_at: new Date().toISOString()
         });
         toast.success('Post added successfully', { id: toastId });
       }
+      
+      // Refresh list
+      const { data } = await supabase.from('blog_posts').select('*').order('created_at', { ascending: false });
+      if (data) setPosts(data as BlogPost[]);
+      
       handleCloseModal();
     } catch (error) {
       console.error("Error saving post:", error);
@@ -2205,7 +2276,8 @@ function BlogManager() {
 
     const toastId = toast.loading('Deleting post...');
     try {
-      await deleteDoc(doc(db, 'blogs', id));
+      await supabase.from('blog_posts').delete().eq('id', id);
+      setPosts(prev => prev.filter(p => p.id !== id));
       toast.success('Post deleted successfully', { id: toastId });
     } catch (error) {
       console.error("Error deleting post:", error);
@@ -2522,7 +2594,7 @@ export default function AdminDashboard() {
               </div>
               <div className="p-4 border-t border-slate-200/60">
                 <button
-                  onClick={() => auth.signOut()}
+                  onClick={() => supabase.auth.signOut()}
                   className="justify-start space-x-3 hover:bg-red-50 w-full sm:w-auto flex items-center justify-center bg-red-50 text-red-600 hover:bg-red-100 border border-red-200/50 px-6 py-3 text-sm font-medium rounded-md transition-colors"
                 >
                   <LogOut className="w-5 h-5" />
@@ -2574,7 +2646,7 @@ export default function AdminDashboard() {
             </div>
           </div>
           <button
-            onClick={() => auth.signOut()}
+            onClick={() => supabase.auth.signOut()}
             className="w-full flex items-center space-x-2 text-zinc-500 hover:text-zinc-900 transition-colors text-sm font-medium"
           >
             <LogOut className="w-4 h-4" />
@@ -2637,7 +2709,7 @@ export default function AdminDashboard() {
                 handleSaveSettings={async (settings) => {
                   const toastId = toast.loading('Saving storefront settings...');
                   try {
-                    await setDoc(doc(db, 'settings', 'storefront'), settings, { merge: true });
+                    await supabase.from('settings').upsert({ id: 'storefront', data: settings });
                     toast.success('Storefront settings saved successfully', { id: toastId });
                   } catch (error) {
                     console.error('Error saving settings:', error);

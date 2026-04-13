@@ -2,11 +2,11 @@
 import React, { useState } from 'react';
 import { Wand2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import { getAI } from '@/lib/gemini';
+import { createClient } from '@/utils/supabase/client';
 
 export function AIPostMaker() {
+  const supabase = createClient();
   const [topic, setTopic] = useState('');
   const [generating, setGenerating] = useState(false);
 
@@ -28,18 +28,23 @@ export function AIPostMaker() {
 
       const post = JSON.parse(response.text || '{}');
       
-      await addDoc(collection(db, 'posts'), {
-        ...post,
-        author: 'AI Assistant',
-        createdAt: serverTimestamp(),
-        imageUrl: 'https://picsum.photos/seed/post/800/400'
-      });
+      const { error } = await supabase
+        .from('blog_posts')
+        .insert({
+          title: post.title,
+          excerpt: post.excerpt,
+          content: post.content,
+          author: 'AI Assistant',
+          image_url: 'https://picsum.photos/seed/post/800/400'
+        });
+
+      if (error) throw error;
 
       toast.success('AI post generated and saved!', { id: toastId });
       setTopic('');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating post:', error);
-      toast.error('Failed to generate post.', { id: toastId });
+      toast.error(error.message || 'Failed to generate post.', { id: toastId });
     } finally {
       setGenerating(false);
     }

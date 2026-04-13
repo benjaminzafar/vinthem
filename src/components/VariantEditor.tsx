@@ -1,11 +1,9 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Product, ProductOption, ProductVariant } from '@/store/useCartStore';
 import { Plus, X, Wand2, Loader2 } from 'lucide-react';
 import { getAI } from '@/lib/gemini';
 import { toast } from 'sonner';
-import { storage } from '@/lib/firebase';
-import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 interface VariantEditorProps {
   formData: Partial<Product>;

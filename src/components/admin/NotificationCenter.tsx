@@ -1,10 +1,9 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
-import { collection, query, orderBy, limit, onSnapshot, where, Timestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { Bell, Package, MessageSquare, RefreshCcw, X, ChevronRight } from 'lucide-react';
+import { Bell, Package, MessageSquare, RefreshCcw, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { formatDistanceToNow } from 'date-fns';
+import { createClient } from '@/utils/supabase/client';
 
 interface Notification {
   id: string;
@@ -17,6 +16,7 @@ interface Notification {
 }
 
 export function NotificationCenter({ onNavigate }: { onNavigate?: (path: string) => void }) {
+  const supabase = createClient();
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -33,79 +33,93 @@ export function NotificationCenter({ onNavigate }: { onNavigate?: (path: string)
   }, []);
 
   useEffect(() => {
-    // Listen for new orders
-    const ordersQuery = query(collection(db, 'orders'), orderBy('createdAt', 'desc'), limit(5));
-    const unsubscribeOrders = onSnapshot(ordersQuery, (snapshot) => {
-      const newOrders = snapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          id: `order-${doc.id}`,
+    const fetchOrders = async () => {
+      const { data } = await supabase
+        .from('orders')
+        .select('id, order_id, customer_email, created_at')
+        .order('created_at', { ascending: false })
+        .limit(5);
+      
+      if (data) {
+        const newOrders = data.map(o => ({
+          id: `order-${o.id}`,
           type: 'order' as const,
           title: 'New Order',
-          message: `Order #${data.orderId} received from ${data.customerEmail}`,
-          timestamp: new Date(data.createdAt),
+          message: `Order #${o.order_id} received from ${o.customer_email}`,
+          timestamp: new Date(o.created_at),
           read: false,
           link: 'orders'
-        };
-      });
-      updateNotifications(newOrders);
-    });
+        }));
+        updateNotifications(newOrders);
+      }
+    };
 
-    // Listen for new tickets
-    const ticketsQuery = query(collection(db, 'tickets'), orderBy('createdAt', 'desc'), limit(5));
-    const unsubscribeTickets = onSnapshot(ticketsQuery, (snapshot) => {
-      const newTickets = snapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          id: `ticket-${doc.id}`,
+    const fetchTickets = async () => {
+      const { data } = await supabase
+        .from('support_tickets')
+        .select('id, subject, customer_email, created_at')
+        .order('created_at', { ascending: false })
+        .limit(5);
+      
+      if (data) {
+        const newTickets = data.map(t => ({
+          id: `ticket-${t.id}`,
           type: 'ticket' as const,
           title: 'New Support Ticket',
-          message: `${data.subject} from ${data.customerEmail}`,
-          timestamp: new Date(data.createdAt),
+          message: `${t.subject} from ${t.customer_email}`,
+          timestamp: new Date(t.created_at),
           read: false,
           link: 'customers'
-        };
-      });
-      updateNotifications(newTickets);
-    });
+        }));
+        updateNotifications(newTickets);
+      }
+    };
 
-    // Listen for new refunds
-    const refundsQuery = query(collection(db, 'refund_requests'), orderBy('createdAt', 'desc'), limit(5));
-    const unsubscribeRefunds = onSnapshot(refundsQuery, (snapshot) => {
-      const newRefunds = snapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          id: `refund-${doc.id}`,
+    const fetchRefunds = async () => {
+      const { data } = await supabase
+        .from('refund_requests')
+        .select('id, reason, created_at')
+        .order('created_at', { ascending: false })
+        .limit(5);
+      
+      if (data) {
+        const newRefunds = data.map(r => ({
+          id: `refund-${r.id}`,
           type: 'refund' as const,
           title: 'New Refund Request',
-          message: `Reason: ${data.reason}`,
-          timestamp: new Date(data.createdAt),
+          message: `Reason: ${r.reason}`,
+          timestamp: new Date(r.created_at),
           read: false,
           link: 'customers'
-        };
-      });
-      updateNotifications(newRefunds);
-    });
+        }));
+        updateNotifications(newRefunds);
+      }
+    };
+
+    fetchOrders();
+    fetchTickets();
+    fetchRefunds();
+
+    const ordersChannel = supabase.channel('notif-orders').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, fetchOrders).subscribe();
+    const ticketsChannel = supabase.channel('notif-tickets').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'support_tickets' }, fetchTickets).subscribe();
+    const refundsChannel = supabase.channel('notif-refunds').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'refund_requests' }, fetchRefunds).subscribe();
 
     return () => {
-      unsubscribeOrders();
-      unsubscribeTickets();
-      unsubscribeRefunds();
+      supabase.removeChannel(ordersChannel);
+      supabase.removeChannel(ticketsChannel);
+      supabase.removeChannel(refundsChannel);
     };
   }, []);
 
   const updateNotifications = (newItems: Notification[]) => {
     setNotifications(prev => {
       const combined = [...prev, ...newItems];
-      // Filter unique by ID
       const unique = combined.filter((v, i, a) => a.findIndex(t => t.id === v.id) === i);
-      // Sort by timestamp
       return unique.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()).slice(0, 15);
     });
   };
 
   useEffect(() => {
-    // For this demo, we'll just count items from the last 24 hours as "unread" if they haven't been seen in this session
     const unread = notifications.filter(n => !n.read).length;
     setUnreadCount(unread);
   }, [notifications]);

@@ -1,31 +1,47 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { collection, query, onSnapshot, doc, updateDoc, orderBy } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { handleFirestoreError, OperationType } from '@/utils/firestoreErrorHandler';
 import { toast } from 'sonner';
-import { RefreshCcw, Search, CheckCircle, XCircle, Clock, DollarSign } from 'lucide-react';
+import { RefreshCcw, CheckCircle, XCircle, Clock, DollarSign } from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { createClient } from '@/utils/supabase/client';
 
 const COLORS = ['#18181b', '#3f3f46', '#71717a', '#a1a1aa', '#d4d4d8'];
 
 import { AdminHeader } from './admin/AdminHeader';
 
 export function RefundManager() {
+  const supabase = createClient();
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
+  const fetchRequests = async () => {
+    const { data, error } = await supabase
+      .from('refund_requests')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching refund requests:', error);
+      toast.error('Failed to load refund requests');
+    } else {
+      setRequests(data.map(r => ({
+        ...r,
+        createdAt: r.created_at,
+        orderId: r.order_id
+      })));
+    }
+    setLoading(false);
+  };
+
   useEffect(() => {
-    const q = query(collection(db, 'refund_requests'), orderBy('createdAt', 'desc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setRequests(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-      setLoading(false);
-    }, (error) => {
-      setLoading(false);
-      handleFirestoreError(error, OperationType.LIST, 'refund_requests');
-    });
-    return () => unsubscribe();
+    fetchRequests();
+    const channel = supabase
+      .channel('refund_requests_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'refund_requests' }, fetchRequests)
+      .subscribe();
+    
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   const reasonData = React.useMemo(() => {
@@ -38,12 +54,17 @@ export function RefundManager() {
   }, [requests]);
 
   const handleUpdateStatus = async (id: string, newStatus: string) => {
+    const toastId = toast.loading('Updating status...');
     try {
-      await updateDoc(doc(db, 'refund_requests', id), { status: newStatus });
-      toast.success(`Request marked as ${newStatus}`);
-    } catch (error) {
-      handleFirestoreError(error, OperationType.UPDATE, 'refund_requests');
-      toast.error('Failed to update status');
+      const { error } = await supabase
+        .from('refund_requests')
+        .update({ status: newStatus })
+        .eq('id', id);
+      if (error) throw error;
+      toast.success(`Request marked as ${newStatus}`, { id: toastId });
+    } catch (error: any) {
+      console.error('Error updating status:', error);
+      toast.error(error.message || 'Failed to update status', { id: toastId });
     }
   };
 
@@ -79,7 +100,7 @@ export function RefundManager() {
           placeholder: "Search Order ID, Reason..."
         }}
         secondaryActions={[
-          { label: 'Refresh Data', icon: RefreshCcw, onClick: () => {} }
+          { label: 'Refresh Data', icon: RefreshCcw, onClick: fetchRequests }
         ]}
         statsLabel={`${filteredRequests.length} requests`}
       />

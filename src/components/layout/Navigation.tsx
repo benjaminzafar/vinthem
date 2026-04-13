@@ -3,9 +3,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { ShoppingBag, User, LogOut, Settings, Globe, Menu, X, ChevronRight, ChevronDown, Search, Filter, ArrowRight } from 'lucide-react';
-import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
-import { auth, db } from '@/lib/firebase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useCartStore } from '@/store/useCartStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
@@ -13,8 +10,10 @@ import i18nInstance from '@/i18n';
 import { useTranslation } from 'react-i18next';
 import { Toaster, toast } from 'sonner';
 import { motion, AnimatePresence } from 'motion/react';
+import { createClient } from '@/utils/supabase/client';
 
 export default function Navigation() {
+  const supabase = createClient();
   const { user, isAdmin, setUser, setIsAdmin } = useAuthStore();
   const { items } = useCartStore();
   const { settings } = useSettingsStore();
@@ -63,7 +62,7 @@ export default function Navigation() {
 
   // Handle user logout
   const handleLogout = async () => {
-    await signOut(auth);
+    await supabase.auth.signOut();
     setUser(null);
     setIsAdmin(false);
     navigate.push('/');
@@ -209,7 +208,7 @@ export default function Navigation() {
                   >
                     <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-200">
                       <img 
-                        src={(user.photoURL && user.photoURL.trim() !== "") ? user.photoURL : `https://ui-avatars.com/api/?name=${user.displayName || 'U'}&background=random`} 
+                        src={(user.user_metadata?.avatar_url || user.user_metadata?.picture) ? (user.user_metadata?.avatar_url || user.user_metadata?.picture) : `https://ui-avatars.com/api/?name=${user.user_metadata?.full_name || 'U'}&background=random`} 
                         alt="Profile" 
                         className="w-full h-full object-cover" 
                         referrerPolicy="no-referrer"
@@ -226,7 +225,7 @@ export default function Navigation() {
                         className="absolute right-0 mt-4 w-60 bg-white rounded-lg border border-gray-100 z-50 py-2 shadow-xl"
                       >
                         <div className="px-6 py-3 border-b border-gray-50 mb-2">
-                          <p className="text-sm font-medium text-brand-ink truncate">{user.displayName || 'User'}</p>
+                          <p className="text-sm font-medium text-brand-ink truncate">{user.user_metadata?.full_name || 'User'}</p>
                           <p className="text-xs text-gray-500 truncate mt-0.5">{user.email}</p>
                         </div>
                         
@@ -349,13 +348,13 @@ export default function Navigation() {
                       <div className="flex items-center justify-between bg-gray-50 p-4 rounded-none">
                         <div className="flex items-center space-x-3">
                           <img 
-                            src={(user.photoURL && user.photoURL.trim() !== "") ? user.photoURL : `https://ui-avatars.com/api/?name=${user.displayName || 'U'}&background=random`} 
+                            src={(user.user_metadata?.avatar_url || user.user_metadata?.picture) ? (user.user_metadata?.avatar_url || user.user_metadata?.picture) : `https://ui-avatars.com/api/?name=${user.user_metadata?.full_name || 'U'}&background=random`} 
                             alt="Profile" 
                             className="w-10 h-10 rounded-none object-cover border border-gray-200" 
                             referrerPolicy="no-referrer"
                           />
                           <div>
-                            <p className="text-sm font-medium text-brand-ink">{user.displayName || 'Account'}</p>
+                            <p className="text-sm font-medium text-brand-ink">{user.user_metadata?.full_name || 'Account'}</p>
                             <p className="text-xs text-gray-500 truncate max-w-[120px]">{user.email}</p>
                           </div>
                         </div>

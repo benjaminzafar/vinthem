@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { auth, db } from '@/lib/firebase';
-import { doc, writeBatch, serverTimestamp } from 'firebase/firestore';
+import { createClient } from '@/utils/supabase/client';
 import { AdminHeader } from './AdminHeader';
 import { Sparkles, ShoppingCart, Truck, DollarSign, Eye, EyeOff, Save, Database, Mail, RefreshCw, CheckCircle2, XCircle, HelpCircle, Users } from 'lucide-react';
 import { toast } from 'sonner';
@@ -93,6 +92,7 @@ export function IntegrationsManager() {
   const [saving, setSaving] = useState<string | null>(null);
   const [showKeys, setShowKeys] = useState<Record<string, boolean>>({});
   const [tutorial, setTutorial] = useState<{ isOpen: boolean, title: string, content: React.ReactNode } | null>(null);
+  const supabase = createClient();
 
   useEffect(() => {
     fetchConfig();
@@ -100,7 +100,9 @@ export function IntegrationsManager() {
 
   const fetchConfig = async () => {
     try {
-      const token = await auth.currentUser?.getIdToken();
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      
       const res = await fetch('/api/admin/integrations', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -119,11 +121,21 @@ export function IntegrationsManager() {
     setSaving(section);
     try {
       const updates = keys.reduce((acc, key) => {
-        acc[key] = config[key];
+        // Only include if value has changed and is not the placeholder
+        if (config[key] && config[key] !== '********') {
+          acc[key] = config[key];
+        }
         return acc;
       }, {} as Record<string, string>);
 
-      const token = await auth.currentUser?.getIdToken();
+      // If no keys to update, just return
+      if (Object.keys(updates).length === 0) {
+        toast.info('No changes to save');
+        return;
+      }
+
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
       
       const res = await fetch('/api/admin/integrations/encrypt', {
         method: 'POST',
@@ -140,6 +152,7 @@ export function IntegrationsManager() {
       }
 
       toast.success(`${section} settings saved securely`);
+      fetchConfig(); // Refresh to show connected status
     } catch (error: any) {
       toast.error(error.message || `Failed to save ${section} settings`);
     } finally {
@@ -180,6 +193,7 @@ export function IntegrationsManager() {
               value={config[key] || ''}
               onChange={(e) => handleChange(key, e.target.value)}
               className="w-full px-3 py-2 border border-zinc-300 rounded-md shadow-sm focus:ring-brand-ink focus:border-brand-ink sm:text-sm pr-10"
+              placeholder={config[`${key}_CONNECTED`] ? '••••••••' : `Enter ${label}...`}
             />
           )}
           {isPassword && (
@@ -215,7 +229,9 @@ export function IntegrationsManager() {
 
   const handleTestStripe = async () => {
     try {
-      const token = await auth.currentUser?.getIdToken();
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      
       const res = await fetch('/api/admin/stripe/validate', {
         method: 'POST',
         headers: { 
@@ -234,7 +250,9 @@ export function IntegrationsManager() {
 
   const handleTestEmail = async () => {
     try {
-      const token = await auth.currentUser?.getIdToken();
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      
       const res = await fetch('/api/admin/email/test', {
         method: 'POST',
         headers: { 
@@ -243,7 +261,7 @@ export function IntegrationsManager() {
         },
         body: JSON.stringify({
           user: config['ZOHO_USER'],
-          pass: config['ZOHO_PASS'],
+          pass: config['ZOHO_PASS'] === '********' ? undefined : config['ZOHO_PASS'],
           host: config['ZOHO_SMTP_HOST'],
           port: config['ZOHO_SMTP_PORT'],
           sender: config['ZOHO_SENDER_NAME']
@@ -275,168 +293,168 @@ export function IntegrationsManager() {
       )
     },
     {
-      id: 'Instagram',
-      title: 'Instagram',
-      icon: ShoppingCart,
-      keys: ['INSTAGRAM_API_KEY', 'INSTAGRAM_CATALOG_ID', 'INSTAGRAM_BUSINESS_ID'],
-      checkKey: 'INSTAGRAM_API_KEY',
-      render: () => (
-        <>
-          {renderInput('INSTAGRAM_API_KEY', 'Instagram API Key', 'password')}
-          {renderInput('INSTAGRAM_CATALOG_ID', 'Catalog ID')}
-          {renderInput('INSTAGRAM_BUSINESS_ID', 'Business Account ID')}
-        </>
-      )
-    },
-    {
-      id: 'TikTok',
-      title: 'TikTok',
-      icon: ShoppingCart,
-      keys: ['TIKTOK_API_KEY', 'TIKTOK_SHOP_ID', 'TIKTOK_REGION'],
-      checkKey: 'TIKTOK_API_KEY',
-      render: () => (
-        <>
-          {renderInput('TIKTOK_API_KEY', 'TikTok API Key', 'password')}
-          {renderInput('TIKTOK_SHOP_ID', 'Shop ID')}
-          {renderInput('TIKTOK_REGION', 'Region')}
-        </>
-      )
-    },
-    {
-      id: 'Reddit',
-      title: 'Reddit',
-      icon: ShoppingCart,
-      keys: ['REDDIT_API_KEY', 'REDDIT_AD_ACCOUNT_ID'],
-      checkKey: 'REDDIT_API_KEY',
-      render: () => (
-        <>
-          {renderInput('REDDIT_API_KEY', 'Reddit API Key', 'password')}
-          {renderInput('REDDIT_AD_ACCOUNT_ID', 'Ad Account ID')}
-        </>
-      )
-    },
-    {
-      id: 'Facebook',
-      title: 'Facebook',
-      icon: ShoppingCart,
-      keys: ['FACEBOOK_PIXEL_ID', 'FACEBOOK_CATALOG_ID'],
-      checkKey: 'FACEBOOK_PIXEL_ID',
-      render: () => (
-        <>
-          {renderInput('FACEBOOK_PIXEL_ID', 'Facebook Pixel ID')}
-          {renderInput('FACEBOOK_CATALOG_ID', 'Facebook Catalog ID')}
-        </>
-      )
-    },
-    {
-      id: 'PostNord',
-      title: 'PostNord',
-      icon: Truck,
-      keys: ['POSTNORD_API_KEY'],
-      checkKey: 'POSTNORD_API_KEY',
-      render: () => (
-        <>
-          {renderInput('POSTNORD_API_KEY', 'PostNord API Key', 'password')}
-        </>
-      )
-    },
-    {
-      id: 'DHL',
-      title: 'DHL',
-      icon: Truck,
-      keys: ['DHL_API_KEY'],
-      checkKey: 'DHL_API_KEY',
-      render: () => (
-        <>
-          {renderInput('DHL_API_KEY', 'DHL API Key', 'password')}
-        </>
-      )
-    },
-    {
-      id: 'Bring',
-      title: 'Bring',
-      icon: Truck,
-      keys: ['BRING_API_KEY'],
-      checkKey: 'BRING_API_KEY',
-      render: () => (
-        <>
-          {renderInput('BRING_API_KEY', 'Bring API Key', 'password')}
-        </>
-      )
-    },
-    {
-      id: 'DBSchenker',
-      title: 'DB Schenker',
-      icon: Truck,
-      keys: ['DBSCHENKER_API_KEY'],
-      checkKey: 'DBSCHENKER_API_KEY',
-      render: () => (
-        <>
-          {renderInput('DBSCHENKER_API_KEY', 'DB Schenker API Key', 'password')}
-        </>
-      )
-    },
-    {
-      id: 'UPS',
-      title: 'UPS',
-      icon: Truck,
-      keys: ['UPS_API_KEY'],
-      checkKey: 'UPS_API_KEY',
-      render: () => (
-        <>
-          {renderInput('UPS_API_KEY', 'UPS API Key', 'password')}
-        </>
-      )
-    },
-    {
-      id: 'Stripe',
-      title: 'Stripe',
-      icon: DollarSign,
-      keys: ['STRIPE_SECRET_KEY', 'VITE_STRIPE_PUBLIC_KEY', 'STRIPE_WEBHOOK_SECRET', 'STRIPE_AUTO_CURRENCY', 'ACTIVE_MARKETS'],
-      checkKey: 'STRIPE_SECRET_KEY',
-      render: () => (
-        <>
-          {renderInput('STRIPE_SECRET_KEY', 'Stripe Secret Key', 'password')}
-          {renderInput('VITE_STRIPE_PUBLIC_KEY', 'Stripe Public Key', 'password')}
-          {renderInput('STRIPE_WEBHOOK_SECRET', 'Webhook Secret', 'password')}
-          {renderToggle('STRIPE_AUTO_CURRENCY', 'Auto Currency Conversion')}
-          {renderInput('ACTIVE_MARKETS', 'Active Markets (Sweden,Finland,Denmark)')}
-          <button onClick={handleTestStripe} className="mt-2 text-sm text-brand-ink hover:underline">Test Stripe Connection</button>
-        </>
-      )
-    },
-    {
-      id: 'Email',
-      title: 'Zoho Mail',
-      icon: Mail,
-      keys: ['ZOHO_USER', 'ZOHO_PASS', 'ZOHO_SENDER_NAME', 'ZOHO_SMTP_HOST', 'ZOHO_SMTP_PORT'],
-      checkKey: 'ZOHO_USER',
-      render: () => (
-        <>
-          {renderInput('ZOHO_USER', 'Zoho User')}
-          {renderInput('ZOHO_PASS', 'Zoho Password', 'password')}
-          {renderInput('ZOHO_SENDER_NAME', 'Sender Name')}
-          {renderInput('ZOHO_SMTP_HOST', 'SMTP Host')}
-          {renderInput('ZOHO_SMTP_PORT', 'SMTP Port')}
-          <button onClick={handleTestEmail} className="mt-2 text-sm text-brand-ink hover:underline">Send Test Email</button>
-        </>
-      )
-    },
-    {
-      id: 'GoogleShopping',
-      title: 'Google Shopping',
-      icon: ShoppingCart,
-      keys: ['GOOGLE_SHOPPING_MERCHANT_ID', 'GOOGLE_SHOPPING_API_KEY', 'GOOGLE_SHOPPING_CLIENT_ID', 'GOOGLE_SHOPPING_CLIENT_SECRET'],
-      checkKey: 'GOOGLE_SHOPPING_MERCHANT_ID',
-      render: () => (
-        <>
-          {renderInput('GOOGLE_SHOPPING_MERCHANT_ID', 'Merchant ID')}
-          {renderInput('GOOGLE_SHOPPING_API_KEY', 'API Key', 'password')}
-          {renderInput('GOOGLE_SHOPPING_CLIENT_ID', 'Client ID')}
-          {renderInput('GOOGLE_SHOPPING_CLIENT_SECRET', 'Client Secret', 'password')}
-        </>
-      )
-    }
+        id: 'Instagram',
+        title: 'Instagram',
+        icon: ShoppingCart,
+        keys: ['INSTAGRAM_API_KEY', 'INSTAGRAM_CATALOG_ID', 'INSTAGRAM_BUSINESS_ID'],
+        checkKey: 'INSTAGRAM_API_KEY',
+        render: () => (
+          <>
+            {renderInput('INSTAGRAM_API_KEY', 'Instagram API Key', 'password')}
+            {renderInput('INSTAGRAM_CATALOG_ID', 'Catalog ID')}
+            {renderInput('INSTAGRAM_BUSINESS_ID', 'Business Account ID')}
+          </>
+        )
+      },
+      {
+        id: 'TikTok',
+        title: 'TikTok',
+        icon: ShoppingCart,
+        keys: ['TIKTOK_API_KEY', 'TIKTOK_SHOP_ID', 'TIKTOK_REGION'],
+        checkKey: 'TIKTOK_API_KEY',
+        render: () => (
+          <>
+            {renderInput('TIKTOK_API_KEY', 'TikTok API Key', 'password')}
+            {renderInput('TIKTOK_SHOP_ID', 'Shop ID')}
+            {renderInput('TIKTOK_REGION', 'Region')}
+          </>
+        )
+      },
+      {
+        id: 'Reddit',
+        title: 'Reddit',
+        icon: ShoppingCart,
+        keys: ['REDDIT_API_KEY', 'REDDIT_AD_ACCOUNT_ID'],
+        checkKey: 'REDDIT_API_KEY',
+        render: () => (
+          <>
+            {renderInput('REDDIT_API_KEY', 'Reddit API Key', 'password')}
+            {renderInput('REDDIT_AD_ACCOUNT_ID', 'Ad Account ID')}
+          </>
+        )
+      },
+      {
+        id: 'Facebook',
+        title: 'Facebook',
+        icon: ShoppingCart,
+        keys: ['FACEBOOK_PIXEL_ID', 'FACEBOOK_CATALOG_ID'],
+        checkKey: 'FACEBOOK_PIXEL_ID',
+        render: () => (
+          <>
+            {renderInput('FACEBOOK_PIXEL_ID', 'Facebook Pixel ID')}
+            {renderInput('FACEBOOK_CATALOG_ID', 'Facebook Catalog ID')}
+          </>
+        )
+      },
+      {
+        id: 'PostNord',
+        title: 'PostNord',
+        icon: Truck,
+        keys: ['POSTNORD_API_KEY'],
+        checkKey: 'POSTNORD_API_KEY',
+        render: () => (
+          <>
+            {renderInput('POSTNORD_API_KEY', 'PostNord API Key', 'password')}
+          </>
+        )
+      },
+      {
+        id: 'DHL',
+        title: 'DHL',
+        icon: Truck,
+        keys: ['DHL_API_KEY'],
+        checkKey: 'DHL_API_KEY',
+        render: () => (
+          <>
+            {renderInput('DHL_API_KEY', 'DHL API Key', 'password')}
+          </>
+        )
+      },
+      {
+        id: 'Bring',
+        title: 'Bring',
+        icon: Truck,
+        keys: ['BRING_API_KEY'],
+        checkKey: 'BRING_API_KEY',
+        render: () => (
+          <>
+            {renderInput('BRING_API_KEY', 'Bring API Key', 'password')}
+          </>
+        )
+      },
+      {
+        id: 'DBSchenker',
+        title: 'DB Schenker',
+        icon: Truck,
+        keys: ['DBSCHENKER_API_KEY'],
+        checkKey: 'DBSCHENKER_API_KEY',
+        render: () => (
+          <>
+            {renderInput('DBSCHENKER_API_KEY', 'DB Schenker API Key', 'password')}
+          </>
+        )
+      },
+      {
+        id: 'UPS',
+        title: 'UPS',
+        icon: Truck,
+        keys: ['UPS_API_KEY'],
+        checkKey: 'UPS_API_KEY',
+        render: () => (
+          <>
+            {renderInput('UPS_API_KEY', 'UPS API Key', 'password')}
+          </>
+        )
+      },
+      {
+        id: 'Stripe',
+        title: 'Stripe',
+        icon: DollarSign,
+        keys: ['STRIPE_SECRET_KEY', 'VITE_STRIPE_PUBLIC_KEY', 'STRIPE_WEBHOOK_SECRET', 'STRIPE_AUTO_CURRENCY', 'ACTIVE_MARKETS'],
+        checkKey: 'STRIPE_SECRET_KEY',
+        render: () => (
+          <>
+            {renderInput('STRIPE_SECRET_KEY', 'Stripe Secret Key', 'password')}
+            {renderInput('VITE_STRIPE_PUBLIC_KEY', 'Stripe Public Key', 'password')}
+            {renderInput('STRIPE_WEBHOOK_SECRET', 'Webhook Secret', 'password')}
+            {renderToggle('STRIPE_AUTO_CURRENCY', 'Auto Currency Conversion')}
+            {renderInput('ACTIVE_MARKETS', 'Active Markets (Sweden,Finland,Denmark)')}
+            <button onClick={handleTestStripe} className="mt-2 text-sm text-brand-ink hover:underline">Test Stripe Connection</button>
+          </>
+        )
+      },
+      {
+        id: 'Email',
+        title: 'Zoho Mail',
+        icon: Mail,
+        keys: ['ZOHO_USER', 'ZOHO_PASS', 'ZOHO_SENDER_NAME', 'ZOHO_SMTP_HOST', 'ZOHO_SMTP_PORT'],
+        checkKey: 'ZOHO_USER',
+        render: () => (
+          <>
+            {renderInput('ZOHO_USER', 'Zoho User')}
+            {renderInput('ZOHO_PASS', 'Zoho Password', 'password')}
+            {renderInput('ZOHO_SENDER_NAME', 'Sender Name')}
+            {renderInput('ZOHO_SMTP_HOST', 'SMTP Host')}
+            {renderInput('ZOHO_SMTP_PORT', 'SMTP Port')}
+            <button onClick={handleTestEmail} className="mt-2 text-sm text-brand-ink hover:underline">Send Test Email</button>
+          </>
+        )
+      },
+      {
+        id: 'GoogleShopping',
+        title: 'Google Shopping',
+        icon: ShoppingCart,
+        keys: ['GOOGLE_SHOPPING_MERCHANT_ID', 'GOOGLE_SHOPPING_API_KEY', 'GOOGLE_SHOPPING_CLIENT_ID', 'GOOGLE_SHOPPING_CLIENT_SECRET'],
+        checkKey: 'GOOGLE_SHOPPING_MERCHANT_ID',
+        render: () => (
+          <>
+            {renderInput('GOOGLE_SHOPPING_MERCHANT_ID', 'Merchant ID')}
+            {renderInput('GOOGLE_SHOPPING_API_KEY', 'API Key', 'password')}
+            {renderInput('GOOGLE_SHOPPING_CLIENT_ID', 'Client ID')}
+            {renderInput('GOOGLE_SHOPPING_CLIENT_SECRET', 'Client Secret', 'password')}
+          </>
+        )
+      }
   ];
 
   return (
@@ -448,7 +466,7 @@ export function IntegrationsManager() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {sections.map(section => {
-          const isConnected = config[`${section.checkKey}_CONNECTED`] || !!config[section.checkKey];
+          const isConnected = config[`${section.checkKey}_CONNECTED`] === 'true';
           const logo = LOGOS[section.id];
           
           const renderLogo = () => {

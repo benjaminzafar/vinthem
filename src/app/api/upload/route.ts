@@ -1,40 +1,49 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createAdminClient } from '@/utils/supabase/server';
 
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     const file = formData.get('file') as File;
     const path = formData.get('path') as string;
-    const token = formData.get('token') as string;
 
     if (!file || !path) {
       return NextResponse.json({ error: 'Missing file or path' }, { status: 400 });
     }
 
-    const buffer = await file.arrayBuffer();
-    const bucket = 'onlineshop-6be4b.firebasestorage.app';
-    
-    const uploadUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o?name=${encodeURIComponent(path)}`;
-
-    const res = await fetch(uploadUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': file.type || 'application/octet-stream',
-        ...(token ? { 'Authorization': `Firebase ${token}` } : {})
-      },
-      body: buffer
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      return NextResponse.json({ error: data.error?.message || 'Storage error' }, { status: res.status });
+    // Verify auth token
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const downloadUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${encodeURIComponent(path)}?alt=media&token=${data.downloadTokens}`;
+    const token = authHeader.split('Bearer ')[1];
+    const adminClient = createAdminClient();
+    const { data: { user }, error: authError } = await adminClient.auth.getUser(token);
 
-    return NextResponse.json({ url: downloadUrl });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    const { error: uploadError } = await adminClient.storage
+      .from('images')
+      .upload(path, buffer, {
+        contentType: file.type || 'application/octet-stream',
+        upsert: true,
+      });
+
+    if (uploadError) {
+      return NextResponse.json({ error: uploadError.message }, { status: 500 });
+    }
+
+    const { data: urlData } = adminClient.storage.from('images').getPublicUrl(path);
+
+    return NextResponse.json({ url: urlData.publicUrl });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Upload failed';
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

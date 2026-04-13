@@ -1,18 +1,8 @@
 "use client";
-import React, { useEffect, useState, useRef } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import { useRouter, usePathname } from 'next/navigation';
-import { ShoppingBag, User, LogOut, Settings, Globe, Menu, X, ChevronRight, ChevronDown, Search, Filter, ArrowRight } from 'lucide-react';
-import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
-import { auth, db } from '@/lib/firebase';
-import { useAuthStore } from '@/store/useAuthStore';
-import { useCartStore } from '@/store/useCartStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
-import i18nInstance from '@/i18n';
 import { useTranslation } from 'react-i18next';
-import { Toaster, toast } from 'sonner';
-import { motion, AnimatePresence } from 'motion/react';
 
 export default function Footer() {
   const { settings } = useSettingsStore();

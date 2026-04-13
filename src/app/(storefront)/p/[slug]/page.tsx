@@ -3,8 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { createClient } from '@/utils/supabase/client';
 import ReactMarkdown from 'react-markdown';
 import { motion } from 'motion/react';
 import { ChevronRight, Home, Loader2 } from 'lucide-react';
@@ -19,22 +18,24 @@ export default function StaticPageDetail() {
   const { settings } = useSettingsStore();
   const { i18n } = useTranslation();
   const lang = i18n.language || 'en';
+  const supabase = createClient();
 
   useEffect(() => {
     const fetchPage = async () => {
       if (!slug) return;
       setLoading(true);
       try {
-        const q = query(collection(db, 'pages'), where('slug', '==', slug));
-        const snapshot = await getDocs(q);
-        if (!snapshot.empty) {
-          const doc = snapshot.docs[0];
-          setPage({ id: doc.id, ...doc.data() } as StaticPage);
-        } else {
-          setPage(null);
-        }
+        const { data, error } = await supabase
+          .from('pages')
+          .select('*, updatedAt:updated_at')
+          .eq('slug', slug)
+          .single();
+
+        if (error) throw error;
+        setPage(data as StaticPage);
       } catch (error) {
         console.error("Error fetching page:", error);
+        setPage(null);
       } finally {
         setLoading(false);
       }
@@ -93,7 +94,7 @@ export default function StaticPageDetail() {
             </h1>
             <div className="w-20 h-1 bg-brand-ink mx-auto mb-6"></div>
             <p className="text-sm text-brand-muted">
-              {settings.lastUpdatedText?.[lang]}: {new Date(page.updatedAt).toLocaleDateString(lang === 'sv' ? 'sv-SE' : lang)}
+              {settings.lastUpdatedText?.[lang]}: {page.updatedAt ? new Date(page.updatedAt).toLocaleDateString(lang === 'sv' ? 'sv-SE' : lang) : ''}
             </p>
           </header>
 

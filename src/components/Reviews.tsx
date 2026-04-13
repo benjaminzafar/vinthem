@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import { collection, query, where, orderBy, onSnapshot, addDoc, getDocs } from 'firebase/firestore';
-import { db, auth } from '@/lib/firebase';
+import { createClient } from '@/utils/supabase/client';
 import { Review } from '@/types';
 import { Star, CheckCircle2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
@@ -22,39 +21,55 @@ export default function Reviews({ productId }: ReviewsProps) {
   const { settings } = useSettingsStore();
   const { i18n } = useTranslation();
   const lang = i18n.language || 'en';
+  const supabase = createClient();
 
   useEffect(() => {
-    const q = query(
-      collection(db, `products/${productId}/reviews`),
-      orderBy('createdAt', 'desc')
-    );
+    const fetchReviews = async () => {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('reviews')
+          .select('*, userName:user_name, userId:user_id, productId:product_id, createdAt:created_at, adminReply:admin_reply, adminReplyAt:admin_reply_at')
+          .eq('product_id', productId)
+          .order('created_at', { ascending: false });
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const reviewsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Review));
-      setReviews(reviewsData);
-      setLoading(false);
-    }, (error) => {
-      console.error("Error fetching reviews:", error);
-      setLoading(false);
-    });
+        if (error) throw error;
+        setReviews(data as Review[]);
+      } catch (error) {
+        console.error("Error fetching reviews:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    return () => unsubscribe();
+    fetchReviews();
+
+    // Subscribe to changes
+    const channel = supabase
+      .channel(`reviews:${productId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'reviews', filter: `product_id=eq.${productId}` }, fetchReviews)
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [productId]);
 
   useEffect(() => {
     const checkPurchase = async () => {
-      if (!auth.currentUser) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
         setHasPurchased(false);
         return;
       }
 
       try {
-        const q = query(
-          collection(db, 'orders'),
-          where('userId', '==', auth.currentUser.uid)
-        );
-        const querySnapshot = await getDocs(q);
-        const orders = querySnapshot.docs.map(doc => doc.data());
+        const { data: orders, error } = await supabase
+          .from('orders')
+          .select('items')
+          .eq('user_id', user.id);
+
+        if (error) throw error;
         
         const purchased = orders.some(order => 
           order.items?.some((item: any) => item.id === productId)
@@ -68,24 +83,31 @@ export default function Reviews({ productId }: ReviewsProps) {
     };
 
     checkPurchase();
-  }, [productId, auth.currentUser]);
+  }, [productId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!auth.currentUser) {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
       toast.error(settings.pleaseLoginToReviewText?.[lang] || 'Please log in to leave a review.');
       return;
     }
 
     try {
-      await addDoc(collection(db, `products/${productId}/reviews`), {
-        productId,
-        userId: auth.currentUser.uid,
-        userName: auth.currentUser.displayName || 'Anonymous',
-        rating,
-        comment,
-        createdAt: new Date().toISOString()
-      });
+      const { error } = await supabase
+        .from('reviews')
+        .insert({
+          product_id: productId,
+          user_id: user.id,
+          user_name: user.user_metadata?.full_name || 'Anonymous',
+          rating,
+          comment,
+          created_at: new Date().toISOString()
+        });
+
+      if (error) throw error;
+
       setComment('');
       toast.success(settings.reviewSubmittedText?.[lang] || 'Review submitted successfully!');
     } catch (error) {
@@ -94,11 +116,18 @@ export default function Reviews({ productId }: ReviewsProps) {
     }
   };
 
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setCurrentUser(user);
+    });
+  }, []);
+
   return (
     <div className="mt-16 mb-16">
       <h2 className="text-2xl font-sans font-medium text-brand-ink mb-8 tracking-tight">{settings.customerReviewsText?.[lang] || 'Customer Reviews'}</h2>
       
-      {auth.currentUser ? (
+      {currentUser ? (
         hasPurchased === true ? (
           <form onSubmit={handleSubmit} className="mb-12 bg-zinc-50/50 p-6 sm:p-8 rounded-3xl border border-zinc-100">
             <div className="flex items-center gap-2 mb-6">

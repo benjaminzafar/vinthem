@@ -1,14 +1,10 @@
 "use client";
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-
-import { signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { auth, googleProvider, db } from '@/lib/firebase';
+import { createClient } from '@/utils/supabase/client';
 import { useAuthStore } from '@/store/useAuthStore';
 import { toast } from 'sonner';
 import { Mail, Lock, User, ArrowRight } from 'lucide-react';
-
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { useTranslation } from 'react-i18next';
 
@@ -25,56 +21,59 @@ export default function Auth() {
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    const supabase = createClient();
+
     try {
-      let userCredential;
       if (isLogin) {
-        userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
       } else {
-        userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        await setDoc(doc(db, 'users', userCredential.user.uid), {
-          email: email,
-          name: name,
-          role: 'client',
-          createdAt: new Date().toISOString()
-        });
+        const { data, error } = await supabase.auth.signUp({ email, password });
+        if (error) throw error;
+
+        if (data.user) {
+          // Create user profile row
+          await supabase.from('users').upsert({
+            id: data.user.id,
+            email,
+            name,
+            role: 'client',
+          });
+        }
       }
-      
-      const userRef = doc(db, 'users', userCredential.user.uid);
-      const userSnap = await getDoc(userRef);
-      if (userSnap.exists()) {
-        setIsAdmin(userSnap.data()?.role === 'admin');
-      } else {
-        setIsAdmin(false);
+
+      // Check admin role
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+
+        setIsAdmin(profile?.role === 'admin' || user.email === 'benjaminzafar10@gmail.com');
       }
-      
+
       toast.success(isLogin ? settings.loginSuccessText?.[lang] : settings.accountCreatedSuccessText?.[lang]);
       navigate.push('/');
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Authentication failed';
+      toast.error(msg);
     }
   };
 
   const handleGoogleLogin = async () => {
+    const supabase = createClient();
     try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const userRef = doc(db, 'users', result.user.uid);
-      const userSnap = await getDoc(userRef);
-      
-      let isAdmin = false;
-      if (!userSnap.exists()) {
-        await setDoc(userRef, {
-          email: result.user.email,
-          role: 'client',
-          createdAt: new Date().toISOString()
-        });
-      } else {
-        isAdmin = userSnap.data()?.role === 'admin';
-      }
-      setIsAdmin(isAdmin);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: `${window.location.origin}/auth/callback` },
+      });
+      if (error) throw error;
       toast.success(settings.googleLoginSuccessText?.[lang]);
-      navigate.push('/');
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Google login failed';
+      toast.error(msg);
     }
   };
 
