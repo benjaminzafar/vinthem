@@ -25,10 +25,19 @@ export default function Auth() {
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({ 
+          email, 
+          password
+        });
         if (error) throw error;
       } else {
-        const { data, error } = await supabase.auth.signUp({ email, password });
+        const { data, error } = await supabase.auth.signUp({ 
+          email, 
+          password,
+          options: {
+            redirectTo: `${window.location.origin}/auth/callback`
+          }
+        });
         if (error) throw error;
 
         if (data.user) {

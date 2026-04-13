@@ -2185,18 +2185,28 @@ function BlogManager() {
 
   useEffect(() => {
     const fetchBlogs = async () => {
-      const { data, error } = await supabase
-        .from('blog_posts')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (error) {
-        console.error("Error fetching blogs:", error);
-        toast.error('Failed to load blog posts.');
-      } else {
-        setPosts(data as BlogPost[]);
+      try {
+        const { data, error } = await supabase
+          .from('blog_posts')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (error) {
+          console.error("Supabase error fetching blogs:", error);
+          if (error.code === 'PGRST205') {
+            console.warn("CRITICAL: The 'blog_posts' table is missing. Please run the SQL script in implementation_plan_blog_fix.md.");
+            setPosts([]);
+          } else {
+            toast.error('Failed to load blog posts.');
+          }
+        } else {
+          setPosts(data as BlogPost[]);
+        }
+      } catch (error) {
+        console.error("Unexpected error fetching blogs:", error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
     fetchBlogs();
   }, []);
@@ -2522,12 +2532,25 @@ export default function AdminDashboard() {
   const router = useRouter();
 
   useEffect(() => {
+    // Only redirect if auth is finished loading AND we definitely know the user is not an admin
     if (!isAuthLoading && isAdmin === false) {
+      console.log("Admin check failed, redirecting...");
       router.replace('/');
     }
   }, [isAdmin, isAuthLoading, router]);
 
-  if (isAuthLoading) { return <div className='flex items-center justify-center min-h-screen bg-gray-50'><div className='w-10 h-10 border-4 border-black border-t-transparent rounded-full animate-spin'></div></div>; } if (!isAdmin) {
+  if (isAuthLoading) { 
+    return (
+      <div className='flex items-center justify-center min-h-screen bg-gray-50'>
+        <div className='flex flex-col items-center gap-4'>
+          <div className='w-10 h-10 border-4 border-black border-t-transparent rounded-full animate-spin'></div>
+          <p className='text-xs font-medium text-gray-400 uppercase tracking-widest'>Verifying Credentials...</p>
+        </div>
+      </div>
+    ); 
+  }
+
+  if (!isAdmin) {
     return null;
   }
 
@@ -2709,7 +2732,7 @@ export default function AdminDashboard() {
                 handleSaveSettings={async (settings) => {
                   const toastId = toast.loading('Saving storefront settings...');
                   try {
-                    await supabase.from('settings').upsert({ id: 'storefront', data: settings });
+                    await supabase.from('settings').upsert({ id: 'primary', data: settings });
                     toast.success('Storefront settings saved successfully', { id: toastId });
                   } catch (error) {
                     console.error('Error saving settings:', error);

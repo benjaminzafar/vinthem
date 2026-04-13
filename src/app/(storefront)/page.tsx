@@ -27,27 +27,39 @@ export default function Storefront() {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
+      
       try {
-        // Fetch products
-        const { data: productsData, error: productsError } = await supabase
-          .from('products')
-          .select('*, imageUrl:image_url, isFeatured:is_featured, createdAt:created_at')
-          .order('created_at', { ascending: false });
+        // Fetch products and categories independently to ensure one failure doesn't block the other
+        const [productsRes, categoriesRes] = await Promise.all([
+          supabase
+            .from('products')
+            .select('*, imageUrl:image_url, isFeatured:is_featured, createdAt:created_at')
+            .order('created_at', { ascending: false }),
+          supabase
+            .from('categories')
+            .select('*, imageUrl:image_url, isFeatured:is_featured, showInHero:show_in_hero')
+            .order('name')
+        ]);
 
-        if (productsError) throw productsError;
-        setProducts(productsData as Product[]);
+        if (productsRes.error) {
+          console.error("Supabase error fetching products:", productsRes.error);
+          toast.error("Failed to load products");
+        } else {
+          setProducts(productsRes.data as Product[]);
+        }
 
-        // Fetch categories
-        const { data: categoriesData, error: categoriesError } = await supabase
-          .from('categories')
-          .select('*, imageUrl:image_url, isFeatured:is_featured, showInHero:show_in_hero')
-          .order('name');
+        if (categoriesRes.error) {
+          console.error("Supabase error fetching categories:", categoriesRes.error);
+          // If the error is 'PGRST205', it means the categories table is specifically missing
+          if (categoriesRes.error.code === 'PGRST205') {
+            console.warn("CRITICAL: The 'categories' table is missing from your Supabase database. Please run the provided SQL script.");
+          }
+        } else {
+          setCategories(categoriesRes.data as Category[]);
+        }
 
-        if (categoriesError) throw categoriesError;
-        setCategories(categoriesData as Category[]);
       } catch (error) {
-        console.error("Error fetching data:", error);
-        toast.error("Failed to load store data");
+        console.error("Unexpected error in fetchData:", error);
       } finally {
         setLoading(false);
       }

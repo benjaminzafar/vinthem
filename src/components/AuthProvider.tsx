@@ -12,37 +12,56 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const supabase = createClient();
 
     const initAuth = async () => {
-      // Load Settings
-      const { data: settingsData } = await supabase
-        .from('settings')
-        .select('data')
-        .eq('id', 'storefront')
-        .single();
-      
-      if (settingsData?.data) {
-        setSettings(settingsData.data);
-      }
-      setSettingsLoaded(true);
-
-      // Load Auth
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-
-      if (user) {
-        const { data } = await supabase
-          .from('users')
-          .select('role')
-          .eq('id', user.id)
+      try {
+        // Load Settings - Updated to use 'primary' to match schema.sql
+        const { data: settingsData, error: settingsError } = await supabase
+          .from('settings')
+          .select('data')
+          .eq('id', 'primary')
           .single();
+        
+        if (settingsError && settingsError.code !== 'PGRST116') {
+          console.error("Error loading settings:", settingsError);
+        }
 
-        const isAdmin =
-          data?.role === 'admin' ||
-          user.email === 'benjaminzafar10@gmail.com';
-        setIsAdmin(isAdmin);
-      } else {
-        setIsAdmin(false);
+        if (settingsData?.data) {
+          setSettings(settingsData.data);
+        }
+        setSettingsLoaded(true);
+
+        // Load Auth
+        const { data: { user } } = await supabase.auth.getUser();
+        setUser(user);
+
+        if (user) {
+          try {
+            const { data, error } = await supabase
+              .from('users')
+              .select('role')
+              .eq('id', user.id)
+              .single();
+
+            if (error && error.code !== 'PGRST116') {
+              console.error("Error loading user role:", error);
+            }
+
+            const isAdmin =
+              data?.role === 'admin' ||
+              user.email === 'benjaminzafar10@gmail.com' ||
+              user.email === 'benjaminzafar7@gmail.com'; // Added other confirmed email
+            setIsAdmin(isAdmin);
+          } catch (error) {
+            console.error("Failed to fetch user profile:", error);
+            setIsAdmin(false);
+          }
+        } else {
+          setIsAdmin(false);
+        }
+      } catch (error) {
+        console.error("Auth initialization failed:", error);
+      } finally {
+        setIsAuthLoading(false);
       }
-      setIsAuthLoading(false);
     };
 
     initAuth();
@@ -53,16 +72,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(user);
 
         if (user) {
-          const { data } = await supabase
-            .from('users')
-            .select('role')
-            .eq('id', user.id)
-            .single();
+          try {
+            const { data } = await supabase
+              .from('users')
+              .select('role')
+              .eq('id', user.id)
+              .single();
 
-          const isAdmin =
-            data?.role === 'admin' ||
-            user.email === 'benjaminzafar10@gmail.com';
-          setIsAdmin(isAdmin);
+            const isAdmin =
+              data?.role === 'admin' ||
+              user.email === 'benjaminzafar10@gmail.com' ||
+              user.email === 'benjaminzafar7@gmail.com';
+            setIsAdmin(isAdmin);
+          } catch (error) {
+            console.error("Error updating user role on state change:", error);
+            setIsAdmin(false);
+          }
         } else {
           setIsAdmin(false);
         }
