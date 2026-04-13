@@ -9,15 +9,18 @@ import { toast } from 'sonner';
 import { createClient } from '@/utils/supabase/client';
 import { getAI } from '@/lib/gemini';
 
+import { StorefrontSettingsType, LocalizedString } from '@/types';
+
 interface ProductModalProps {
   isOpen: boolean;
   onClose: () => void;
   product: Product | null;
   categories: Category[];
-  settings: any;
+  settings: StorefrontSettingsType;
+  onSuccess?: () => void;
 }
 
-export function ProductModal({ isOpen, onClose, product, categories, settings }: ProductModalProps) {
+export function ProductModal({ isOpen, onClose, product, categories, settings, onSuccess }: ProductModalProps) {
   const supabase = createClient();
   const [formData, setFormData] = useState<Partial<Product>>({
     title: '',
@@ -81,9 +84,10 @@ export function ProductModal({ isOpen, onClose, product, categories, settings }:
       const url = await uploadImageWithTimeout(file, `products/${Date.now()}_${file.name}`);
       setFormData({ ...formData, imageUrl: url });
       toast.success('Image uploaded successfully', { id: toastId });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Upload error:", error);
-      toast.error(error.message || 'Failed to upload image', { id: toastId });
+      const msg = error instanceof Error ? error.message : 'Failed to upload image';
+      toast.error(msg, { id: toastId });
     } finally {
       setUploading(false);
     }
@@ -107,9 +111,10 @@ export function ProductModal({ isOpen, onClose, product, categories, settings }:
         additionalImages: [...(prev.additionalImages || []), ...urls] 
       }));
       toast.success('Gallery images uploaded successfully', { id: toastId });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Gallery upload error:", error);
-      toast.error(error.message || 'Failed to upload gallery images', { id: toastId });
+      const msg = error instanceof Error ? error.message : 'Failed to upload gallery images';
+      toast.error(msg, { id: toastId });
     } finally {
       setUploading(false);
     }
@@ -286,10 +291,12 @@ export function ProductModal({ isOpen, onClose, product, categories, settings }:
         if (error) throw error;
         toast.success('Product added successfully', { id: toastId });
       }
+      if (onSuccess) onSuccess();
       onClose();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error saving product:", error);
-      toast.error(error.message || 'Failed to save product', { id: toastId });
+      const msg = error instanceof Error ? error.message : 'Failed to save product';
+      toast.error(msg, { id: toastId });
     }
   };
 
@@ -556,7 +563,7 @@ export function ProductModal({ isOpen, onClose, product, categories, settings }:
                       <label key={flag.id} className="flex items-center gap-2 cursor-pointer group">
                         <input 
                           type="checkbox" 
-                          checked={(formData as any)[flag.id]}
+                          checked={!!formData[flag.id as keyof Product]}
                           onChange={(e) => setFormData({ ...formData, [flag.id]: e.target.checked })}
                           className="w-4 h-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900" 
                         />

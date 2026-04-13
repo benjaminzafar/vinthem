@@ -8,6 +8,7 @@ import { Trash2, ArrowLeft, ShoppingCart, ArrowRight } from 'lucide-react';
 import { motion } from 'motion/react';
 import { formatPrice } from '@/lib/currency';
 import Link from 'next/link';
+import Image from 'next/image';
 
 
 export default function Cart() {
@@ -84,9 +85,15 @@ export default function Cart() {
                   key={item.id} 
                   className="flex gap-6 sm:gap-8 py-4 sm:py-6 border-b border-gray-200/60 last:border-0"
                 >
-                  <div className="w-24 h-32 sm:w-32 sm:h-40 rounded-2xl bg-gray-50 overflow-hidden flex-shrink-0 border border-gray-100">
+                  <div className="w-24 h-32 sm:w-32 sm:h-40 rounded-2xl bg-gray-50 overflow-hidden flex-shrink-0 border border-gray-100 relative">
                     {item.imageUrl && item.imageUrl.trim() !== "" ? (
-                      <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                      <Image 
+                        src={item.imageUrl} 
+                        alt={item.title} 
+                        fill
+                        className="object-cover" 
+                        referrerPolicy="no-referrer" 
+                      />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-xs text-brand-muted uppercase tracking-widest">Nordic</div>
                     )}

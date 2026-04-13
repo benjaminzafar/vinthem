@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 import { ArrowRight } from 'lucide-react';
 import { Category } from '@/types';
@@ -70,11 +71,13 @@ export function HeroSlider({ categories, lang }: HeroSliderProps) {
           <div className="w-full lg:w-[55%] order-2 z-0 flex-1 min-h-0 flex items-center justify-center">
             <div className="relative w-full max-h-[40vh] lg:max-h-none aspect-[16/10] sm:aspect-[16/9] lg:aspect-[4/3] xl:aspect-[16/10] overflow-hidden rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.25)]">
               {category.imageUrl && (
-                <img 
+                <Image 
                   src={category.imageUrl} 
                   alt={category.translations?.[lang]?.name || category.name} 
-                  className="w-full h-full object-cover"
-                  referrerPolicy="no-referrer"
+                  fill
+                  priority
+                  sizes="(max-width: 768px) 100vw, 60vw"
+                  className="object-cover"
                 />
               )}
             </div>

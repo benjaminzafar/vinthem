@@ -29,7 +29,11 @@ export async function handleSupabaseError(
   const { data: { user } } = await supabase.auth.getUser();
 
   const errInfo: SupabaseErrorInfo = {
-    error: error instanceof Error ? error.message : String(error),
+    error: error instanceof Error 
+      ? error.message 
+      : (typeof error === 'object' && error !== null 
+          ? JSON.stringify(error) 
+          : String(error)),
     authInfo: {
       userId: user?.id,
       email: user?.email ?? null,

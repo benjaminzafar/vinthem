@@ -28,6 +28,17 @@ const SHIPPING_RATES: Record<string, number> = {
   'IS': 149 // Iceland
 };
 
+import Image from 'next/image';
+
+interface ShippingDetails {
+  name: string;
+  email: string;
+  address: string;
+  city: string;
+  postalCode: string;
+  country: string;
+}
+
 function CheckoutForm({ 
   clientSecret, 
   shippingDetails, 
@@ -35,8 +46,8 @@ function CheckoutForm({
   shippingCost 
 }: { 
   clientSecret: string,
-  shippingDetails: any,
-  setShippingDetails: any,
+  shippingDetails: ShippingDetails,
+  setShippingDetails: React.Dispatch<React.SetStateAction<ShippingDetails>>,
   shippingCost: number
 }) {
   const stripe = useStripe();
@@ -95,9 +106,10 @@ function CheckoutForm({
       clearCart();
       navigate.push('/profile');
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Checkout error:", error);
-      toast.error(error.message || settings.paymentFailedText?.[lang] || 'Payment failed', { id: toastId });
+      const msg = error instanceof Error ? error.message : (settings.paymentFailedText?.[lang] || 'Payment failed');
+      toast.error(msg, { id: toastId });
     } finally {
       setLoading(false);
     }
@@ -207,9 +219,15 @@ function CheckoutForm({
               <div className="space-y-4 mb-8 max-h-60 overflow-y-auto pr-2">
                 {items.map(item => (
                   <div key={item.id} className="flex gap-4">
-                    <div className="w-16 h-20 rounded-2xl bg-gray-50 overflow-hidden shrink-0 border border-gray-100">
+                    <div className="w-16 h-20 rounded-2xl bg-gray-50 overflow-hidden shrink-0 border border-gray-100 relative">
                       {item.imageUrl && item.imageUrl.trim() !== "" ? (
-                        <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                        <Image 
+                          src={item.imageUrl} 
+                          alt={item.title} 
+                          fill
+                          className="object-cover" 
+                          sizes="64px"
+                        />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-400">IMG</div>
                       )}

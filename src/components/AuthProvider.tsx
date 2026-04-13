@@ -1,60 +1,37 @@
 "use client";
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { useAuthStore } from '@/store/useAuthStore';
-import { useSettingsStore } from '@/store/useSettingsStore';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { setUser, setIsAdmin, setIsAuthLoading } = useAuthStore();
-  const { setSettings, setSettingsLoaded } = useSettingsStore();
+  const supabase = createClient();
+  const initialized = useRef(false);
 
   useEffect(() => {
-    const supabase = createClient();
+    if (initialized.current) return;
+    initialized.current = true;
 
     const initAuth = async () => {
       try {
-        // Load Settings - Updated to use 'primary' to match schema.sql
-        const { data: settingsData, error: settingsError } = await supabase
-          .from('settings')
-          .select('data')
-          .eq('id', 'primary')
-          .single();
-        
-        if (settingsError && settingsError.code !== 'PGRST116') {
-          console.error("Error loading settings:", settingsError);
-        }
-
-        if (settingsData?.data) {
-          setSettings(settingsData.data);
-        }
-        setSettingsLoaded(true);
-
-        // Load Auth
+        // Only load auth state, settings are handled by StoreHydrator
         const { data: { user } } = await supabase.auth.getUser();
-        setUser(user);
-
+        
         if (user) {
-          try {
-            const { data, error } = await supabase
-              .from('users')
-              .select('role')
-              .eq('id', user.id)
-              .single();
+          setUser(user);
+          const { data } = await supabase
+            .from('users')
+            .select('role')
+            .eq('id', user.id)
+            .single();
 
-            if (error && error.code !== 'PGRST116') {
-              console.error("Error loading user role:", error);
-            }
-
-            const isAdmin =
-              data?.role === 'admin' ||
-              user.email === 'benjaminzafar10@gmail.com' ||
-              user.email === 'benjaminzafar7@gmail.com'; // Added other confirmed email
-            setIsAdmin(isAdmin);
-          } catch (error) {
-            console.error("Failed to fetch user profile:", error);
-            setIsAdmin(false);
-          }
+          const isAdmin =
+            data?.role === 'admin' ||
+            user.email === 'benjaminzafar10@gmail.com' ||
+            user.email === 'benjaminzafar7@gmail.com';
+          setIsAdmin(isAdmin);
         } else {
+          setUser(null);
           setIsAdmin(false);
         }
       } catch (error) {
@@ -67,27 +44,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      async (event, session) => {
         const user = session?.user ?? null;
+        
+        if (event === 'SIGNED_OUT') {
+          setUser(null);
+          setIsAdmin(false);
+          setIsAuthLoading(false);
+          return;
+        }
+
         setUser(user);
 
         if (user) {
-          try {
-            const { data } = await supabase
-              .from('users')
-              .select('role')
-              .eq('id', user.id)
-              .single();
+          const { data } = await supabase
+            .from('users')
+            .select('role')
+            .eq('id', user.id)
+            .single();
 
-            const isAdmin =
-              data?.role === 'admin' ||
-              user.email === 'benjaminzafar10@gmail.com' ||
-              user.email === 'benjaminzafar7@gmail.com';
-            setIsAdmin(isAdmin);
-          } catch (error) {
-            console.error("Error updating user role on state change:", error);
-            setIsAdmin(false);
-          }
+          const isAdmin =
+            data?.role === 'admin' ||
+            user.email === 'benjaminzafar10@gmail.com' ||
+            user.email === 'benjaminzafar7@gmail.com';
+          setIsAdmin(isAdmin);
         } else {
           setIsAdmin(false);
         }
@@ -96,7 +76,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
 
     return () => subscription.unsubscribe();
-  }, [setUser, setIsAdmin, setIsAuthLoading]);
+  }, [setUser, setIsAdmin, setIsAuthLoading, supabase]);
 
   return <>{children}</>;
 }
+

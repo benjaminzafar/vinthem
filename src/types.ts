@@ -1,4 +1,7 @@
-import { LocalizedString } from '@/store/useSettingsStore';
+import { LocalizedString, StorefrontSettings } from '@/store/useSettingsStore';
+
+export type StorefrontSettingsType = StorefrontSettings;
+export { type LocalizedString };
 
 export interface Category {
   id?: string;

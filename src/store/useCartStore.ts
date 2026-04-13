@@ -45,7 +45,7 @@ export interface Product {
   isBestSeller?: boolean;
   isComingSoon?: boolean;
   starred?: boolean;
-  createdAt?: any;
+  createdAt?: string;
   weight?: number;
   shippingClass?: string;
   prices?: Record<string, number>;

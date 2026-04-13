@@ -307,6 +307,9 @@ export interface StorefrontSettings {
   footerSections: FooterSection[];
   trackingTags: string;
   languages: string[];
+  quickAddText: LocalizedString;
+  noPagesYetText: LocalizedString;
+  noPagesDescriptionText: LocalizedString;
 }
 
 interface SettingsStore {
@@ -630,6 +633,9 @@ export const defaultSettings: StorefrontSettings = {
   ],
   trackingTags: '',
   languages: ['en', 'sv', 'fi', 'da'],
+  quickAddText: { en: 'Quick Add', sv: 'Snabbköp', fi: 'Pikaostos', da: 'Hurtigkøb' },
+  noPagesYetText: { en: 'No pages yet', sv: 'Inga sidor ännu', fi: 'Ei sivuja vielä', da: 'Ingen sider endnu' },
+  noPagesDescriptionText: { en: 'Add a page manually or seed default pages to get started.', sv: 'Lägg till en sida manuellt eller fyll på med standardsidor för att komma igång.', fi: 'Lisää sivu manuaalisesti tai siemenellä oletussivuja aloittaaksesi.', da: 'Tilføj en side manuelt eller så standardsider for at komme i gang.' },
 };
 
 export const useSettingsStore = create<SettingsStore>((set) => ({

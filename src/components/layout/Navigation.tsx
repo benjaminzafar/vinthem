@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { Toaster, toast } from 'sonner';
 import { motion, AnimatePresence } from 'motion/react';
 import { createClient } from '@/utils/supabase/client';
+import Image from 'next/image';
 
 export default function Navigation() {
   const supabase = createClient();
@@ -83,12 +84,15 @@ export default function Navigation() {
           <div className="flex-1 flex items-center">
             <Link href="/" className="flex items-center space-x-3 group">
               {settings.logoImage && settings.logoImage.trim() !== "" ? (
-                <img 
-                  src={settings.logoImage} 
-                  alt={settings.storeName?.[lang]} 
-                  className="h-8 w-auto object-contain transition-transform group-hover:scale-105" 
-                  referrerPolicy="no-referrer" 
-                />
+                <div className="relative h-8 w-32">
+                  <Image 
+                    src={settings.logoImage} 
+                    alt={settings.storeName?.[lang] || 'Mavren'} 
+                    fill
+                    className="object-contain transition-transform group-hover:scale-105" 
+                    sizes="(max-width: 768px) 100px, 128px"
+                  />
+                </div>
               ) : (
                 <span className="text-xl font-normal text-gray-900">
                   {settings.storeName?.[lang]}
@@ -206,11 +210,12 @@ export default function Navigation() {
                     onClick={() => setIsAccountDropdownOpen(!isAccountDropdownOpen)}
                     className="flex items-center space-x-2 p-1 rounded-lg hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-200"
                   >
-                    <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-200">
-                      <img 
+                    <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-200 relative">
+                      <Image 
                         src={(user.user_metadata?.avatar_url || user.user_metadata?.picture) ? (user.user_metadata?.avatar_url || user.user_metadata?.picture) : `https://ui-avatars.com/api/?name=${user.user_metadata?.full_name || 'U'}&background=random`} 
                         alt="Profile" 
-                        className="w-full h-full object-cover" 
+                        fill
+                        className="object-cover" 
                         referrerPolicy="no-referrer"
                       />
                     </div>
@@ -347,12 +352,15 @@ export default function Navigation() {
                       <span className="text-xs font-medium uppercase tracking-wider text-gray-500">{settings.accountLabel?.[lang]}</span>
                       <div className="flex items-center justify-between bg-gray-50 p-4 rounded-none">
                         <div className="flex items-center space-x-3">
-                          <img 
-                            src={(user.user_metadata?.avatar_url || user.user_metadata?.picture) ? (user.user_metadata?.avatar_url || user.user_metadata?.picture) : `https://ui-avatars.com/api/?name=${user.user_metadata?.full_name || 'U'}&background=random`} 
-                            alt="Profile" 
-                            className="w-10 h-10 rounded-none object-cover border border-gray-200" 
-                            referrerPolicy="no-referrer"
-                          />
+                          <div className="w-10 h-10 rounded-none relative overflow-hidden border border-gray-200">
+                            <Image 
+                              src={(user.user_metadata?.avatar_url || user.user_metadata?.picture) ? (user.user_metadata?.avatar_url || user.user_metadata?.picture) : `https://ui-avatars.com/api/?name=${user.user_metadata?.full_name || 'U'}&background=random`} 
+                              alt="Profile" 
+                              fill
+                              className="object-cover" 
+                              referrerPolicy="no-referrer"
+                            />
+                          </div>
                           <div>
                             <p className="text-sm font-medium text-brand-ink">{user.user_metadata?.full_name || 'Account'}</p>
                             <p className="text-xs text-gray-500 truncate max-w-[120px]">{user.email}</p>

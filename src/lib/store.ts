@@ -1,12 +1,13 @@
 "use client";
 import { create } from 'zustand';
+import { User } from '@supabase/supabase-js';
 
 interface AppState {
   isSidebarOpen: boolean;
   toggleSidebar: () => void;
-  // Placeholder for user session
-  user: any | null; 
-  setUser: (user: any | null) => void;
+  // User session
+  user: User | null; 
+  setUser: (user: User | null) => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({

@@ -8,6 +8,15 @@ import { toast } from 'sonner';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { useTranslation } from 'react-i18next';
 
+import { User } from '@supabase/supabase-js';
+
+interface OrderItem {
+  id: string;
+  title: string;
+  quantity: number;
+  price: number;
+}
+
 interface ReviewsProps {
   productId: string;
 }
@@ -72,7 +81,7 @@ export default function Reviews({ productId }: ReviewsProps) {
         if (error) throw error;
         
         const purchased = orders.some(order => 
-          order.items?.some((item: any) => item.id === productId)
+          order.items?.some((item: OrderItem) => item.id === productId)
         );
         
         setHasPurchased(purchased);
@@ -116,7 +125,7 @@ export default function Reviews({ productId }: ReviewsProps) {
     }
   };
 
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       setCurrentUser(user);

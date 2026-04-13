@@ -43,7 +43,17 @@ export async function middleware(request: NextRequest) {
   }
 
   // Refresh Supabase session for all routes (required by @supabase/ssr)
-  const { supabaseResponse } = await updateSession(request);
+  const { supabaseResponse, user } = await updateSession(request);
+
+  // Guard admin routes
+  if (request.nextUrl.pathname.startsWith('/admin')) {
+    if (!user) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/login';
+      url.searchParams.set('redirect', request.nextUrl.pathname);
+      return NextResponse.redirect(url);
+    }
+  }
 
   // Copy CORS and rate-limit headers to supabase response
   response.headers.forEach((value, key) => {

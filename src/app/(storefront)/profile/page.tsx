@@ -11,6 +11,7 @@ import { createClient } from '@/utils/supabase/client';
 import { toast } from 'sonner';
 import { formatPrice } from '@/lib/currency';
 import { useSettingsStore } from '@/store/useSettingsStore';
+import Image from 'next/image';
 
 interface Order {
   id: string;
@@ -460,9 +461,15 @@ export default function CustomerPanel() {
                                       <div className="space-y-4">
                                         {order.items?.map((item, index) => (
                                           <div key={index} className="flex items-start space-x-6 py-5 border-b border-gray-200/60 last:border-0">
-                                            <div className="w-20 h-24 bg-gray-50 rounded-2xl flex items-center justify-center overflow-hidden shrink-0 border border-gray-100">
+                                            <div className="w-20 h-24 bg-gray-50 rounded-2xl flex items-center justify-center overflow-hidden shrink-0 border border-gray-100 relative">
                                               {(item.imageUrl && item.imageUrl.trim() !== "") || (item.image && item.image.trim() !== "") ? (
-                                                <img src={item.imageUrl || item.image} alt={item.title || item.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                                                <Image 
+                                                  src={item.imageUrl || item.image} 
+                                                  alt={item.title || item.name} 
+                                                  fill
+                                                  className="object-cover" 
+                                                  referrerPolicy="no-referrer" 
+                                                />
                                               ) : (
                                                 <Package className="w-8 h-8 text-gray-300" />
                                               )}
@@ -573,8 +580,16 @@ export default function CustomerPanel() {
                 <h2 className="text-3xl font-sans text-brand-ink mb-8 tracking-tight">{settings.profileDetailsTitleText?.[lang] || 'Profile Details'}</h2>
                 <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-6 sm:space-y-0 sm:space-x-8 mb-10 pb-10 border-b border-gray-100">
                   <div className="relative">
-                    <img src={(user.user_metadata?.avatar_url || user.user_metadata?.picture) ? (user.user_metadata?.avatar_url || user.user_metadata?.picture) : 'https://ui-avatars.com/api/?name=' + (user.user_metadata?.full_name || 'User') + '&background=141414&color=fff'} alt="Profile" className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-md" referrerPolicy="no-referrer" />
-                    <button className="absolute bottom-0 right-0 bg-white border border-gray-200 p-2.5 rounded-full hover:bg-gray-50 text-brand-ink transition-colors shadow-sm">
+                    <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-md relative bg-gray-50">
+                      <Image 
+                        src={(user.user_metadata?.avatar_url || user.user_metadata?.picture) ? (user.user_metadata?.avatar_url || user.user_metadata?.picture) : 'https://ui-avatars.com/api/?name=' + (user.user_metadata?.full_name || 'User') + '&background=141414&color=fff'} 
+                        alt="Profile" 
+                        fill
+                        className="object-cover" 
+                        referrerPolicy="no-referrer"
+                      />
+                    </div>
+                    <button className="absolute bottom-0 right-0 bg-white border border-gray-200 p-2.5 rounded-full hover:bg-gray-50 text-brand-ink transition-colors shadow-sm z-10">
                       <Edit className="w-4 h-4" />
                     </button>
                   </div>

@@ -3,6 +3,7 @@ import React from 'react';
 import Link from 'next/link';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { useTranslation } from 'react-i18next';
+import Image from 'next/image';
 
 export default function Footer() {
   const { settings } = useSettingsStore();
@@ -16,12 +17,15 @@ export default function Footer() {
           <div className="col-span-1 md:col-span-4 lg:col-span-5 pr-8">
             <Link href="/" className="inline-block mb-8 group">
               {settings.logoImage ? (
-                <img 
-                  src={settings.logoImage} 
-                  alt={settings.storeName?.[lang]} 
-                  className="h-10 w-auto object-contain transition-transform group-hover:scale-105" 
-                  referrerPolicy="no-referrer" 
-                />
+                <div className="relative h-10 w-40">
+                  <Image 
+                    src={settings.logoImage} 
+                    alt={settings.storeName?.[lang] || 'Mavren'} 
+                    fill
+                    className="object-contain transition-transform group-hover:scale-105" 
+                    sizes="(max-width: 768px) 120px, 160px"
+                  />
+                </div>
               ) : (
                 <span className="text-xl font-normal text-gray-900">{settings.storeName?.[lang]}</span>
               )}
