@@ -26,7 +26,8 @@ export async function GET(req: NextRequest) {
 
     const isAdmin =
       (!userError && userDoc?.role === 'admin') ||
-      user.email === 'benjaminzafar10@gmail.com';
+      user.email === 'benjaminzafar10@gmail.com' ||
+      user.email === 'benjaminzafar7@gmail.com';
 
     if (!isAdmin) {
       return NextResponse.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
