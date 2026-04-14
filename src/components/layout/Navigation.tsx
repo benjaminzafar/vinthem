@@ -110,21 +110,23 @@ export default async function Navigation() {
               )}
             </div>
             
-            <MobileMenu 
-              user={user} 
-              isAdmin={isAdmin} 
-              settings={settings} 
-              lang={lang} 
-              availableLanguages={availableLanguages}
-              labels={{
-                menu: settings?.menuText?.[lang] || 'Menu',
-                language: settings?.languageLabel?.[lang] || 'Language',
-                account: settings?.accountLabel?.[lang] || 'Account',
-                adminDashboard: settings?.adminDashboardText?.[lang] || 'Admin Dashboard',
-                logout: settings?.logoutText?.[lang] || 'Logout',
-                login: settings?.loginText?.[lang] || 'Login'
-              }}
-            />
+            <div className="lg:hidden">
+              <MobileMenu 
+                user={user} 
+                isAdmin={isAdmin} 
+                settings={settings} 
+                lang={lang} 
+                availableLanguages={availableLanguages}
+                labels={{
+                  menu: settings?.menuText?.[lang] || 'Menu',
+                  language: settings?.languageLabel?.[lang] || 'Language',
+                  account: settings?.accountLabel?.[lang] || 'Account',
+                  adminDashboard: settings?.adminDashboardText?.[lang] || 'Admin Dashboard',
+                  logout: settings?.logoutText?.[lang] || 'Logout',
+                  login: settings?.loginText?.[lang] || 'Login'
+                }}
+              />
+            </div>
           </div>
         </div>
       </div>

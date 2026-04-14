@@ -65,7 +65,7 @@ export default async function StorefrontPage() {
 
       {products.length === 0 && (
         <div className="bg-white py-24 text-center border-t border-zinc-100">
-           <p className="text-zinc-400 italic text-sm">Add your first products in the dashboard to see them featured here.</p>
+           <p className="text-zinc-500 italic text-sm">Add your first products in the dashboard to see them featured here.</p>
         </div>
       )}
 

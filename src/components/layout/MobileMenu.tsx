@@ -74,8 +74,9 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
   return (
     <>
       <button 
-        className="lg:hidden p-2 text-gray-600 hover:text-black hover:bg-gray-50 rounded-none transition-colors"
+        className="lg:hidden p-2 text-slate-600 hover:text-black hover:bg-gray-50 rounded-none transition-colors"
         onClick={() => setIsOpen(!isOpen)}
+        aria-label="Open mobile menu"
       >
         <Menu className="w-6 h-6" strokeWidth={1.5} />
       </button>
@@ -103,6 +104,7 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
                 <button 
                   onClick={() => setIsOpen(false)}
                   className="p-2 -mr-2 text-gray-400 hover:text-brand-ink hover:bg-gray-50 rounded-none transition-colors"
+                  aria-label="Close menu"
                 >
                   <X className="w-5 h-5" />
                 </button>
