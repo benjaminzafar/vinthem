@@ -81,18 +81,35 @@ export function ProductManager({ selectedProductId, onClearSelection }: { select
       const { data } = await supabase.from('categories').select('*').order('name');
       if (data) {
         const mappedCategories = (data as any[]).map((c) => ({
-          ...c,
-          isFeatured: c.is_featured,
-          showInHero: c.show_in_hero,
-          parentId: c.parent_id,
-          imageUrl: c.image_url,
-          iconUrl: c.icon_url
+          ...c, isFeatured: c.is_featured, showInHero: c.show_in_hero,
+          parentId: c.parent_id, imageUrl: c.image_url, iconUrl: c.icon_url
         }));
         setCategories(mappedCategories as Category[]);
       }
     };
     fetchCategories();
-  }, [supabase]);
+
+    // Enable Realtime for Products
+    const productsChannel = supabase
+      .channel('products-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
+        refreshProducts();
+      })
+      .subscribe();
+
+    // Enable Realtime for Categories (in case a category name changes)
+    const categoriesChannel = supabase
+      .channel('categories-realtime-products')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, () => {
+        fetchCategories();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(productsChannel);
+      supabase.removeChannel(categoriesChannel);
+    };
+  }, [supabase, refreshProducts]);
 
   const selectedProductFromRoute =
     selectedProductId && products.length > 0

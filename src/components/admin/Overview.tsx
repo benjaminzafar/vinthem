@@ -104,7 +104,19 @@ export function Overview({ initialStats, onProductClick, onSeedClick }: { initia
 
   useEffect(() => {
     fetchAdminData();
-  }, [fetchAdminData]);
+
+    // Enable Realtime for all core entities to keep dashboard fresh
+    const channel = supabase
+      .channel('overview-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => fetchAdminData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => fetchAdminData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'refund_requests' }, () => fetchAdminData())
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchAdminData, supabase]);
 
   const filteredOrders = useMemo(() => {
     const now = new Date();

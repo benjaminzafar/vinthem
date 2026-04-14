@@ -62,16 +62,42 @@ export function CollectionManager() {
     }
   };
 
-  useEffect(() => { refreshCategories(); }, []);
+  useEffect(() => {
+    refreshCategories();
+    // Enable Realtime
+    const channel = supabase
+      .channel('categories-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, () => {
+        refreshCategories();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   useEffect(() => {
-    supabase.from('products').select('*').then(({ data }) => {
+    const fetchProducts = async () => {
+      const { data } = await supabase.from('products').select('*');
       if (data) {
         setProducts(data.map((p: any) => ({
           ...p, imageUrl: p.image_url, categoryId: p.category_id, createdAt: p.created_at
         })) as unknown as Product[]);
       }
-    });
+    };
+    fetchProducts();
+
+    const channel = supabase
+      .channel('products-changes-collections')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
+        fetchProducts();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   return (
