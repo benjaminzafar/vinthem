@@ -87,7 +87,7 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
  
           {/* Image Content */}
           <div className="w-full lg:w-[55%] order-2 z-0 flex-1 min-h-0 flex items-center justify-center">
-            <div className="relative w-full max-h-[40vh] lg:max-h-none aspect-[16/10] sm:aspect-[16/9] lg:aspect-[4/3] xl:aspect-[16/10] overflow-hidden rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.25)]">
+            <div className="relative w-full max-h-[40vh] lg:max-h-none aspect-[16/10] sm:aspect-[16/9] lg:aspect-[4/3] xl:aspect-[16/10] overflow-hidden rounded-2xl">
               {category.imageUrl && (
                 <Image 
                   src={imageToShow || ''} 

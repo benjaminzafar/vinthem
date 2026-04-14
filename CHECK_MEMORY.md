@@ -133,6 +133,9 @@ Date       | What was done                              | Mistake that was fixed
 2026-04-14 | Implemented Cloudflare Global Image Loader  | Offloaded processing from Vercel to Edge for faster/cheaper delivery.
 2026-04-14 | Fixed Media Deletion & Collection Upload    | **FIXED MISTAKE**: Resolved ghost assets via recursive delete & cache busting.
 2026-04-14 | Restored Media Buttons & Authenticated Delete | **FIXED MISTAKE**: Restored missing UI buttons and added required Auth headers.
+2026-04-14 | Implemented Progressive Streaming & LCP Optimization | **FIXED MISTAKE**: Resolved 8.6s LCP deadlock by unblocking Hero render.
+2026-04-14 | Fixed "Bad" Mobile Typography & Quality 60 Tuning | **FIXED MISTAKE**: Balanced hero title aesthetics and maximized compression.
+2026-04-14 | Final Network Polish & Preconnects          | **FIXED MISTAKE**: Shrunk handshake latency for R2 and Unsplash.
 
 ### 2026-04-14: Global Accessibility, Performance & Edge Optimization
 **Problem**: Lighthouse accessibility score (87-91), mobile navigation "footer bleed" instability, and high Vercel usage costs for image processing.
