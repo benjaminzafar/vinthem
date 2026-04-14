@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { createClient } from '@/utils/supabase/server';
 import { Product } from '@/store/useCartStore';
 import { Category } from '@/types';
@@ -11,23 +11,45 @@ const FutureSections = dynamic(() => import('@/components/storefront/FutureSecti
 const CollectionList = dynamic(() => import('@/components/storefront/CollectionList').then(mod => mod.CollectionList), { ssr: true });
 const NewsletterSection = dynamic(() => import('@/components/storefront/NewsletterSection').then(mod => mod.NewsletterSection), { ssr: true });
 
-export default async function StorefrontPage() {
+// high-performance skeletons
+const SectionSkeleton = () => (
+  <div className="w-full h-[400px] bg-zinc-50 animate-pulse flex items-center justify-center">
+    <div className="w-12 h-1 bg-zinc-200"></div>
+  </div>
+);
+
+async function ProductsList({ lang, settings }: { lang: string, settings: any }) {
   const supabase = await createClient();
-  const settings = await getSettings();
-
-  // Fetch products and categories on the server
-  const [productsRes, categoriesRes] = await Promise.all([
-    supabase.from('products').select('*').order('created_at', { ascending: false }),
-    supabase.from('categories').select('*').order('name')
-  ]);
-
-  const products = (productsRes.data || []).map(p => ({
+  const { data: productsData } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+  
+  const products = (productsData || []).map(p => ({
     ...p,
     imageUrl: p.image_url,
     isFeatured: p.is_featured,
     isNewArrival: p.is_new_arrival,
     createdAt: p.created_at
   })) as Product[];
+
+  if (products.length === 0) return (
+    <div className="bg-white py-24 text-center border-t border-zinc-100">
+       <p className="text-zinc-500 italic text-sm">Add your first products in the dashboard to see them featured here.</p>
+    </div>
+  );
+
+  return <FeaturedProducts products={products} lang={lang} settings={settings} />;
+}
+
+async function CollectionsWrapper({ lang, settings, categories }: { lang: string, settings: any, categories: Category[] }) {
+  if (categories.length === 0) return null;
+  return <CollectionList categories={categories} lang={lang} settings={settings} />;
+}
+
+export default async function StorefrontPage() {
+  const supabase = await createClient();
+  const settings = await getSettings();
+
+  // Fetch only what's needed for the Hero LCP immediately
+  const categoriesRes = await supabase.from('categories').select('*').order('name');
 
   const categories = (categoriesRes.data || []).map(c => ({
     ...c,
@@ -36,13 +58,13 @@ export default async function StorefrontPage() {
     showInHero: c.show_in_hero
   })) as Category[];
 
-  const lang = 'en'; // Default for server render
-
-  if (productsRes.error) console.error('Error fetching products:', productsRes.error);
-  if (categoriesRes.error) console.error('Error fetching categories:', categoriesRes.error);
+  const lang = 'en'; 
 
   return (
     <div className="w-full bg-white">
+      {/* 
+        HERO SECTION (High Priority - Rendered Immediately) 
+      */}
       {categories.length > 0 ? (
         <HeroSlider categories={categories} lang={lang} settings={settings} />
       ) : (
@@ -53,21 +75,20 @@ export default async function StorefrontPage() {
         </section>
       )}
 
-      {products.length > 0 ? (
-        <FeaturedProducts products={products} lang={lang} settings={settings} />
-      ) : null}
+      {/* 
+        STREAMED SECTIONS (Low Priority - Non-blocking)
+      */}
+      <Suspense fallback={<SectionSkeleton />}>
+        <ProductsList lang={lang} settings={settings} />
+      </Suspense>
 
-      {categories.length > 0 && (
-        <CollectionList categories={categories} lang={lang} settings={settings} />
-      )}
+      <Suspense fallback={<SectionSkeleton />}>
+        <CollectionsWrapper lang={lang} settings={settings} categories={categories} />
+      </Suspense>
       
-      <FutureSections lang={lang} settings={settings} />
-
-      {products.length === 0 && (
-        <div className="bg-white py-24 text-center border-t border-zinc-100">
-           <p className="text-zinc-500 italic text-sm">Add your first products in the dashboard to see them featured here.</p>
-        </div>
-      )}
+      <Suspense fallback={<SectionSkeleton />}>
+        <FutureSections lang={lang} settings={settings} />
+      </Suspense>
 
       <NewsletterSection settings={settings} lang={lang} />
     </div>

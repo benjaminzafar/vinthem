@@ -50,7 +50,7 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
 
   return (
     <section className="relative w-full h-[calc(100dvh-70px)] lg:h-[calc(100vh-80px)] flex flex-col justify-center overflow-hidden py-4 lg:py-0" style={{ backgroundColor: settings.heroBackgroundColor || '#ffffff' }}>
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={category.id}
           initial={{ opacity: 0, y: 20 }}
@@ -94,6 +94,7 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
                   alt={category.translations?.[lang]?.name || category.name} 
                   fill
                   priority
+                  fetchPriority="high"
                   sizes="(max-width: 768px) 100vw, 60vw"
                   className="object-cover"
                 />

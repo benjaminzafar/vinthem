@@ -14,18 +14,8 @@ export default function cloudflareLoader({ src, width, quality }: CloudflareLoad
   
   // 2. Identify Source Type
   const isUnsplash = normalizedSrc.includes('images.unsplash.com');
-  const isR2 = normalizedSrc.includes('pub-f44233c26dba4e9795b3ccf51fe6f2cb.r2.dev') || 
-               normalizedSrc.includes('r2.cloudflarestorage.com');
 
-  // 3. Environment Toggle
-  // We only disable optimization on localhost.
-  // Production (Vercel) should ALWAYS use optimization if the flag is set.
-  const isCloudflareActive = process.env.NEXT_PUBLIC_CLOUDFLARE_OPTIMIZATION === 'true';
-  const isLocalhost = typeof window !== 'undefined' && 
-                     (window.location.hostname === 'localhost' || 
-                      window.location.hostname === '127.0.0.1');
-
-  // 4. Source-Specific Optimizations
+  // 3. Source-Specific Optimizations
   if (isUnsplash) {
     // Unsplash has a powerful built-in API. We should use it directly.
     // We force avif format for maximum compression.
@@ -38,22 +28,10 @@ export default function cloudflareLoader({ src, width, quality }: CloudflareLoad
     return url.toString();
   }
 
-  // Cloudflare R2 / Internal Optimization
-  if (isCloudflareActive && !isLocalhost && (isR2 || normalizedSrc.startsWith('/'))) {
-    const params = [
-      `width=${width}`,
-      `quality=${quality || 85}`,
-      'format=avif'
-    ];
-    
-    // Construct the Cloudflare Resizing path
-    const encodedSrc = normalizedSrc.startsWith('http') 
-      ? encodeURIComponent(normalizedSrc) 
-      : normalizedSrc.replace(/ /g, '%20');
-
-    return `/cdn-cgi/image/${params.join(',')}/${encodedSrc}`;
-  }
-
-  // Final fallback (Return direct link with basic encoding)
-  return normalizedSrc.replace(/ /g, '%20');
+  // 4. Vercel Native Optimization (For R2 and Internal)
+  // Since we are on Vercel, the fastest way to resize non-proxied images (like R2)
+  // is to use Vercel's built-in optimizer which handles R2 remote patterns natively.
+  // This converts massive original files into tiny AVIF/WebP versions on the Edge.
+  const encodedSrc = encodeURIComponent(normalizedSrc);
+  return `/_next/image?url=${encodedSrc}&w=${width}&q=${quality || 75}`;
 }
