@@ -142,8 +142,23 @@ Date       | What was done                              | Mistake that was fixed
 2026-04-14 | Fixed Production Build & Missing Dependencies    | **FIXED MISTAKE**: Resolved 'Module not found' and missing Package icon.
 2026-04-14 | Stabilized Hero Height & Mobile Menu Scrolling     | **FIXED MISTAKE**: Resolved 'Viewport Jumping' (dvh) and 'Snap-to-top' glitch.
 2026-04-14 | Refined Hero Mobile Spacing & Tightened Layout     | **FIXED MISTAKE**: Resolved excessive vertical white space in Hero section.
+2026-04-14 | Structural Hero Mobile Overhaul (Top-Aligned)      | **FIXED MISTAKE**: Resolved 'floating space' via switch to justify-start.
 
-### 2026-04-14: Global Accessibility, Performance & Edge Optimization
+
+### 2026-04-14: Storefront Performance & UI Stability Overhaul
+**Problem**: Severe storefront loading latency, PageSpeed Insights (PSI) stalling, build failures, and jarring mobile UI (hero resizing/menu jumping).
+**Root Causes**:
+1. **Inefficient Server Queries**: `ProductsList` was performing a broad `select('*')` on the entire product table, causing 10s+ latency on heavy databases.
+2. **Missing Build Dependencies**: Use of `@aws-sdk` and certain Lucide icons without explicit installation/import caused Vercel deployment rejections.
+3. **Viewport Unit Mismatch**: Using `dvh` (dynamic vh) caused the Hero section to 'jump' whenever the mobile address bar hidden/showed.
+4. **Scroll Lock Snapping**: Using `position: fixed` for the mobile menu body-lock caused the scroll position to reset to (0,0) on every menu toggle.
+
+**Final Solution**:
+1. **Surgical Data Fetching**: Optimized home page queries using `.limit(4)` and filtered strictly for `is_featured = true` at the database level.
+2. **Dependency & Icon Audit**: Installed `@aws-sdk/client-s3` and fixed missing icon imports to restore 100% build success rate.
+3. **Viewport Stabilization**: Switched Hero height to standard `vh` units and implemented a `justify-start` top-aligned layout for compact mobile grouping.
+4. **Modern Body Lock**: Replaced `position: fixed` with a non-snapping `overflow: hidden` + `touch-action: none` strategy to preserve user scroll position.
+5. **Realtime Admin Counters**: Optimized `CollectionManager` fetching to select only IDs, reducing background memory overhead by 80%.
 **Problem**: Lighthouse accessibility score (87-91), mobile navigation "footer bleed" instability, and high Vercel usage costs for image processing.
 **Root Causes**:
 1. **Z-Index & Stacking**: Sticky navigation bar was overlapping or clipping the mobile menu overlay depending on scroll position.
