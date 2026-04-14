@@ -3,16 +3,18 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu, X, ChevronRight, User, Settings, LogOut } from 'lucide-react';
+import { Menu, X, ChevronRight, User, Settings, LogOut, Languages } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
+import { LanguageSwitcher } from './LanguageSwitcher';
 
 interface MobileMenuProps {
   user: any;
   isAdmin: boolean;
   settings: any;
   lang: string;
+  availableLanguages: string[];
   labels: {
     menu: string;
     language: string;
@@ -23,11 +25,22 @@ interface MobileMenuProps {
   };
 }
 
-export function MobileMenu({ user, isAdmin, settings, lang, labels }: MobileMenuProps) {
+export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, labels }: MobileMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
   const navigate = useRouter();
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [isOpen]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -64,7 +77,7 @@ export function MobileMenu({ user, isAdmin, settings, lang, labels }: MobileMenu
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsOpen(false)}
-              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] lg:hidden"
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] lg:hidden"
             />
             <motion.div
               ref={menuRef}
@@ -72,7 +85,7 @@ export function MobileMenu({ user, isAdmin, settings, lang, labels }: MobileMenu
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 h-[100dvh] w-[85vw] max-w-sm bg-white border-l border-gray-100 z-[101] flex flex-col lg:hidden"
+              className="fixed top-0 right-0 h-[100dvh] w-full sm:w-[85vw] sm:max-w-sm bg-white border-l border-gray-100 z-[101] flex flex-col lg:hidden"
             >
               <div className="flex items-center justify-between h-16 px-6 border-b border-gray-100">
                 <span className="text-xl font-sans font-medium tracking-tight">{labels.menu}</span>
@@ -102,6 +115,11 @@ export function MobileMenu({ user, isAdmin, settings, lang, labels }: MobileMenu
                 </nav>
 
                 <div className="pt-8 border-t border-gray-100 space-y-8">
+                  <div className="space-y-4">
+                    <span className="text-xs font-medium uppercase tracking-wider text-gray-500">{labels.language}</span>
+                    <LanguageSwitcher availableLanguages={availableLanguages} variant="boxes" />
+                  </div>
+
                   {user ? (
                     <div className="space-y-4">
                       <span className="text-xs font-medium uppercase tracking-wider text-gray-500">{labels.account}</span>

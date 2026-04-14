@@ -110,6 +110,7 @@ export default async function Navigation() {
               isAdmin={isAdmin} 
               settings={settings} 
               lang={lang} 
+              availableLanguages={availableLanguages}
               labels={{
                 menu: settings?.menuText?.[lang] || 'Menu',
                 language: settings?.languageLabel?.[lang] || 'Language',

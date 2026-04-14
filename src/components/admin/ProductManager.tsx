@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 import { 
@@ -47,7 +47,7 @@ export function ProductManager({ selectedProductId, onClearSelection }: { select
     return true;
   });
 
-  const refreshProducts = async () => {
+  const refreshProducts = useCallback(async () => {
     setLoading(true);
     const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false });
     if (data) {
@@ -64,7 +64,7 @@ export function ProductManager({ selectedProductId, onClearSelection }: { select
       setProducts(mappedProducts as Product[]);
     }
     setLoading(false);
-  };
+  }, [supabase]);
 
   const handleOpenModal = (product?: Product) => {
     if (product) {

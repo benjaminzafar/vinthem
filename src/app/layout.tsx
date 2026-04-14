@@ -4,6 +4,7 @@ import "./globals.css";
 import { ConfirmationProvider } from "@/components/ConfirmationContext";
 import { AuthProvider } from "@/components/AuthProvider";
 import { StoreHydrator } from "@/components/StoreHydrator";
+import { Analytics } from "@vercel/analytics/next";
 import { getSettings } from "@/lib/data";
 
 export const metadata: Metadata = {
@@ -24,16 +25,16 @@ export default async function RootLayout({
   const settings = await getSettings() || {};
 
   return (
-    <html lang="en" className="h-full antialiased">
-      <body className="min-h-full flex flex-col font-sans">
+    <html lang="en" className="h-full antialiased" suppressHydrationWarning>
+      <body className="min-h-full flex flex-col font-sans" suppressHydrationWarning>
         <StoreHydrator settings={settings} />
         <AuthProvider>
           <ConfirmationProvider>
             {children}
+            <Analytics />
           </ConfirmationProvider>
         </AuthProvider>
       </body>
     </html>
   );
 }
-
