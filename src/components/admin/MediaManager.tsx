@@ -51,7 +51,10 @@ export function MediaManager({ onSelect, selectionMode }: MediaManagerProps) {
   const fetchMedia = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/media');
+      // Add timestamp to bypass any browser/proxy caching
+      const res = await fetch(`/api/admin/media?t=${Date.now()}`, {
+        cache: 'no-store'
+      });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setObjects(data.objects || []);
@@ -93,22 +96,33 @@ export function MediaManager({ onSelect, selectionMode }: MediaManagerProps) {
     };
   }, [objects, currentPath]);
 
-  const handleDelete = async (key: string, e: React.MouseEvent) => {
+  const handleDelete = async (key: string, e: React.MouseEvent, isFolder: boolean = false) => {
     e.stopPropagation();
-    if (!confirm('Are you sure you want to permanently delete this file? This cannot be undone.')) return;
+    const message = isFolder 
+      ? `Are you sure you want to permanently delete the folder "${key}" and ALL of its contents? This cannot be undone.`
+      : 'Are you sure you want to permanently delete this file? This cannot be undone.';
+    
+    if (!confirm(message)) return;
+
+    // Optimistic UI for files (folders are harder so we wait)
+    if (!isFolder) {
+      setObjects(prev => prev.filter(obj => obj.key !== key));
+    }
 
     try {
       const res = await fetch('/api/admin/media', {
         method: 'DELETE',
-        body: JSON.stringify({ key }),
+        body: JSON.stringify({ key: isFolder ? (key.endsWith('/') ? key : `${key}/`) : key }),
+        cache: 'no-store'
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       
-      toast.success('File deleted successfully');
+      toast.success(isFolder ? 'Folder deleted' : 'File deleted');
       fetchMedia();
     } catch (error: any) {
       toast.error('Delete failed: ' + error.message);
+      fetchMedia(); // Rollback optimistic change
     }
   };
 
@@ -142,6 +156,7 @@ export function MediaManager({ onSelect, selectionMode }: MediaManagerProps) {
       const res = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
+        cache: 'no-store'
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
@@ -298,23 +313,36 @@ export function MediaManager({ onSelect, selectionMode }: MediaManagerProps) {
           </div>
         ) : (
           <div className={`grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-6`}>
-            {/* Folder Icons */}
             {currentFolders.map(folder => (
-              <button
+              <div
                 key={folder}
-                onClick={() => navigateTo(folder)}
-                className="group flex flex-col items-center space-y-3 p-2 rounded transition-all border border-transparent hover:border-slate-300 hover:bg-slate-50"
+                className="group flex flex-col items-center space-y-3 p-2 rounded transition-all border border-transparent hover:border-slate-300 hover:bg-slate-50 relative"
               >
-                <div className="w-full aspect-square bg-slate-50 border border-slate-200 rounded flex items-center justify-center text-slate-400 group-hover:text-slate-900 transition-all relative overflow-hidden">
+                <button
+                  onClick={() => navigateTo(folder)}
+                  className="w-full aspect-square bg-slate-50 border border-slate-200 rounded flex items-center justify-center text-slate-400 group-hover:text-slate-900 transition-all relative overflow-hidden"
+                >
                   <Folder className="w-10 h-10" />
                   <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all">
                      <ChevronRight className="w-4 h-4" />
                   </div>
-                </div>
+                </button>
+                
+                {/* Folder Actions */}
+                {!selectionMode && (
+                  <button 
+                    onClick={(e) => handleDelete(currentPath.length > 0 ? `${currentPath.join('/')}/${folder}/` : `${folder}/`, e, true)}
+                    className="absolute top-4 right-4 p-1.5 bg-white rounded shadow-sm opacity-0 group-hover:opacity-100 transition-all text-rose-600 hover:bg-rose-600 hover:text-white border border-rose-100"
+                    title="Delete Folder"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+
                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest group-hover:text-slate-900 truncate w-full text-center">
                   {folder}
                 </span>
-              </button>
+              </div>
             ))}
 
             {/* Files */}

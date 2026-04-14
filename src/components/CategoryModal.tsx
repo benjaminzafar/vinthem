@@ -178,11 +178,18 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, c
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
+    const toastId = toast.loading('Uploading banner...');
     try {
       const url = await onUpload(file);
-      if (url) setImageUrl(url);
+      if (url) {
+        setImageUrl(url);
+        toast.success('Banner uploaded', { id: toastId });
+      }
+    } catch (error: any) {
+      toast.error('Upload failed: ' + error.message, { id: toastId });
     } finally {
       setUploading(false);
+      e.target.value = '';
     }
   };
 
@@ -190,11 +197,18 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, c
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
+    const toastId = toast.loading('Uploading icon...');
     try {
       const url = await onUpload(file);
-      if (url) setIconUrl(url);
+      if (url) {
+        setIconUrl(url);
+        toast.success('Icon uploaded', { id: toastId });
+      }
+    } catch (error: any) {
+      toast.error('Upload failed: ' + error.message, { id: toastId });
     } finally {
       setUploading(false);
+      e.target.value = '';
     }
   };
 
@@ -434,17 +448,38 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, c
                     {imageUrl ? (
                       <>
                         <img src={imageUrl} alt="Banner" className="w-full h-full object-cover" />
-                        <label className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all cursor-pointer backdrop-blur-[2px]">
-                          <span className="text-[10px] font-bold text-white uppercase tracking-widest">Replace Banner</span>
-                          <button type="button" onClick={() => { setPickerTarget('image'); setIsMediaPickerOpen(true); }} className="absolute inset-0" />
-                        </label>
+                        <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all backdrop-blur-[2px] gap-3">
+                          <button 
+                            type="button" 
+                            onClick={() => { setPickerTarget('image'); setIsMediaPickerOpen(true); }}
+                            className="px-6 py-2 bg-white text-zinc-900 rounded-[4px] text-[10px] font-black uppercase tracking-widest hover:bg-zinc-100 transition-all"
+                          >
+                            Browse Library
+                          </button>
+                          <label className="px-6 py-2 bg-zinc-900/50 text-white border border-white/30 rounded-[4px] text-[10px] font-black uppercase tracking-widest hover:bg-white hover:text-zinc-900 transition-all cursor-pointer">
+                            Upload New
+                            <input type="file" className="hidden" onChange={handleImageUpload} accept="image/*" />
+                          </label>
+                        </div>
                       </>
                     ) : (
-                      <label className="cursor-pointer flex flex-col items-center text-center px-6" onClick={() => { setPickerTarget('image'); setIsMediaPickerOpen(true); }}>
+                      <div className="flex flex-col items-center text-center px-6">
                         <ImageIcon className="w-10 h-10 text-zinc-400 mb-4" />
                         <span className="text-[13px] font-black text-zinc-900 uppercase tracking-widest block mb-1">Set Banner</span>
-                        <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Landscape recommended</span>
-                      </label>
+                        <div className="flex gap-3 mt-4">
+                          <button 
+                            type="button" 
+                            onClick={() => { setPickerTarget('image'); setIsMediaPickerOpen(true); }}
+                            className="px-4 py-2 bg-zinc-100 text-zinc-900 rounded-[4px] text-[10px] font-black uppercase tracking-widest hover:bg-zinc-200 transition-all"
+                          >
+                            Library
+                          </button>
+                          <label className="px-4 py-2 bg-zinc-900 text-white rounded-[4px] text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-all cursor-pointer">
+                            Upload
+                            <input type="file" className="hidden" onChange={handleImageUpload} accept="image/*" />
+                          </label>
+                        </div>
+                      </div>
                     )}
                     {uploading && (
                       <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
@@ -500,13 +535,10 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, c
                       >
                         Browse Vector
                       </button>
-                      <button 
-                        type="button" 
-                        onClick={() => { setPickerTarget('icon'); setIsMediaPickerOpen(true); }}
-                        className="h-9 px-4 bg-white border border-zinc-200 rounded-[4px] text-[10px] font-black uppercase tracking-widest hover:bg-zinc-950 hover:text-white transition-all"
-                      >
-                        Stock Image
-                      </button>
+                      <label className="h-9 px-4 bg-white border border-zinc-200 rounded-[4px] text-[10px] font-black uppercase tracking-widest hover:bg-zinc-950 hover:text-white transition-all flex items-center justify-center cursor-pointer">
+                        Direct Upload
+                        <input type="file" className="hidden" onChange={handleIconUpload} accept="image/*" />
+                      </label>
                     </div>
                   </div>
                 </div>

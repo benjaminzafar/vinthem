@@ -58,6 +58,12 @@ export async function GET() {
         totalSize,
         fileCount
       }
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      }
     });
   } catch (error: any) {
     console.error('[Media API GET Error]:', error);
@@ -74,10 +80,31 @@ export async function DELETE(req: NextRequest) {
     if (!key) return NextResponse.json({ error: 'Missing object key' }, { status: 400 });
 
     const bucketName = process.env.R2_BUCKET_NAME;
-    await s3Client.send(new DeleteObjectCommand({
-      Bucket: bucketName,
-      Key: key
-    }));
+
+    // Recursive delete for prefixes (folders)
+    if (key.endsWith('/')) {
+      const listCommand = new ListObjectsV2Command({
+        Bucket: bucketName,
+        Prefix: key
+      });
+      const listedObjects = await s3Client.send(listCommand);
+      
+      if (listedObjects.Contents && listedObjects.Contents.length > 0) {
+        const { DeleteObjectsCommand } = await import('@aws-sdk/client-s3');
+        const deleteParams = {
+          Bucket: bucketName,
+          Delete: {
+            Objects: listedObjects.Contents.map(({ Key }) => ({ Key }))
+          }
+        };
+        await s3Client.send(new DeleteObjectsCommand(deleteParams));
+      }
+    } else {
+      await s3Client.send(new DeleteObjectCommand({
+        Bucket: bucketName,
+        Key: key
+      }));
+    }
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
