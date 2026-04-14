@@ -76,13 +76,19 @@ export async function DELETE(req: NextRequest) {
   if (adminCheck.error) return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status });
 
   try {
-    const { key } = await req.json();
+    const body = await req.json();
+    // Use decodeURIComponent to handle special characters in keys (spaces, ampersands, etc.)
+    const key = body.key ? decodeURIComponent(body.key) : null;
+    console.log('[DEBUG] Deleting media key (decoded):', key);
+    
     if (!key) return NextResponse.json({ error: 'Missing object key' }, { status: 400 });
 
     const bucketName = process.env.R2_BUCKET_NAME;
+    console.log('[DEBUG] Target Bucket:', bucketName);
 
     // Recursive delete for prefixes (folders)
     if (key.endsWith('/')) {
+      console.log('[DEBUG] Identified as folder, performing recursive delete for prefix:', key);
       const listCommand = new ListObjectsV2Command({
         Bucket: bucketName,
         Prefix: key
@@ -90,6 +96,7 @@ export async function DELETE(req: NextRequest) {
       const listedObjects = await s3Client.send(listCommand);
       
       if (listedObjects.Contents && listedObjects.Contents.length > 0) {
+        console.log(`[DEBUG] Found ${listedObjects.Contents.length} objects inside folder.`);
         const { DeleteObjectsCommand } = await import('@aws-sdk/client-s3');
         const deleteParams = {
           Bucket: bucketName,
@@ -97,13 +104,17 @@ export async function DELETE(req: NextRequest) {
             Objects: listedObjects.Contents.map(({ Key }) => ({ Key }))
           }
         };
-        await s3Client.send(new DeleteObjectsCommand(deleteParams));
+        const result = await s3Client.send(new DeleteObjectsCommand(deleteParams));
+        console.log('[DEBUG] DeleteObjects result:', result);
+      } else {
+        console.log('[DEBUG] Folder appears empty or marker not found.');
       }
     } else {
-      await s3Client.send(new DeleteObjectCommand({
+      const result = await s3Client.send(new DeleteObjectCommand({
         Bucket: bucketName,
         Key: key
       }));
+      console.log('[DEBUG] DeleteObject (file) result:', result);
     }
 
     return NextResponse.json({ success: true });

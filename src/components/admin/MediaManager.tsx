@@ -43,6 +43,7 @@ export function MediaManager({ onSelect, selectionMode }: MediaManagerProps) {
   const [objects, setObjects] = useState<R2Object[]>([]);
   const [stats, setStats] = useState<MediaStats>({ totalSize: 0, fileCount: 0 });
   const [loading, setLoading] = useState(true);
+  const [deletingKey, setDeletingKey] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [uploading, setUploading] = useState(false);
   const [copyingKeys, setCopyingKeys] = useState<Set<string>>(new Set());
@@ -104,14 +105,18 @@ export function MediaManager({ onSelect, selectionMode }: MediaManagerProps) {
     
     if (!confirm(message)) return;
 
-    // Optimistic UI for files (folders are harder so we wait)
-    if (!isFolder) {
-      setObjects(prev => prev.filter(obj => obj.key !== key));
-    }
-
+    setDeletingKey(key);
+    
     try {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+
       const res = await fetch('/api/admin/media', {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`
+        },
         body: JSON.stringify({ key: isFolder ? (key.endsWith('/') ? key : `${key}/`) : key }),
         cache: 'no-store'
       });
@@ -122,7 +127,9 @@ export function MediaManager({ onSelect, selectionMode }: MediaManagerProps) {
       fetchMedia();
     } catch (error: any) {
       toast.error('Delete failed: ' + error.message);
-      fetchMedia(); // Rollback optimistic change
+      fetchMedia();
+    } finally {
+      setDeletingKey(null);
     }
   };
 
@@ -362,29 +369,35 @@ export function MediaManager({ onSelect, selectionMode }: MediaManagerProps) {
                       src={obj.url} 
                       alt={obj.key}
                       fill
-                      className="object-cover transition-transform group-hover:scale-110"
+                      className={`object-cover transition-transform group-hover:scale-110 ${deletingKey === obj.key ? 'opacity-20 grayscale' : ''}`}
                       unoptimized 
                     />
                     
-                    {/* Overlay Actions */}
+                    {/* Deleting Overlay */}
+                    {deletingKey === obj.key && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-white/40">
+                        <RefreshCcw className="w-6 h-6 animate-spin text-slate-900" />
+                      </div>
+                    )}
+
                     {!selectionMode && (
                       <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-all flex flex-col items-center justify-center space-y-3 backdrop-blur-sm">
-                         <div className="flex space-x-2">
-                           <button 
-                             onClick={(e) => handleCopyUrl(obj.url, obj.key, e)}
-                             className="w-10 h-10 bg-white rounded flex items-center justify-center text-slate-900 hover:bg-slate-900 hover:text-white transition-all shadow-lg"
-                             title="Copy URL"
-                           >
-                             {copyingKeys.has(obj.key) ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                           </button>
-                           <button 
-                             onClick={(e) => handleDelete(obj.key, e)}
-                             className="w-10 h-10 bg-white rounded flex items-center justify-center text-rose-600 hover:bg-rose-600 hover:text-white transition-all shadow-lg"
-                             title="Delete"
-                           >
-                             <Trash2 className="w-4 h-4" />
-                           </button>
-                         </div>
+                        <div className="flex space-x-2">
+                          <button 
+                            onClick={(e) => handleCopyUrl(obj.url, obj.key, e)}
+                            className="w-10 h-10 bg-white rounded flex items-center justify-center text-slate-900 hover:bg-slate-900 hover:text-white transition-all shadow-lg"
+                            title="Copy URL"
+                          >
+                            {copyingKeys.has(obj.key) ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                          </button>
+                          <button 
+                            onClick={(e) => handleDelete(obj.key, e)}
+                            className="w-10 h-10 bg-white rounded flex items-center justify-center text-rose-600 hover:bg-rose-600 hover:text-white transition-all shadow-lg"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     )}
 
