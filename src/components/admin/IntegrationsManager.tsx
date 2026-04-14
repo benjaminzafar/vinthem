@@ -1,9 +1,12 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+
+import React, { useState } from 'react';
+import { Sparkles, ShoppingCart, Truck, DollarSign, Eye, EyeOff, Save, Database, Mail, RefreshCw, CheckCircle2, XCircle, HelpCircle, Users, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { useTransition } from 'react';
+import { saveIntegrationAction } from '@/app/actions/integrations';
 import { createClient } from '@/utils/supabase/client';
 import { AdminHeader } from './AdminHeader';
-import { Sparkles, ShoppingCart, Truck, DollarSign, Eye, EyeOff, Save, Database, Mail, RefreshCw, CheckCircle2, XCircle, HelpCircle, Users } from 'lucide-react';
-import { toast } from 'sonner';
 import { DhlLogo } from './DhlLogo';
 import { ZohoLogo } from './ZohoLogo';
 import { PostNordLogo } from './PostNordLogo';
@@ -86,78 +89,43 @@ const TUTORIALS: Record<string, React.ReactNode> = {
   ),
 };
 
-export function IntegrationsManager() {
-  const [config, setConfig] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState<string | null>(null);
+export function IntegrationsManager({ initialConfig }: { initialConfig: Record<string, string> }) {
+  const supabase = createClient();
+  const [config, setConfig] = useState<Record<string, string>>(initialConfig || {});
+  const [isPending, startTransition] = useTransition();
+  const [savingSection, setSavingSection] = useState<string | null>(null);
   const [showKeys, setShowKeys] = useState<Record<string, boolean>>({});
   const [tutorial, setTutorial] = useState<{ isOpen: boolean, title: string, content: React.ReactNode } | null>(null);
-  const supabase = createClient();
-
-  useEffect(() => {
-    fetchConfig();
-  }, []);
-
-  const fetchConfig = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
-      
-      const res = await fetch('/api/admin/integrations', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      const data = await res.json();
-      setConfig(data);
-    } catch (error) {
-      toast.error('Failed to load integrations config');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSave = async (section: string, keys: string[]) => {
-    setSaving(section);
-    try {
-      const updates = keys.reduce((acc, key) => {
-        // Only include if value has changed and is not the placeholder
-        if (config[key] && config[key] !== '********') {
-          acc[key] = config[key];
-        }
-        return acc;
-      }, {} as Record<string, string>);
-
-      // If no keys to update, just return
-      if (Object.keys(updates).length === 0) {
-        toast.info('No changes to save');
-        return;
+    const updates = keys.reduce((acc, key) => {
+      if (config[key] && config[key] !== '********') {
+        acc[key] = config[key];
       }
+      return acc;
+    }, {} as Record<string, string>);
 
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
-      
-      const res = await fetch('/api/admin/integrations/encrypt', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(updates)
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to encrypt and save settings');
-      }
-
-      toast.success(`${section} settings saved securely`);
-      fetchConfig(); // Refresh to show connected status
-    } catch (error: any) {
-      toast.error(error.message || `Failed to save ${section} settings`);
-    } finally {
-      setSaving(null);
+    if (Object.keys(updates).length === 0) {
+      toast.info('No changes to save');
+      return;
     }
+
+    setSavingSection(section);
+    startTransition(async () => {
+      const toastId = toast.loading(`Saving ${section} settings...`);
+      try {
+        const result = await saveIntegrationAction(updates);
+        if (result.success) {
+          toast.success(result.message, { id: toastId });
+        } else {
+          toast.error(result.message, { id: toastId });
+        }
+      } catch (error: any) {
+        toast.error('Failed to connect to Server Action', { id: toastId });
+      } finally {
+        setSavingSection(null);
+      }
+    });
   };
 
   const handleChange = (key: string, value: string) => {
@@ -223,8 +191,13 @@ export function IntegrationsManager() {
     </div>
   );
 
-  if (loading) {
-    return <div className="p-8 text-center text-zinc-500">Loading integrations...</div>;
+  if (!config) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 bg-white rounded-xl border border-zinc-200">
+        <Loader2 className="w-8 h-8 animate-spin text-zinc-400 mb-4" />
+        <p className="text-zinc-500">Preparing integrations...</p>
+      </div>
+    );
   }
 
   const handleTestStripe = async () => {
@@ -507,11 +480,11 @@ export function IntegrationsManager() {
               <div className="px-6 py-4 border-t border-zinc-100 bg-zinc-50 flex justify-end">
                 <button
                   onClick={() => handleSave(section.id, section.keys)}
-                  disabled={saving === section.id}
+                  disabled={savingSection === section.id || isPending}
                   className="flex items-center gap-2 px-4 py-2 bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 transition-colors disabled:opacity-50"
                 >
-                  <Save className="w-4 h-4" />
-                  {saving === section.id ? 'Saving...' : 'Save Settings'}
+                  {savingSection === section.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                  {savingSection === section.id ? 'Saving...' : 'Save Settings'}
                 </button>
               </div>
             </div>

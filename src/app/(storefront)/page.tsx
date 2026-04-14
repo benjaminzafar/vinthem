@@ -1,35 +1,73 @@
 import React from 'react';
 import { createClient } from '@/utils/supabase/server';
-import StorefrontClient from './StorefrontClient';
 import { Product } from '@/store/useCartStore';
 import { Category } from '@/types';
+import { getSettings } from '@/lib/data';
+import { HeroSlider } from '@/components/HeroSlider';
+import { FeaturedProducts } from '@/components/storefront/FeaturedProducts';
+import { FutureSections } from '@/components/storefront/FutureSections';
+import { CollectionList } from '@/components/storefront/CollectionList';
+import { NewsletterSection } from '@/components/storefront/NewsletterSection';
 
 export default async function StorefrontPage() {
   const supabase = await createClient();
+  const settings = await getSettings();
 
   // Fetch products and categories on the server
   const [productsRes, categoriesRes] = await Promise.all([
-    supabase
-      .from('products')
-      .select('*, imageUrl:image_url, isFeatured:is_featured, createdAt:created_at')
-      .order('created_at', { ascending: false }),
-    supabase
-      .from('categories')
-      .select('*, imageUrl:image_url, isFeatured:is_featured, showInHero:show_in_hero')
-      .order('name')
+    supabase.from('products').select('*').order('created_at', { ascending: false }),
+    supabase.from('categories').select('*').order('name')
   ]);
 
-  const products = (productsRes.data || []) as Product[];
-  const categories = (categoriesRes.data || []) as Category[];
+  const products = (productsRes.data || []).map(p => ({
+    ...p,
+    imageUrl: p.image_url,
+    isFeatured: p.is_featured,
+    isNewArrival: p.is_new_arrival,
+    createdAt: p.created_at
+  })) as Product[];
 
-  // If there are errors, we could log them here
-  if (productsRes.error) console.error("Error fetching products:", productsRes.error);
-  if (categoriesRes.error) console.error("Error fetching categories:", categoriesRes.error);
+  const categories = (categoriesRes.data || []).map(c => ({
+    ...c,
+    imageUrl: c.image_url,
+    isFeatured: c.is_featured,
+    showInHero: c.show_in_hero
+  })) as Category[];
+
+  const lang = 'en'; // Default for server render
+
+  if (productsRes.error) console.error('Error fetching products:', productsRes.error);
+  if (categoriesRes.error) console.error('Error fetching categories:', categoriesRes.error);
 
   return (
-    <StorefrontClient 
-      initialProducts={products} 
-      initialCategories={categories} 
-    />
+    <div className="w-full bg-white">
+      {categories.length > 0 ? (
+        <HeroSlider categories={categories} lang={lang} settings={settings} />
+      ) : (
+        <section className="h-[60vh] flex flex-col items-center justify-center bg-gray-50 px-4 text-center">
+          <h2 className="text-4xl font-sans font-black text-brand-ink mb-4 tracking-tight">Welcome to {settings.storeName?.[lang] || 'Mavren Shop'}</h2>
+          <p className="text-brand-muted max-w-md mx-auto mb-8">We are currently setting up our collections. Please check back shortly for our premium Scandinavian designs.</p>
+          <div className="w-12 h-1 bg-brand-ink"></div>
+        </section>
+      )}
+
+      {products.length > 0 ? (
+        <FeaturedProducts products={products} lang={lang} settings={settings} />
+      ) : null}
+
+      {categories.length > 0 && (
+        <CollectionList categories={categories} lang={lang} settings={settings} />
+      )}
+      
+      <FutureSections lang={lang} settings={settings} />
+
+      {products.length === 0 && (
+        <div className="bg-white py-24 text-center border-t border-zinc-100">
+           <p className="text-zinc-400 italic text-sm">Add your first products in the dashboard to see them featured here.</p>
+        </div>
+      )}
+
+      <NewsletterSection settings={settings} lang={lang} />
+    </div>
   );
 }

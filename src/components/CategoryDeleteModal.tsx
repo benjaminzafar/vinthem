@@ -1,10 +1,11 @@
 "use client";
 import React, { useState } from 'react';
-import { X } from 'lucide-react';
+import { X, Trash2, ArrowRight } from 'lucide-react';
 import { Category } from '@/types';
 import { Product } from '@/store/useCartStore';
 import { toast } from 'sonner';
-import { createClient } from '@/utils/supabase/client';
+import { deleteCategoryAction } from '@/app/actions/categories';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface CategoryDeleteModalProps {
   isOpen: boolean;
@@ -18,124 +19,102 @@ interface CategoryDeleteModalProps {
 export const CategoryDeleteModal: React.FC<CategoryDeleteModalProps> = ({ 
   isOpen, onClose, category, categories, products, onDeleted 
 }) => {
-  const supabase = createClient();
   const [action, setAction] = useState<'reassign' | 'delete'>('reassign');
   const [reassignTo, setReassignTo] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const associatedProducts = products.filter(p => p.categoryId === category.id || p.parentCategoryId === category.id);
 
   const handleConfirm = async () => {
-    const toastId = toast.loading('Processing category deletion...');
+    if (isDeleting) return;
+    const toastId = toast.loading('Removing collection...');
+    setIsDeleting(true);
     try {
-      if (action === 'delete') {
-        // Delete all products in this category
-        const productIds = associatedProducts.map(p => p.id!);
-        if (productIds.length > 0) {
-          const { error: pError } = await supabase
-            .from('products')
-            .delete()
-            .in('id', productIds);
-          if (pError) throw pError;
-        }
-      } else if (action === 'reassign' && reassignTo) {
-        // Reassign products to a new category
-        const directProductIds = associatedProducts.filter(p => p.categoryId === category.id).map(p => p.id!);
-        const parentProductIds = associatedProducts.filter(p => p.parentCategoryId === category.id).map(p => p.id!);
-
-        if (directProductIds.length > 0) {
-          const { error: dError } = await supabase
-            .from('products')
-            .update({ category_id: reassignTo })
-            .in('id', directProductIds);
-          if (dError) throw dError;
-        }
-
-        if (parentProductIds.length > 0) {
-          const { error: paError } = await supabase
-            .from('products')
-            .update({ parent_category_id: reassignTo })
-            .in('id', parentProductIds);
-          if (paError) throw paError;
-        }
-      }
-
-      // Finally delete the category itself
-      const { error: cError } = await supabase
-        .from('categories')
-        .delete()
-        .eq('id', category.id!);
-      if (cError) throw cError;
-      
-      toast.success('Category deleted successfully', { id: toastId });
+      const result = await deleteCategoryAction({
+        categoryId: category.id!, action, reassignTo, 
+        productIds: associatedProducts.map(p => p.id!),
+        directProductIds: associatedProducts.filter(p => p.categoryId === category.id).map(p => p.id!),
+        parentProductIds: associatedProducts.filter(p => p.parentCategoryId === category.id).map(p => p.id!),
+      });
+      if (!result.success) throw new Error(result.error || result.message);
+      toast.success(result.message, { id: toastId });
       onDeleted();
       onClose();
     } catch (error: any) {
-      console.error('Error deleting category:', error);
-      toast.error(error.message || 'Failed to delete category', { id: toastId });
+      toast.error(error.message || 'Failed to remove', { id: toastId });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
-      <div className="bg-white rounded-lg border border-gray-200/60 shadow-xl w-full max-w-lg flex flex-col overflow-hidden">
-        <div className="flex justify-between items-center px-3 py-2 h-[52px] border-b border-zinc-200 bg-zinc-50/50">
-          <h3 className="text-[16px] font-semibold text-zinc-900 tracking-tight">Delete Category</h3>
-          <button onClick={onClose} className="text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 rounded-md transition-colors h-[36px] w-[36px] flex items-center justify-center">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="relative w-full max-w-sm bg-white border border-zinc-200 rounded-lg shadow-xl overflow-hidden"
+      >
+        <div className="flex justify-between items-center px-4 py-3 border-b border-zinc-100 bg-zinc-50/50">
+          <h3 className="text-sm font-semibold text-zinc-900">Delete Collection</h3>
+          <button onClick={onClose} className="text-zinc-400 hover:text-zinc-600 transition-colors">
             <X className="w-4 h-4" />
           </button>
         </div>
-        
-        <div className="px-4 py-3 bg-zinc-50/30">
-          <div className="bg-red-50 text-red-800 p-4 rounded-xl mb-6 border border-red-100">
-          <p className="font-medium">You are about to delete <strong>{category.name}</strong>.</p>
-          <p className="text-sm mt-1">This category has {associatedProducts.length} associated product(s).</p>
-        </div>
-        
-        <div className="space-y-4 mb-8">
-          <p className="text-sm font-medium text-gray-700">What would you like to do with the associated products?</p>
-          
-          <label className={`flex items-start p-4 rounded-xl border cursor-pointer transition-colors ${action === 'reassign' ? 'border-indigo-600 bg-zinc-100/50' : 'border-gray-200 hover:bg-gray-50'}`}>
-            <div className="flex items-center h-5">
-              <input type="radio" checked={action === 'reassign'} onChange={() => setAction('reassign')} className="w-4 h-4 text-zinc-900 border-gray-300 focus:ring-indigo-600" />
-            </div>
-            <div className="ml-3 flex-1">
-              <span className="block text-sm font-medium text-gray-900">Reassign products</span>
-              <span className="block text-sm text-gray-500 mb-2">Move them to another category</span>
-              {action === 'reassign' && (
-                <select value={reassignTo} onChange={(e) => setReassignTo(e.target.value)} className="w-full border border-gray-300 p-2.5 rounded-lg text-sm focus:ring-2 focus:ring-indigo-600 outline-none bg-white">
-                  <option value="">Select a category...</option>
-                  {categories.filter(c => c.id !== category.id).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                </select>
-              )}
-            </div>
-          </label>
 
-          <label className={`flex items-start p-4 rounded-xl border cursor-pointer transition-colors ${action === 'delete' ? 'border-red-600 bg-red-50/50' : 'border-gray-200 hover:bg-gray-50'}`}>
-            <div className="flex items-center h-5">
-              <input type="radio" checked={action === 'delete'} onChange={() => setAction('delete')} className="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-600" />
-            </div>
-            <div className="ml-3">
-              <span className="block text-sm font-medium text-red-900">Delete products</span>
-              <span className="block text-sm text-red-700/70">Permanently delete all {associatedProducts.length} products</span>
-            </div>
-          </label>
-          <div className="pt-4 border-t border-zinc-200 flex gap-3">
-            <button onClick={onClose} className="flex-1 flex items-center justify-center bg-white text-zinc-900 hover:bg-zinc-50 border border-zinc-200 px-6 h-[44px] text-sm font-medium rounded-md transition-colors">
-              Cancel
+        <div className="p-6 space-y-6">
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-zinc-900">You are deleting "{category.name}"</p>
+            <p className="text-xs text-zinc-500 leading-relaxed">
+              This collection contains {associatedProducts.length} items. Select a protocol:
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <button 
+              onClick={() => setAction('reassign')}
+              className={`w-full text-left p-3 rounded-md border text-xs font-semibold transition-all ${action === 'reassign' ? 'border-zinc-900 bg-zinc-50 text-zinc-900 shadow-sm' : 'border-zinc-100 text-zinc-500 hover:border-zinc-200 bg-white'}`}
+            >
+              Reassign items to another collection
             </button>
             <button 
-              onClick={handleConfirm} 
-              className="flex-1 flex items-center justify-center bg-red-600 text-white hover:bg-red-700 border border-transparent px-6 h-[44px] text-sm font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed" 
-              disabled={action === 'reassign' && !reassignTo}
+              onClick={() => setAction('delete')}
+              className={`w-full text-left p-3 rounded-md border text-xs font-semibold transition-all ${action === 'delete' ? 'border-red-600 bg-red-50/50 text-red-600 shadow-sm' : 'border-zinc-100 text-zinc-500 hover:border-zinc-200 bg-white'}`}
             >
-              Confirm Deletion
+              Delete items permanently
+            </button>
+          </div>
+
+          <AnimatePresence>
+            {action === 'reassign' && (
+              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                <select 
+                  value={reassignTo} 
+                  onChange={(e) => setReassignTo(e.target.value)} 
+                  className="w-full bg-slate-50 border border-zinc-200 rounded-md px-3 h-10 text-xs font-medium outline-none"
+                >
+                  <option value="">Move items to...</option>
+                  {categories.filter(c => c.id !== category.id).map(c => (
+                    <option key={c.id} value={c.id!}>{c.name}</option>
+                  ))}
+                </select>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <div className="flex gap-2 pt-2">
+             <button onClick={onClose} className="flex-1 h-10 text-xs font-semibold text-zinc-600 hover:bg-zinc-50 rounded-md transition-all">Cancel</button>
+             <button 
+              onClick={handleConfirm} 
+              disabled={isDeleting || (action === 'reassign' && !reassignTo)}
+              className={`flex-1 h-10 rounded-md text-xs font-bold text-white transition-all ${action === 'delete' ? 'bg-red-600 hover:bg-red-700' : 'bg-zinc-900 hover:bg-zinc-800'} disabled:opacity-50`} 
+            >
+              {isDeleting ? 'Deleting...' : 'Confirm'}
             </button>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
-  </div>
   );
 };

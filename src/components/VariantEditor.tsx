@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Product, ProductOption, ProductVariant } from '@/store/useCartStore';
 import { Plus, X, Wand2, Loader2 } from 'lucide-react';
-import { getAI } from '@/lib/gemini';
+import { genAI } from '@/lib/gemini';
 import { toast } from 'sonner';
 
 interface VariantEditorProps {
@@ -126,7 +126,6 @@ export function VariantEditor({ formData, setFormData }: VariantEditorProps) {
 
     setGenerating(true);
     try {
-      const ai = getAI();
       const prompt = `You are an e-commerce expert. Based on the following product, suggest Shopify-style variant options (like Size, Color, Material) and their possible values.
       
 Product Title: ${formData.title}
@@ -135,12 +134,15 @@ Product Description: ${formData.description}
 Return ONLY a valid JSON array of objects with 'name' (string) and 'values' (array of strings). Do not include markdown formatting or any other text.
 Example: [{"name": "Size", "values": ["S", "M", "L"]}, {"name": "Color", "values": ["Black", "White"]}]`;
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.1-pro-preview',
-        contents: prompt
+      const model = genAI.getGenerativeModel({ 
+        model: 'gemini-2.5-flash',
+        generationConfig: {
+          responseMimeType: 'application/json',
+        }
       });
 
-      let jsonStr = response.text || '[]';
+      const aiResponse = await model.generateContent(prompt);
+      let jsonStr = aiResponse.response.text() || '[]';
       // Clean up markdown if present
       if (jsonStr.includes('```json')) {
         jsonStr = jsonStr.split('```json')[1].split('```')[0].trim();

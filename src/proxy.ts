@@ -4,7 +4,7 @@ import { updateSession } from '@/utils/supabase/middleware';
 
 const requestCounts = new Map<string, { count: number; resetTime: number }>();
 
-export async function middleware(request: NextRequest) {
+export default async function proxy(request: NextRequest) {
   // CORS Configuration
   const response = NextResponse.next();
   response.headers.set('Access-Control-Allow-Credentials', 'true');
@@ -49,7 +49,7 @@ export async function middleware(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith('/admin')) {
     if (!user) {
       const url = request.nextUrl.clone();
-      url.pathname = '/login';
+      url.pathname = '/auth';
       url.searchParams.set('redirect', request.nextUrl.pathname);
       return NextResponse.redirect(url);
     }

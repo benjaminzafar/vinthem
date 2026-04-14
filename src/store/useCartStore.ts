@@ -23,8 +23,8 @@ export interface Product {
   description: string;
   price: number;
   imageUrl: string;
-  category: string;
   categoryId?: string;
+  categoryName?: string;
   parentCategoryId?: string;
   stock: number;
   sku?: string;

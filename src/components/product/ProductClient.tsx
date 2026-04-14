@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { BackButton } from '@/components/BackButton';
 import Link from 'next/link';
 import { Product, ProductVariant, useCartStore } from '@/store/useCartStore';
@@ -42,21 +42,23 @@ export function ProductClient({ initialProduct, relatedProducts }: ProductClient
   const { i18n } = useTranslation();
   const lang = i18n.language || 'en';
 
-  // State initialization logic for variants
-  useMemo(() => {
-    if (product.options && product.options.length > 0) {
-      if (product.variants && product.variants.length > 0) {
-        const matchingVariant = product.variants.find(v => 
-          v.options && Object.keys(selectedOptions).every(k => v.options![k] === selectedOptions[k])
-        );
-        if (matchingVariant) {
-          setSelectedVariant(matchingVariant);
-        }
-      }
-    } else if (product.variants && product.variants.length > 0) {
-      setSelectedVariant(product.variants[0]);
+  const matchedVariant = useMemo(() => {
+    if (!product.variants || product.variants.length === 0) {
+      return null;
     }
+
+    if (product.options && product.options.length > 0) {
+      return product.variants.find((variant) =>
+        variant.options && Object.keys(selectedOptions).every((key) => variant.options![key] === selectedOptions[key])
+      ) ?? null;
+    }
+
+    return product.variants[0] ?? null;
   }, [product, selectedOptions]);
+
+  useEffect(() => {
+    setSelectedVariant(matchedVariant);
+  }, [matchedVariant]);
 
   const handleOptionChange = (optionName: string, value: string) => {
     const newOptions = { ...selectedOptions, [optionName]: value };
@@ -266,7 +268,7 @@ export function ProductClient({ initialProduct, relatedProducts }: ProductClient
         >
           <div className="mb-6 flex items-center justify-between">
             <span className="inline-block text-xs font-medium tracking-wider uppercase text-brand-muted">
-              {product.category}
+              {product.categoryName}
             </span>
             {product.sku && (
               <span className="text-xs text-brand-muted font-mono tracking-widest uppercase">{settings.skuLabelText?.[lang]}: {product.sku}</span>

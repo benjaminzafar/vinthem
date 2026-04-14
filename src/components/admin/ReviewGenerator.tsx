@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { Product } from '@/store/useCartStore';
-import { getAI } from '@/lib/gemini';
+import { genAI } from '@/lib/gemini';
 import { toast } from 'sonner';
 
 export function ReviewGenerator() {
@@ -12,9 +12,18 @@ export function ReviewGenerator() {
   const supabase = createClient();
 
   useEffect(() => {
-    supabase.from('products').select('*').then(({ data }) => {
-      if (data) setProducts(data as unknown as Product[]);
-    });
+    const fetchProducts = async () => {
+      const { data } = await supabase.from('products').select('*, categories(name)');
+      if (data) {
+        const mapped = (data as any[]).map(p => ({
+          ...p,
+          categoryName: p.categories?.name
+        }));
+        setProducts(mapped as Product[]);
+      }
+    };
+
+    fetchProducts();
   }, [supabase]);
 
   const handleGenerateReview = async (product: Product) => {
@@ -23,20 +32,21 @@ export function ReviewGenerator() {
     setGenerating(true);
     const toastId = toast.loading('Generating fake review...');
     try {
-      const ai = getAI();
       const prompt = `Generate a realistic, positive customer review for the following product:
       Title: ${product.title}
-      Category: ${product.category}
+      Category: ${product.categoryName || 'General'}
       
       Return the response in JSON format: {"rating": number (1-5), "comment": "string", "userName": "string"}.`;
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.1-pro-preview',
-        contents: prompt,
-        config: { responseMimeType: 'application/json' },
+      const model = genAI.getGenerativeModel({ 
+        model: 'gemini-2.5-flash',
+        generationConfig: {
+          responseMimeType: 'application/json',
+        }
       });
 
-      const review = JSON.parse(response.text || '{}');
+      const aiResponse = await model.generateContent(prompt);
+      const review = JSON.parse(aiResponse.response.text() || '{}');
       
       const { error } = await supabase.from('reviews').insert({
         product_id: product.id,

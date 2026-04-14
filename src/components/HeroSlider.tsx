@@ -11,10 +11,12 @@ import { useSettingsStore } from '@/store/useSettingsStore';
 interface HeroSliderProps {
   categories: Category[];
   lang: string;
+  settings?: any;
 }
 
-export function HeroSlider({ categories, lang }: HeroSliderProps) {
-  const { settings } = useSettingsStore();
+export function HeroSlider({ categories, lang, settings: propSettings }: HeroSliderProps) {
+  const { settings: storeSettings } = useSettingsStore();
+  const settings = propSettings || storeSettings;
   const [currentIndex, setCurrentIndex] = useState(0);
   const featuredCategories = categories.filter(c => c.showInHero).slice(0, 3);
 

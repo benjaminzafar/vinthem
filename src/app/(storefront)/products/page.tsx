@@ -16,13 +16,31 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
   const supabase = await createClient();
 
-  // Build the product query on the server
+  // 1. Fetch categories first to resolve the active category ID and for the sidebar
+  const { data: categoriesData } = await supabase
+    .from('categories')
+    .select('*, imageUrl:image_url, isFeatured:is_featured, iconUrl:icon_url, parentId:parent_id')
+    .order('name', { ascending: true });
+
+  const categories = (categoriesData || []) as Category[];
+
+  // 2. Resolve active category ID (from slug or name)
+  let activeCategoryId: string | null = null;
+  if (activeCategory !== 'All') {
+    // Try to find by slug first (preferred), then name
+    const category = categories.find(c => c.slug === activeCategory || c.name === activeCategory);
+    if (category) {
+      activeCategoryId = category.id!;
+    }
+  }
+
+  // 3. Build the product query
   let productQuery = supabase
     .from('products')
-    .select('*, imageUrl:image_url, isFeatured:is_featured, createdAt:created_at');
+    .select('*, imageUrl:image_url, isFeatured:is_featured, categoryId:category_id, createdAt:created_at');
 
-  if (activeCategory !== 'All') {
-    productQuery = productQuery.eq('category_name', activeCategory);
+  if (activeCategoryId) {
+    productQuery = productQuery.eq('category_id', activeCategoryId);
   }
 
   if (searchQuery) {
@@ -37,16 +55,11 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     productQuery = productQuery.order('created_at', { ascending: false });
   }
 
-  const [productsRes, categoriesRes] = await Promise.all([
-    productQuery,
-    supabase
-      .from('categories')
-      .select('*, imageUrl:image_url, isFeatured:is_featured, iconUrl:icon_url, parentId:parent_id')
-      .order('name', { ascending: true })
-  ]);
-
-  const products = (productsRes.data || []) as Product[];
-  const categories = (categoriesRes.data || []) as Category[];
+  const { data: productsData } = await productQuery;
+  const products = (productsData || []).map((p: any) => ({
+    ...p,
+    categoryName: categories.find(c => c.id === p.category_id)?.name
+  })) as Product[];
 
   return (
     <React.Suspense fallback={

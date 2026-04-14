@@ -40,7 +40,6 @@ export default function StorefrontClient({ initialProducts, initialCategories }:
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {initialProducts.filter(p => p.isFeatured)
-              .sort(() => 0.5 - Math.random())
               .slice(0, 4)
               .map((product, index) => (
               <Link key={product.id} href={`/product/${product.id}`} className="group">
@@ -234,4 +233,3 @@ export default function StorefrontClient({ initialProducts, initialCategories }:
     </div>
   );
 }
-

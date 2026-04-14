@@ -6,6 +6,7 @@ export { type LocalizedString };
 export interface Category {
   id?: string;
   name: string;
+  slug: string;
   description?: string;
   translations?: {
     [lang: string]: {

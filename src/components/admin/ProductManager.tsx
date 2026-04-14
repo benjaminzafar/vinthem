@@ -22,63 +22,47 @@ import { ProductModal } from '@/components/admin/ProductModal';
 import { downloadXLSX } from '@/utils/export';
 import Papa from 'papaparse';
 
-export function ProductManager({ selectedProductId, onClearSelection }: { selectedProductId: string | null, onClearSelection: () => void }) {
+export function ProductManager({ selectedProductId, onClearSelection }: { selectedProductId?: string | null, onClearSelection?: () => void }) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState<'all' | 'active' | 'drafts'>('all');
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const { settings } = useSettingsStore();
   const customConfirm = useCustomConfirm();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
 
-  const filteredProducts = products.filter(product => 
-    product.title.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
-    (product.sku && product.sku.toLowerCase().includes(debouncedSearchQuery.toLowerCase())) ||
-    product.id.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
-  );
+  const filteredProducts = products.filter(product => {
+    const matchesSearch = product.title.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+      (product.sku && product.sku.toLowerCase().includes(debouncedSearchQuery.toLowerCase()));
+    
+    if (!matchesSearch) return false;
 
-  const handleImportCSV = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    Papa.parse(file, {
-      header: true,
-      complete: async (results) => {
-        const productsToAdd = results.data as any[];
-        const toastId = toast.loading('Importing products...');
-        try {
-          for (const product of productsToAdd) {
-            if (product.title) {
-              await supabase.from('products').insert({
-                title: product.title,
-                description: product.description || '',
-                price: Number(product.price) || 0,
-                stock: Number(product.stock) || 0,
-                image_url: product.imageUrl || '',
-                category: product.category || '',
-                created_at: new Date().toISOString()
-              });
-            }
-          }
-          toast.success('Products imported successfully', { id: toastId });
-          refreshProducts();
-        } catch (error) {
-          console.error("Import error:", error);
-          toast.error('Failed to import products', { id: toastId });
-        }
-      }
-    });
-  };
+    if (activeTab === 'active') return product.stock > 0;
+    if (activeTab === 'drafts') return product.stock === 0; // Simplified for demo
+    return true;
+  });
 
   const refreshProducts = async () => {
     setLoading(true);
     const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false });
-    if (data) setProducts(data as unknown as Product[]);
+    if (data) {
+      const mappedProducts = (data as any[]).map(p => ({
+        ...p,
+        imageUrl: p.image_url,
+        categoryId: p.category_id,
+        isFeatured: p.is_featured,
+        isNewArrival: p.is_new_arrival,
+        isSale: p.is_sale,
+        discountPrice: p.sale_price,
+        createdAt: p.created_at
+      }));
+      setProducts(mappedProducts as Product[]);
+    }
     setLoading(false);
   };
 
@@ -93,21 +77,32 @@ export function ProductManager({ selectedProductId, onClearSelection }: { select
 
   useEffect(() => {
     refreshProducts();
-    supabase.from('categories').select('*').order('name').then(({ data }) => {
-      if (data) setCategories(data as unknown as Category[]);
-    });
+    const fetchCategories = async () => {
+      const { data } = await supabase.from('categories').select('*').order('name');
+      if (data) {
+        const mappedCategories = (data as any[]).map((c) => ({
+          ...c,
+          isFeatured: c.is_featured,
+          showInHero: c.show_in_hero,
+          parentId: c.parent_id,
+          imageUrl: c.image_url,
+          iconUrl: c.icon_url
+        }));
+        setCategories(mappedCategories as Category[]);
+      }
+    };
+    fetchCategories();
   }, [supabase]);
 
-  useEffect(() => {
-    if (selectedProductId && products.length > 0) {
-      const product = products.find(p => p.id === selectedProductId);
-      if (product) {
-        handleOpenModal(product);
-      }
-    }
-  }, [selectedProductId, products]);
+  const selectedProductFromRoute =
+    selectedProductId && products.length > 0
+      ? products.find((product) => product.id === selectedProductId) ?? null
+      : null;
+  const activeProduct = editingProduct ?? selectedProductFromRoute;
+  const modalOpen = isModalOpen || !!selectedProductFromRoute;
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
     const confirmed = await customConfirm('Delete Product', 'Are you sure you want to delete this product?');
     if (confirmed) {
       try {
@@ -121,102 +116,166 @@ export function ProductManager({ selectedProductId, onClearSelection }: { select
   };
 
   return (
-    <div className="space-y-6">
-      <AdminHeader 
-        title="Products"
-        description="Manage your store's inventory and details"
-        search={{
-          value: searchQuery,
-          onChange: setSearchQuery,
-          placeholder: "Search products..."
-        }}
-        primaryAction={{
-          label: "Add Product",
-          icon: Plus,
-          onClick: () => handleOpenModal()
-        }}
-        secondaryActions={[
-          { label: 'Import CSV', icon: Upload, onClick: () => fileInputRef.current?.click() },
-          { label: 'Export XLSX', icon: Download, onClick: () => downloadXLSX(filteredProducts, 'products') }
-        ]}
-        statsLabel={`${filteredProducts.length} products`}
-      />
+    <div className="space-y-8 animate-in fade-in duration-500">
+      {/* Header - Flat & Professional */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Products</h1>
+          <p className="text-sm text-slate-500 mt-1">Manage your store's inventory and details</p>
+        </div>
+        
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input 
+              type="text"
+              placeholder="Search products..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-4 h-10 bg-white border border-slate-300 rounded text-sm focus:outline-none focus:border-slate-900 transition-all w-64 placeholder:text-slate-400 text-slate-900"
+            />
+          </div>
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            className="h-10 px-6 bg-slate-900 text-white rounded text-sm font-medium hover:bg-slate-800 transition-all flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Add Product
+          </button>
+        </div>
+      </div>
 
-      <input 
-        type="file" 
-        ref={fileInputRef} 
-        className="hidden" 
-        accept=".csv" 
-        onChange={handleImportCSV} 
-      />
+      {/* View Controls & Table */}
+      <div className="bg-white border border-slate-300 rounded overflow-hidden shadow-none">
+        {/* Tabs Bar */}
+        <div className="px-6 border-b border-slate-300 bg-white flex items-center justify-between h-14">
+          <div className="flex gap-8 h-full">
+            {['all', 'active', 'drafts'].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab as any)}
+                className={`h-full text-[11px] font-bold uppercase tracking-widest border-b-2 transition-all ${
+                  activeTab === tab 
+                    ? 'text-slate-900 border-slate-900' 
+                    : 'text-slate-400 border-transparent hover:text-slate-600'
+                }`}
+              >
+                {tab === 'all' ? 'All Products' : tab}
+              </button>
+            ))}
+          </div>
+          
+          <button className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-900 transition-all">
+             <Download className="w-4 h-4" />
+             Export
+          </button>
+        </div>
 
-      <div className="py-8 border-b border-gray-200/60 last:border-0">
+        {/* Table - 2D Grid */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[800px]">
+          <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-zinc-50/50 border-b border-zinc-200 text-xs uppercase tracking-wider text-zinc-500">
-                <th className="px-6 py-4 font-bold">Product</th>
-                <th className="px-6 py-4 font-bold">Category</th>
-                <th className="px-6 py-4 font-bold">Price</th>
-                <th className="px-6 py-4 font-bold">Stock</th>
-                <th className="px-6 py-4 font-bold text-right">Actions</th>
+              <tr className="border-b border-slate-300 text-[11px] uppercase font-bold tracking-widest text-slate-500 bg-slate-50">
+                <th className="px-6 py-4 w-12 text-center opacity-30"><Plus className="w-4 h-4 mx-auto" /></th>
+                <th className="px-6 py-4">Product</th>
+                <th className="px-6 py-4">Category</th>
+                <th className="px-6 py-4">Price</th>
+                <th className="px-6 py-4">Stock</th>
+                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-100">
-              {filteredProducts.map((product) => (
-                <tr key={product.id} className="hover:bg-zinc-50 transition-colors group">
+            <tbody className="divide-y divide-slate-100">
+              {loading ? (
+                <tr><td colSpan={7} className="py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-xs">Accessing Inventory...</td></tr>
+              ) : filteredProducts.length === 0 ? (
+                <tr><td colSpan={7} className="py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-xs">No entries found</td></tr>
+              ) : filteredProducts.map((product) => (
+                <tr 
+                  key={product.id} 
+                  onClick={() => handleOpenModal(product)}
+                  className="hover:bg-slate-50 transition-colors group cursor-pointer"
+                >
+                  <td className="px-6 py-4">
+                    <div className="w-4 h-4 border border-slate-300 rounded-sm mx-auto group-hover:border-slate-900 transition-colors" />
+                  </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-lg bg-zinc-50 border border-zinc-200 flex items-center justify-center overflow-hidden">
-                        {product.imageUrl && product.imageUrl.trim() !== "" ? (
-                          <img src={product.imageUrl} alt={product.title} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                      <div className="w-12 h-12 bg-slate-50 border border-slate-200 rounded flex items-center justify-center overflow-hidden shrink-0 group-hover:border-slate-300 transition-all">
+                        {product.imageUrl ? (
+                          <img src={product.imageUrl} alt="" className="w-full h-full object-cover" />
                         ) : (
-                          <Package className="w-6 h-6 text-zinc-400" />
+                          <Package className="w-5 h-5 text-slate-300" />
                         )}
                       </div>
-                      <div>
-                        <p className="font-bold text-zinc-900">{product.title}</p>
-                        <p className="text-xs text-zinc-500 font-mono uppercase tracking-widest">{product.sku || 'No SKU'}</p>
+                      <div className="min-w-0">
+                        <p className="font-bold text-slate-900 text-sm truncate">{product.title}</p>
+                        <p className="text-[11px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">{product.sku || 'SKU-000'}</p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-zinc-600">{product.category}</td>
-                  <td className="px-6 py-4 font-medium text-zinc-900">{product.price.toLocaleString()} SEK</td>
                   <td className="px-6 py-4">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      product.stock > 10 ? 'bg-green-50 text-green-700' : 
-                      product.stock > 0 ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-700'
+                    <div className="text-xs text-slate-600 font-medium whitespace-nowrap">
+                      {categories.find(c => c.id === product.categoryId)?.name || 'General Item'}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-sm font-bold text-slate-900">
+                    {product.price.toLocaleString()} SEK
+                  </td>
+                  <td className="px-6 py-4 text-xs font-medium text-slate-500">
+                    {product.stock} <span className="text-[10px] uppercase opacity-60 ml-1">Units</span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className={`inline-flex items-center gap-2 px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest border ${
+                      product.stock > 10 
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-100' 
+                        : product.stock > 0 
+                          ? 'bg-amber-50 text-amber-700 border-amber-100' 
+                          : 'bg-rose-50 text-rose-700 border-rose-100'
                     }`}>
-                      {product.stock} in stock
-                    </span>
+                      <div className={`w-1 h-1 rounded-full ${
+                        product.stock > 10 ? 'bg-emerald-500' : product.stock > 0 ? 'bg-amber-500' : 'bg-rose-500'
+                      }`} />
+                      {product.stock > 10 ? 'Active' : product.stock > 0 ? 'Low Stock' : 'Out of Stock'}
+                    </div>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button onClick={() => handleOpenModal(product)} className="p-2 text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 rounded-full transition-colors">
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button onClick={() => handleDelete(product.id)} className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+                    <button 
+                      onClick={(e) => handleDelete(product.id, e)} 
+                      className="p-2 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded transition-all"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+
+        {/* Footer Statistics */}
+        <div className="px-6 py-4 border-t border-slate-300 bg-slate-50 flex items-center justify-between h-14">
+           <p className="text-xs font-medium text-slate-500">Showing <span className="text-slate-900 font-bold">{filteredProducts.length}</span> of <span className="text-slate-900 font-bold">{products.length}</span> entries</p>
+           <div className="flex gap-2">
+             <button className="h-8 px-4 border border-slate-300 rounded text-[11px] font-bold uppercase tracking-widest text-slate-500 hover:border-slate-900 hover:text-slate-900 transition-all disabled:opacity-30" disabled>Prev</button>
+             <button className="h-8 px-4 border border-slate-300 rounded text-[11px] font-bold uppercase tracking-widest text-slate-500 hover:border-slate-900 hover:text-slate-900 transition-all disabled:opacity-30" disabled>Next</button>
+           </div>
+        </div>
       </div>
 
-      {isModalOpen && (
+      {modalOpen && (
         <ProductModal 
-          isOpen={isModalOpen} 
-          onClose={() => { setIsModalOpen(false); setEditingProduct(null); onClearSelection(); }}
-          product={editingProduct}
+          isOpen={modalOpen} 
+          onClose={() => { setIsModalOpen(false); setEditingProduct(null); onClearSelection?.(); }}
+          product={activeProduct}
           categories={categories}
           settings={settings}
           onSuccess={refreshProducts}
         />
       )}
+
+      {/* Import logic removed from UI to minimize clutter, but ref is kept if needed */}
+      <input type="file" ref={fileInputRef} className="hidden" accept=".csv" />
     </div>
   );
 }

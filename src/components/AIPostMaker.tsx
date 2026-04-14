@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Wand2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { getAI } from '@/lib/gemini';
+import { genAI } from '@/lib/gemini';
 import { createClient } from '@/utils/supabase/client';
 
 export function AIPostMaker() {
@@ -15,18 +15,19 @@ export function AIPostMaker() {
     setGenerating(true);
     const toastId = toast.loading('Generating AI post...');
     try {
-      const ai = getAI();
       const prompt = `Generate an engaging blog post about: ${topic}.
       
       Return the response in JSON format: {"title": "string", "excerpt": "string", "content": "string"}.`;
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.1-pro-preview',
-        contents: prompt,
-        config: { responseMimeType: 'application/json' },
+      const model = genAI.getGenerativeModel({ 
+        model: 'gemini-2.5-flash',
+        generationConfig: {
+          responseMimeType: 'application/json',
+        }
       });
 
-      const post = JSON.parse(response.text || '{}');
+      const aiResponse = await model.generateContent(prompt);
+      const post = JSON.parse(aiResponse.response.text() || '{}');
       
       const { error } = await supabase
         .from('blog_posts')

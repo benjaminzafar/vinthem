@@ -1,11 +1,13 @@
 "use client";
 import { useEffect, useRef } from 'react';
+import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 import { createClient } from '@/utils/supabase/client';
 import { useAuthStore } from '@/store/useAuthStore';
 
+const supabase = createClient();
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { setUser, setIsAdmin, setIsAuthLoading } = useAuthStore();
-  const supabase = createClient();
   const initialized = useRef(false);
 
   useEffect(() => {
@@ -15,18 +17,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const initAuth = async () => {
       try {
         // Only load auth state, settings are handled by StoreHydrator
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data, error } = await supabase.auth.getUser();
+        
+        if (error) {
+          console.warn("Auth check returned error (normal if guest):", error.message);
+        }
+
+        const user = data?.user;
         
         if (user) {
           setUser(user);
-          const { data } = await supabase
+          const { data: profile } = await supabase
             .from('users')
             .select('role')
             .eq('id', user.id)
             .single();
 
           const isAdmin =
-            data?.role === 'admin' ||
+            profile?.role === 'admin' ||
             user.email === 'benjaminzafar10@gmail.com' ||
             user.email === 'benjaminzafar7@gmail.com';
           setIsAdmin(isAdmin);
@@ -44,7 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      async (event: AuthChangeEvent, session: Session | null) => {
         const user = session?.user ?? null;
         
         if (event === 'SIGNED_OUT') {
@@ -80,4 +88,3 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return <>{children}</>;
 }
-

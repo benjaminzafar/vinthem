@@ -1,36 +1,48 @@
-import { createClient } from '@/utils/supabase/client';
+import { generateAIContentAction } from "@/app/actions/ai";
 
-export function getAI() {
-  const supabase = createClient();
-  
-  return {
-    models: {
-      generateContent: async (params: any) => {
-        const { data: { session } } = await supabase.auth.getSession();
-        const token = session?.access_token;
-        
-        const response = await fetch('/api/ai/generate', {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            prompt: params.contents,
-            systemInstruction: params.config?.systemInstruction,
-            responseMimeType: params.config?.responseMimeType,
-            responseSchema: params.config?.responseSchema
-          })
-        });
-        
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || 'Failed to generate content');
+export const genAI = {
+  getGenerativeModel: (config: { model: string, generationConfig?: any }) => {
+    return {
+      generateContent: async (prompt: any) => {
+        // Adapt contents: check if it's already a Content array or if it needs wrapping
+        let contents;
+        if (Array.isArray(prompt)) {
+          // If the first element is a Content object (has 'parts'), use as is
+          if (prompt.length > 0 && (prompt[0] as any).parts) {
+            contents = prompt;
+          } else {
+            // Otherwise treat as an array of Parts for a single turn
+            contents = [{ role: 'user', parts: prompt }];
+          }
+        } else {
+          // If it's just a string, wrap it as a single part in a single turn
+          contents = [{ role: 'user', parts: [{ text: prompt }] }];
         }
         
-        const data = await response.json();
-        return { text: data.text };
+        const result = await generateAIContentAction({
+          model: config.model,
+          contents: contents,
+          generationConfig: config.generationConfig
+        });
+
+        if (result.error) {
+          throw new Error(result.error);
+        }
+
+        return {
+          response: {
+            text: () => result.text as string,
+          },
+          text: result.text as string
+        };
       }
-    }
+    };
+  }
+};
+
+// Legacy support for getAI() if needed during migration
+export function getAI() {
+  return {
+    models: genAI
   };
 }

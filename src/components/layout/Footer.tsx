@@ -1,14 +1,13 @@
-"use client";
 import React from 'react';
 import Link from 'next/link';
-import { useSettingsStore } from '@/store/useSettingsStore';
-import { useTranslation } from 'react-i18next';
 import Image from 'next/image';
 
-export default function Footer() {
-  const { settings } = useSettingsStore();
-  const { i18n } = useTranslation();
-  const lang = i18n.language || 'en';
+interface FooterProps {
+  settings: any;
+}
+
+export default function Footer({ settings }: FooterProps) {
+  const lang = 'en'; // Server default
 
   return (
     <footer className="bg-white border-t border-gray-200 pt-24 pb-12 mt-auto">

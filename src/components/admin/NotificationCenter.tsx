@@ -19,8 +19,16 @@ export function NotificationCenter({ onNavigate }: { onNavigate?: (path: string)
   const supabase = createClient();
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const unreadCount = notifications.filter((notification) => !notification.read).length;
+
+  function updateNotifications(newItems: Notification[]) {
+    setNotifications(prev => {
+      const combined = [...prev, ...newItems];
+      const unique = combined.filter((v, i, a) => a.findIndex(t => t.id === v.id) === i);
+      return unique.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()).slice(0, 15);
+    });
+  }
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -41,7 +49,7 @@ export function NotificationCenter({ onNavigate }: { onNavigate?: (path: string)
         .limit(5);
       
       if (data) {
-        const newOrders = data.map(o => ({
+        const newOrders = data.map((o: any) => ({
           id: `order-${o.id}`,
           type: 'order' as const,
           title: 'New Order',
@@ -62,7 +70,7 @@ export function NotificationCenter({ onNavigate }: { onNavigate?: (path: string)
         .limit(5);
       
       if (data) {
-        const newTickets = data.map(t => ({
+        const newTickets = data.map((t: any) => ({
           id: `ticket-${t.id}`,
           type: 'ticket' as const,
           title: 'New Support Ticket',
@@ -83,7 +91,7 @@ export function NotificationCenter({ onNavigate }: { onNavigate?: (path: string)
         .limit(5);
       
       if (data) {
-        const newRefunds = data.map(r => ({
+        const newRefunds = data.map((r: any) => ({
           id: `refund-${r.id}`,
           type: 'refund' as const,
           title: 'New Refund Request',
@@ -111,22 +119,8 @@ export function NotificationCenter({ onNavigate }: { onNavigate?: (path: string)
     };
   }, []);
 
-  const updateNotifications = (newItems: Notification[]) => {
-    setNotifications(prev => {
-      const combined = [...prev, ...newItems];
-      const unique = combined.filter((v, i, a) => a.findIndex(t => t.id === v.id) === i);
-      return unique.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()).slice(0, 15);
-    });
-  };
-
-  useEffect(() => {
-    const unread = notifications.filter(n => !n.read).length;
-    setUnreadCount(unread);
-  }, [notifications]);
-
   const markAllAsRead = () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-    setUnreadCount(0);
   };
 
   const getIcon = (type: string) => {

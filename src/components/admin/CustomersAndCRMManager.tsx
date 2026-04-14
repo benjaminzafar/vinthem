@@ -73,7 +73,7 @@ export function CustomersAndCRMManager() {
         .order('created_at', { ascending: false });
       
       if (!error) {
-        setCustomers(data.map(user => ({
+        setCustomers((data ?? []).map((user: any) => ({
           ...user,
           createdAt: user.created_at,
           displayName: user.display_name
@@ -99,7 +99,7 @@ export function CustomersAndCRMManager() {
         .order('created_at', { ascending: false });
       
       if (!error) {
-        setTickets(data.map(t => ({
+        setTickets((data ?? []).map((t: any) => ({
           ...t,
           id: t.id,
           customerEmail: t.customer_email,
@@ -128,7 +128,7 @@ export function CustomersAndCRMManager() {
         .order('created_at', { ascending: false });
       
       if (!error) {
-        setRefunds(data.map(r => ({
+        setRefunds((data ?? []).map((r: any) => ({
           ...r,
           userId: r.user_id,
           orderId: r.order_id,
@@ -155,7 +155,7 @@ export function CustomersAndCRMManager() {
         .order('subscribed_at', { ascending: false });
       
       if (!error) {
-        setSubscribers(data.map(s => ({
+        setSubscribers((data ?? []).map((s: any) => ({
           ...s,
           subscribedAt: s.subscribed_at
         })));
@@ -180,7 +180,7 @@ export function CustomersAndCRMManager() {
         .order('sent_at', { ascending: false });
       
       if (!error) {
-        setCampaigns(data.map(c => ({
+        setCampaigns((data ?? []).map((c: any) => ({
           ...c,
           sentAt: c.sent_at,
           recipientCount: c.recipient_count
@@ -206,7 +206,7 @@ export function CustomersAndCRMManager() {
         .order('created_at', { ascending: false });
       
       if (!error) {
-        setReviews(data.map(r => ({
+        setReviews((data ?? []).map((r: any) => ({
           ...r,
           productId: r.product_id,
           userId: r.user_id,
@@ -384,7 +384,7 @@ export function CustomersAndCRMManager() {
           .order('created_at', { ascending: false });
         
         if (!error) {
-          setCustomerOrders(data.map(o => ({
+          setCustomerOrders((data ?? []).map((o: any) => ({
             ...o,
             orderId: o.order_id,
             createdAt: o.created_at,
@@ -408,27 +408,27 @@ export function CustomersAndCRMManager() {
     const totalSpent = customerOrders.reduce((sum, order) => sum + (Number(order.total) || 0), 0);
 
     return (
-      <div className="space-y-6">
+      <div className="space-y-8 animate-in fade-in duration-500">
         <button 
           onClick={() => setSelectedCustomer(null)}
-          className="flex items-center text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors"
+          className="flex items-center text-[11px] font-bold text-slate-500 hover:text-slate-900 uppercase tracking-widest transition-all"
         >
-          <ArrowLeft className="w-4 h-4 mr-1" /> Back to CRM
+          <ArrowLeft className="w-3.5 h-3.5 mr-2" /> Back to Dashboard
         </button>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="md:col-span-1 space-y-6">
-            <div className="bg-white p-6 rounded-xl border border-zinc-200">
-              <div className="flex items-center space-x-4 mb-6">
-                <div className="w-16 h-16 bg-zinc-900 text-white rounded-full flex items-center justify-center text-2xl font-sans">
+            <div className="bg-white p-8 rounded border border-slate-300">
+              <div className="flex items-center space-x-5 mb-8">
+                <div className="w-16 h-16 bg-slate-900 text-white rounded flex items-center justify-center text-xl font-bold">
                   {selectedCustomer.email.charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-zinc-900 truncate max-w-[200px]" title={selectedCustomer.email}>
+                  <h2 className="text-xl font-bold text-slate-900 truncate max-w-[180px]" title={selectedCustomer.email}>
                     {selectedCustomer.email.split('@')[0]}
                   </h2>
-                  <span className={`inline-block px-2 py-1 rounded text-xs font-medium mt-1 ${
-                    selectedCustomer.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-zinc-100 text-zinc-800'
+                  <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest mt-2 border ${
+                    selectedCustomer.role === 'admin' ? 'bg-indigo-50 text-indigo-700 border-indigo-100' : 'bg-slate-50 text-slate-600 border-slate-100'
                   }`}>
                     {selectedCustomer.role || 'client'}
                   </span>
@@ -436,90 +436,84 @@ export function CustomersAndCRMManager() {
               </div>
 
               <div className="space-y-4">
-                <div className="flex items-center text-sm text-zinc-600">
-                  <Mail className="w-4 h-4 mr-3 text-zinc-400" />
+                <div className="flex items-center text-sm text-slate-900 font-medium">
+                  <Mail className="w-4 h-4 mr-3 text-slate-400" />
                   <span className="truncate">{selectedCustomer.email}</span>
                 </div>
-                <div className="flex items-center text-sm text-zinc-600">
-                  <Calendar className="w-4 h-4 mr-3 text-zinc-400" />
-                  <span>Joined {selectedCustomer.createdAt ? new Date(selectedCustomer.createdAt).toLocaleDateString() : 'N/A'}</span>
+                <div className="flex items-center text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+                  <Calendar className="w-4 h-4 mr-3 text-slate-400" />
+                  <span>Subscribed {selectedCustomer.createdAt ? new Date(selectedCustomer.createdAt).toLocaleDateString() : 'N/A'}</span>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white p-6 rounded-xl border border-zinc-200">
-              <h3 className="text-sm font-semibold text-zinc-500 uppercase tracking-wider mb-4">Lifetime Value</h3>
-              <div className="text-3xl font-bold text-zinc-900 mb-1">{totalSpent.toLocaleString()} SEK</div>
-              <p className="text-sm text-zinc-500">{customerOrders.length} total orders</p>
+            <div className="bg-white p-8 rounded border border-slate-300">
+              <h3 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-4">Total Revenue</h3>
+              <div className="text-3xl font-bold text-slate-900 mb-1">{totalSpent.toLocaleString()} SEK</div>
+              <p className="text-sm font-medium text-slate-500">{customerOrders.length} processed orders</p>
             </div>
           </div>
 
-          <div className="md:col-span-2 bg-white rounded-xl border border-zinc-200">
-            <div className="p-6 border-b border-zinc-200 flex justify-between items-center">
-              <h3 className="text-lg font-bold text-zinc-900">Order History</h3>
+          <div className="md:col-span-2 bg-white rounded border border-slate-300 overflow-hidden shadow-none">
+            <div className="p-6 border-b border-slate-200 bg-slate-50/30">
+              <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Order History</h3>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-zinc-50 border-b border-zinc-200 text-xs uppercase tracking-wider text-zinc-500">
-                    <th className="px-6 py-4 font-semibold">Order ID</th>
-                    <th className="px-6 py-4 font-semibold">Date</th>
-                    <th className="px-6 py-4 font-semibold">Status</th>
-                    <th className="px-6 py-4 font-semibold text-right">Total</th>
+                  <tr className="bg-slate-50 border-b border-slate-300 text-[11px] uppercase tracking-widest text-slate-500 font-bold">
+                    <th className="px-6 py-4">Order ID</th>
+                    <th className="px-6 py-4">Date</th>
+                    <th className="px-6 py-4">Status</th>
+                    <th className="px-6 py-4 text-right">Amount</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-100">
+                <tbody className="divide-y divide-slate-100">
                   {loadingOrders ? (
                     <tr>
-                      <td colSpan={4} className="p-8 text-center text-zinc-500">Loading orders...</td>
+                      <td colSpan={4} className="p-12 text-center text-slate-400 font-bold uppercase tracking-widest text-[11px]">Syncing history...</td>
                     </tr>
                   ) : customerOrders.length > 0 ? (
                     customerOrders.map((order) => (
                       <React.Fragment key={order.id}>
                         <tr 
-                          className="hover:bg-zinc-50 transition-colors cursor-pointer"
+                          className="hover:bg-slate-50 transition-colors cursor-pointer group"
                           onClick={() => setExpandedCustomerOrderId(expandedCustomerOrderId === order.id ? null : order.id)}
                         >
-                          <td className="px-6 py-4 font-medium font-mono text-sm flex items-center">
-                            {expandedCustomerOrderId === order.id ? <ChevronDown className="w-4 h-4 mr-2 text-zinc-400" /> : <ChevronRight className="w-4 h-4 mr-2 text-zinc-400" />}
+                          <td className="px-6 py-4 font-bold text-slate-900 text-sm flex items-center">
+                            <div className="w-6 flex items-center shrink-0">
+                              {expandedCustomerOrderId === order.id ? <ChevronDown className="w-3.5 h-3.5 text-slate-400" /> : <ChevronRight className="w-3.5 h-3.5 text-slate-400" />}
+                            </div>
                             {order.orderId}
                           </td>
-                          <td className="px-6 py-4 text-sm text-zinc-600">{new Date(order.createdAt).toLocaleDateString()}</td>
-                          <td className="px-6 py-4 text-sm">
-                            <span className={`px-2 py-1 rounded text-xs font-medium ${
-                              order.status === 'Delivered' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                          <td className="px-6 py-4 text-sm text-slate-500">{new Date(order.createdAt).toLocaleDateString()}</td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest border ${
+                              order.status === 'Delivered' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-slate-50 text-slate-600 border-slate-100'
                             }`}>
                               {order.status || 'Processing'}
                             </span>
                           </td>
-                          <td className="px-6 py-4 font-medium text-right text-sm">{order.total} SEK</td>
+                          <td className="px-6 py-4 font-bold text-right text-sm text-slate-900">{order.total} SEK</td>
                         </tr>
                         {expandedCustomerOrderId === order.id && (
-                          <tr className="bg-zinc-50/50">
-                            <td colSpan={4} className="p-0">
-                              <motion.div 
-                                initial={{ opacity: 0, height: 0 }} 
-                                animate={{ opacity: 1, height: 'auto' }} 
-                                className="px-8 py-6 border-t border-zinc-100"
-                              >
-                                <h4 className="text-sm font-semibold text-zinc-500 uppercase tracking-wider mb-4">Order Items</h4>
+                          <tr className="bg-slate-50/50">
+                            <td colSpan={4} className="px-12 py-6 border-b border-slate-200">
+                              <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }}>
+                                <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-4">Line Items</h4>
                                 <div className="space-y-3">
                                   {order.items?.map((item: any, index: number) => (
-                                    <div key={index} className="flex items-center justify-between bg-white p-3 rounded border border-zinc-100">
+                                    <div key={index} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
                                       <div className="flex items-center space-x-4">
-                                        <div className="w-10 h-10 bg-zinc-100 rounded flex items-center justify-center overflow-hidden">
-                                          {item.image ? (
-                                            <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                                          ) : (
-                                            <Package className="w-5 h-5 text-zinc-400" />
-                                          )}
+                                        <div className="w-10 h-10 bg-white border border-slate-200 rounded flex items-center justify-center overflow-hidden shrink-0">
+                                          {item.image ? <img src={item.image} alt="" className="w-full h-full object-cover" /> : <Package className="w-4 h-4 text-slate-300" />}
                                         </div>
                                         <div>
-                                          <p className="font-medium text-zinc-900 text-sm">{item.name}</p>
-                                          <p className="text-xs text-zinc-500">Quantity: {item.quantity}</p>
+                                          <p className="font-bold text-slate-900 text-sm">{item.name}</p>
+                                          <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Qty: {item.quantity}</p>
                                         </div>
                                       </div>
-                                      <p className="font-medium text-zinc-900 text-sm">{item.price * item.quantity} SEK</p>
+                                      <p className="font-bold text-slate-900 text-sm">{item.price * item.quantity} SEK</p>
                                     </div>
                                   ))}
                                 </div>
@@ -531,7 +525,7 @@ export function CustomersAndCRMManager() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={4} className="p-8 text-center text-zinc-500">No orders found for this customer.</td>
+                      <td colSpan={4} className="p-12 text-center text-slate-400 font-bold uppercase tracking-widest text-[11px]">No order data available</td>
                     </tr>
                   )}
                 </tbody>
@@ -544,34 +538,36 @@ export function CustomersAndCRMManager() {
   }
 
   return (
-    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      {/* Primary Analytics: Ticket Status Overview */}
-      <div className="bg-white border border-zinc-100 rounded-3xl p-4 sm:p-8">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-8 gap-4">
-          <div>
-            <h3 className="text-xl font-black text-zinc-900 tracking-tight">Support Performance</h3>
-            <p className="text-zinc-500 text-sm font-medium">Real-time distribution of customer inquiries and status.</p>
-          </div>
-          <div className="flex flex-wrap items-center gap-4 sm:gap-6">
-            {ticketStatusData.map((item, index) => (
-              <div key={item.name} className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
-                <span className="text-[10px] sm:text-xs font-bold text-zinc-600 uppercase tracking-wider">{item.name}</span>
-              </div>
-            ))}
+    <div className="space-y-12 animate-in fade-in duration-500">
+      {/* Analytics Suite */}
+      <div className="bg-white border border-slate-300 rounded overflow-hidden shadow-none">
+        <div className="p-8 border-b border-slate-300 bg-slate-50/30">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div>
+              <h3 className="text-xl font-bold text-slate-900 tracking-tight">Customer Support Analytics</h3>
+              <p className="text-slate-500 text-sm font-medium mt-1">Status distribution across the help center ecosystem.</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-6">
+              {ticketStatusData.map((item, index) => (
+                <div key={item.name} className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">{item.name}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
         
-        <div className="h-[300px] sm:h-[400px] w-full flex items-center justify-center">
+        <div className="p-12 flex items-center justify-center min-h-[400px]">
           {tickets.length > 0 ? (
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height={400}>
               <PieChart>
                 <Pie
                   data={ticketStatusData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={100}
-                  outerRadius={140}
+                  innerRadius={110}
+                  outerRadius={150}
                   paddingAngle={8}
                   dataKey="value"
                   stroke="none"
@@ -582,158 +578,136 @@ export function CustomersAndCRMManager() {
                 </Pie>
                 <Tooltip 
                   contentStyle={{ 
-                    borderRadius: '16px', 
-                    border: '1px solid #f4f4f5', 
-                    boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.05)',
-                    padding: '12px'
+                    borderRadius: '8px', 
+                    border: '1px solid #cbd5e1', 
+                    boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
+                    padding: '12px',
+                    fontSize: '11px',
+                    fontWeight: '700',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em'
                   }} 
                 />
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <div className="text-center py-12">
-              <div className="w-20 h-20 bg-zinc-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                <MessageSquare className="w-10 h-10 text-zinc-200" />
-              </div>
-              <p className="text-zinc-400 font-bold text-lg">No support data to visualize</p>
-              <p className="text-zinc-300 text-sm">Tickets will appear here once customers reach out.</p>
+            <div className="text-center py-20">
+              <MessageSquare className="w-16 h-16 text-slate-200 mx-auto mb-6" />
+              <p className="text-slate-500 font-bold uppercase tracking-widest text-[11px]">No support metrics visualized</p>
             </div>
           )}
         </div>
       </div>
 
-      {/* Minimalist Stats Grid */}
+      {/* KPI Cloud */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-zinc-50 border border-zinc-100 p-6 rounded-2xl transition-colors hover:bg-zinc-100/50">
+        <div className="bg-white border border-slate-300 p-6 rounded transition-all hover:border-slate-400">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 bg-white border border-zinc-200 rounded-lg flex items-center justify-center text-zinc-900">
+            <div className="w-10 h-10 bg-slate-50 border border-slate-200 rounded flex items-center justify-center text-slate-900">
               <Users className="w-4 h-4" />
             </div>
-            <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Database</h3>
+            <h3 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Total Clients</h3>
           </div>
-          <p className="text-3xl font-black text-zinc-900">{customers.length}</p>
-          <p className="text-zinc-400 text-xs font-bold mt-1">TOTAL CUSTOMERS</p>
+          <p className="text-3xl font-bold text-slate-900 tracking-tight">{customers.length}</p>
         </div>
         
-        <div className="bg-zinc-50 border border-zinc-100 p-6 rounded-2xl transition-colors hover:bg-zinc-100/50">
+        <div className="bg-white border border-slate-300 p-6 rounded transition-all hover:border-slate-400">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 bg-white border border-zinc-200 rounded-lg flex items-center justify-center text-zinc-900">
+            <div className="w-10 h-10 bg-slate-50 border border-slate-200 rounded flex items-center justify-center text-slate-900">
               <MessageSquare className="w-4 h-4" />
             </div>
-            <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Support</h3>
+            <h3 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Open Tickets</h3>
           </div>
-          <p className="text-3xl font-black text-zinc-900">{tickets.filter(t => t.status === 'open').length}</p>
-          <p className="text-zinc-400 text-xs font-bold mt-1">OPEN TICKETS</p>
+          <p className="text-3xl font-bold text-slate-900 tracking-tight">{tickets.filter(t => t.status === 'open').length}</p>
         </div>
 
-        <div className="bg-zinc-50 border border-zinc-100 p-6 rounded-2xl transition-colors hover:bg-zinc-100/50">
+        <div className="bg-white border border-slate-300 p-6 rounded transition-all hover:border-slate-400">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 bg-white border border-zinc-200 rounded-lg flex items-center justify-center text-zinc-900">
+            <div className="w-10 h-10 bg-slate-50 border border-slate-200 rounded flex items-center justify-center text-slate-900">
               <RefreshCcw className="w-4 h-4" />
             </div>
-            <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Returns</h3>
+            <h3 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Refund Requests</h3>
           </div>
-          <p className="text-3xl font-black text-zinc-900">{refunds.filter(r => r.status === 'Pending').length}</p>
-          <p className="text-zinc-400 text-xs font-bold mt-1">PENDING REFUNDS</p>
+          <p className="text-3xl font-bold text-slate-900 tracking-tight">{refunds.filter(r => r.status === 'Pending').length}</p>
         </div>
 
-        <div className="bg-zinc-900 p-6 rounded-2xl">
+        <div className="bg-slate-900 p-6 rounded">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 bg-zinc-800 rounded-lg flex items-center justify-center text-white">
-              <Zap className="w-4 h-4" />
+            <div className="w-10 h-10 bg-white/10 rounded flex items-center justify-center text-white">
+              <Target className="w-4 h-4" />
             </div>
-            <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest">System</h3>
+            <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Engagement</h3>
           </div>
-          <p className="text-3xl font-black text-white">Active</p>
-          <p className="text-zinc-500 text-xs font-bold mt-1">AUTOMATION STATUS</p>
+          <p className="text-3xl font-bold text-white tracking-tight">Optimized</p>
         </div>
       </div>
 
-      {/* Main CRM Content Tabs */}
-      <div className="bg-white border border-zinc-100 rounded-3xl overflow-hidden">
-        <div className="flex px-2 pt-2 bg-zinc-50/50 border-b border-zinc-100 overflow-x-auto no-scrollbar">
-          <button 
-            onClick={() => setActiveTab('customers')}
-            className={`px-4 sm:px-8 py-3 sm:py-4 text-[10px] sm:text-sm font-black tracking-tight transition-all rounded-t-2xl whitespace-nowrap ${activeTab === 'customers' ? 'bg-white text-zinc-900 border-x border-t border-zinc-100' : 'text-zinc-400 hover:text-zinc-600'}`}
-          >
-            Customer Database
-          </button>
-          <button 
-            onClick={() => setActiveTab('tickets')}
-            className={`px-4 sm:px-8 py-3 sm:py-4 text-[10px] sm:text-sm font-black tracking-tight transition-all rounded-t-2xl whitespace-nowrap ${activeTab === 'tickets' ? 'bg-white text-zinc-900 border-x border-t border-zinc-100' : 'text-zinc-400 hover:text-zinc-600'}`}
-          >
-            Support Tickets
-          </button>
-          <button 
-            onClick={() => setActiveTab('refunds')}
-            className={`px-4 sm:px-8 py-3 sm:py-4 text-[10px] sm:text-sm font-black tracking-tight transition-all rounded-t-2xl whitespace-nowrap ${activeTab === 'refunds' ? 'bg-white text-zinc-900 border-x border-t border-zinc-100' : 'text-zinc-400 hover:text-zinc-600'}`}
-          >
-            Refund Requests
-          </button>
-          <button 
-            onClick={() => setActiveTab('newsletter')}
-            className={`px-4 sm:px-8 py-3 sm:py-4 text-[10px] sm:text-sm font-black tracking-tight transition-all rounded-t-2xl whitespace-nowrap ${activeTab === 'newsletter' ? 'bg-white text-zinc-900 border-x border-t border-zinc-100' : 'text-zinc-400 hover:text-zinc-600'}`}
-          >
-            Newsletter Subscribers
-          </button>
-          <button 
-            onClick={() => setActiveTab('reviews')}
-            className={`px-4 sm:px-8 py-3 sm:py-4 text-[10px] sm:text-sm font-black tracking-tight transition-all rounded-t-2xl whitespace-nowrap ${activeTab === 'reviews' ? 'bg-white text-zinc-900 border-x border-t border-zinc-100' : 'text-zinc-400 hover:text-zinc-600'}`}
-          >
-            Customer Reviews
-          </button>
+      {/* Management Command Center */}
+      <div className="bg-white border border-slate-300 rounded overflow-hidden shadow-none">
+        <div className="flex px-4 pt-4 bg-slate-50/50 border-b border-slate-300 overflow-x-auto no-scrollbar gap-2">
+          {['customers', 'tickets', 'refunds', 'newsletter', 'reviews'].map((tab) => (
+            <button 
+              key={tab}
+              onClick={() => setActiveTab(tab as any)}
+              className={`px-8 py-3 text-[11px] font-bold uppercase tracking-widest transition-all rounded-t border-t border-x ${activeTab === tab ? 'bg-white text-slate-900 border-slate-300' : 'text-slate-400 hover:text-slate-600 border-transparent'}`}
+            >
+              {tab}
+            </button>
+          ))}
         </div>
 
-        <div className="p-4 sm:p-8">
+        <div className="p-8">
           {activeTab === 'customers' && (
-            <div className="space-y-6 sm:y-8">
+            <div className="space-y-8">
               <div className="relative w-full sm:max-w-md">
-                <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" />
+                <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input 
-                  type="text" 
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search by name or email..."
-                  className="w-full pl-11 pr-4 py-3 bg-zinc-50 border border-zinc-100 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-zinc-900/5 focus:border-zinc-900 transition-all"
+                  type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Filter by name or email..."
+                  className="w-full pl-12 pr-4 h-11 bg-white border border-slate-300 rounded text-sm font-medium focus:outline-none focus:border-slate-900 transition-all text-slate-900"
                 />
               </div>
-              <div className="overflow-x-auto -mx-4 sm:mx-0">
-                <table className="w-full text-left border-collapse min-w-[600px]">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-zinc-100 text-[10px] uppercase tracking-[0.2em] text-zinc-400 font-black">
-                      <th className="px-4 sm:px-6 py-4">Customer Profile</th>
-                      <th className="px-4 sm:px-6 py-4">Registration Date</th>
-                      <th className="px-4 sm:px-6 py-4">Access Level</th>
-                      <th className="px-4 sm:px-6 py-4 text-right">Management</th>
+                    <tr className="bg-slate-50 border-b border-slate-300 text-[11px] uppercase tracking-widest text-slate-500 font-bold">
+                      <th className="px-6 py-4">Client Identity</th>
+                      <th className="px-6 py-4">Registration</th>
+                      <th className="px-6 py-4">Auth Class</th>
+                      <th className="px-6 py-4 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-zinc-50">
-                    {filteredCustomers.map((customer) => (
-                      <tr key={customer.id} className="group hover:bg-zinc-50/50 transition-colors">
-                        <td className="px-4 sm:px-6 py-4 sm:py-5">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-zinc-900 text-white rounded-full flex items-center justify-center text-[10px] font-black shrink-0">
+                  <tbody className="divide-y divide-slate-100">
+                    {filteredCustomers.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-[11px]">Database query returned 0 results</td>
+                      </tr>
+                    ) : filteredCustomers.map((customer) => (
+                      <tr key={customer.id} className="group hover:bg-slate-50 transition-colors cursor-pointer">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 bg-slate-900 text-white rounded flex items-center justify-center text-[10px] font-bold shrink-0">
                               {customer.email.charAt(0).toUpperCase()}
                             </div>
-                            <span className="font-bold text-zinc-900 text-sm truncate max-w-[150px] sm:max-w-none">{customer.email}</span>
+                            <span className="font-bold text-slate-900 text-sm">{customer.email}</span>
                           </div>
                         </td>
-                        <td className="px-4 sm:px-6 py-4 sm:py-5 text-zinc-500 text-xs sm:text-sm font-medium">
-                          {customer.createdAt ? new Date(customer.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
+                        <td className="px-6 py-4 text-xs font-medium text-slate-500">
+                          {customer.createdAt ? new Date(customer.createdAt).toLocaleDateString() : '—'}
                         </td>
-                        <td className="px-4 sm:px-6 py-4 sm:py-5">
-                          <span className={`px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${
-                            customer.role === 'admin' ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-600'
+                        <td className="px-6 py-4">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest border ${
+                            customer.role === 'admin' ? 'bg-indigo-50 text-indigo-700 border-indigo-100' : 'bg-slate-50 text-slate-500 border-slate-100'
                           }`}>
                             {customer.role || 'client'}
                           </span>
                         </td>
-                        <td className="px-4 sm:px-6 py-4 sm:py-5 text-right">
+                        <td className="px-6 py-4 text-right">
                           <button 
                             onClick={() => setSelectedCustomer(customer)} 
-                            className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 transition-colors"
+                            className="text-[11px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-all"
                           >
-                            View Details
+                            Explore Profile
                           </button>
                         </td>
                       </tr>
@@ -745,62 +719,63 @@ export function CustomersAndCRMManager() {
           )}
 
           {activeTab === 'tickets' && (
-            <div className="overflow-x-auto -mx-4 sm:mx-0">
-              <table className="w-full text-left border-collapse min-w-[600px]">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-zinc-100 text-[10px] uppercase tracking-[0.2em] text-zinc-400 font-black">
-                    <th className="px-4 sm:px-6 py-4">Customer</th>
-                    <th className="px-4 sm:px-6 py-4">Subject</th>
-                    <th className="px-4 sm:px-6 py-4">Status</th>
-                    <th className="px-4 sm:px-6 py-4">Priority</th>
+                  <tr className="bg-slate-50 border-b border-slate-300 text-[11px] uppercase tracking-widest text-slate-500 font-bold">
+                    <th className="px-6 py-4">Requester</th>
+                    <th className="px-6 py-4">Topic</th>
+                    <th className="px-6 py-4">Status</th>
+                    <th className="px-6 py-4">Priority</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-50">
-                  {tickets.map((ticket) => (
+                <tbody className="divide-y divide-slate-100">
+                  {tickets.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-[11px]">Help center is currently empty</td>
+                    </tr>
+                  ) : tickets.map((ticket) => (
                     <React.Fragment key={ticket.id}>
                       <tr 
-                        className="hover:bg-zinc-50/50 transition-colors cursor-pointer group"
+                        className="hover:bg-slate-50 transition-colors cursor-pointer group"
                         onClick={() => setExpandedTicketId(expandedTicketId === ticket.id ? null : ticket.id)}
                       >
-                        <td className="px-4 sm:px-6 py-4 sm:py-5 font-bold text-zinc-900 text-sm flex items-center">
-                          {expandedTicketId === ticket.id ? <ChevronDown className="w-4 h-4 mr-2 text-zinc-400 shrink-0" /> : <ChevronRight className="w-4 h-4 mr-2 text-zinc-400 shrink-0" />}
-                          <span className="truncate max-w-[150px] sm:max-w-none">{ticket.customerEmail}</span>
+                        <td className="px-6 py-4 font-bold text-slate-900 text-sm flex items-center">
+                          <div className="w-6 flex items-center shrink-0">
+                            {expandedTicketId === ticket.id ? <ChevronDown className="w-3.5 h-3.5 text-slate-400" /> : <ChevronRight className="w-3.5 h-3.5 text-slate-400" />}
+                          </div>
+                          {ticket.customerEmail}
                         </td>
-                        <td className="px-4 sm:px-6 py-4 sm:py-5 text-zinc-500 text-xs sm:text-sm font-medium">{ticket.subject}</td>
-                        <td className="px-4 sm:px-6 py-4 sm:py-5">
-                          <span className={`px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${
-                            ticket.status === 'open' ? 'bg-rose-50 text-rose-600' : 
-                            ticket.status === 'resolved' ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-600'
+                        <td className="px-6 py-4 text-sm font-medium text-slate-500">{ticket.subject}</td>
+                        <td className="px-6 py-4">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest border ${
+                            ticket.status === 'open' ? 'bg-rose-50 text-rose-700 border-rose-100' : 
+                            ticket.status === 'resolved' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-blue-50 text-blue-700 border-blue-100'
                           }`}>
                             {ticket.status}
                           </span>
                         </td>
-                        <td className="px-4 sm:px-6 py-4 sm:py-5 text-zinc-500 text-[10px] font-medium uppercase tracking-widest">{ticket.priority || 'NORMAL'}</td>
+                        <td className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-slate-400">{ticket.priority || 'NORMAL'}</td>
                       </tr>
                       {expandedTicketId === ticket.id && (
-                        <tr>
-                          <td colSpan={4} className="p-0 bg-zinc-50/50 border-b border-zinc-100">
-                            <motion.div 
-                              initial={{ opacity: 0, height: 0 }} 
-                              animate={{ opacity: 1, height: 'auto' }} 
-                              className="px-8 sm:px-12 py-6"
-                            >
-                              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                                <div className="lg:col-span-2 space-y-6">
-                                  <div>
-                                    <h4 className="text-xs font-black text-zinc-400 uppercase tracking-widest mb-2">Original Message</h4>
-                                    <div className="bg-white p-4 rounded-xl border border-zinc-100 text-sm text-zinc-600">
-                                      {ticket.description || 'No description provided.'}
-                                    </div>
-                                    {ticket.imageUrl && (
-                                      <div className="mt-4">
-                                        <h4 className="text-xs font-black text-zinc-400 uppercase tracking-widest mb-2">Attached Image</h4>
-                                        <a href={ticket.imageUrl} target="_blank" rel="noopener noreferrer">
-                                          <img src={ticket.imageUrl} alt="Attachment" className="max-w-xs rounded-lg border border-zinc-200" />
-                                        </a>
-                                      </div>
-                                    )}
+                        <tr className="bg-slate-50/50">
+                          <td colSpan={4} className="px-12 py-8 border-b border-slate-200">
+                            <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                              <div className="lg:col-span-2 space-y-8">
+                                <div>
+                                  <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-4">Internal Inquiry Description</h4>
+                                  <div className="bg-white p-6 rounded border border-slate-200 text-sm text-slate-900 font-medium leading-relaxed">
+                                    {ticket.description || 'No system description provided.'}
                                   </div>
+                                  {ticket.imageUrl && (
+                                    <div className="mt-6">
+                                      <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-4">Evidence Attachment</h4>
+                                      <a href={ticket.imageUrl} target="_blank" rel="noopener noreferrer" className="inline-block rounded overflow-hidden border border-slate-200">
+                                        <img src={ticket.imageUrl} alt="" className="max-w-xs transition-transform hover:scale-105" />
+                                      </a>
+                                    </div>
+                                  )}
+                                </div>
 
                                   <div>
                                     <h4 className="text-xs font-black text-zinc-400 uppercase tracking-widest mb-4">Conversation</h4>
@@ -820,56 +795,56 @@ export function CustomersAndCRMManager() {
                                       {(!ticket.messages || ticket.messages.length === 0) && (
                                         <p className="text-sm text-zinc-400 italic">No replies yet.</p>
                                       )}
-                                    </div>
-                                    
                                     <div className="flex gap-2">
                                       <textarea
                                         value={ticketReplyText}
                                         onChange={(e) => setTicketReplyText(e.target.value)}
                                         placeholder="Type your reply..."
-                                        className="flex-1 bg-white border border-zinc-200 text-zinc-900 text-sm rounded-xl focus:ring-zinc-900 focus:border-zinc-900 block p-3 min-h-[80px] resize-none"
+                                        className="flex-1 bg-white border border-slate-300 text-slate-900 text-sm rounded focus:outline-none focus:border-slate-900 block p-4 min-h-[100px] font-medium"
                                       />
                                       <button
                                         onClick={() => handleReplyTicket(ticket.id)}
                                         disabled={!ticketReplyText.trim() || updatingTicketId === ticket.id}
-                                        className="bg-zinc-900 text-white px-4 rounded-xl font-bold text-sm hover:bg-zinc-800 transition-colors disabled:opacity-50 flex flex-col items-center justify-center gap-1"
+                                        className="bg-slate-900 text-white px-6 rounded font-bold text-[11px] uppercase tracking-widest hover:bg-slate-800 transition-all disabled:opacity-50 flex flex-col items-center justify-center gap-2 shrink-0 h-auto"
                                       >
                                         <Send className="w-4 h-4" />
-                                        <span>Send</span>
+                                        <span>Dispatch</span>
                                       </button>
                                     </div>
                                   </div>
                                 </div>
+                              </div>
 
+                              <div className="space-y-8">
                                 <div>
-                                  <h4 className="text-xs font-black text-zinc-400 uppercase tracking-widest mb-4">Ticket Actions</h4>
-                                  <div className="bg-white p-5 rounded-xl border border-zinc-100 space-y-4">
+                                  <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-4">Lifecycle Control</h4>
+                                  <div className="bg-white p-6 rounded border border-slate-200 space-y-6">
                                     <div>
-                                      <label className="block text-xs font-bold text-zinc-700 mb-2">Update Status</label>
+                                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Stage</label>
                                       <select
                                         value={ticket.status}
                                         onChange={(e) => handleUpdateTicket(ticket.id, { status: e.target.value })}
                                         disabled={updatingTicketId === ticket.id}
-                                        className="bg-zinc-50 border border-zinc-200 text-zinc-900 text-sm rounded-lg focus:ring-zinc-900 focus:border-zinc-900 block w-full p-2.5"
+                                        className="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded focus:outline-none focus:border-slate-900 block w-full p-3 font-bold uppercase tracking-wider appearance-none"
                                       >
-                                        <option value="open">Open</option>
-                                        <option value="in-progress">In Progress</option>
+                                        <option value="open">Opened</option>
+                                        <option value="in-progress">Consulting</option>
                                         <option value="resolved">Resolved</option>
-                                        <option value="closed">Closed</option>
+                                        <option value="closed">Archived</option>
                                       </select>
                                     </div>
                                     <div>
-                                      <label className="block text-xs font-bold text-zinc-700 mb-2">Update Priority</label>
+                                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Priority Matrix</label>
                                       <select
                                         value={ticket.priority || 'medium'}
                                         onChange={(e) => handleUpdateTicket(ticket.id, { priority: e.target.value })}
                                         disabled={updatingTicketId === ticket.id}
-                                        className="bg-zinc-50 border border-zinc-200 text-zinc-900 text-sm rounded-lg focus:ring-zinc-900 focus:border-zinc-900 block w-full p-2.5"
+                                        className="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded focus:outline-none focus:border-slate-900 block w-full p-3 font-bold uppercase tracking-wider appearance-none"
                                       >
-                                        <option value="low">Low</option>
-                                        <option value="medium">Medium</option>
-                                        <option value="high">High</option>
-                                        <option value="urgent">Urgent</option>
+                                        <option value="low">P3 - Low</option>
+                                        <option value="medium">P2 - Normal</option>
+                                        <option value="high">P1 - High</option>
+                                        <option value="urgent">P0 - Critical</option>
                                       </select>
                                     </div>
                                   </div>
@@ -887,73 +862,82 @@ export function CustomersAndCRMManager() {
           )}
 
           {activeTab === 'refunds' && (
-            <div className="overflow-x-auto -mx-4 sm:mx-0">
-              <table className="w-full text-left border-collapse min-w-[600px]">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-zinc-100 text-[10px] uppercase tracking-[0.2em] text-zinc-400 font-black">
-                    <th className="px-4 sm:px-6 py-4">User ID</th>
-                    <th className="px-4 sm:px-6 py-4">Reason</th>
-                    <th className="px-4 sm:px-6 py-4">Status</th>
-                    <th className="px-4 sm:px-6 py-4">Date</th>
+                  <tr className="bg-slate-50 border-b border-slate-300 text-[11px] uppercase tracking-widest text-slate-500 font-bold">
+                    <th className="px-6 py-4">Claimant Identity</th>
+                    <th className="px-6 py-4">Primary Reason</th>
+                    <th className="px-6 py-4">Decision</th>
+                    <th className="px-6 py-4">Submission</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-50">
-                  {refunds.map((refund) => (
+                <tbody className="divide-y divide-slate-100">
+                  {refunds.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-[11px]">No active claims detected</td>
+                    </tr>
+                  ) : refunds.map((refund) => (
                     <React.Fragment key={refund.id}>
                       <tr 
-                        className="hover:bg-zinc-50/50 transition-colors cursor-pointer group"
+                        className="hover:bg-slate-50 transition-colors cursor-pointer group"
                         onClick={() => setExpandedRefundId(expandedRefundId === refund.id ? null : refund.id)}
                       >
-                        <td className="px-4 sm:px-6 py-4 sm:py-5 font-bold text-zinc-900 text-sm flex items-center">
-                          {expandedRefundId === refund.id ? <ChevronDown className="w-4 h-4 mr-2 text-zinc-400 shrink-0" /> : <ChevronRight className="w-4 h-4 mr-2 text-zinc-400 shrink-0" />}
-                          <span className="truncate max-w-[120px] sm:max-w-[150px]">{refund.userId}</span>
+                        <td className="px-6 py-4 font-bold text-slate-900 text-sm flex items-center">
+                          <div className="w-6 flex items-center shrink-0">
+                            {expandedRefundId === refund.id ? <ChevronDown className="w-3.5 h-3.5 text-slate-400" /> : <ChevronRight className="w-3.5 h-3.5 text-slate-400" />}
+                          </div>
+                          {refund.userId}
                         </td>
-                        <td className="px-4 sm:px-6 py-4 sm:py-5 text-zinc-500 text-xs sm:text-sm font-medium">{refund.reason}</td>
-                        <td className="px-4 sm:px-6 py-4 sm:py-5">
-                          <span className={`px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${
-                            refund.status === 'Pending' ? 'bg-amber-50 text-amber-600' : 'bg-zinc-100 text-zinc-500'
+                        <td className="px-6 py-4 text-sm font-medium text-slate-500">{refund.reason}</td>
+                        <td className="px-6 py-4">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest border ${
+                            refund.status === 'Pending' ? 'bg-amber-50 text-amber-700 border-amber-100' : 'bg-slate-50 text-slate-500 border-slate-100'
                           }`}>
                             {refund.status}
                           </span>
                         </td>
-                        <td className="px-4 sm:px-6 py-4 sm:py-5 text-zinc-500 text-xs sm:text-sm font-medium">
+                        <td className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-slate-400">
                           {refund.createdAt ? new Date(refund.createdAt).toLocaleDateString() : '—'}
                         </td>
                       </tr>
                       {expandedRefundId === refund.id && (
-                        <tr>
-                          <td colSpan={4} className="p-0 bg-zinc-50/50 border-b border-zinc-100">
-                            <motion.div 
-                              initial={{ opacity: 0, height: 0 }} 
-                              animate={{ opacity: 1, height: 'auto' }} 
-                              className="px-8 sm:px-12 py-6"
-                            >
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div>
-                                  <h4 className="text-xs font-black text-zinc-400 uppercase tracking-widest mb-2">Refund Details</h4>
-                                  <div className="bg-white p-4 rounded-xl border border-zinc-100 text-sm text-zinc-600 space-y-2">
-                                    <p><strong>Order ID:</strong> {refund.orderId || 'N/A'}</p>
-                                    <p><strong>Reason:</strong> {refund.reason}</p>
-                                    <p><strong>Description:</strong> {refund.description || 'No description provided.'}</p>
+                        <tr className="bg-slate-50/50">
+                          <td colSpan={4} className="px-12 py-8 border-b border-slate-200">
+                            <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                              <div>
+                                <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-4">Claim Metadata</h4>
+                                <div className="bg-white p-6 rounded border border-slate-200 text-sm text-slate-900 font-medium space-y-4 shadow-sm">
+                                  <div className="flex justify-between border-b border-slate-100 pb-2">
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase">System Order ID</span>
+                                    <span className="font-bold font-mono">{refund.orderId || 'N/A'}</span>
+                                  </div>
+                                  <div className="flex flex-col gap-1">
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase">Justification</span>
+                                    <span>{refund.reason}</span>
+                                  </div>
+                                  <div className="flex flex-col gap-1">
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase">Detailed Description</span>
+                                    <span>{refund.description || 'No system justification provided.'}</span>
                                   </div>
                                 </div>
-                                <div>
-                                  <h4 className="text-xs font-black text-zinc-400 uppercase tracking-widest mb-4">Update Status</h4>
-                                  <div className="bg-white p-5 rounded-xl border border-zinc-100">
-                                    <div className="flex items-center space-x-3">
-                                      <select
-                                        value={refund.status || 'Pending'}
-                                        onChange={(e) => handleUpdateRefund(refund.id, { status: e.target.value })}
-                                        disabled={updatingRefundId === refund.id}
-                                        className="flex-1 bg-zinc-50 border border-zinc-200 text-zinc-900 text-sm rounded-lg focus:ring-zinc-900 focus:border-zinc-900 block w-full p-2.5"
-                                      >
-                                        <option value="Pending">Pending</option>
-                                        <option value="Approved">Approved (Refund)</option>
-                                        <option value="Replaced">Approved (Replacement)</option>
-                                        <option value="Rejected">Rejected</option>
-                                      </select>
-                                      {updatingRefundId === refund.id && <RefreshCcw className="w-5 h-5 animate-spin text-zinc-400" />}
-                                    </div>
+                              </div>
+                              <div>
+                                <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-4">Administrative Decision</h4>
+                                <div className="bg-white p-6 rounded border border-slate-200">
+                                  <div className="flex items-center space-x-4">
+                                    <select
+                                      value={refund.status || 'Pending'}
+                                      onChange={(e) => handleUpdateRefund(refund.id, { status: e.target.value })}
+                                      disabled={updatingRefundId === refund.id}
+                                      className="flex-1 bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded focus:outline-none focus:border-slate-900 block p-3 font-bold uppercase tracking-wider appearance-none"
+                                    >
+                                      <option value="Pending">Queue - Pending</option>
+                                      <option value="Approved">Auth - Approved (Refund)</option>
+                                      <option value="Replaced">Auth - Approved (Replacement)</option>
+                                      <option value="Rejected">Void - Rejected</option>
+                                    </select>
+                                    {updatingRefundId === refund.id && <RefreshCcw className="w-5 h-5 animate-spin text-slate-400" />}
                                   </div>
                                 </div>
                               </div>
@@ -969,92 +953,85 @@ export function CustomersAndCRMManager() {
           )}
 
           {activeTab === 'newsletter' && (
-            <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-10">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                 <div>
-                  <h3 className="text-lg font-black text-zinc-900">Newsletter Management</h3>
-                  <p className="text-sm text-zinc-500">Manage your subscribers and send email campaigns.</p>
+                  <h3 className="text-xl font-bold text-slate-900 tracking-tight">Broadcast Center</h3>
+                  <p className="text-sm font-medium text-slate-500 mt-1">Global management of subscriber lists and automated campaigns.</p>
                 </div>
                 <button 
                   onClick={() => setIsCampaignModalOpen(true)}
-                  className="px-6 py-3 bg-zinc-900 text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-zinc-800 transition-all flex items-center justify-center gap-2"
+                  className="px-8 py-3 bg-slate-900 text-white text-[11px] font-bold uppercase tracking-widest rounded hover:bg-slate-800 transition-all flex items-center justify-center gap-3 shadow-sm"
                 >
                   <Mail className="w-4 h-4" />
-                  Send Campaign
+                  Initiate Campaign
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 bg-white border border-zinc-100 rounded-3xl overflow-hidden">
-                  <div className="px-6 py-4 border-b border-zinc-100 bg-zinc-50/50">
-                    <h4 className="text-xs font-black uppercase tracking-widest text-zinc-400">Subscribers List</h4>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                <div className="lg:col-span-2 bg-white border border-slate-300 rounded overflow-hidden">
+                  <div className="px-6 py-4 border-b border-slate-300 bg-slate-50/50">
+                    <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Database Entry: Active Subscribers</h4>
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                       <thead>
-                        <tr className="border-b border-zinc-100 text-[10px] uppercase tracking-[0.2em] text-zinc-400 font-black">
-                          <th className="px-6 py-4">Subscriber Email</th>
-                          <th className="px-6 py-4">Status</th>
-                          <th className="px-6 py-4">Date Subscribed</th>
+                        <tr className="bg-slate-50 border-b border-slate-300 text-[11px] uppercase tracking-widest text-slate-500 font-bold">
+                          <th className="px-6 py-4">Identity</th>
+                          <th className="px-6 py-4">System State</th>
+                          <th className="px-6 py-4">Opt-in Date</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-zinc-50">
-                        {subscribers.map((sub) => (
-                          <tr key={sub.id} className="hover:bg-zinc-50/50 transition-colors">
-                            <td className="px-6 py-4 font-bold text-zinc-900 text-sm">{sub.email}</td>
+                      <tbody className="divide-y divide-slate-100">
+                        {subscribers.length === 0 ? (
+                          <tr><td colSpan={3} className="py-20 text-center text-slate-400 uppercase tracking-widest font-bold text-[11px]">Subscriber registry is empty</td></tr>
+                        ) : subscribers.map((sub) => (
+                          <tr key={sub.id} className="hover:bg-slate-50 transition-colors">
+                            <td className="px-6 py-4 font-bold text-slate-900 text-sm">{sub.email}</td>
                             <td className="px-6 py-4">
-                              <span className={`px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${
-                                sub.status === 'active' ? 'bg-emerald-50 text-emerald-600' : 'bg-zinc-100 text-zinc-500'
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest border ${
+                                sub.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-slate-50 text-slate-500 border-slate-100'
                               }`}>
                                 {sub.status || 'active'}
                               </span>
                             </td>
-                            <td className="px-6 py-4 text-zinc-500 text-xs font-medium">
+                            <td className="px-6 py-4 text-slate-500 text-xs font-bold uppercase tracking-widest">
                               {sub.subscribedAt ? new Date(sub.subscribedAt).toLocaleDateString() : '—'}
                             </td>
                           </tr>
                         ))}
-                        {subscribers.length === 0 && (
-                          <tr>
-                            <td colSpan={3} className="p-12 text-center text-zinc-400 font-medium">
-                              No newsletter subscribers found.
-                            </td>
-                          </tr>
-                        )}
                       </tbody>
                     </table>
                   </div>
                 </div>
 
-                <div className="bg-white border border-zinc-100 rounded-3xl overflow-hidden">
-                  <div className="px-6 py-4 border-b border-zinc-100 bg-zinc-50/50">
-                    <h4 className="text-xs font-black uppercase tracking-widest text-zinc-400">Recent Campaigns</h4>
+                <div className="bg-white border border-slate-300 rounded overflow-hidden">
+                  <div className="px-6 py-4 border-b border-slate-300 bg-slate-50/50">
+                    <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Campaign History</h4>
                   </div>
-                  <div className="divide-y divide-zinc-50">
-                    {campaigns.map((campaign) => (
-                      <div key={campaign.id} className="p-4 hover:bg-zinc-50 transition-colors">
-                        <div className="flex items-start justify-between gap-2 mb-1">
-                          <h5 className="font-bold text-zinc-900 text-sm truncate">{campaign.subject}</h5>
-                          <span className="text-[10px] font-black text-zinc-400 whitespace-nowrap">
+                  <div className="divide-y divide-slate-100">
+                    {campaigns.length === 0 ? (
+                      <div className="p-12 text-center text-slate-400 uppercase tracking-widest font-bold text-[11px]">No archived broadcasts</div>
+                    ) : campaigns.map((campaign) => (
+                      <div key={campaign.id} className="p-6 hover:bg-slate-50 transition-colors">
+                        <div className="flex items-start justify-between gap-4 mb-3">
+                          <h5 className="font-bold text-slate-900 text-sm leading-tight">{campaign.subject}</h5>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest whitespace-nowrap">
                             {new Date(campaign.sentAt).toLocaleDateString()}
                           </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] text-zinc-500 font-medium">
-                            {campaign.recipientCount} recipients
+                          <span className="w-1.5 h-1.5 rounded-full bg-slate-200" />
+                          <span className="text-[10px] text-slate-900 font-bold uppercase tracking-widest">
+                            {campaign.recipientCount} REACH
                           </span>
-                          <span className="w-1 h-1 rounded-full bg-zinc-200" />
-                          <span className="text-[10px] text-emerald-600 font-black uppercase tracking-wider">
-                            {campaign.status}
+                          <span className="w-1.5 h-1.5 rounded-full bg-slate-200" />
+                          <span className="text-[10px] text-emerald-600 font-bold uppercase tracking-widest">
+                            SENT
                           </span>
                         </div>
                       </div>
                     ))}
-                    {campaigns.length === 0 && (
-                      <div className="p-12 text-center text-zinc-400 text-xs font-medium">
-                        No campaigns sent yet.
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
@@ -1062,86 +1039,52 @@ export function CustomersAndCRMManager() {
               {/* Campaign Modal */}
               <AnimatePresence>
                 {isCampaignModalOpen && (
-                  <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
-                    <motion.div 
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      onClick={() => setIsCampaignModalOpen(false)}
-                      className="absolute inset-0 bg-zinc-900/60 backdrop-blur-sm"
-                    />
-                    <motion.div 
-                      initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                      className="relative w-full max-w-2xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden"
-                    >
-                      <div className="p-8 sm:p-10">
-                        <div className="flex items-center justify-between mb-8">
+                  <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsCampaignModalOpen(false)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
+                    <motion.div initial={{ opacity: 0, scale: 0.98, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.98, y: 10 }} className="relative w-full max-w-3xl bg-white rounded border border-slate-300 shadow-2xl overflow-hidden">
+                      <div className="p-10">
+                        <div className="flex items-center justify-between mb-10 border-b border-slate-100 pb-8">
                           <div>
-                            <h3 className="text-2xl font-black text-zinc-900 tracking-tight">Create Campaign</h3>
-                            <p className="text-zinc-500 text-sm font-medium">Send a newsletter to all {subscribers.length} active subscribers.</p>
+                            <h3 className="text-2xl font-bold text-slate-900 tracking-tight">New Broadcast Campaign</h3>
+                            <p className="text-slate-500 text-sm font-medium mt-1">Transmitting to {subscribers.length} verified system subscribers.</p>
                           </div>
-                          <button 
-                            onClick={() => setIsCampaignModalOpen(false)}
-                            className="p-3 hover:bg-zinc-100 rounded-2xl transition-colors"
-                          >
-                            <X className="w-6 h-6 text-zinc-400" />
-                          </button>
+                          <button onClick={() => setIsCampaignModalOpen(false)} className="p-3 hover:bg-slate-100 rounded transition-colors"><X className="w-6 h-6 text-slate-400" /></button>
                         </div>
 
-                        <form onSubmit={handleSendCampaign} className="space-y-6">
-                          <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 ml-1">
-                              Email Subject
-                            </label>
+                        <form onSubmit={handleSendCampaign} className="space-y-8">
+                          <div className="space-y-3">
+                            <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Communication Subject</label>
                             <input 
-                              type="text"
-                              value={campaignSubject}
-                              onChange={(e) => setCampaignSubject(e.target.value)}
-                              placeholder="e.g., Exclusive 20% Discount Code Inside! 🎁"
-                              className="w-full px-6 py-4 bg-zinc-50 border border-zinc-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-zinc-900/5 focus:border-zinc-900 transition-all font-bold text-zinc-900 placeholder:text-zinc-300"
+                              type="text" value={campaignSubject} onChange={(e) => setCampaignSubject(e.target.value)}
+                              placeholder="e.g., Seasonal Protocol: Exclusive Winter Access! ❄️"
+                              className="w-full px-6 h-12 bg-slate-50 border border-slate-300 rounded focus:outline-none focus:border-slate-900 transition-all font-bold text-slate-900"
                               required
                             />
                           </div>
 
-                          <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 ml-1">
-                              Email Content (HTML Supported)
-                            </label>
+                          <div className="space-y-3">
+                            <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Markup Content (HTML Enabled)</label>
                             <textarea 
-                              value={campaignContent}
-                              onChange={(e) => setCampaignContent(e.target.value)}
-                              placeholder="Write your newsletter content here... You can use <p>, <b>, <a> tags etc."
-                              className="w-full px-6 py-4 bg-zinc-50 border border-zinc-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-zinc-900/5 focus:border-zinc-900 transition-all font-bold text-zinc-900 placeholder:text-zinc-300 min-h-[250px] resize-none"
+                              value={campaignContent} onChange={(e) => setCampaignContent(e.target.value)}
+                              placeholder="System content goes here... Parsed HTML accepted."
+                              className="w-full px-6 py-4 bg-slate-50 border border-slate-300 rounded focus:outline-none focus:border-slate-900 transition-all font-bold text-slate-900 min-h-[300px] resize-none"
                               required
                             />
                           </div>
 
-                          <div className="flex items-center gap-4 pt-4">
+                          <div className="flex items-center gap-6 pt-6">
                             <button 
-                              type="button"
-                              onClick={() => setIsCampaignModalOpen(false)}
-                              className="flex-1 px-8 py-4 border border-zinc-100 text-zinc-400 text-xs font-black uppercase tracking-widest rounded-2xl hover:bg-zinc-50 transition-all"
+                              type="button" onClick={() => setIsCampaignModalOpen(false)}
+                              className="flex-1 px-8 py-4 border border-slate-200 text-slate-400 text-[11px] font-bold uppercase tracking-widest rounded hover:bg-slate-50 transition-all"
                             >
-                              Cancel
+                              Abort
                             </button>
                             <button 
-                              type="submit"
-                              disabled={isSendingCampaign}
-                              className="flex-[2] px-8 py-4 bg-zinc-900 text-white text-xs font-black uppercase tracking-widest rounded-2xl hover:bg-zinc-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                              type="submit" disabled={isSendingCampaign}
+                              className="flex-[2] px-8 py-4 bg-slate-900 text-white text-[11px] font-bold uppercase tracking-widest rounded hover:bg-slate-800 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
                             >
-                              {isSendingCampaign ? (
-                                <>
-                                  <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                                  Sending...
-                                </>
-                              ) : (
-                                <>
-                                  <Send className="w-4 h-4" />
-                                  Send Newsletter Now
-                                </>
-                              )}
+                              {isSendingCampaign ? <RefreshCcw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                              Dispatch Broadcast Now
                             </button>
                           </div>
                         </form>
@@ -1154,64 +1097,59 @@ export function CustomersAndCRMManager() {
           )}
 
           {activeTab === 'reviews' && (
-            <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <h3 className="text-lg font-black text-zinc-900">Customer Reviews</h3>
-                  <p className="text-sm text-zinc-500">Monitor and manage product feedback from your customers.</p>
-                </div>
+            <div className="space-y-10">
+              <div>
+                <h3 className="text-xl font-bold text-slate-900 tracking-tight">Public Feedback Terminal</h3>
+                <p className="text-sm font-medium text-slate-500 mt-1">Cross-referencing consumer satisfaction across the product catalog.</p>
               </div>
 
-              <div className="overflow-x-auto -mx-4 sm:mx-0">
-                <table className="w-full text-left border-collapse min-w-[800px]">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-zinc-100 text-[10px] uppercase tracking-[0.2em] text-zinc-400 font-black">
-                      <th className="px-4 sm:px-6 py-4">Customer</th>
-                      <th className="px-4 sm:px-6 py-4">Rating</th>
-                      <th className="px-4 sm:px-6 py-4">Comment</th>
-                      <th className="px-4 sm:px-6 py-4">Date</th>
-                      <th className="px-4 sm:px-6 py-4 text-right">Sentiment</th>
+                    <tr className="bg-slate-50 border-b border-slate-300 text-[11px] uppercase tracking-widest text-slate-500 font-bold">
+                      <th className="px-6 py-4">Client Identity</th>
+                      <th className="px-6 py-4">Rating Index</th>
+                      <th className="px-6 py-4">System Narrative</th>
+                      <th className="px-6 py-4">Detection</th>
+                      <th className="px-6 py-4 text-right">Engagement</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-zinc-50">
-                    {reviews.map((review) => (
-                      <tr key={review.id} className="hover:bg-zinc-50/50 transition-colors">
-                        <td className="px-4 sm:px-6 py-4 sm:py-5">
+                  <tbody className="divide-y divide-slate-100">
+                    {reviews.length === 0 ? (
+                      <tr><td colSpan={5} className="py-20 text-center text-slate-400 uppercase tracking-widest font-bold text-[11px]">No feedback packets retrieved</td></tr>
+                    ) : reviews.map((review) => (
+                      <tr key={review.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="px-6 py-4">
                           <button 
                             onClick={() => {
                               const customer = customers.find(c => c.id === review.userId);
-                              if (customer) {
-                                setSelectedCustomer(customer);
-                              } else {
-                                toast.error('Customer profile not found in database.');
-                              }
+                              if (customer) setSelectedCustomer(customer);
+                              else toast.error('Client registry mismatch detected.');
                             }}
-                            className="flex flex-col text-left hover:opacity-70 transition-opacity group"
+                            className="flex flex-col text-left group"
                           >
-                            <span className="font-bold text-zinc-900 text-sm group-hover:underline">{review.userName}</span>
-                            <span className="text-[10px] text-zinc-400 font-mono">{review.userId}</span>
+                            <span className="font-bold text-slate-900 text-sm group-hover:underline">{review.userName}</span>
+                            <span className="text-[10px] text-slate-400 font-mono font-bold tracking-tight uppercase">{review.userId.slice(0, 8)}...</span>
                           </button>
                         </td>
-                        <td className="px-4 sm:px-6 py-4 sm:py-5">
-                          <div className="flex text-amber-400">
+                        <td className="px-6 py-4">
+                          <div className="flex text-slate-900">
                             {[...Array(5)].map((_, i) => (
-                              <Star key={i} className={`w-3 h-3 ${i < review.rating ? 'fill-current' : 'text-zinc-200'}`} />
+                              <Star key={i} className={`w-3 h-3 ${i < review.rating ? 'fill-current' : 'text-slate-200'}`} />
                             ))}
                           </div>
                         </td>
-                        <td className="px-4 sm:px-6 py-4 sm:py-5">
-                          <p className="text-zinc-600 text-xs sm:text-sm font-medium max-w-md line-clamp-2" title={review.comment}>
-                            {review.comment}
-                          </p>
+                        <td className="px-6 py-4">
+                          <p className="text-slate-500 text-sm font-medium max-w-sm line-clamp-2" title={review.comment}>{review.comment}</p>
                         </td>
-                        <td className="px-4 sm:px-6 py-4 sm:py-5 text-zinc-500 text-xs sm:text-sm font-medium">
+                        <td className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                           {review.createdAt ? new Date(review.createdAt).toLocaleDateString() : '—'}
                         </td>
-                        <td className="px-4 sm:px-6 py-4 sm:py-5 text-right">
-                          <div className="flex flex-col items-end gap-2">
-                            <span className={`px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${
-                              review.rating >= 4 ? 'bg-emerald-50 text-emerald-600' : 
-                              review.rating <= 2 ? 'bg-rose-50 text-rose-600' : 'bg-amber-50 text-amber-600'
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex flex-col items-end gap-3">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest border ${
+                              review.rating >= 4 ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 
+                              review.rating <= 2 ? 'bg-rose-50 text-rose-700 border-rose-100' : 'bg-amber-50 text-amber-700 border-amber-100'
                             }`}>
                               {review.rating >= 4 ? 'Positive' : review.rating <= 2 ? 'Negative' : 'Neutral'}
                             </span>
@@ -1220,82 +1158,59 @@ export function CustomersAndCRMManager() {
                                 setReplyingTo(replyingTo === review.id ? null : review.id);
                                 setReplyText(review.adminReply || '');
                               }}
-                              className="text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 transition-colors"
+                              className="text-[11px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-colors"
                             >
-                              {review.adminReply ? 'Edit Reply' : 'Reply'}
+                              {review.adminReply ? 'Revise Proxy' : 'Engage Client'}
                             </button>
                           </div>
                         </td>
                       </tr>
                     ))}
-                    {reviews.length === 0 && (
-                      <tr>
-                        <td colSpan={5} className="p-12 text-center text-zinc-400 font-medium">
-                          No customer reviews found.
-                        </td>
-                      </tr>
-                    )}
                   </tbody>
                 </table>
               </div>
 
-              {/* Reply Modal/Inline Form */}
+              {/* Reply Modal */}
               <AnimatePresence>
                 {replyingTo && (
-                  <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-                    <motion.div 
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      onClick={() => setReplyingTo(null)}
-                      className="absolute inset-0 bg-zinc-900/60 backdrop-blur-sm"
-                    />
-                    <motion.div 
-                      initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                      className="relative w-full max-w-lg bg-white rounded-[2.5rem] shadow-2xl overflow-hidden"
-                    >
-                      <div className="p-8">
-                        <div className="flex items-center justify-between mb-6">
+                  <div className="fixed inset-0 z-[110] flex items-center justify-center p-6">
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setReplyingTo(null)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
+                    <motion.div initial={{ opacity: 0, scale: 0.98, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.98, y: 10 }} className="relative w-full max-w-xl bg-white rounded border border-slate-300 shadow-2xl overflow-hidden">
+                      <div className="p-10">
+                        <div className="flex items-center justify-between mb-8">
                           <div>
-                            <h3 className="text-xl font-black text-zinc-900 tracking-tight">Reply to Review</h3>
-                            <p className="text-zinc-500 text-xs font-medium">Responding to {reviews.find(r => r.id === replyingTo)?.userName}</p>
+                            <h3 className="text-xl font-bold text-slate-900 tracking-tight">Proxy Reply Interface</h3>
+                            <p className="text-slate-500 text-xs font-medium uppercase tracking-widest mt-1">Responding to: {reviews.find(r => r.id === replyingTo)?.userName}</p>
                           </div>
-                          <button 
-                            onClick={() => setReplyingTo(null)}
-                            className="p-2 hover:bg-zinc-100 rounded-xl transition-colors"
-                          >
-                            <X className="w-5 h-5 text-zinc-400" />
-                          </button>
+                          <button onClick={() => setReplyingTo(null)} className="p-3 hover:bg-slate-100 rounded transition-colors"><X className="w-5 h-5 text-slate-400" /></button>
                         </div>
 
-                        <div className="mb-6 p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
-                          <p className="text-zinc-600 text-sm font-medium italic">
+                        <div className="mb-8 p-6 bg-slate-50 rounded border border-slate-200">
+                          <p className="text-slate-900 text-sm font-bold leading-relaxed italic">
                             "{reviews.find(r => r.id === replyingTo)?.comment}"
                           </p>
                         </div>
 
-                        <div className="space-y-4">
+                        <div className="space-y-6">
                           <textarea 
-                            value={replyText}
-                            onChange={(e) => setReplyText(e.target.value)}
-                            placeholder="Write your response..."
-                            className="w-full px-6 py-4 bg-zinc-50 border border-zinc-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-zinc-900/5 focus:border-zinc-900 transition-all font-bold text-zinc-900 placeholder:text-zinc-300 min-h-[150px] resize-none"
+                            value={replyText} onChange={(e) => setReplyText(e.target.value)}
+                            placeholder="Drafting system response..."
+                            className="w-full px-6 py-4 bg-slate-50 border border-slate-300 rounded focus:outline-none focus:border-slate-900 transition-all font-bold text-slate-900 min-h-[150px] resize-none"
                           />
-                          <div className="flex gap-3">
+                          <div className="flex gap-4">
                             <button 
                               onClick={() => setReplyingTo(null)}
-                              className="flex-1 px-6 py-3 border border-zinc-100 text-zinc-400 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-zinc-50 transition-all"
+                              className="flex-1 px-8 py-3 border border-slate-200 text-slate-400 text-[11px] font-bold uppercase tracking-widest rounded hover:bg-slate-50 transition-all"
                             >
-                              Cancel
+                              Discard
                             </button>
                             <button 
                               onClick={() => handleSaveReply(reviews.find(r => r.id === replyingTo))}
                               disabled={isSavingReply || !replyText.trim()}
-                              className="flex-[2] px-6 py-3 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-zinc-800 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                              className="flex-[2] px-8 py-3 bg-slate-900 text-white text-[11px] font-bold uppercase tracking-widest rounded hover:bg-slate-800 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
                             >
-                              {isSavingReply ? 'Saving...' : 'Save Response'}
+                              {isSavingReply ? <RefreshCcw className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+                              Authorize & Publish
                             </button>
                           </div>
                         </div>

@@ -43,3 +43,9 @@ next-env.d.ts
 # Firebase
 .firebase/
 firebase-debug.log
+
+# Agent & Debug
+.agents/
+.gemini/
+scratch/
+.antigravity/

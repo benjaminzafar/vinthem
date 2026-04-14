@@ -1,5 +1,5 @@
--- Mavren Shop Supabase Schema
--- Run this in the Supabase SQL Editor to initialize all required tables and RLS policies.
+-- Mavren Shop Initial Schema & Security Recovery
+-- Consolidated from supabase_schema.sql and rls_fix.sql
 
 -- 1. EXTENSIONS
 create extension if not exists "uuid-ossp";
@@ -9,6 +9,7 @@ create extension if not exists "uuid-ossp";
 -- Users / Profiles
 create table if not exists public.users (
   id uuid references auth.users on delete cascade primary key,
+  email text not null,
   full_name text,
   avatar_url text,
   role text default 'user',
@@ -148,34 +149,88 @@ alter table public.reviews enable row level security;
 alter table public.refund_requests enable row level security;
 alter table public.support_tickets enable row level security;
 
--- 4. RLS POLICIES (Simplified for Admin + Public Read)
+-- 4. HELPERS
+-- SECURITY DEFINER allows the function to bypass RLS when checking the users table.
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS boolean AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM public.users
+    WHERE id = auth.uid() AND role = 'admin'
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- 5. RLS POLICIES
 
 -- Public Read Policies
+DROP POLICY IF EXISTS "Allow public read" on public.settings;
 create policy "Allow public read" on public.settings for select using (true);
+
+DROP POLICY IF EXISTS "Allow public read" on public.categories;
 create policy "Allow public read" on public.categories for select using (true);
+
+DROP POLICY IF EXISTS "Allow public read" on public.products;
 create policy "Allow public read" on public.products for select using (true);
+
+DROP POLICY IF EXISTS "Allow public read" on public.blog_posts;
 create policy "Allow public read" on public.blog_posts for select using (true);
+
+DROP POLICY IF EXISTS "Allow public read" on public.pages;
 create policy "Allow public read" on public.pages for select using (true);
+
+DROP POLICY IF EXISTS "Allow public read" on public.reviews;
 create policy "Allow public read" on public.reviews for select using (true);
 
 -- Authenticated User Policies
+DROP POLICY IF EXISTS "Users can view own profile" on public.users;
 create policy "Users can view own profile" on public.users for select using (auth.uid() = id);
+
+DROP POLICY IF EXISTS "Users can update own profile" on public.users;
 create policy "Users can update own profile" on public.users for update using (auth.uid() = id);
+
+DROP POLICY IF EXISTS "Users can view own orders" on public.orders;
 create policy "Users can view own orders" on public.orders for select using (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can create orders" on public.orders;
 create policy "Users can create orders" on public.orders for insert with check (true);
+
+DROP POLICY IF EXISTS "Users can create reviews" on public.reviews;
 create policy "Users can create reviews" on public.reviews for insert with check (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can create refund requests" on public.refund_requests;
 create policy "Users can create refund requests" on public.refund_requests for insert with check (true);
+
+DROP POLICY IF EXISTS "Users can create support tickets" on public.support_tickets;
 create policy "Users can create support tickets" on public.support_tickets for insert with check (true);
 
--- Admin Policies (Assuming 'role' in users table or specific admin UIDs)
--- You can replace 'admin' with your specific user ID or logic
-create policy "Admin full access" on public.settings for all using (exists (select 1 from public.users where id = auth.uid() and role = 'admin'));
-create policy "Admin full access" on public.categories for all using (exists (select 1 from public.users where id = auth.uid() and role = 'admin'));
-create policy "Admin full access" on public.products for all using (exists (select 1 from public.users where id = auth.uid() and role = 'admin'));
-create policy "Admin full access" on public.blog_posts for all using (exists (select 1 from public.users where id = auth.uid() and role = 'admin'));
-create policy "Admin full access" on public.pages for all using (exists (select 1 from public.users where id = auth.uid() and role = 'admin'));
-create policy "Admin full access" on public.orders for all using (exists (select 1 from public.users where id = auth.uid() and role = 'admin'));
-create policy "Admin full access" on public.reviews for all using (exists (select 1 from public.users where id = auth.uid() and role = 'admin'));
-create policy "Admin full access" on public.refund_requests for all using (exists (select 1 from public.users where id = auth.uid() and role = 'admin'));
-create policy "Admin full access" on public.support_tickets for all using (exists (select 1 from public.users where id = auth.uid() and role = 'admin'));
-create policy "Admin full access" on public.users for all using (exists (select 1 from public.users where id = auth.uid() and role = 'admin'));
+-- Admin Policies (Using the recursion-safe helper)
+DROP POLICY IF EXISTS "Admin full access" ON public.settings;
+CREATE POLICY "Admin full access" ON public.settings FOR ALL USING (is_admin());
+
+DROP POLICY IF EXISTS "Admin full access" ON public.categories;
+CREATE POLICY "Admin full access" ON public.categories FOR ALL USING (is_admin());
+
+DROP POLICY IF EXISTS "Admin full access" ON public.products;
+CREATE POLICY "Admin full access" ON public.products FOR ALL USING (is_admin());
+
+DROP POLICY IF EXISTS "Admin full access" ON public.blog_posts;
+CREATE POLICY "Admin full access" ON public.blog_posts FOR ALL USING (is_admin());
+
+DROP POLICY IF EXISTS "Admin full access" ON public.pages;
+CREATE POLICY "Admin full access" ON public.pages FOR ALL USING (is_admin());
+
+DROP POLICY IF EXISTS "Admin full access" ON public.orders;
+CREATE POLICY "Admin full access" ON public.orders FOR ALL USING (is_admin());
+
+DROP POLICY IF EXISTS "Admin full access" ON public.reviews;
+CREATE POLICY "Admin full access" ON public.reviews FOR ALL USING (is_admin());
+
+DROP POLICY IF EXISTS "Admin full access" ON public.refund_requests;
+CREATE POLICY "Admin full access" ON public.refund_requests FOR ALL USING (is_admin());
+
+DROP POLICY IF EXISTS "Admin full access" ON public.support_tickets;
+CREATE POLICY "Admin full access" ON public.support_tickets FOR ALL USING (is_admin());
+
+DROP POLICY IF EXISTS "Admin full access" ON public.users;
+CREATE POLICY "Admin full access" ON public.users FOR ALL USING (is_admin());

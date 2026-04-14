@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createAdminClient } from '@/utils/supabase/server';
+import { createAdminClient, createClient } from '@/utils/supabase/server';
 import Stripe from 'stripe';
 import { decrypt } from '@/lib/encryption';
 
 export async function POST(req: NextRequest) {
   try {
-    const { items, shippingDetails, shippingCost, userId, currency } = await req.json();
+    const { items, shippingDetails, shippingCost, currency } = await req.json();
+    const validatedItems: Array<{
+      id: string;
+      title: string;
+      quantity: number;
+      unitPrice: number;
+      subtotal: number;
+    }> = [];
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json({ error: 'Cart is empty' }, { status: 400 });
@@ -22,15 +29,16 @@ export async function POST(req: NextRequest) {
     };
 
     const adminClient = createAdminClient();
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
     // 2. Validate prices from the backend — never trust client-side prices
     let validatedSubtotal = 0;
-    const validatedItems = [];
 
     for (const item of items) {
       const { data: productData, error: productError } = await adminClient
         .from('products')
-        .select('id, title, price, discount_price, is_sale')
+        .select('id, title, price, sale_price, is_sale')
         .eq('id', item.id)
         .single();
 
@@ -39,8 +47,8 @@ export async function POST(req: NextRequest) {
       }
 
       const actualPrice =
-        productData.is_sale && productData.discount_price
-          ? Number(productData.discount_price)
+        productData.is_sale && productData.sale_price
+          ? Number(productData.sale_price)
           : Number(productData.price);
 
       const safeQuantity = Math.max(1, parseInt(item.quantity) || 1);
@@ -62,7 +70,7 @@ export async function POST(req: NextRequest) {
     const { data: orderData, error: orderError } = await adminClient
       .from('orders')
       .insert({
-        user_id: userId || null,
+        user_id: user?.id ?? null,
         items: validatedItems,
         shipping_details: sanitizedShipping,
         shipping_cost: safeShippingCost,

@@ -18,7 +18,7 @@ import { useTranslation } from 'react-i18next';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useCustomConfirm } from '@/components/ConfirmationContext';
 import { useSettingsStore, LocalizedString } from '@/store/useSettingsStore';
-import { getAI } from '@/lib/gemini';
+import { genAI } from '@/lib/gemini';
 import { StaticPage } from '@/types';
 import { downloadXLSX } from '@/utils/export';
 import { handleSupabaseError, OperationType } from '@/utils/supabaseErrorHandler';
@@ -101,16 +101,16 @@ export function PageManager() {
     setGenerating(true);
     const toastId = toast.loading('AI is generating content...');
     try {
-      const ai = getAI();
       const prompt = `Generate professional content for a static page titled "${formData.title.en}" for an e-commerce store.
       Return ONLY the markdown content, no other commentary.`;
       
-      const response = await ai.models.generateContent({
-        model: "gemini-3.1-pro-preview",
-        contents: prompt,
+      const model = genAI.getGenerativeModel({ 
+        model: "gemini-2.5-flash"
       });
       
-      const text = response.text || '';
+      const aiResponse = await model.generateContent(prompt);
+      
+      const text = aiResponse.response.text() || '';
       setFormData(prev => ({
         ...prev,
         content: {
@@ -138,7 +138,6 @@ export function PageManager() {
     const toastId = toast.loading('Translating to all languages...');
     
     try {
-      const ai = getAI();
       const prompt = `Translate the following title and content into these languages: ${languages.filter(l => l !== defaultLang).join(', ')}.
       Title: "${formData.title[defaultLang]}"
       Content: "${formData.content[defaultLang]}"
@@ -148,13 +147,16 @@ export function PageManager() {
         "content": { "langCode": "translated content" }
       }`;
       
-      const response = await ai.models.generateContent({
-        model: "gemini-3.1-pro-preview",
-        contents: prompt,
-        config: { responseMimeType: "application/json" }
+      const model = genAI.getGenerativeModel({ 
+        model: "gemini-2.5-flash",
+        generationConfig: {
+          responseMimeType: "application/json",
+        }
       });
       
-      const translations = JSON.parse(response.text || '{}');
+      const aiResponse = await model.generateContent(prompt);
+      
+      const translations = JSON.parse(aiResponse.response.text() || '{}');
       setFormData(prev => ({
         ...prev,
         title: {

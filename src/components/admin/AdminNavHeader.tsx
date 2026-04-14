@@ -1,0 +1,45 @@
+'use client';
+
+import React from 'react';
+import { Search } from 'lucide-react';
+import { NotificationCenter } from '@/components/admin/NotificationCenter';
+import { usePathname } from 'next/navigation';
+
+export default function AdminNavHeader() {
+  const pathname = usePathname();
+  const currentTab = pathname.split('/').pop() || 'Dashboard';
+
+  return (
+    <header className="bg-white border-b border-slate-300 sticky top-0 z-30 flex-shrink-0">
+      <div className="flex items-center justify-between px-6 sm:px-8 h-16">
+        <div className="flex items-center">
+          <div className="w-10 lg:hidden" />
+          <div className="hidden lg:flex items-center space-x-2 text-[11px] font-bold uppercase tracking-widest text-slate-500">
+             <span>Admin</span>
+             <span className="text-slate-300">/</span>
+             <span className="text-slate-900">{currentTab.replace('-', ' ')}</span>
+          </div>
+        </div>
+        
+        <div className="flex items-center space-x-4">
+          <div className="hidden md:flex relative">
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input 
+              type="text" 
+              placeholder="Search..." 
+              className="pl-10 pr-4 h-9 bg-slate-50 border border-slate-300 rounded text-sm focus:outline-none focus:border-slate-900 transition-all w-64 placeholder:text-slate-400 text-slate-900"
+            />
+          </div>
+          
+          <div className="h-6 w-[1px] bg-slate-200 hidden md:block" />
+          
+          <NotificationCenter onNavigate={() => {}} />
+          
+          <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-300 flex items-center justify-center overflow-hidden shrink-0">
+             <div className="w-5 h-5 bg-slate-900 rounded-full" />
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+}

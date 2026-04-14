@@ -27,7 +27,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   // Fetch product with cleaned up naming for frontend
   const { data: productData, error } = await supabase
     .from('products')
-    .select('*, imageUrl:image_url, isFeatured:is_featured, createdAt:created_at')
+    .select('*, imageUrl:image_url, isFeatured:is_featured, categoryId:category_id, createdAt:created_at, categories(name)')
     .eq('id', id)
     .single();
 
@@ -35,25 +35,34 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     notFound();
   }
 
-  const product = productData as Product;
+  const product = {
+    ...(productData as any),
+    categoryName: (productData as any).categories?.name
+  } as Product;
 
   // Fetch related products
   const { data: relatedData } = await supabase
     .from('products')
-    .select('*, imageUrl:image_url, isFeatured:is_featured, createdAt:created_at')
-    .eq('category', product.category)
+    .select('*, imageUrl:image_url, isFeatured:is_featured, categoryId:category_id, createdAt:created_at, categories(name)')
+    .eq('category_id', product.categoryId)
     .neq('id', product.id)
     .limit(4);
 
-  let relatedProducts = relatedData as Product[] || [];
+  let relatedProducts = (relatedData || []).map((p: any) => ({
+    ...p,
+    categoryName: p.categories?.name
+  })) as Product[];
 
   if (relatedProducts.length === 0) {
     const { data: fallbackData } = await supabase
       .from('products')
-      .select('*, imageUrl:image_url, isFeatured:is_featured, createdAt:created_at')
+      .select('*, imageUrl:image_url, isFeatured:is_featured, categoryId:category_id, createdAt:created_at, categories(name)')
       .neq('id', product.id)
       .limit(4);
-    relatedProducts = fallbackData as Product[] || [];
+    relatedProducts = (fallbackData || []).map((p: any) => ({
+      ...p,
+      categoryName: p.categories?.name
+    })) as Product[];
   }
 
   return (

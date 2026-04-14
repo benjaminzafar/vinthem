@@ -314,12 +314,7 @@ export default function Payment() {
     country: 'SE'
   });
 
-  const [shippingCost, setShippingCost] = useState(SHIPPING_RATES['SE']);
-
-  useEffect(() => {
-    const rate = SHIPPING_RATES[shippingDetails.country] || SHIPPING_RATES['SE'];
-    setShippingCost(rate);
-  }, [shippingDetails.country]);
+  const shippingCost = SHIPPING_RATES[shippingDetails.country] || SHIPPING_RATES['SE'];
 
   const finalTotal = total(lang) + shippingCost;
   const targetCurrency = settings.currencyText?.[lang] || 'SEK';
@@ -335,7 +330,6 @@ export default function Payment() {
             items,
             shippingDetails,
             shippingCost,
-            userId: user?.id,
             currency: lang === 'en' ? 'usd' : (lang === 'fi' ? 'eur' : (lang === 'da' ? 'dkk' : 'sek'))
           }),
         })

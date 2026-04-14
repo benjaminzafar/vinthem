@@ -17,7 +17,7 @@ import { toast } from 'sonner';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useCustomConfirm } from '@/components/ConfirmationContext';
 import { useSettingsStore } from '@/store/useSettingsStore';
-import { getAI } from '@/lib/gemini';
+import { genAI } from '@/lib/gemini';
 import { BlogPost } from '@/types';
 import { downloadXLSX } from '@/utils/export';
 
@@ -93,21 +93,22 @@ export function BlogManager() {
     setGenerating(true);
     const toastId = toast.loading('AI is generating content...');
     try {
-      const ai = getAI();
-      const prompt = `Generate a blog post excerpt and content for a post titled "${formData.title.en}" for an e-commerce store.
+      const prompt = `Generate a blog post excerpt and content for a post titled "${formData.title?.en}" for an e-commerce store.
       Return ONLY a JSON object matching this structure:
       {
         "excerpt": "A short engaging summary",
         "content": "The full markdown content of the blog post"
       }`;
       
-      const response = await ai.models.generateContent({
-        model: "gemini-3.1-pro-preview",
-        contents: prompt,
-        config: { responseMimeType: "application/json" }
+      const model = genAI.getGenerativeModel({ 
+        model: "gemini-2.5-flash",
+        generationConfig: {
+          responseMimeType: "application/json",
+        }
       });
       
-      const generated = JSON.parse(response.text || '{}');
+      const aiResponse = await model.generateContent(prompt);
+      const generated = JSON.parse(aiResponse.response.text() || '{}');
       setFormData(prev => ({
         ...prev,
         excerpt: {
@@ -139,11 +140,10 @@ export function BlogManager() {
     const languages = settings.languages || ['en'];
     
     try {
-      const ai = getAI();
       const prompt = `Translate the following title, excerpt, and content into these languages: ${languages.filter(l => l !== 'en').join(', ')}.
-      Title: "${formData.title.en}"
+      Title: "${formData.title?.en || ''}"
       Excerpt: "${formData.excerpt?.en || ''}"
-      Content: "${formData.content.en}"
+      Content: "${formData.content?.en || ''}"
       Return ONLY a JSON object matching this structure:
       {
         "title": { "langCode": "translated title" },
@@ -151,13 +151,15 @@ export function BlogManager() {
         "content": { "langCode": "translated content" }
       }`;
       
-      const response = await ai.models.generateContent({
-        model: "gemini-3.1-pro-preview",
-        contents: prompt,
-        config: { responseMimeType: "application/json" }
+      const model = genAI.getGenerativeModel({ 
+        model: "gemini-2.5-flash",
+        generationConfig: {
+          responseMimeType: "application/json",
+        }
       });
       
-      const translations = JSON.parse(response.text || '{}');
+      const aiResponse = await model.generateContent(prompt);
+      const translations = JSON.parse(aiResponse.response.text() || '{}');
       setFormData(prev => ({
         ...prev,
         title: {
@@ -289,10 +291,10 @@ export function BlogManager() {
   };
 
   return (
-    <div className="space-y-6 overflow-x-hidden max-w-full">
+    <div className="space-y-8 animate-in fade-in duration-500">
       <AdminHeader 
-        title="Journal / Blog"
-        description="Manage your blog posts and news"
+        title="Journal"
+        description="Manage your blog posts and editorial news"
         search={{
           value: searchQuery,
           onChange: setSearchQuery,
@@ -311,198 +313,175 @@ export function BlogManager() {
       
       {loading ? (
         <div className="flex justify-center py-12">
-          <RefreshCw className="w-8 h-8 text-zinc-900 animate-spin" />
+          <RefreshCw className="w-8 h-8 text-slate-900 animate-spin" />
         </div>
       ) : (
-        <div className="overflow-x-auto -mx-4 sm:mx-0 py-8 border-b border-gray-200/60 last:border-0">
-          <table className="w-full text-sm text-left min-w-[600px]">
-            <thead className="text-xs text-zinc-500 uppercase bg-zinc-50/50 border-b border-zinc-200">
-              <tr>
-                <th className="px-4 sm:px-6 py-4 font-bold w-12">
-                  <input type="checkbox" checked={selectedPosts.length === posts.length && posts.length > 0} onChange={toggleAllPosts} className="w-5 h-5 rounded border-zinc-300 cursor-pointer" />
-                </th>
-                <th className="px-4 sm:px-6 py-4 font-bold">Title</th>
-                <th className="px-4 sm:px-6 py-4 font-bold hidden sm:table-cell">Author</th>
-                <th className="px-4 sm:px-6 py-4 font-bold">Date</th>
-                <th className="px-4 sm:px-6 py-4 font-bold text-right">
-                  {selectedPosts.length > 0 && (
-                    <button onClick={deleteSelectedPosts} className="w-full sm:w-auto flex items-center justify-center bg-red-50 text-red-600 hover:bg-red-100 border border-red-200/50 px-6 py-3 text-sm font-medium rounded-md transition-colors">
-                      Delete ({selectedPosts.length})
-                    </button>
-                  )}
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-100">
-              {filteredPosts.map((post) => (
-                <tr key={post.id} className="hover:bg-zinc-50 transition-colors">
-                  <td className="px-4 sm:px-6 py-4">
-                    <input type="checkbox" checked={selectedPosts.includes(post.id!)} onChange={() => togglePostSelection(post.id!)} className="w-5 h-5 rounded border-zinc-300 cursor-pointer" />
-                  </td>
-                  <td className="px-4 sm:px-6 py-4">
-                    <div className="font-medium text-zinc-900 max-w-[150px] sm:max-w-[300px] truncate">
-                      {typeof post.title === 'string' ? post.title : post.title?.en}
-                    </div>
-                  </td>
-                  <td className="px-4 sm:px-6 py-4 text-zinc-600 hidden sm:table-cell whitespace-nowrap">{post.author}</td>
-                  <td className="px-4 sm:px-6 py-4 text-zinc-600 whitespace-nowrap">{new Date(post.createdAt).toLocaleDateString()}</td>
-                  <td className="px-4 sm:px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button 
-                        onClick={() => handleOpenModal(post)}
-                        className="p-2 text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 rounded transition-colors"
-                        title="Edit Post"
-                      >
-                        <Edit className="w-4 h-4" />
+        <div className="bg-white border border-slate-300 rounded overflow-hidden shadow-none">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-300 text-[11px] uppercase tracking-widest text-slate-500 font-bold">
+                  <th className="px-6 py-4 w-12">
+                    <input type="checkbox" checked={selectedPosts.length === posts.length && posts.length > 0} onChange={toggleAllPosts} className="w-4 h-4 border-slate-300 rounded text-slate-900 focus:ring-0" />
+                  </th>
+                  <th className="px-6 py-4 font-bold">Editorial Title</th>
+                  <th className="px-6 py-4 font-bold">Author</th>
+                  <th className="px-6 py-4 font-bold">Date</th>
+                  <th className="px-6 py-4 text-right">
+                    {selectedPosts.length > 0 && (
+                      <button onClick={deleteSelectedPosts} className="text-rose-600 hover:underline">
+                        Delete Selected ({selectedPosts.length})
                       </button>
-                      <button 
-                        onClick={() => handleDelete(post.id!)}
-                        className="p-2 text-red-500 hover:text-red-900 hover:bg-red-50 rounded transition-colors"
-                        title="Delete Post"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
+                    )}
+                  </th>
                 </tr>
-              ))}
-              {posts.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-zinc-500">No blog posts found.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredPosts.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-xs">No entries found</td>
+                  </tr>
+                ) : filteredPosts.map((post) => (
+                  <tr key={post.id} className="hover:bg-slate-50 transition-colors group cursor-pointer">
+                    <td className="px-6 py-4">
+                      <input type="checkbox" checked={selectedPosts.includes(post.id!)} onChange={() => togglePostSelection(post.id!)} className="w-4 h-4 border-slate-300 rounded text-slate-900 focus:ring-0" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="font-bold text-slate-900 text-sm truncate max-w-[300px]">
+                        {typeof post.title === 'string' ? post.title : post.title?.en}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-[11px] text-slate-500 font-bold uppercase tracking-widest">{post.author}</td>
+                    <td className="px-6 py-4 text-xs font-medium text-slate-500">{new Date(post.createdAt).toLocaleDateString()}</td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button 
+                          onClick={() => handleOpenModal(post)}
+                          className="p-2 text-slate-300 hover:text-slate-900 hover:bg-slate-50 rounded transition-all"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(post.id!)}
+                          className="p-2 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded transition-all"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
       {/* Blog Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg border border-gray-200/60 shadow-xl w-full max-w-[600px] max-h-[90vh] flex flex-col overflow-hidden">
-            <div className="flex justify-between items-center px-3 py-2 h-[52px] border-b border-zinc-200 bg-zinc-50/50">
-              <h3 className="text-[16px] font-semibold text-zinc-900 tracking-tight">
-                {editingPost ? 'Edit Blog Post' : 'New Blog Post'}
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white border border-slate-300 shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden rounded">
+            <div className="flex justify-between items-center px-6 h-16 border-b border-slate-300 bg-white">
+              <h3 className="text-lg font-bold text-slate-900 tracking-tight">
+                {editingPost ? 'Edit Post' : 'New Post'}
               </h3>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <button 
-                  type="button"
-                  onClick={handleAIAutoComplete}
-                  disabled={generating}
-                  className="flex items-center justify-center px-3 py-1.5 bg-indigo-50 border border-indigo-100 text-indigo-700 rounded text-xs font-medium hover:bg-indigo-100 transition-all disabled:opacity-50"
+                  type="button" onClick={handleAIAutoComplete} disabled={generating}
+                  className="h-9 px-4 bg-slate-50 border border-slate-300 text-slate-600 rounded text-[11px] font-bold uppercase tracking-widest hover:text-slate-900 transition-all disabled:opacity-50 flex items-center gap-2"
                 >
-                  <Wand2 className="w-3.5 h-3.5 mr-1.5" />
+                  <Wand2 className="w-3.5 h-3.5" />
                   {generating ? '...' : 'Auto-Fill'}
                 </button>
                 <button 
-                  type="button"
-                  onClick={handleAITranslate}
-                  disabled={generating}
-                  className="flex items-center justify-center bg-zinc-900 text-white hover:bg-zinc-800 border border-transparent px-3 py-1.5 text-xs font-medium rounded transition-colors disabled:opacity-50"
+                  type="button" onClick={handleAITranslate} disabled={generating}
+                  className="h-9 px-4 bg-slate-900 text-white rounded text-[11px] font-bold uppercase tracking-widest hover:bg-slate-800 transition-all disabled:opacity-50 flex items-center gap-2"
                 >
-                  <Languages className="w-3.5 h-3.5 mr-1.5" />
+                  <Languages className="w-3.5 h-3.5" />
                   {generating ? '...' : 'Translate'}
                 </button>
-                <button onClick={handleCloseModal} className="text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 rounded-md transition-colors h-[36px] w-[36px] flex items-center justify-center">
-                  <X className="w-4 h-4" />
+                <button onClick={handleCloseModal} className="text-slate-400 hover:text-slate-900 transition-all ml-2">
+                  <X className="w-5 h-5" />
                 </button>
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto bg-zinc-50/30">
-              <form onSubmit={handleSave} className="px-4 py-3 space-y-6">
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="block text-xs font-medium text-zinc-500 uppercase tracking-wider">Cover Image</label>
-                    <div className="space-y-2">
+            <div className="flex-1 overflow-y-auto p-8">
+              <form onSubmit={handleSave} className="space-y-8">
+                <div className="space-y-6">
+                  <div className="space-y-3">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Editorial Banner</label>
+                    <div className="space-y-4">
                       {formData.imageUrl ? (
-                        <img src={formData.imageUrl} alt="Preview" className="w-full aspect-video object-cover rounded-md border border-zinc-200" referrerPolicy="no-referrer" />
+                        <div className="relative aspect-video rounded border border-slate-200 overflow-hidden">
+                           <img src={formData.imageUrl} alt="" className="w-full h-full object-cover" />
+                        </div>
                       ) : (
-                        <div className="w-full aspect-video flex items-center justify-center bg-zinc-50 rounded-md border border-zinc-200 text-zinc-400">
-                          <ImageIcon className="w-8 h-8" />
+                        <div className="w-full aspect-video flex items-center justify-center bg-slate-50 rounded border border-slate-300 text-slate-300">
+                          <ImageIcon className="w-10 h-10" />
                         </div>
                       )}
-                      <label className="cursor-pointer flex items-center justify-center w-full h-10 px-4 border border-zinc-300 rounded-md hover:bg-zinc-50 transition-colors text-sm font-medium text-zinc-700">
-                        {uploading ? 'Uploading...' : 'Upload Image'}
+                      <label className="cursor-pointer flex items-center justify-center w-full h-10 bg-white border border-slate-300 rounded text-sm font-medium text-slate-700 hover:bg-slate-50 transition-all">
+                        {uploading ? 'Processing Assets...' : 'Choose Banner Image'}
                         <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} disabled={uploading} />
                       </label>
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="block text-xs font-medium text-zinc-500 uppercase tracking-wider">Author</label>
+                  <div className="space-y-3">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Author Identity</label>
                     <input
-                      type="text"
-                      required
-                      value={formData.author || ''}
+                      type="text" required value={formData.author || ''}
                       onChange={(e) => setFormData({ ...formData, author: e.target.value })}
-                      className="w-full px-4 h-[44px] bg-white border border-zinc-200 rounded-md focus:ring-2 focus:ring-zinc-900 transition-all text-sm"
+                      className="w-full h-12 bg-white border border-slate-300 rounded px-4 focus:outline-none focus:border-slate-900 transition-all text-sm font-medium text-slate-900"
                     />
                   </div>
 
                   <div className="space-y-4">
-                    <label className="block text-xs font-medium text-zinc-500 uppercase tracking-wider">Translations</label>
-                    <div className="flex gap-1 p-1 bg-zinc-100 rounded-md overflow-x-auto custom-scrollbar">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Content Localization</label>
+                    <div className="flex gap-2 p-1 bg-slate-100 rounded">
                       {settings.languages.map(lang => (
                         <button
-                          key={lang}
-                          type="button"
-                          onClick={() => setSelectedLang(lang)}
-                          className={`flex-1 px-3 h-[36px] rounded-md text-xs font-bold uppercase tracking-widest transition-all whitespace-nowrap ${selectedLang === lang ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-900'}`}
+                          key={lang} type="button" onClick={() => setSelectedLang(lang)}
+                          className={`flex-1 h-9 rounded text-[10px] font-bold uppercase tracking-widest transition-all ${selectedLang === lang ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                         >
-                          {lang.toUpperCase()}
+                          {lang}
                         </button>
                       ))}
                     </div>
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       <input
-                        type="text"
-                        placeholder="Title"
-                        value={formData.title?.[selectedLang] || ''}
-                        onChange={(e) => setFormData({ 
-                          ...formData, 
-                          title: { ...formData.title, [selectedLang]: e.target.value } as any
-                        })}
-                        className="w-full px-4 h-[44px] bg-white border border-zinc-200 rounded-md focus:ring-2 focus:ring-zinc-900 transition-all text-sm"
+                        type="text" placeholder="Post Title" value={formData.title?.[selectedLang] || ''}
+                        onChange={(e) => setFormData({ ...formData, title: { ...formData.title, [selectedLang]: e.target.value } as any })}
+                        className="w-full h-12 bg-white border border-slate-300 rounded px-4 focus:outline-none focus:border-slate-900 transition-all text-sm font-bold text-slate-900"
                       />
                       <textarea
-                        placeholder="Excerpt"
-                        rows={3}
-                        value={formData.excerpt?.[selectedLang] || ''}
-                        onChange={(e) => setFormData({ 
-                          ...formData, 
-                          excerpt: { ...formData.excerpt, [selectedLang]: e.target.value } as any
-                        })}
-                        className="w-full px-4 py-3 bg-white border border-zinc-200 rounded-md focus:ring-2 focus:ring-zinc-900 transition-all text-sm resize-none"
+                        placeholder="Excerpt / Summary" rows={3} value={formData.excerpt?.[selectedLang] || ''}
+                        onChange={(e) => setFormData({ ...formData, excerpt: { ...formData.excerpt, [selectedLang]: e.target.value } as any })}
+                        className="w-full p-4 bg-white border border-slate-300 rounded focus:outline-none focus:border-slate-900 transition-all text-sm font-medium text-slate-600 resize-none"
                       />
                       <textarea
-                        placeholder="Content"
-                        style={{ minHeight: '160px' }}
+                        placeholder="Full Article Content (Markdown Supported)" style={{ minHeight: '240px' }}
                         value={formData.content?.[selectedLang] || ''}
-                        onChange={(e) => setFormData({ 
-                          ...formData, 
-                          content: { ...formData.content, [selectedLang]: e.target.value } as any
-                        })}
-                        className="w-full px-4 py-3 bg-white border border-zinc-200 rounded-md focus:ring-2 focus:ring-zinc-900 transition-all text-sm font-mono resize-none"
+                        onChange={(e) => setFormData({ ...formData, content: { ...formData.content, [selectedLang]: e.target.value } as any })}
+                        className="w-full p-4 bg-white border border-slate-300 rounded focus:outline-none focus:border-slate-900 transition-all text-sm font-mono text-slate-900 resize-none"
                       />
                     </div>
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-zinc-200 flex gap-3">
+                <div className="pt-6 border-t border-slate-200 flex gap-4">
                   <button 
-                    type="button" 
-                    onClick={() => { setIsModalOpen(false); setEditingPost(null); }}
-                    className="flex-1 flex items-center justify-center bg-white text-zinc-900 hover:bg-zinc-50 border border-zinc-200 px-6 h-[44px] text-sm font-medium rounded-md transition-colors"
+                    type="button" onClick={handleCloseModal}
+                    className="flex-1 h-12 border border-slate-300 text-slate-500 rounded text-sm font-medium hover:text-slate-900 hover:bg-slate-50 transition-all"
                   >
-                    Cancel
+                    Discard Changes
                   </button>
                   <button
-                    type="submit"
-                    disabled={uploading}
-                    className="flex-1 flex items-center justify-center bg-zinc-900 text-white hover:bg-zinc-800 border border-transparent px-6 h-[44px] text-sm font-medium rounded-md transition-colors disabled:opacity-50"
+                    type="submit" disabled={uploading}
+                    className="flex-1 h-12 bg-slate-900 text-white rounded text-sm font-medium hover:bg-slate-800 transition-all disabled:opacity-50"
                   >
-                    {editingPost ? 'Save Changes' : 'Add Post'}
+                    {editingPost ? 'Update Publication' : 'Publish Article'}
                   </button>
                 </div>
               </form>

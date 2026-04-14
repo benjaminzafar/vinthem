@@ -53,7 +53,7 @@ export function OrderManager({ onSeedClick }: { onSeedClick?: () => void }) {
         console.error('Error fetching orders:', error);
         toast.error('Failed to load orders');
       } else {
-        setOrders((data || []).map(o => ({
+        setOrders((data || []).map((o: any) => ({
           ...o,
           createdAt: o.created_at,
           orderId: o.order_id,
@@ -85,7 +85,7 @@ export function OrderManager({ onSeedClick }: { onSeedClick?: () => void }) {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-in fade-in duration-500">
       <AdminHeader 
         title="Orders"
         description="Manage and track customer orders"
@@ -95,137 +95,121 @@ export function OrderManager({ onSeedClick }: { onSeedClick?: () => void }) {
           placeholder: "Search orders..."
         }}
         secondaryActions={[
-          { label: 'Seed Test Data', icon: Database, onClick: onSeedClick },
+          ...(onSeedClick ? [{ label: 'Seed Test Data', icon: Database, onClick: onSeedClick }] : []),
           { label: 'Export XLSX', icon: Download, onClick: () => downloadXLSX(filteredOrders, 'orders') }
-        ].filter(a => a.onClick !== undefined) as any}
+        ]}
         statsLabel={`${filteredOrders.length} orders`}
       />
 
       {/* Info Message */}
-      <div className="bg-amber-50 border border-amber-200 rounded p-4 text-sm text-amber-800 flex items-center gap-3">
-        <RefreshCcw className="w-5 h-5 text-amber-600 shrink-0" />
-        <p>Automated label printing requires configuration. Please go to Shipping Settings to enable your preferred service and configure your API settings.</p>
+      <div className="bg-slate-50 border border-slate-300 rounded p-4 text-sm text-slate-700 flex items-center gap-3">
+        <RefreshCcw className="w-5 h-5 text-slate-400 shrink-0" />
+        <p>Automated label printing requires configuration. Please go to Shipping Settings to enable your preferred service.</p>
       </div>
 
-      <div className="py-8 border-b border-gray-200/60 last:border-0">
-        <div className="overflow-x-auto -mx-4 sm:mx-0">
+      <div className="bg-white border border-slate-300 rounded overflow-hidden shadow-none">
+        <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[800px]">
             <thead>
-              <tr className="bg-zinc-50 border-b border-zinc-200 text-xs uppercase tracking-wider text-zinc-500">
-                <th className="px-4 sm:px-6 py-4 font-semibold">Order ID</th>
-                <th className="px-4 sm:px-6 py-4 font-semibold">Date</th>
-                <th className="px-4 sm:px-6 py-4 font-semibold">Customer</th>
-                <th className="px-4 sm:px-6 py-4 font-semibold">Total</th>
-                <th className="px-4 sm:px-6 py-4 font-semibold">Status</th>
+              <tr className="bg-slate-50 border-b border-slate-300 text-[11px] uppercase tracking-widest text-slate-500 font-bold">
+                <th className="px-6 py-4">Order ID</th>
+                <th className="px-6 py-4">Date</th>
+                <th className="px-6 py-4">Customer</th>
+                <th className="px-6 py-4">Total</th>
+                <th className="px-6 py-4">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-100">
-              {filteredOrders.map((order) => (
+            <tbody className="divide-y divide-slate-100">
+              {filteredOrders.length === 0 ? (
+                <tr>
+                   <td colSpan={5} className="py-20 text-center">
+                     <Package className="w-12 h-12 mx-auto text-slate-200 mb-3" />
+                     <p className="text-sm font-bold text-slate-900 uppercase tracking-widest">No orders found</p>
+                   </td>
+                </tr>
+              ) : filteredOrders.map((order) => (
                 <React.Fragment key={order.id}>
                   <tr 
-                    className="hover:bg-zinc-50 transition-colors cursor-pointer group"
+                    className="hover:bg-slate-50 transition-colors cursor-pointer group"
                     onClick={() => setExpandedOrderId(expandedOrderId === order.id ? null : order.id)}
                   >
-                    <td className="px-4 sm:px-6 py-4 font-medium font-mono text-sm flex items-center text-zinc-900 group-hover:text-zinc-900">
-                      {expandedOrderId === order.id ? <ChevronDown className="w-4 h-4 mr-2 text-zinc-400 shrink-0" /> : <ChevronRight className="w-4 h-4 mr-2 text-zinc-400 shrink-0" />}
+                    <td className="px-6 py-4 font-bold text-slate-900 text-sm flex items-center">
+                      <div className="w-6 flex items-center shrink-0">
+                        {expandedOrderId === order.id ? <ChevronDown className="w-4 h-4 text-slate-400" /> : <ChevronRight className="w-4 h-4 text-slate-400" />}
+                      </div>
                       <span className="truncate">#{order.orderId || order.id.slice(0, 8)}</span>
                     </td>
-                    <td className="px-4 sm:px-6 py-4 text-sm text-gray-600 whitespace-nowrap">
+                    <td className="px-6 py-4 text-sm text-slate-500 whitespace-nowrap">
                       {order.createdAt ? new Date(order.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'}
                     </td>
-                    <td className="px-4 sm:px-6 py-4 text-sm text-gray-900 font-medium truncate max-w-[200px]">{order.customerEmail || 'Guest'}</td>
-                    <td className="px-4 sm:px-6 py-4 font-medium text-gray-900 whitespace-nowrap">{order.total?.toLocaleString()} SEK</td>
-                    <td className="px-4 sm:px-6 py-4 text-sm">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium ${
-                        order.status === 'Delivered' ? 'bg-green-50 text-green-700 border border-green-200/50' : 
-                        order.status === 'Shipped' ? 'bg-blue-50 text-blue-700 border border-blue-200/50' :
-                        'bg-amber-50 text-amber-700 border border-amber-200/50'
+                    <td className="px-6 py-4 text-sm text-slate-900 font-medium truncate max-w-[200px]">{order.customerEmail || 'Guest'}</td>
+                    <td className="px-6 py-4 font-bold text-slate-900 whitespace-nowrap">{order.total?.toLocaleString()} SEK</td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest border ${
+                        order.status === 'Delivered' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 
+                        order.status === 'Shipped' ? 'bg-blue-50 text-blue-700 border-blue-100' :
+                        'bg-amber-50 text-amber-700 border-amber-100'
                       }`}>
                         {order.status || 'Processing'}
                       </span>
                     </td>
                   </tr>
                   {expandedOrderId === order.id && (
-                    <tr>
-                      <td colSpan={5} className="p-0 bg-gray-50/50 border-b border-gray-100">
-                        <motion.div 
-                          initial={{ opacity: 0, height: 0 }} 
-                          animate={{ opacity: 1, height: 'auto' }} 
-                          className="px-12 py-6"
-                        >
-                          <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Order Items</h4>
-                          <div className="space-y-3">
+                    <tr className="bg-slate-50/50">
+                      <td colSpan={5} className="px-12 py-8 border-b border-slate-200">
+                        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+                          <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-6 border-b border-slate-200 pb-2">Order Line Items</h4>
+                          <div className="space-y-4">
                             {order.items?.map((item: any, index: number) => (
-                              <div key={index} className="flex items-center justify-between py-4 border-b border-gray-100 last:border-0">
+                              <div key={index} className="flex items-center justify-between py-2">
                                 <div className="flex items-center space-x-4">
-                                  <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center overflow-hidden border border-gray-200/50">
-                                    {item.image && item.image.trim() !== "" ? (
-                                      <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                                    ) : (
-                                      <Package className="w-5 h-5 text-gray-400" />
-                                    )}
+                                  <div className="w-12 h-12 bg-white border border-slate-200 rounded flex items-center justify-center overflow-hidden shrink-0">
+                                    {item.image ? <img src={item.image} alt="" className="w-full h-full object-cover" /> : <Package className="w-5 h-5 text-slate-300" />}
                                   </div>
                                   <div>
-                                    <p className="font-medium text-gray-900 text-sm">{item.name}</p>
-                                    <p className="text-xs text-gray-500 mt-0.5">Qty: {item.quantity} × {item.price} SEK</p>
+                                    <p className="font-bold text-slate-900 text-sm">{item.name}</p>
+                                    <p className="text-xs text-slate-500 mt-0.5">Quantity: {item.quantity} × {item.price} SEK</p>
                                   </div>
                                 </div>
-                                <div className="text-sm font-medium text-gray-900">
+                                <div className="text-sm font-bold text-slate-900">
                                   {(item.quantity * item.price).toLocaleString()} SEK
                                 </div>
                               </div>
                             ))}
-                            {(!order.items || order.items.length === 0) && (
-                              <p className="text-sm text-gray-500">No items found for this order.</p>
-                            )}
                           </div>
 
-                          <div className="mt-8 pt-6 border-t border-gray-200/60 grid grid-cols-1 md:grid-cols-2 gap-8">
+                          <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-12 pt-8 border-t border-slate-200">
                             <div>
-                              <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Update Status</h4>
-                              <div className="flex items-center space-x-3">
+                              <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-4">Operations</h4>
+                              <div className="flex items-center gap-3">
                                 <select
                                   value={order.status || 'Pending'}
                                   onChange={(e) => handleUpdateOrder(order.id, { status: e.target.value })}
                                   disabled={updatingOrderId === order.id}
-                                  className="flex-1 bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-zinc-900 focus:border-zinc-900 block w-full p-2.5"
+                                  className="flex-1 bg-white border border-slate-300 text-slate-900 text-sm rounded h-10 px-3 focus:outline-none focus:border-slate-900"
                                 >
                                   <option value="Pending">Pending</option>
-                                  <option value="Processing">Processing (Picking)</option>
-                                  <option value="Shipped">Shipped (Sending)</option>
+                                  <option value="Processing">Processing</option>
+                                  <option value="Shipped">Shipped</option>
                                   <option value="Delivered">Delivered</option>
                                   <option value="Cancelled">Cancelled</option>
-                                  <option value="Refunded">Refunded</option>
-                                  <option value="Replaced">Replaced</option>
                                 </select>
-                                {updatingOrderId === order.id && <RefreshCw className="w-5 h-5 animate-spin text-zinc-400" />}
+                                {updatingOrderId === order.id && <RefreshCw className="w-5 h-5 animate-spin text-slate-400" />}
                               </div>
                             </div>
                             
                             <div>
-                              <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Tracking Information</h4>
-                              <div className="space-y-3">
+                              <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-4">Logistics</h4>
+                              <div className="flex flex-col gap-3">
                                 <input
-                                  type="text"
-                                  placeholder="Carrier (e.g., PostNord, DHL)"
-                                  defaultValue={order.trackingCarrier || ''}
-                                  onBlur={(e) => {
-                                    if (e.target.value !== order.trackingCarrier) {
-                                      handleUpdateOrder(order.id, { trackingCarrier: e.target.value });
-                                    }
-                                  }}
-                                  className="bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-zinc-900 focus:border-zinc-900 block w-full p-2.5"
+                                  type="text" placeholder="Carrier" defaultValue={order.trackingCarrier || ''}
+                                  onBlur={(e) => e.target.value !== order.trackingCarrier && handleUpdateOrder(order.id, { trackingCarrier: e.target.value })}
+                                  className="bg-white border border-slate-300 text-slate-900 text-sm rounded h-10 px-3 focus:outline-none focus:border-slate-900"
                                 />
                                 <input
-                                  type="text"
-                                  placeholder="Tracking Number"
-                                  defaultValue={order.trackingNumber || ''}
-                                  onBlur={(e) => {
-                                    if (e.target.value !== order.trackingNumber) {
-                                      handleUpdateOrder(order.id, { trackingNumber: e.target.value });
-                                    }
-                                  }}
-                                  className="bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-zinc-900 focus:border-zinc-900 block w-full p-2.5"
+                                  type="text" placeholder="Tracking #" defaultValue={order.trackingNumber || ''}
+                                  onBlur={(e) => e.target.value !== order.trackingNumber && handleUpdateOrder(order.id, { trackingNumber: e.target.value })}
+                                  className="bg-white border border-slate-300 text-slate-900 text-sm rounded h-10 px-3 focus:outline-none focus:border-slate-900"
                                 />
                               </div>
                             </div>
@@ -236,15 +220,6 @@ export function OrderManager({ onSeedClick }: { onSeedClick?: () => void }) {
                   )}
                 </React.Fragment>
               ))}
-              {orders.length === 0 && !loading && (
-                <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                    <Package className="w-12 h-12 mx-auto text-gray-300 mb-3" />
-                    <p className="text-lg font-medium text-gray-900">No orders yet</p>
-                    <p className="text-sm mt-1">When customers place orders, they will appear here.</p>
-                  </td>
-                </tr>
-              )}
             </tbody>
           </table>
         </div>
