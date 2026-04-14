@@ -34,22 +34,23 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
 
   useEffect(() => {
     if (isOpen) {
-      // Lock scroll on both html and body for maximum mobile compatibility
+      // Lock scroll without snapping to top
       document.body.style.overflow = 'hidden';
       document.documentElement.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.width = '100%';
+      // touch-action: none prevents some mobile browsers from scrolling via drag
+      document.body.style.touchAction = 'none';
+      document.documentElement.style.touchAction = 'none';
     } else {
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
+      document.body.style.touchAction = '';
+      document.documentElement.style.touchAction = '';
     }
     return () => {
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
+      document.body.style.touchAction = '';
+      document.documentElement.style.touchAction = '';
     };
   }, [isOpen]);
 
