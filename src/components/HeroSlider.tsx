@@ -33,9 +33,15 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
   const category = featuredCategories[currentIndex];
   // Fallback if the image URL is broken, missing, or just a folder path
   const isValidImage = (url: string | null | undefined) => {
-    if (!url) return false;
-    if (url.endsWith('/') || url.endsWith('/uploads')) return false;
-    return true;
+    if (!url || typeof url !== 'string') return false;
+    const cleanUrl = url.trim().toLowerCase();
+    // Must have a valid image extension and should not end with common folder names
+    const hasExtension = cleanUrl.match(/\.(jpg|jpeg|png|webp|avif|gif|svg)$/i);
+    const isFolder = cleanUrl.endsWith('/') || 
+                    cleanUrl.endsWith('/uploads') || 
+                    cleanUrl.endsWith('products');
+    
+    return !!hasExtension && !isFolder;
   };
 
   const imageToShow = isValidImage(category.imageUrl) 
