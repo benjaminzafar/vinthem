@@ -64,16 +64,19 @@ export function CollectionManager() {
 
   useEffect(() => {
     refreshCategories();
-    // Enable Realtime
+    // Enable Realtime (Debounced)
+    let refreshTimeout: NodeJS.Timeout;
     const channel = supabase
       .channel('categories-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, () => {
-        refreshCategories();
+        clearTimeout(refreshTimeout);
+        refreshTimeout = setTimeout(refreshCategories, 300);
       })
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
+      clearTimeout(refreshTimeout);
     };
   }, []);
 
@@ -88,15 +91,18 @@ export function CollectionManager() {
     };
     fetchProducts();
 
+    let productTimeout: NodeJS.Timeout;
     const channel = supabase
       .channel('products-changes-collections')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
-        fetchProducts();
+        clearTimeout(productTimeout);
+        productTimeout = setTimeout(fetchProducts, 300);
       })
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
+      clearTimeout(productTimeout);
     };
   }, []);
 

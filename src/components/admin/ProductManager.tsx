@@ -89,25 +89,31 @@ export function ProductManager({ selectedProductId, onClearSelection }: { select
     };
     fetchCategories();
 
-    // Enable Realtime for Products
+    // Optimize Realtime for Products (Debounced Refresh)
+    let productRefreshTimeout: NodeJS.Timeout;
     const productsChannel = supabase
       .channel('products-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
-        refreshProducts();
+        clearTimeout(productRefreshTimeout);
+        productRefreshTimeout = setTimeout(refreshProducts, 300);
       })
       .subscribe();
 
-    // Enable Realtime for Categories (in case a category name changes)
+    // Optimize Realtime for Categories (Debounced Refresh)
+    let categoryRefreshTimeout: NodeJS.Timeout;
     const categoriesChannel = supabase
       .channel('categories-realtime-products')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, () => {
-        fetchCategories();
+        clearTimeout(categoryRefreshTimeout);
+        categoryRefreshTimeout = setTimeout(fetchCategories, 300);
       })
       .subscribe();
 
     return () => {
       supabase.removeChannel(productsChannel);
       supabase.removeChannel(categoriesChannel);
+      clearTimeout(productRefreshTimeout);
+      clearTimeout(categoryRefreshTimeout);
     };
   }, [supabase, refreshProducts]);
 

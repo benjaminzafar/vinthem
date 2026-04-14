@@ -78,9 +78,6 @@ export default async function StorefrontPage() {
       {/* 
         STREAMED SECTIONS (Low Priority - Non-blocking)
       */}
-      <Suspense fallback={<SectionSkeleton />}>
-        <ProductsList lang={lang} settings={settings} />
-      </Suspense>
 
       <Suspense fallback={<SectionSkeleton />}>
         <CollectionsWrapper lang={lang} settings={settings} categories={categories} />
@@ -90,6 +87,10 @@ export default async function StorefrontPage() {
         <FutureSections lang={lang} settings={settings} />
       </Suspense>
 
+      <Suspense fallback={<SectionSkeleton />}>
+        <ProductsList lang={lang} settings={settings} />
+      </Suspense>
+      
       <NewsletterSection settings={settings} lang={lang} />
     </div>
   );

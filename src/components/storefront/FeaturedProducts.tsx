@@ -13,9 +13,12 @@ interface FeaturedProductsProps {
 }
 
 export function FeaturedProducts({ products, lang, settings }: FeaturedProductsProps) {
-  const featuredProducts = products
-    .filter(p => p.isFeatured)
+  const featuredProducts = (products || [])
+    .filter(p => p && p.isFeatured)
     .slice(0, 4);
+
+  // Skip rendering if no products are featured to avoid empty layout bugs
+  if (featuredProducts.length === 0) return null;
 
   return (
     <section id="featured" className="py-32 bg-[#E6E6E4]">
