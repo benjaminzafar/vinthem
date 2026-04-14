@@ -57,7 +57,7 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="w-full h-full max-w-[1400px] mx-auto flex flex-col lg:flex-row items-center justify-center lg:justify-between gap-4 lg:gap-12 px-4 sm:px-8 lg:px-16"
+          className="w-full h-full max-w-[1400px] mx-auto flex flex-col lg:flex-row items-center justify-center lg:justify-between gap-2 lg:gap-12 px-4 sm:px-8 lg:px-16"
         >
           {/* Text Content */}
           <div className="w-full lg:w-[45%] flex flex-col justify-center order-1 text-center lg:text-left z-10 flex-shrink-0">
@@ -65,12 +65,12 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
               initial={{ width: 0 }}
               animate={{ width: 80 }}
               transition={{ delay: 0.3, duration: 0.8 }}
-              className="h-[3px] bg-black mb-3 lg:mb-6 mx-auto lg:mx-0"
+              className="h-[3px] bg-black mb-2 lg:mb-6 mx-auto lg:mx-0"
             />
-            <h2 className="text-3xl sm:text-4xl lg:text-6xl xl:text-7xl font-sans font-bold tracking-tight text-black leading-[1.1] mb-3 lg:mb-6 uppercase break-words">
+            <h2 className="text-2xl sm:text-4xl lg:text-6xl xl:text-7xl font-sans font-bold tracking-tight text-black leading-[1.1] mb-2 lg:mb-6 uppercase break-words">
               {category.translations?.[lang]?.name || category.name}
             </h2>
-            <p className="text-gray-600 text-[13px] sm:text-base lg:text-xl font-medium leading-relaxed mb-4 lg:mb-8 max-w-md mx-auto lg:mx-0">
+            <p className="text-gray-600 text-[12px] sm:text-base lg:text-xl font-medium leading-relaxed mb-3 lg:mb-8 max-w-md mx-auto lg:mx-0">
               {category.translations?.[lang]?.description || category.description}
             </p>
             
@@ -87,7 +87,7 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
  
           {/* Image Content */}
           <div className="w-full lg:w-[55%] order-2 z-0 flex-1 min-h-0 flex items-center justify-center">
-            <div className="relative w-full max-h-[40vh] lg:max-h-none aspect-[16/10] sm:aspect-[16/9] lg:aspect-[4/3] xl:aspect-[16/10] overflow-hidden rounded-2xl">
+            <div className="relative w-full max-h-[35vh] lg:max-h-none aspect-[16/10] sm:aspect-[16/9] lg:aspect-[4/3] xl:aspect-[16/10] overflow-hidden rounded-2xl">
               {category.imageUrl && (
                 <Image 
                   src={imageToShow || ''} 
@@ -102,9 +102,9 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
               )}
             </div>
           </div>
-
+ 
           {/* Mobile Button */}
-          <div className="w-full flex justify-center order-3 mt-2 lg:hidden z-10 flex-shrink-0 pb-4">
+          <div className="w-full flex justify-center order-3 mt-1 lg:hidden z-10 flex-shrink-0 pb-6">
             <Link 
               href={`/products?category=${encodeURIComponent(category.name)}`}
               className="flex items-center justify-center bg-black text-white px-10 py-4 rounded-2xl font-bold hover:bg-gray-800 transition-all duration-300 uppercase tracking-[0.2em] text-sm w-full"
