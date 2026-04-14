@@ -103,6 +103,7 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
           <button
             key={i}
             onClick={() => setCurrentIndex(i)}
+            aria-label={`Go to slide ${i + 1}`}
             className={`h-1.5 rounded-2xl transition-all duration-500 ${i === currentIndex ? 'w-8 bg-black' : 'w-4 bg-gray-300'}`}
           />
         ))}

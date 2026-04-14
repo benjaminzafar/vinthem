@@ -57,10 +57,10 @@ export default function Footer({ settings }: FooterProps) {
             &copy; {new Date().getFullYear()} {settings.storeName?.[lang]}. {settings.footerCopyright?.[lang]}
           </p>
           <div className="flex space-x-6 text-sm text-gray-400">
-            {settings.socialInstagram && <a href={settings.socialInstagram} target="_blank" rel="noopener noreferrer" className="hover:text-brand-ink transition-colors">{settings.instagramText?.[lang] || 'Instagram'}</a>}
-            {settings.socialTikTok && <a href={settings.socialTikTok} target="_blank" rel="noopener noreferrer" className="hover:text-brand-ink transition-colors">{settings.tiktokText?.[lang] || 'TikTok'}</a>}
-            {settings.socialFacebook && <a href={settings.socialFacebook} target="_blank" rel="noopener noreferrer" className="hover:text-brand-ink transition-colors">{settings.facebookText?.[lang] || 'Facebook'}</a>}
-            {settings.socialTwitter && <a href={settings.socialTwitter} target="_blank" rel="noopener noreferrer" className="hover:text-brand-ink transition-colors">{settings.twitterText?.[lang] || 'Twitter'}</a>}
+            {settings.socialInstagram && <a href={settings.socialInstagram} target="_blank" rel="noopener noreferrer" className="hover:text-brand-ink transition-colors" aria-label="Visit our Instagram">{settings.instagramText?.[lang] || 'Instagram'}</a>}
+            {settings.socialTikTok && <a href={settings.socialTikTok} target="_blank" rel="noopener noreferrer" className="hover:text-brand-ink transition-colors" aria-label="Visit our TikTok">{settings.tiktokText?.[lang] || 'TikTok'}</a>}
+            {settings.socialFacebook && <a href={settings.socialFacebook} target="_blank" rel="noopener noreferrer" className="hover:text-brand-ink transition-colors" aria-label="Visit our Facebook">{settings.facebookText?.[lang] || 'Facebook'}</a>}
+            {settings.socialTwitter && <a href={settings.socialTwitter} target="_blank" rel="noopener noreferrer" className="hover:text-brand-ink transition-colors" aria-label="Visit our Twitter">{settings.twitterText?.[lang] || 'Twitter'}</a>}
           </div>
         </div>
       </div>

@@ -33,6 +33,7 @@ export default async function Navigation() {
 
   return (
     <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
+      <h1 className="sr-only">Mavren Shop - Premium Scandinavian Interior Design</h1>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center relative">
           {/* Brand Logo */}
@@ -63,7 +64,7 @@ export default async function Navigation() {
               <Link 
                 key={index} 
                 href={link.href} 
-                className="text-sm font-medium text-gray-500 hover:text-brand-ink transition-colors"
+                className="text-sm font-medium text-slate-600 hover:text-brand-ink transition-colors"
               >
                 {link.label[lang] || link.label['en']}
               </Link>
@@ -78,7 +79,11 @@ export default async function Navigation() {
               <LanguageSwitcher availableLanguages={availableLanguages} />
             </div>
 
-            <Link href="/cart" className="relative p-2 text-gray-600 hover:text-black hover:bg-gray-50 rounded-lg transition-colors">
+            <Link 
+              href="/cart" 
+              className="relative p-2 text-gray-600 hover:text-black hover:bg-gray-50 rounded-lg transition-colors"
+              aria-label="View Shopping Cart"
+            >
               <ShoppingBag className="w-5 h-5" strokeWidth={1.5} />
               <CartBadge />
             </Link>

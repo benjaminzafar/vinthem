@@ -22,7 +22,7 @@ export function FutureSections({ lang, settings }: FutureSectionsProps) {
             {settings.futureImage1 && (
               <Image 
                 src={settings.futureImage1} 
-                alt="Future Product 1" 
+                alt={settings.futureProduct1Title?.[lang] || "Future Product Showcase"} 
                 fill 
                 sizes="(max-width: 768px) 100vw, 50vw"
                 className="object-cover transition-transform duration-700 group-hover:scale-105" 
@@ -41,7 +41,7 @@ export function FutureSections({ lang, settings }: FutureSectionsProps) {
             {settings.futureImage2 && (
               <Image 
                 src={settings.futureImage2} 
-                alt="Future Product 2" 
+                alt={settings.futureProduct2Title?.[lang] || "Future Product Showcase"} 
                 fill 
                 sizes="(max-width: 768px) 100vw, 50vw"
                 className="object-cover transition-transform duration-700 group-hover:scale-105" 

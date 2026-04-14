@@ -48,6 +48,7 @@ export function NewsletterSection({ settings, lang }: NewsletterSectionProps) {
             className="w-full bg-white border border-brand-ink/10 rounded-full px-6 py-4 text-brand-ink placeholder:text-brand-muted focus:outline-none focus:border-brand-ink/30 focus:bg-white/50 transition-all text-sm font-sans"
             required
             disabled={isPending}
+            aria-label="Email address for newsletter"
           />
           <button 
             type="submit" 

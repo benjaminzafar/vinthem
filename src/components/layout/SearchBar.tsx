@@ -40,6 +40,7 @@ export function SearchBar({ placeholder }: SearchBarProps) {
       <button 
         onClick={() => setIsSearchOpen(!isSearchOpen)}
         className="p-2 text-gray-600 hover:text-black hover:bg-gray-50 rounded-lg transition-colors"
+        aria-label="Toggle search bar"
       >
         <Search className="w-5 h-5" strokeWidth={1.5} />
       </button>
@@ -60,6 +61,7 @@ export function SearchBar({ placeholder }: SearchBarProps) {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={placeholder || "Search products..."}
                 className="w-full pl-10 pr-4 py-3 bg-gray-50 border-transparent rounded-lg text-sm focus:bg-white focus:border-brand-ink focus:ring-2 focus:ring-brand-ink/20 outline-none transition-all"
+                aria-label="Search products"
               />
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             </form>
