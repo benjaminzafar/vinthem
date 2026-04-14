@@ -12,26 +12,34 @@ export default function cloudflareLoader({ src, width, quality }: CloudflareLoad
   // 1. Normalize source
   const normalizedSrc = src.startsWith('http') ? src : (src.startsWith('/') ? src : `/${src}`);
   
-  // 2. Environment Toggle
-  // We only enable Cloudflare Image Resizing if explicitly requested via ENV
-  // AND we are not on localhost or a vercel.app preview domain.
-  const isCloudflareActive = process.env.NEXT_PUBLIC_CLOUDFLARE_OPTIMIZATION === 'true';
-  const isDev = process.env.NODE_ENV === 'development' || 
-                (typeof window !== 'undefined' && 
-                 (window.location.hostname === 'localhost' || 
-                  window.location.hostname === '127.0.0.1' || 
-                  window.location.hostname.includes('vercel.app')));
+  // 2. Identify Source Type
+  const isUnsplash = normalizedSrc.includes('images.unsplash.com');
+  const isR2 = normalizedSrc.includes('pub-f44233c26dba4e9795b3ccf51fe6f2cb.r2.dev') || 
+               normalizedSrc.includes('r2.cloudflarestorage.com');
 
-  if (!isCloudflareActive || isDev) {
-    // Return direct link with space encoding to prevent broken srcsets
-    return normalizedSrc.replace(/ /g, '%20');
+  // 3. Environment Toggle
+  // We only disable optimization on localhost.
+  // Production (Vercel) should ALWAYS use optimization if the flag is set.
+  const isCloudflareActive = process.env.NEXT_PUBLIC_CLOUDFLARE_OPTIMIZATION === 'true';
+  const isLocalhost = typeof window !== 'undefined' && 
+                     (window.location.hostname === 'localhost' || 
+                      window.location.hostname === '127.0.0.1');
+
+  // 4. Source-Specific Optimizations
+  if (isUnsplash) {
+    // Unsplash has a powerful built-in API. We should use it directly.
+    // We force avif format for maximum compression.
+    const url = new URL(normalizedSrc);
+    url.searchParams.set('w', width.toString());
+    url.searchParams.set('q', (quality || 75).toString());
+    url.searchParams.set('fm', 'avif');
+    url.searchParams.set('auto', 'format');
+    url.searchParams.set('fit', 'crop');
+    return url.toString();
   }
 
-  // 3. Cloudflare Image Resizing (Production Only)
-  // Check if it's an R2 link or a relative path on our domain
-  const isR2 = normalizedSrc.includes('pub-f44233c26dba4e9795b3ccf51fe6f2cb.r2.dev');
-  
-  if (isR2 || normalizedSrc.startsWith('/')) {
+  // Cloudflare R2 / Internal Optimization
+  if (isCloudflareActive && !isLocalhost && (isR2 || normalizedSrc.startsWith('/'))) {
     const params = [
       `width=${width}`,
       `quality=${quality || 85}`,
@@ -39,7 +47,6 @@ export default function cloudflareLoader({ src, width, quality }: CloudflareLoad
     ];
     
     // Construct the Cloudflare Resizing path
-    // We Encode the source URL to protect protocol slashes (https:// -> https%3A%2F%2F)
     const encodedSrc = normalizedSrc.startsWith('http') 
       ? encodeURIComponent(normalizedSrc) 
       : normalizedSrc.replace(/ /g, '%20');
@@ -47,6 +54,6 @@ export default function cloudflareLoader({ src, width, quality }: CloudflareLoad
     return `/cdn-cgi/image/${params.join(',')}/${encodedSrc}`;
   }
 
-  // Final fallback
+  // Final fallback (Return direct link with basic encoding)
   return normalizedSrc.replace(/ /g, '%20');
 }

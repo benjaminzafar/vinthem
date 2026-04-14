@@ -44,6 +44,7 @@ export function MediaManager({ onSelect, selectionMode }: MediaManagerProps) {
   const [stats, setStats] = useState<MediaStats>({ totalSize: 0, fileCount: 0 });
   const [loading, setLoading] = useState(true);
   const [deletingKey, setDeletingKey] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{ key: string, isFolder: boolean } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [uploading, setUploading] = useState(false);
   const [copyingKeys, setCopyingKeys] = useState<Set<string>>(new Set());
@@ -97,35 +98,40 @@ export function MediaManager({ onSelect, selectionMode }: MediaManagerProps) {
     };
   }, [objects, currentPath]);
 
-  const handleDelete = async (key: string, e: React.MouseEvent, isFolder: boolean = false) => {
-    e.stopPropagation();
-    const message = isFolder 
-      ? `Are you sure you want to permanently delete the folder "${key}" and ALL of its contents? This cannot be undone.`
-      : 'Are you sure you want to permanently delete this file? This cannot be undone.';
+  const handleDelete = async () => {
+    if (!confirmDelete) return;
+    const { key, isFolder } = confirmDelete;
     
-    if (!confirm(message)) return;
-
     setDeletingKey(key);
+    setConfirmDelete(null);
+    console.log('[CLIENT DEBUG] Starting deletion for key:', key, 'isFolder:', isFolder);
     
     try {
       const { createClient } = await import('@/utils/supabase/client');
       const supabase = createClient();
       const { data: { session } } = await supabase.auth.getSession();
 
+      if (!session) {
+        throw new Error('You must be logged in as an admin to delete media.');
+      }
+
+      console.log('[CLIENT DEBUG] Session found, sending DELETE request...');
       const res = await fetch('/api/admin/media', {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${session?.access_token}`
+          'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify({ key: isFolder ? (key.endsWith('/') ? key : `${key}/`) : key }),
         cache: 'no-store'
       });
+      
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       
       toast.success(isFolder ? 'Folder deleted' : 'File deleted');
       fetchMedia();
     } catch (error: any) {
+      console.error('[CLIENT DEBUG] Deletion Error:', error);
       toast.error('Delete failed: ' + error.message);
       fetchMedia();
     } finally {
@@ -136,14 +142,18 @@ export function MediaManager({ onSelect, selectionMode }: MediaManagerProps) {
   const handleCopyUrl = (url: string, key: string, e: React.MouseEvent) => {
     e.stopPropagation();
     navigator.clipboard.writeText(url);
-    const next = new Set(copyingKeys);
-    next.add(key);
-    setCopyingKeys(next);
+    setCopyingKeys(prev => {
+      const next = new Set(prev);
+      next.add(key);
+      return next;
+    });
     toast.success('URL copied to clipboard');
     setTimeout(() => {
-      const prev = new Set(copyingKeys);
-      prev.delete(key);
-      setCopyingKeys(prev);
+      setCopyingKeys(prev => {
+        const next = new Set(prev);
+        next.delete(key);
+        return next;
+      });
     }, 2000);
   };
 
@@ -338,7 +348,7 @@ export function MediaManager({ onSelect, selectionMode }: MediaManagerProps) {
                 {/* Folder Actions */}
                 {!selectionMode && (
                   <button 
-                    onClick={(e) => handleDelete(currentPath.length > 0 ? `${currentPath.join('/')}/${folder}/` : `${folder}/`, e, true)}
+                    onClick={(e) => { e.stopPropagation(); setConfirmDelete({ key: currentPath.length > 0 ? `${currentPath.join('/')}/${folder}/` : `${folder}/`, isFolder: true }); }}
                     className="absolute top-4 right-4 p-1.5 bg-white rounded shadow-sm opacity-0 group-hover:opacity-100 transition-all text-rose-600 hover:bg-rose-600 hover:text-white border border-rose-100"
                     title="Delete Folder"
                   >
@@ -391,7 +401,7 @@ export function MediaManager({ onSelect, selectionMode }: MediaManagerProps) {
                             {copyingKeys.has(obj.key) ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                           </button>
                           <button 
-                            onClick={(e) => handleDelete(obj.key, e)}
+                            onClick={(e) => { e.stopPropagation(); setConfirmDelete({ key: obj.key, isFolder: false }); }}
                             className="w-10 h-10 bg-white rounded flex items-center justify-center text-rose-600 hover:bg-rose-600 hover:text-white transition-all shadow-lg"
                             title="Delete"
                           >
@@ -426,6 +436,41 @@ export function MediaManager({ onSelect, selectionMode }: MediaManagerProps) {
         <div className="flex items-center space-x-2 text-slate-400 text-[11px] font-bold uppercase tracking-widest px-2">
            <AlertCircle className="w-3.5 h-3.5" />
            <p>Media Assets Managed via Cloudflare Infrastructure</p>
+        </div>
+      )}
+      {/* Confirm Deletion Modal */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-zinc-950/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-[4px] shadow-2xl max-w-sm w-full p-8 border border-zinc-100 animate-in zoom-in-95 duration-200">
+            <div className="flex flex-col items-center text-center space-y-6">
+              <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center">
+                <Trash2 className="w-8 h-8 text-rose-600" />
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-zinc-900 uppercase tracking-widest mb-2">Confirm Delete</h3>
+                <p className="text-[11px] text-zinc-500 font-bold uppercase tracking-widest leading-relaxed">
+                  Are you sure you want to permanently delete {confirmDelete.isFolder ? 'this folder and all its contents' : 'this file'}?
+                </p>
+                <p className="text-[10px] text-zinc-400 font-medium mt-4 break-all opacity-60">
+                  {confirmDelete.key}
+                </p>
+              </div>
+              <div className="flex w-full gap-3 pt-2">
+                <button 
+                  onClick={() => setConfirmDelete(null)}
+                  className="flex-1 h-12 bg-white border border-zinc-200 rounded-[4px] text-[11px] font-black uppercase tracking-widest text-zinc-500 hover:bg-zinc-50 transition-all"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleDelete}
+                  className="flex-1 h-12 bg-rose-600 rounded-[4px] text-[11px] font-black uppercase tracking-widest text-white hover:bg-rose-700 transition-all shadow-lg shadow-rose-200"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
