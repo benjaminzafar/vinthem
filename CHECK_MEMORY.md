@@ -143,6 +143,7 @@ Date       | What was done                              | Mistake that was fixed
 2026-04-14 | Stabilized Hero Height & Mobile Menu Scrolling     | **FIXED MISTAKE**: Resolved 'Viewport Jumping' (dvh) and 'Snap-to-top' glitch.
 2026-04-14 | Refined Hero Mobile Spacing & Tightened Layout     | **FIXED MISTAKE**: Resolved excessive vertical white space in Hero section.
 2026-04-14 | Structural Hero Mobile Overhaul (Top-Aligned)      | **FIXED MISTAKE**: Resolved 'floating space' via switch to justify-start.
+2026-04-14 | Expanded Hero Content & Centered Scaling          | **FIXED MISTAKE**: Eliminated bottom void via content expansion.
 
 
 ### 2026-04-14: Storefront Performance & UI Stability Overhaul
