@@ -54,8 +54,10 @@
     "typescript": "^5"
   },
   "browserslist": [
-    "last 2 versions",
-    "not dead",
-    "> 0.5%"
+    "chrome 108",
+    "safari 16",
+    "edge 108",
+    "firefox 108",
+    "not dead"
   ]
 }

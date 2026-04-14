@@ -6,6 +6,7 @@ import { AuthProvider } from "@/components/AuthProvider";
 import { StoreHydrator } from "@/components/StoreHydrator";
 import { Analytics } from "@vercel/analytics/next";
 import { getSettings } from "@/lib/data";
+import { LazyMotion, domAnimation } from "motion/react";
 
 export const metadata: Metadata = {
   title: {
@@ -34,7 +35,9 @@ export default async function RootLayout({
         <StoreHydrator settings={settings} />
         <AuthProvider>
           <ConfirmationProvider>
-            {children}
+            <LazyMotion features={domAnimation}>
+              {children}
+            </LazyMotion>
             <Analytics />
           </ConfirmationProvider>
         </AuthProvider>

@@ -22,6 +22,7 @@ const nextConfig: NextConfig = {
     ],
   },
   experimental: {
+    optimizePackageImports: ['lucide-react', 'motion/react', 'sonner'],
     serverActions: {
       bodySizeLimit: '10mb'
     }
