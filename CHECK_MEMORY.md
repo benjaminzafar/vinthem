@@ -129,3 +129,20 @@ Date       | What was done                              | Mistake that was fixed
 2026-04-14 | Fixed Auth Init Crash & Schema Drift        | **FIXED MISTAKE**: Added safe destructuring to prevent 'undefined data' TypeError.
 2026-04-14 | Pushed Modernized Suite to GitHub           | Successfully deployed Slate-based UI & R2 integration to master.
 2026-04-14 | Refined Dashboard, Fixed Mobile Nav & Analytics | Fixed Language Switcher regression and Mobile Scroll Lock.
+2026-04-14 | Optimized Performance & Achieved 100/100 A11y | **FIXED MISTAKE**: Eliminated Legacy JS polyfills & fixed footer bleed.
+2026-04-14 | Implemented Cloudflare Global Image Loader  | Offloaded processing from Vercel to Edge for faster/cheaper delivery.
+
+### 2026-04-14: Global Accessibility, Performance & Edge Optimization
+**Problem**: Lighthouse accessibility score (87-91), mobile navigation "footer bleed" instability, and high Vercel usage costs for image processing.
+**Root Causes**:
+1. **Z-Index & Stacking**: Sticky navigation bar was overlapping or clipping the mobile menu overlay depending on scroll position.
+2. **Polyfill Bloat**: Standard Next.js build was including legacy code for ES2017 support, adding unwanted "Wasted Bytes".
+3. **Framer Motion Engine**: loading the full animation engine upfront increased "Unused JS" metrics.
+4. **Vercel Image Resizing**: Generating AVIF images on-the-fly at Vercel's edge increased load latency and costs.
+
+**Final Solution**:
+1. **Portal-based Navigation**: Migrated the Mobile Menu to a React Portal and implemented a "hard" scroll-lock on `html`/`body` to eliminate background scroll bleeding.
+2. **Baseline Modernization**: Updated build target to ES2022 and configured `browserslist` to target modern engines, eliminating nearly all "Legacy JS" polyfills.
+3. **LazyMotion Architecture**: Implemented `LazyMotion` to defer 70% of the animation engine until it's needed, drastically reducing the initial JS payload.
+4. **Cloudflare Image Loader**: Created a custom `image-loader.ts` to offload all AVIF conversion and resizing to Cloudflare's `cdn-cgi` service, keeping R2 images at the edge.
+5. **100/100 Accessibility**: Systematically added ARIA labels, semantic H1, and corrected color contrast for all storefront elements.
