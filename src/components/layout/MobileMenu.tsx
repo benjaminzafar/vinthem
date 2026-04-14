@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 import { LanguageSwitcher } from './LanguageSwitcher';
+import { Portal } from './Portal';
 
 interface MobileMenuProps {
   user: any;
@@ -33,12 +34,22 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
 
   useEffect(() => {
     if (isOpen) {
+      // Lock scroll on both html and body for maximum mobile compatibility
       document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
     } else {
-      document.body.style.overflow = 'auto';
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
     }
     return () => {
-      document.body.style.overflow = 'auto';
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
     };
   }, [isOpen]);
 
@@ -71,13 +82,13 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
 
       <AnimatePresence>
         {isOpen && (
-          <>
+          <Portal>
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsOpen(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] lg:hidden"
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200]"
             />
             <motion.div
               ref={menuRef}
@@ -85,7 +96,7 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 h-[100dvh] w-full sm:w-[85vw] sm:max-w-sm bg-white border-l border-gray-100 z-[101] flex flex-col lg:hidden"
+              className="fixed top-0 right-0 h-[100dvh] w-full sm:w-[85vw] sm:max-w-sm bg-white border-l border-gray-100 z-[201] flex flex-col"
             >
               <div className="flex items-center justify-between h-16 px-6 border-b border-gray-100">
                 <span className="text-xl font-sans font-medium tracking-tight">{labels.menu}</span>
@@ -97,7 +108,7 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto px-6 py-8">
+              <div className="flex-1 overflow-y-auto px-6 py-8 custom-scrollbar">
                 <nav className="flex flex-col space-y-6 mb-12">
                   {(settings.navbarLinks || []).map((link: any, index: number) => (
                     <Link 
@@ -178,7 +189,7 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
                 </div>
               </div>
             </motion.div>
-          </>
+          </Portal>
         )}
       </AnimatePresence>
     </>

@@ -5,9 +5,11 @@ import { Category } from '@/types';
 import { getSettings } from '@/lib/data';
 import { HeroSlider } from '@/components/HeroSlider';
 import { FeaturedProducts } from '@/components/storefront/FeaturedProducts';
-import { FutureSections } from '@/components/storefront/FutureSections';
-import { CollectionList } from '@/components/storefront/CollectionList';
-import { NewsletterSection } from '@/components/storefront/NewsletterSection';
+import dynamic from 'next/dynamic';
+
+const FutureSections = dynamic(() => import('@/components/storefront/FutureSections').then(mod => mod.FutureSections), { ssr: true });
+const CollectionList = dynamic(() => import('@/components/storefront/CollectionList').then(mod => mod.CollectionList), { ssr: true });
+const NewsletterSection = dynamic(() => import('@/components/storefront/NewsletterSection').then(mod => mod.NewsletterSection), { ssr: true });
 
 export default async function StorefrontPage() {
   const supabase = await createClient();
