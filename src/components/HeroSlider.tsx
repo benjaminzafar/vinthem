@@ -67,10 +67,10 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
               transition={{ delay: 0.3, duration: 0.8 }}
               className="h-[3px] bg-black mb-3 lg:mb-6 mx-auto lg:mx-0"
             />
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-sans font-bold tracking-tight text-black leading-[1.1] mb-3 lg:mb-6 uppercase break-words">
+            <h2 className="text-3xl sm:text-4xl lg:text-6xl xl:text-7xl font-sans font-bold tracking-tight text-black leading-[1.1] mb-3 lg:mb-6 uppercase break-words">
               {category.translations?.[lang]?.name || category.name}
             </h2>
-            <p className="text-gray-600 text-sm sm:text-base lg:text-xl font-medium leading-relaxed mb-4 lg:mb-8 max-w-md mx-auto lg:mx-0">
+            <p className="text-gray-600 text-[13px] sm:text-base lg:text-xl font-medium leading-relaxed mb-4 lg:mb-8 max-w-md mx-auto lg:mx-0">
               {category.translations?.[lang]?.description || category.description}
             </p>
             
@@ -84,7 +84,7 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
               </Link>
             </div>
           </div>
-
+ 
           {/* Image Content */}
           <div className="w-full lg:w-[55%] order-2 z-0 flex-1 min-h-0 flex items-center justify-center">
             <div className="relative w-full max-h-[40vh] lg:max-h-none aspect-[16/10] sm:aspect-[16/9] lg:aspect-[4/3] xl:aspect-[16/10] overflow-hidden rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.25)]">
@@ -95,6 +95,7 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
                   fill
                   priority
                   fetchPriority="high"
+                  quality={60}
                   sizes="(max-width: 768px) 100vw, 60vw"
                   className="object-cover"
                 />
