@@ -28,8 +28,9 @@ export default async function RootLayout({
   return (
     <html lang="en" className="h-full antialiased" suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://xeatyjjiywcrkuvifyhm.supabase.co" />
-        <link rel="preconnect" href="https://pub-f44233c26dba4e9795b3ccf51fe6f2cb.r2.dev" />
+        <link rel="preconnect" href="https://xeatyjjiywcrkuvifyhm.supabase.co" crossOrigin="" />
+        <link rel="preconnect" href="https://pub-f44233c26dba4e9795b3ccf51fe6f2cb.r2.dev" crossOrigin="" />
+        <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="" />
       </head>
       <body className="min-h-full flex flex-col font-sans" suppressHydrationWarning>
         <StoreHydrator settings={settings} />
