@@ -10,9 +10,11 @@ export default function cloudflareLoader({ src, width, quality }: CloudflareLoad
   // Normalize src - ensure it's properly encoded for the browser
   const normalizedSrc = src.startsWith('http') ? src : (src.startsWith('/') ? src : `/${src}`);
   
-  // Only use Cloudflare Image Resizing in production
+  // Only use Cloudflare Image Resizing in production on custom domains
+  const isVercel = typeof window !== 'undefined' && window.location.hostname.includes('vercel.app');
   const isDev = process.env.NODE_ENV === 'development' || 
-                (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'));
+                (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) ||
+                isVercel;
 
   if (isDev) {
     // Escape spaces in dev mode to prevent broken srcsets
