@@ -49,7 +49,7 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
     : 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=2000&auto=format&fit=crop';
 
   return (
-    <section className="relative w-full h-[calc(100vh-70px)] lg:h-[calc(100vh-80px)] flex flex-col justify-center overflow-hidden py-4 lg:py-0" style={{ backgroundColor: settings.heroBackgroundColor || '#ffffff' }}>
+    <section className="relative w-full h-[calc(100vh-70px)] lg:h-[calc(100vh-80px)] flex flex-col justify-start lg:justify-center overflow-hidden pt-6 lg:pt-0" style={{ backgroundColor: settings.heroBackgroundColor || '#ffffff' }}>
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={category.id}
@@ -57,7 +57,7 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="w-full h-full max-w-[1400px] mx-auto flex flex-col lg:flex-row items-center justify-center lg:justify-between gap-2 lg:gap-12 px-4 sm:px-8 lg:px-16"
+          className="w-full h-full max-w-[1400px] mx-auto flex flex-col lg:flex-row items-center justify-start lg:justify-between gap-0 lg:gap-12 px-4 sm:px-8 lg:px-16"
         >
           {/* Text Content */}
           <div className="w-full lg:w-[45%] flex flex-col justify-center order-1 text-center lg:text-left z-10 flex-shrink-0">
@@ -67,10 +67,10 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
               transition={{ delay: 0.3, duration: 0.8 }}
               className="h-[3px] bg-black mb-2 lg:mb-6 mx-auto lg:mx-0"
             />
-            <h2 className="text-2xl sm:text-4xl lg:text-6xl xl:text-7xl font-sans font-bold tracking-tight text-black leading-[1.1] mb-2 lg:mb-6 uppercase break-words">
+            <h2 className="text-2xl sm:text-4xl lg:text-6xl xl:text-7xl font-sans font-bold tracking-tight text-black leading-[1.1] mb-1 lg:mb-6 uppercase break-words">
               {category.translations?.[lang]?.name || category.name}
             </h2>
-            <p className="text-gray-600 text-[12px] sm:text-base lg:text-xl font-medium leading-relaxed mb-3 lg:mb-8 max-w-md mx-auto lg:mx-0">
+            <p className="text-gray-600 text-[12px] sm:text-base lg:text-xl font-medium leading-relaxed mb-2 lg:mb-8 max-w-md mx-auto lg:mx-0">
               {category.translations?.[lang]?.description || category.description}
             </p>
             
@@ -86,8 +86,8 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
           </div>
  
           {/* Image Content */}
-          <div className="w-full lg:w-[55%] order-2 z-0 flex-1 min-h-0 flex items-center justify-center">
-            <div className="relative w-full max-h-[35vh] lg:max-h-none aspect-[16/10] sm:aspect-[16/9] lg:aspect-[4/3] xl:aspect-[16/10] overflow-hidden rounded-2xl">
+          <div className="w-full lg:w-[55%] order-2 z-0 flex-shrink-0 flex items-center justify-center mt-3 lg:mt-0">
+            <div className="relative w-full max-h-[45vh] lg:max-h-none aspect-[16/10] sm:aspect-[16/9] lg:aspect-[4/3] xl:aspect-[16/10] overflow-hidden rounded-2xl shadow-sm">
               {category.imageUrl && (
                 <Image 
                   src={imageToShow || ''} 
@@ -104,7 +104,7 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
           </div>
  
           {/* Mobile Button */}
-          <div className="w-full flex justify-center order-3 mt-1 lg:hidden z-10 flex-shrink-0 pb-6">
+          <div className="w-full flex justify-center order-3 mt-4 lg:hidden z-10 flex-shrink-0 pb-8">
             <Link 
               href={`/products?category=${encodeURIComponent(category.name)}`}
               className="flex items-center justify-center bg-black text-white px-10 py-4 rounded-2xl font-bold hover:bg-gray-800 transition-all duration-300 uppercase tracking-[0.2em] text-sm w-full"
