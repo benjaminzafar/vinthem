@@ -17,8 +17,7 @@ export default function cloudflareLoader({ src, width, quality }: CloudflareLoad
 
   // 3. Source-Specific Optimizations
   if (isUnsplash) {
-    // Unsplash has a powerful built-in API. We should use it directly.
-    // We force avif format for maximum compression.
+    // Unsplash has its own optimization API
     const url = new URL(normalizedSrc);
     url.searchParams.set('w', width.toString());
     url.searchParams.set('q', (quality || 75).toString());
@@ -28,10 +27,8 @@ export default function cloudflareLoader({ src, width, quality }: CloudflareLoad
     return url.toString();
   }
 
-  // 4. Vercel Native Optimization (For R2 and Internal)
-  // Since we are on Vercel, the fastest way to resize non-proxied images (like R2)
-  // is to use Vercel's built-in optimizer which handles R2 remote patterns natively.
-  // This converts massive original files into tiny AVIF/WebP versions on the Edge.
-  const encodedSrc = encodeURIComponent(normalizedSrc);
-  return `/_next/image?url=${encodedSrc}&w=${width}&q=${quality || 75}`;
+  // 4. Default Pass-through
+  // Let Next.js handle the optimization natively through its own loaders
+  // We just return the normalized path.
+  return normalizedSrc.replace(/ /g, '%20');
 }
