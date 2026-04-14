@@ -64,45 +64,40 @@ export function CollectionManager() {
 
   useEffect(() => {
     refreshCategories();
-    // Enable Realtime (Debounced)
-    let refreshTimeout: NodeJS.Timeout;
+    // Enable Realtime
     const channel = supabase
       .channel('categories-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, () => {
-        clearTimeout(refreshTimeout);
-        refreshTimeout = setTimeout(refreshCategories, 300);
+        refreshCategories();
       })
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
-      clearTimeout(refreshTimeout);
     };
   }, []);
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      const { data } = await supabase.from('products').select('*');
+    const fetchProductCounts = async () => {
+      // Optimization: Only select columns needed for the parent count
+      const { data } = await supabase.from('products').select('id, category_id');
       if (data) {
         setProducts(data.map((p: any) => ({
-          ...p, imageUrl: p.image_url, categoryId: p.category_id, createdAt: p.created_at
+          ...p, categoryId: p.category_id
         })) as unknown as Product[]);
       }
     };
-    fetchProducts();
+    fetchProductCounts();
 
-    let productTimeout: NodeJS.Timeout;
     const channel = supabase
       .channel('products-changes-collections')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
-        clearTimeout(productTimeout);
-        productTimeout = setTimeout(fetchProducts, 300);
+        fetchProductCounts();
       })
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
-      clearTimeout(productTimeout);
     };
   }, []);
 

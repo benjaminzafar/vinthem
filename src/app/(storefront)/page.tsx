@@ -20,7 +20,13 @@ const SectionSkeleton = () => (
 
 async function ProductsList({ lang, settings }: { lang: string, settings: any }) {
   const supabase = await createClient();
-  const { data: productsData } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+  // Optimization: Only fetch the 4 featured products that we actually show
+  const { data: productsData } = await supabase
+    .from('products')
+    .select('*')
+    .eq('is_featured', true)
+    .limit(4)
+    .order('created_at', { ascending: false });
   
   const products = (productsData || []).map(p => ({
     ...p,
@@ -30,11 +36,7 @@ async function ProductsList({ lang, settings }: { lang: string, settings: any })
     createdAt: p.created_at
   })) as Product[];
 
-  if (products.length === 0) return (
-    <div className="bg-white py-24 text-center border-t border-zinc-100">
-       <p className="text-zinc-500 italic text-sm">Add your first products in the dashboard to see them featured here.</p>
-    </div>
-  );
+  if (products.length === 0) return null; // Simplified: Don't show anything if no featured items
 
   return <FeaturedProducts products={products} lang={lang} settings={settings} />;
 }
@@ -78,7 +80,6 @@ export default async function StorefrontPage() {
       {/* 
         STREAMED SECTIONS (Low Priority - Non-blocking)
       */}
-
       <Suspense fallback={<SectionSkeleton />}>
         <CollectionsWrapper lang={lang} settings={settings} categories={categories} />
       </Suspense>
@@ -90,7 +91,7 @@ export default async function StorefrontPage() {
       <Suspense fallback={<SectionSkeleton />}>
         <ProductsList lang={lang} settings={settings} />
       </Suspense>
-      
+
       <NewsletterSection settings={settings} lang={lang} />
     </div>
   );
