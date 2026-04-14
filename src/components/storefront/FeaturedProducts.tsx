@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Product } from '@/store/useCartStore';
 import { formatPrice } from '@/lib/currency';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Package } from 'lucide-react';
 
 interface FeaturedProductsProps {
   products: Product[];
