@@ -138,6 +138,9 @@ Date       | What was done                              | Mistake that was fixed
 2026-04-14 | Final Network Polish & Preconnects          | **FIXED MISTAKE**: Shrunk handshake latency for R2 and Unsplash.
 2026-04-14 | Implemented Direct-to-R2 High-Speed Uploads | **FIXED MISTAKE**: Resolved Vercel proxy timeouts and body size limits.
 2026-04-14 | Activated Realtime Admin Sync (Products/Collections) | **FIXED MISTAKE**: Eliminated manual refresh requirements for data updates.
+2026-04-14 | Optimized Featured Products & Reordered Sections | **FIXED MISTAKE**: Resolved 10s query lag and incorrect visual hierarchy.
+2026-04-14 | Fixed Production Build & Missing Dependencies    | **FIXED MISTAKE**: Resolved 'Module not found' and missing Package icon.
+2026-04-14 | Stabilized Hero Height & Mobile Menu Scrolling     | **FIXED MISTAKE**: Resolved 'Viewport Jumping' (dvh) and 'Snap-to-top' glitch.
 
 ### 2026-04-14: Global Accessibility, Performance & Edge Optimization
 **Problem**: Lighthouse accessibility score (87-91), mobile navigation "footer bleed" instability, and high Vercel usage costs for image processing.
