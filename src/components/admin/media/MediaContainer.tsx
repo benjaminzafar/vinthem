@@ -72,15 +72,33 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
   const handleNavigate = (path: string[]) => setCurrentPath(path);
   const enterFolder = (folderName: string) => setCurrentPath([...currentPath, folderName]);
 
+  const sanitizeFileName = (fileName: string) => {
+    const extension = fileName.split('.').pop();
+    const nameWithoutExtension = fileName.split('.').slice(0, -1).join('.');
+    
+    // Sanitize: lowercase, remove special characters, replace spaces with hyphens
+    const sanitizedName = nameWithoutExtension
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '-') // Replace non-alphanumeric with hyphens
+      .replace(/-+/g, '-')        // Collapse multiple hyphens
+      .replace(/^-|-$/g, '');     // Trim hyphens from ends
+      
+    return `${sanitizedName}.${extension}`;
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setUploading(true);
-    const formData = new FormData();
-    formData.append('file', file);
     
-    // Use current folder as path
+    // Create a new sanitized file object
+    const sanitizedName = sanitizeFileName(file.name);
+    const sanitizedFile = new File([file], sanitizedName, { type: file.type });
+
+    const formData = new FormData();
+    formData.append('file', sanitizedFile);
+    
     const uploadPath = currentPath.length > 0 ? currentPath.join('/') : 'uploads';
     formData.append('path', uploadPath);
 
@@ -93,7 +111,7 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
       const data = await res.json();
       if (data.error) throw new Error(data.error);
 
-      toast.success('File uploaded successfully');
+      toast.success(`Success: ${sanitizedName} uploaded`);
       fetchMedia();
     } catch (error: any) {
       toast.error('Upload failed: ' + error.message);
@@ -129,7 +147,7 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       
-      toast.success(isFolder ? 'Folder deleted' : 'File deleted');
+      toast.success(isFolder ? 'Folder evacuated' : 'Asset purged');
       fetchMedia();
     } catch (error: any) {
       toast.error('Delete failed: ' + error.message);
@@ -146,7 +164,7 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
       next.add(key);
       return next;
     });
-    toast.success('URL copied');
+    toast.success('Path captured');
     setTimeout(() => {
       setCopyingKeys(prev => {
         const next = new Set(prev);
@@ -161,71 +179,65 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
   }, [assets, searchQuery]);
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      {/* 1. Stats Row - Scandinavian Style */}
+    <div className="space-y-12 animate-in fade-in duration-700">
+      {/* 1. Immersive Command Header */}
       {!selectionMode && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white border border-slate-300 p-6 rounded flex items-center space-x-5">
-             <div className="w-12 h-12 bg-slate-50 border border-slate-200 rounded flex items-center justify-center text-slate-900 shrink-0">
-               <HardDrive className="w-5 h-5" />
-             </div>
-             <div>
-               <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest leading-none mb-2">Folder Volume</p>
-               <p className="text-2xl font-bold text-slate-900 tracking-tight">{assets.length} Files</p>
-             </div>
-          </div>
-          <div className="bg-white border border-slate-300 p-6 rounded flex items-center space-x-5 text-slate-900">
-             <div className="w-12 h-12 bg-slate-50 border border-slate-200 rounded flex items-center justify-center text-slate-900 shrink-0">
-               <FileText className="w-5 h-5" />
-             </div>
-             <div>
-               <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest leading-none mb-2">Storage Stats</p>
-               <p className="text-2xl font-bold text-slate-900 tracking-tight">Optimized</p>
-             </div>
-          </div>
-          <div className="bg-slate-900 p-6 rounded flex items-center justify-between group">
-             <div>
-               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Infrastructure</p>
-               <p className="text-sm font-bold uppercase tracking-widest text-white">Cloudflare R2</p>
-             </div>
-             <button 
-               onClick={() => fetchMedia()}
-               className="p-3 bg-white/10 rounded hover:bg-white/20 transition-all text-white"
-               disabled={loading}
-             >
-               <RefreshCcw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
-             </button>
-          </div>
+        <div className="flex flex-col lg:flex-row gap-8 items-end justify-between">
+           <div className="space-y-2">
+              <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Digital Assets</h2>
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.3em]">Cloudflare R2 Infrastructure</p>
+           </div>
+           
+           <div className="grid grid-cols-2 gap-4 w-full lg:w-auto">
+              <div className="bg-white border border-slate-200 p-4 px-8 rounded-[4px] min-w-[180px]">
+                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Volume</p>
+                 <p className="text-xl font-black text-slate-900 tracking-tighter">{assets.length} <span className="text-[10px] text-slate-300">Objects</span></p>
+              </div>
+              <div className="bg-slate-900 p-4 px-8 rounded-[4px] min-w-[180px] flex items-center justify-between group cursor-pointer hover:bg-slate-800 transition-all shadow-xl shadow-slate-200">
+                 <div>
+                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Status</p>
+                    <p className="text-sm font-black text-white uppercase tracking-widest">Optimized</p>
+                 </div>
+                 <button 
+                   onClick={() => fetchMedia()}
+                   className="text-white opacity-40 group-hover:opacity-100 transition-all"
+                   disabled={loading}
+                 >
+                   <RefreshCcw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                 </button>
+              </div>
+           </div>
         </div>
       )}
 
-      {/* 2. Controls - Unified Search & Upload */}
-      <div className="flex flex-col lg:flex-row gap-6 items-center justify-between">
-         <div className="relative w-full lg:max-w-2xl group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
+      {/* 2. Focused Toolbar */}
+      <div className="flex flex-col lg:flex-row gap-6">
+         <div className="relative flex-1 group">
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-slate-900 transition-colors" />
             <input 
               type="text" 
-              placeholder="Filter current folder assets..."
+              placeholder="Search directory..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-11 bg-white border border-slate-300 rounded pl-12 pr-6 text-sm focus:outline-none focus:border-slate-900 transition-all font-medium placeholder:text-slate-400"
+              className="w-full h-14 bg-white border-2 border-slate-50 rounded-[4px] pl-14 pr-6 text-sm focus:outline-none focus:border-slate-900 focus:bg-white transition-all font-black uppercase tracking-widest placeholder:text-slate-300 shadow-sm"
             />
          </div>
 
-         <div className="flex items-center gap-3 w-full lg:w-auto">
-            <label className={`flex-1 lg:flex-none flex items-center justify-center gap-2 h-11 px-8 bg-slate-900 text-white rounded text-[11px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all cursor-pointer ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
-               <FilePlus className="w-4 h-4" />
-               <span>{uploading ? 'Uploading...' : 'Quick Upload'}</span>
-               <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} disabled={uploading} />
-            </label>
-         </div>
+         <label className={`flex items-center justify-center gap-3 h-14 px-12 bg-slate-900 text-white rounded-[4px] text-[11px] font-black uppercase tracking-[0.2em] hover:bg-slate-800 transition-all cursor-pointer shadow-2xl shadow-slate-200 ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
+            <FilePlus className="w-5 h-5" />
+            <span>{uploading ? 'Processing...' : 'Upload Asset'}</span>
+            <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} disabled={uploading} />
+         </label>
       </div>
 
-      {/* 3. Navigation & Grid Area */}
-      <div className="bg-white border border-slate-300 rounded p-6 sm:p-10 min-h-[500px]">
+      {/* 3. Immersive Workspace */}
+      <div className="bg-white border border-slate-100 rounded-[4px] p-8 lg:p-14 min-h-[600px] shadow-sm relative overflow-hidden">
+         {/* Background Subtle Accent */}
+         <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-bl-full -mr-16 -mt-16 opacity-50" />
+         
          <Breadcrumbs currentPath={currentPath} onNavigate={handleNavigate} />
          
-         <div className="mt-6">
+         <div className="mt-10">
             {loading && assets.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-64 space-y-4">
                 <RefreshCcw className="w-6 h-6 animate-spin text-slate-900" />
