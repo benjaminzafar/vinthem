@@ -1,7 +1,12 @@
 import { generateAIContentAction } from "@/app/actions/ai";
 
+/**
+ * AI Provider Bridge
+ * Standardizes AI requests across the application.
+ * Currently uses Groq via Server Actions.
+ */
 export const genAI = {
-  getGenerativeModel: (config: { model: string, generationConfig?: any }) => {
+  getGenerativeModel: (config: { model?: string, generationConfig?: any }) => {
     return {
       generateContent: async (prompt: any) => {
         // Adapt contents: check if it's already a Content array or if it needs wrapping
@@ -20,28 +25,31 @@ export const genAI = {
         }
         
         const result = await generateAIContentAction({
-          model: config.model,
+          model: config.model || "llama-3.3-70b-versatile",
           contents: contents,
           generationConfig: config.generationConfig,
-          nonce: Date.now().toString() // Force a fresh execution every time
+          nonce: Date.now().toString()
         });
 
         if (result.error) {
-          throw new Error(result.error);
+          const err = new Error(result.error);
+          (err as any).status = result.status;
+          throw err;
         }
 
         return {
           response: {
             text: () => result.text as string,
           },
-          text: result.text as string
+          text: result.text as string,
+          status: 200
         };
       }
     };
   }
 };
 
-// Legacy support for getAI() if needed during migration
+// Compatibility export
 export function getAI() {
   return {
     models: genAI

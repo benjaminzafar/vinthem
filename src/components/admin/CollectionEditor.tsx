@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSettingsStore } from '@/store/useSettingsStore';
-import { genAI } from '@/lib/gemini';
+import { genAI } from '@/lib/ai';
 import { saveCategoryAction } from '@/app/actions/categories';
 import { MediaPickerModal } from './MediaPickerModal';
 import { IconSelector } from '../IconSelector';
@@ -95,7 +95,7 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
       const base64Data = await base64Promise;
 
       const model = genAI.getGenerativeModel({ 
-        model: 'gemini-2.5-flash',
+        model: 'llama-3.3-70b-versatile',
         generationConfig: { responseMimeType: 'application/json' }
       });
 
@@ -116,13 +116,21 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
       console.error('AI error:', error);
       const timestamp = new Date().toLocaleTimeString('sv-SE', { hour12: false });
       const errorMessage = error?.message || '';
-      const status = error?.status || (errorMessage.includes('503') ? 503 : errorMessage.includes('429') ? 429 : null);
+      const status = error?.status;
+
+      if (status === 401 || status === 403) {
+        toast.error('Action Required: Please set your Groq API Key in the Integrations Manager.', { 
+          id: toastId,
+          duration: 6000
+        });
+        return;
+      }
 
       let detailedMessage = '';
       if (status === 503 || errorMessage.toLowerCase().includes('overloaded') || errorMessage.toLowerCase().includes('congestion')) {
         detailedMessage = `## Error Type\nConsole Error\n\n## Error Message\n[${timestamp}] AI Service Congestion (503). Service is currently at maximum capacity. Please wait 5-10 minutes for regional demand to subside and try again.`;
       } else if (status === 429 || errorMessage.toLowerCase().includes('quota')) {
-        detailedMessage = `## Error Type\nConsole Error\n\n## Error Message\n[${timestamp}] RATE LIMIT HIT (429) for gemini-2.5-flash. You are sending requests too fast (RPM limit). Please wait 60 seconds and try again.`;
+        detailedMessage = `## Error Type\nConsole Error\n\n## Error Message\n[${timestamp}] RATE LIMIT HIT (429) for llama-3.3-70b-versatile. You are sending requests too fast (RPM limit). Please wait 60 seconds and try again.`;
       } else {
         detailedMessage = `## Error Type\nConsole Error\n\n## Error Message\n[${timestamp}] AI Analysis failed. ${errorMessage}`;
       }
@@ -151,7 +159,7 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
       }`;
 
       const model = genAI.getGenerativeModel({ 
-        model: 'gemini-2.5-flash',
+        model: 'llama-3.3-70b-versatile',
         generationConfig: { responseMimeType: 'application/json' }
       });
       
@@ -171,13 +179,21 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
       console.error('AI Draft Error:', error);
       const timestamp = new Date().toLocaleTimeString('sv-SE', { hour12: false });
       const errorMessage = error?.message || '';
-      const status = error?.status || (errorMessage.includes('503') ? 503 : errorMessage.includes('429') ? 429 : null);
+      const status = error?.status;
+
+      if (status === 401 || status === 403) {
+        toast.error('Action Required: Please set your Groq API Key in the Integrations Manager.', { 
+          id: toastId,
+          duration: 6000
+        });
+        return;
+      }
 
       let detailedMessage = '';
       if (status === 503 || errorMessage.toLowerCase().includes('overloaded') || errorMessage.toLowerCase().includes('congestion')) {
         detailedMessage = `## Error Type\nConsole Error\n\n## Error Message\n[${timestamp}] AI Service Congestion (503). Service is currently at maximum capacity. Please wait 5-10 minutes for regional demand to subside and try again.`;
       } else if (status === 429 || errorMessage.toLowerCase().includes('quota')) {
-        detailedMessage = `## Error Type\nConsole Error\n\n## Error Message\n[${timestamp}] RATE LIMIT HIT (429) for gemini-2.5-flash. You are sending requests too fast (RPM limit). Please wait 60 seconds and try again.`;
+        detailedMessage = `## Error Type\nConsole Error\n\n## Error Message\n[${timestamp}] RATE LIMIT HIT (429) for llama-3.3-70b-versatile. You are sending requests too fast (RPM limit). Please wait 60 seconds and try again.`;
       } else {
         detailedMessage = `## Error Type\nConsole Error\n\n## Error Message\n[${timestamp}] AI Draft failed. ${errorMessage}`;
       }

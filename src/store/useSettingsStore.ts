@@ -310,6 +310,13 @@ export interface StorefrontSettings {
   quickAddText: LocalizedString;
   noPagesYetText: LocalizedString;
   noPagesDescriptionText: LocalizedString;
+  inventoryTitleText: LocalizedString;
+  regularPriceText: LocalizedString;
+  salePriceText: LocalizedString;
+  skuCodeText: LocalizedString;
+  initialStockText: LocalizedString;
+  weightKgText: LocalizedString;
+  shippingClassText: LocalizedString;
 }
 
 interface SettingsStore {
@@ -636,6 +643,13 @@ export const defaultSettings: StorefrontSettings = {
   quickAddText: { en: 'Quick Add', sv: 'Snabbköp', fi: 'Pikaostos', da: 'Hurtigkøb' },
   noPagesYetText: { en: 'No pages yet', sv: 'Inga sidor ännu', fi: 'Ei sivuja vielä', da: 'Ingen sider endnu' },
   noPagesDescriptionText: { en: 'Add a page manually or seed default pages to get started.', sv: 'Lägg till en sida manuellt eller fyll på med standardsidor för att komma igång.', fi: 'Lisää sivu manuaalisesti tai siemenellä oletussivuja aloittaaksesi.', da: 'Tilføj en side manuelt eller så standardsider for at komme i gang.' },
+  inventoryTitleText: { en: 'Pricing & Inventory', sv: 'Pris & Inventarier', fi: 'Hinnoittelu & Varasto', da: 'Prisfastsættelse & Lager' },
+  regularPriceText: { en: 'Regular Price (SEK)', sv: 'Ordinarie pris (SEK)', fi: 'Normaalihinta (SEK)', da: 'Normalpris (SEK)' },
+  salePriceText: { en: 'Sale Price (SEK)', sv: 'Reapris (SEK)', fi: 'Alennushinta (SEK)', da: 'Udsalgspris (SEK)' },
+  skuCodeText: { en: 'SKU Code', sv: 'SKU-kod', fi: 'SKU-koodi', da: 'SKU-kode' },
+  initialStockText: { en: 'Initial Stock', sv: 'Initialt lager', fi: 'Alkuvarasto', da: 'Startlager' },
+  weightKgText: { en: 'Weight (kg)', sv: 'Vikt (kg)', fi: 'Paino (kg)', da: 'Vægt (kg)' },
+  shippingClassText: { en: 'Shipping Class', sv: 'Fraktklass', fi: 'Toimitusluokka', da: 'Forsendelsesklasse' },
 };
 
 export const useSettingsStore = create<SettingsStore>((set) => ({

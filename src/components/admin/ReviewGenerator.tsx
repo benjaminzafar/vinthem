@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { Product } from '@/store/useCartStore';
-import { genAI } from '@/lib/gemini';
+import { genAI } from '@/lib/ai';
 import { toast } from 'sonner';
 
 export function ReviewGenerator() {
@@ -39,7 +39,7 @@ export function ReviewGenerator() {
       Return the response in JSON format: {"rating": number (1-5), "comment": "string", "userName": "string"}.`;
 
       const model = genAI.getGenerativeModel({ 
-        model: 'gemini-2.5-flash',
+        model: 'llama-3.3-70b-versatile',
         generationConfig: {
           responseMimeType: 'application/json',
         }
@@ -58,9 +58,24 @@ export function ReviewGenerator() {
       if (error) throw error;
 
       toast.success('Fake review generated!', { id: toastId });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating review:', error);
-      toast.error('Failed to generate review.', { id: toastId });
+      const timestamp = new Date().toLocaleTimeString('sv-SE', { hour12: false });
+      const errorMessage = error?.message || '';
+      const status = error?.status;
+
+      if (status === 401 || status === 403) {
+        toast.error('Action Required: Please set your Groq API Key in the Integrations Manager.', { 
+          id: toastId,
+          duration: 6000
+        });
+        return;
+      }
+
+      toast.error(`## Error Type\nConsole Error\n\n## Error Message\n[${timestamp}] AI Review Generation failed. ${errorMessage}`, { 
+        id: toastId, 
+        duration: 8000 
+      });
     } finally {
       setGeneratingProductId(null);
       setGenerating(false);

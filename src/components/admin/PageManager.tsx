@@ -18,7 +18,7 @@ import { useTranslation } from 'react-i18next';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useCustomConfirm } from '@/components/ConfirmationContext';
 import { useSettingsStore, LocalizedString } from '@/store/useSettingsStore';
-import { genAI } from '@/lib/gemini';
+import { genAI } from '@/lib/ai';
 import { StaticPage } from '@/types';
 import { downloadXLSX } from '@/utils/export';
 import { handleSupabaseError, OperationType } from '@/utils/supabaseErrorHandler';
@@ -105,7 +105,7 @@ export function PageManager() {
       Return ONLY the markdown content, no other commentary.`;
       
       const model = genAI.getGenerativeModel({ 
-        model: "gemini-2.5-flash"
+        model: "llama-3.3-70b-versatile"
       });
       
       const aiResponse = await model.generateContent(prompt);
@@ -119,9 +119,24 @@ export function PageManager() {
         }
       }));
       toast.success('Content generated!', { id: toastId });
-    } catch (error) {
+    } catch (error: any) {
       console.error("AI AutoComplete error:", error);
-      toast.error('Failed to generate content', { id: toastId });
+      const timestamp = new Date().toLocaleTimeString('sv-SE', { hour12: false });
+      const errorMessage = error?.message || '';
+      const status = error?.status;
+
+      if (status === 401 || status === 403) {
+        toast.error('Action Required: Please set your Groq API Key in the Integrations Manager.', { 
+          id: toastId,
+          duration: 6000
+        });
+        return;
+      }
+
+      toast.error(`## Error Type\nConsole Error\n\n## Error Message\n[${timestamp}] AI Generation failed. ${errorMessage}`, { 
+        id: toastId, 
+        duration: 8000 
+      });
     } finally {
       setGenerating(false);
     }
@@ -148,7 +163,7 @@ export function PageManager() {
       }`;
       
       const model = genAI.getGenerativeModel({ 
-        model: "gemini-2.5-flash",
+        model: "llama-3.3-70b-versatile",
         generationConfig: {
           responseMimeType: "application/json",
         }
@@ -169,9 +184,24 @@ export function PageManager() {
         }
       }));
       toast.success('Translated successfully!', { id: toastId });
-    } catch (error) {
+    } catch (error: any) {
       console.error("AI Translate error:", error);
-      toast.error('Failed to translate content', { id: toastId });
+      const timestamp = new Date().toLocaleTimeString('sv-SE', { hour12: false });
+      const errorMessage = error?.message || '';
+      const status = error?.status;
+
+      if (status === 401 || status === 403) {
+        toast.error('Action Required: Please set your Groq API Key in the Integrations Manager.', { 
+          id: toastId,
+          duration: 6000
+        });
+        return;
+      }
+
+      toast.error(`## Error Type\nConsole Error\n\n## Error Message\n[${timestamp}] AI Translation failed. ${errorMessage}`, { 
+        id: toastId, 
+        duration: 8000 
+      });
     } finally {
       setGenerating(false);
     }

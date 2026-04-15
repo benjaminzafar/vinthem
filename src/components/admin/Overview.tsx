@@ -340,7 +340,7 @@ export function Overview({ initialStats, onProductClick, onSeedClick }: { initia
         </div>
         
         <div className="h-[350px] w-full min-h-[300px]" style={{ minWidth: 0 }}>
-          <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={100}>
             <AreaChart data={trendData} margin={{ top: 10, right: 0, bottom: 0, left: -15 }}>
               <defs>
                 <linearGradient id="colorMetric" x1="0" y1="0" x2="0" y2="1">

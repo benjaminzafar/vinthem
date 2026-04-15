@@ -40,18 +40,20 @@
 2. **Server Action Pattern**: Standardized on `saveProductAction` and `saveCategoryAction`. This pattern ensures all writes bypass RLS in a trusted environment while enforcing server-side validation.
 3. **Schema Sync**: Manually hardened the database with the `status` column (`published`/`draft`) and matched camelCase frontend properties to snake_case database columns.
 
-### 2026-04-15: Professional AI Resilience & Error Reporting
-**Problem**: Intermittent AI Rate Limits (429) or Congestion (503) provided generic feedback, confusing the admin user.
+### 2026-04-15: Professional AI Resilience & Humanized Reporting
+**Problem**: Intermittent AI Rate Limits (429) or Congestion (503) provided generic feedback, and configuration errors (401) were unnecessarily technical.
 **Final Solution**:
-1. **Standardized Formatting**: Implemented markdown-style headers (`## Error Type`, `## Error Message`) for all AI errors.
-2. **Timestamped Intelligence**: Added real-time timestamps `[HH:mm:ss]` to error logs to help debug regional service peaks.
-3. **Specific Guidance**: Explicitly detailed the difference between RPM limits (429) and Regional Capacity issues (503).
+1. **Intelligent Branching**: Implemented a "Humanized" error handler that distinguishes between **Setup Errors** and **Service Errors**.
+2. **Simplified Config Errors**: 401 (Invalid Key) and 403 (Unauthorized) now show a direct, friendly instructions: *"Action Required: Please set your Groq API Key in Integrations"*.
+3. **Structured Debugging**: Maintained markdown-style headers (`## Error Type`, `## Error Message`) and timestamps *only* for difficult service issues (429/503) to aid professional debugging without cluttering the UI for simple setup fixes.
 
-### 2026-04-15: Unified AI Designer & Autonomous Self-Healing
-**Problem**: High-demand spikes on Gemini models caused 503 errors and UX friction.
+### 2026-04-15: Modular Integrations Architecture & Security Hardened
+**Problem**: The monolithic `IntegrationsManager.tsx` was buggy, insecure (keys potentially exposed), and had broken "Test" buttons.
 **Final Solution**:
-1. **AI Designer**: Consolidated all AI features (Narrative, SKUs, Variants) into a single "Command Center" in the editors.
-2. **Autonomous Fallback**: Enhanced the system to detect 503 errors and automatically fallback to `gemini-2.0-flash` or `gemini-1.5-flash` while notifying the user.
+1. **Component Decomposition**: Refactored into a modular system (`IntegrationCard`, `CredentialInput`, `IntegrationsContainer`).
+2. **Fixed Critical Bugs**: Replaced dead client-side `fetch` routes with secure **Server Actions** for Stripe and Email (SMTP) validation.
+3. **One-Way Security**: Implemented masking where API keys are never returned as plain text from the database after being saved.
+4. **Premium "WOW" UI**: Added a categorized grid layout, professional SVG logos for 13 services, and search-driven navigation.
 
 ---
 
@@ -60,6 +62,10 @@
 
 Date       | What was done                              | Mistake that was fixed
 -----------|--------------------------------------------|------------------------
+2026-04-15 | **Modularized CRM & Aligned with Overview Style** | **FIXED MISTAKE**: Eliminated monolithic dashboard lag and resolved aesthetic mismatches.
+2026-04-15 | **Universal AI & Storefront Localization** | **FIXED MISTAKE**: Decentralized AI tools to be available for every field and fixed a `Package` icon import error that broke the build.
+2026-04-15 | **Modular Integrations Refactor**         | **FIXED MISTAKE**: Eliminated the buggy monolith and fixed dead "Test Connection" buttons by implementing Server Actions.
+2026-04-15 | **Total Gemini Removal & Groq Migration** | **FIXED MISTAKE**: Resolved persistent 503/429 errors by removing Google AI and migrating the entire platform to Groq Cloud LPU infrastructure.
 2026-04-15 | **Admin Editor Route Migration**           | **FIXED MISTAKE**: Migrated from brittle modals to full-screen `/admin/collections/[id]` and `/admin/products/[id]`, resolving state-loss issues.
 2026-04-15 | **Server Action Write Migration**          | **FIXED MISTAKE**: Replaced client-side Supabase writes with `saveProductAction` and `saveCategoryAction` to bypass RLS blocks and ensure security Rule #5.
 2026-04-15 | **Professional AI Error Formatting**       | **FIXED MISTAKE**: Replaced generic error toasts with structured, timestamped markdown logs (`## Error Type`, `## Error Message`) for 429/503 errors.

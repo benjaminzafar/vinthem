@@ -7,7 +7,7 @@ import { SearchableSelect } from '../SearchableSelect';
 import { VariantEditor } from '../VariantEditor';
 import { toast } from 'sonner';
 import { createClient } from '@/utils/supabase/client';
-import { genAI } from '@/lib/gemini';
+import { genAI } from '@/lib/ai';
 import { MediaPickerModal } from './MediaPickerModal';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -167,7 +167,7 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
         "tags": ["string"]
       }`;
 
-      const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash', generationConfig: { responseMimeType: 'application/json' }});
+      const model = genAI.getGenerativeModel({ model: 'llama-3.3-70b-versatile', generationConfig: { responseMimeType: 'application/json' }});
       const aiResponse = await model.generateContent(prompt);
       const result = JSON.parse(extractFirstJsonObject(aiResponse.response.text()) || '{}');
       
@@ -199,13 +199,21 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
       
       const timestamp = new Date().toLocaleTimeString('sv-SE', { hour12: false });
       const errorMessage = error?.message || '';
-      const status = error?.status || (errorMessage.includes('503') ? 503 : errorMessage.includes('429') ? 429 : null);
+      const status = error?.status;
+
+      if (status === 401 || status === 403) {
+        toast.error('Action Required: Please set your Groq API Key in the Integrations Manager.', { 
+          id: toastId,
+          duration: 6000
+        });
+        return;
+      }
 
       let detailedMessage = '';
       if (status === 503 || errorMessage.toLowerCase().includes('overloaded') || errorMessage.toLowerCase().includes('congestion')) {
         detailedMessage = `## Error Type\nConsole Error\n\n## Error Message\n[${timestamp}] AI Service Congestion (503). Service is currently at maximum capacity. Please wait 5-10 minutes for regional demand to subside and try again.`;
       } else if (status === 429 || errorMessage.toLowerCase().includes('quota')) {
-        detailedMessage = `## Error Type\nConsole Error\n\n## Error Message\n[${timestamp}] RATE LIMIT HIT (429) for gemini-2.5-flash. You are sending requests too fast (RPM limit). Please wait 60 seconds and try again.`;
+        detailedMessage = `## Error Type\nConsole Error\n\n## Error Message\n[${timestamp}] RATE LIMIT HIT (429) for llama-3.3-70b-versatile. You are sending requests too fast (RPM limit). Please wait 60 seconds and try again.`;
       } else {
         detailedMessage = `## Error Type\nConsole Error\n\n## Error Message\n[${timestamp}] AI Draft failed. ${errorMessage}`;
       }
@@ -238,6 +246,11 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
 
   // Respect global languages from storefront settings
   const languages = settings.languages || ['sv', 'en'];
+
+  const getLabel = (localized: any, fallback: string) => {
+    if (!localized) return fallback;
+    return localized[selectedLang] || localized.en || fallback;
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
@@ -360,67 +373,67 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
           <section className="bg-white border border-slate-200 rounded-[4px]">
             <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
               <Package className="w-4 h-4 text-slate-400" />
-              <h3 className="text-xs font-black uppercase tracking-widest text-slate-900">Pricing & Inventory</h3>
+              <h3 className="text-xs font-black uppercase tracking-widest text-slate-900">{getLabel(settings.inventoryTitleText, "Pricing & Inventory")}</h3>
             </div>
             <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-               <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Regular Price (SEK)</label>
-                  <input 
-                    type="number"
-                    value={formData.price || ''}
-                    onChange={(e) => setFormData({...formData, price: parseFloat(e.target.value) || 0})}
-                    className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm font-bold"
-                  />
-               </div>
-               <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Sale Price (SEK)</label>
-                  <input 
-                    type="number"
-                    value={formData.discountPrice || ''}
-                    onChange={(e) => setFormData({...formData, discountPrice: parseFloat(e.target.value) || 0, isSale: parseFloat(e.target.value) > 0})}
-                    className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm font-bold text-rose-600"
-                  />
-               </div>
-               <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">SKU Code</label>
-                  <input 
-                    type="text"
-                    value={formData.sku || ''}
-                    onChange={(e) => setFormData({...formData, sku: e.target.value})}
-                    className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm"
-                  />
-               </div>
-               <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Initial Stock</label>
-                  <input 
-                    type="number"
-                    value={formData.stock || 0}
-                    onChange={(e) => setFormData({...formData, stock: parseInt(e.target.value) || 0})}
-                    className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm font-medium"
-                  />
-               </div>
-               <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Weight (kg)</label>
-                  <input 
-                    type="number"
-                    value={formData.weight || 0}
-                    onChange={(e) => setFormData({...formData, weight: parseFloat(e.target.value) || 0})}
-                    className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm"
-                  />
-               </div>
-               <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Shipping Class</label>
-                  <select 
-                    value={formData.shippingClass || ''}
-                    onChange={(e) => setFormData({...formData, shippingClass: e.target.value})}
-                    className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm"
-                  >
-                    <option value="">Standard Shipping</option>
-                    <option value="heavy">Heavy Items</option>
-                    <option value="fragile">Fragile Box</option>
-                    <option value="oversized">Oversized</option>
-                  </select>
-               </div>
+                <div className="space-y-2">
+                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">{getLabel(settings.regularPriceText, "Regular Price (SEK)")}</label>
+                   <input 
+                     type="number"
+                     value={formData.price || ''}
+                     onChange={(e) => setFormData({...formData, price: parseFloat(e.target.value) || 0})}
+                     className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm font-bold"
+                   />
+                </div>
+                <div className="space-y-2">
+                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">{getLabel(settings.salePriceText, "Sale Price (SEK)")}</label>
+                   <input 
+                     type="number"
+                     value={formData.discountPrice || ''}
+                     onChange={(e) => setFormData({...formData, discountPrice: parseFloat(e.target.value) || 0, isSale: parseFloat(e.target.value) > 0})}
+                     className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm font-bold text-rose-600"
+                   />
+                </div>
+                <div className="space-y-2">
+                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">{getLabel(settings.skuCodeText, "SKU Code")}</label>
+                   <input 
+                     type="text"
+                     value={formData.sku || ''}
+                     onChange={(e) => setFormData({...formData, sku: e.target.value})}
+                     className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm"
+                   />
+                </div>
+                <div className="space-y-2">
+                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">{getLabel(settings.initialStockText, "Initial Stock")}</label>
+                   <input 
+                     type="number"
+                     value={formData.stock || 0}
+                     onChange={(e) => setFormData({...formData, stock: parseInt(e.target.value) || 0})}
+                     className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm font-medium"
+                   />
+                </div>
+                <div className="space-y-2">
+                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">{getLabel(settings.weightKgText, "Weight (kg)")}</label>
+                   <input 
+                     type="number"
+                     value={formData.weight || 0}
+                     onChange={(e) => setFormData({...formData, weight: parseFloat(e.target.value) || 0})}
+                     className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm"
+                   />
+                </div>
+                <div className="space-y-2">
+                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">{getLabel(settings.shippingClassText, "Shipping Class")}</label>
+                   <select 
+                     value={formData.shippingClass || ''}
+                     onChange={(e) => setFormData({...formData, shippingClass: e.target.value})}
+                     className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm"
+                   >
+                     <option value="">Standard Shipping</option>
+                     <option value="heavy">Heavy Items</option>
+                     <option value="fragile">Fragile Box</option>
+                     <option value="oversized">Oversized</option>
+                   </select>
+                </div>
             </div>
           </section>
 

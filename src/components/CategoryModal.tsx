@@ -8,7 +8,7 @@ import { IconSelector } from './IconSelector';
 import { IconRenderer } from './IconRenderer';
 import { Product } from '@/store/useCartStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
-import { genAI } from '@/lib/gemini';
+import { genAI } from '@/lib/ai';
 import { saveCategoryAction } from '@/app/actions/categories';
 import { MediaPickerModal } from './admin/MediaPickerModal';
 
@@ -83,7 +83,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, c
       const base64Data = await base64Promise;
 
       const model = genAI.getGenerativeModel({ 
-        model: 'gemini-2.5-flash',
+        model: 'llama-3.3-70b-versatile',
         generationConfig: {
           responseMimeType: 'application/json',
         }
@@ -99,8 +99,23 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, c
       setDescription(result.description || description);
       toast.success('Generated successfully', { id: toastId });
     } catch (error: any) {
-      console.error('AI error:', error);
-      toast.error(`AI Analysis failed`, { id: toastId });
+      console.error('AI Analysis error:', error);
+      const timestamp = new Date().toLocaleTimeString('sv-SE', { hour12: false });
+      const errorMessage = error?.message || '';
+      const status = error?.status;
+
+      if (status === 401 || status === 403) {
+        toast.error('Action Required: Please set your Groq API Key in the Integrations Manager.', { 
+          id: toastId,
+          duration: 6000
+        });
+        return;
+      }
+
+      toast.error(`## Error Type\nConsole Error\n\n## Error Message\n[${timestamp}] AI Analysis failed. ${errorMessage}`, { 
+        id: toastId, 
+        duration: 8000 
+      });
     } finally {
       setGenerating(false);
     }
@@ -123,7 +138,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, c
       }`;
 
       const model = genAI.getGenerativeModel({ 
-        model: 'gemini-2.5-flash',
+        model: 'llama-3.3-70b-versatile',
         generationConfig: { responseMimeType: 'application/json' }
       });
       
@@ -135,9 +150,24 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, c
 
       setAiChatInput('');
       toast.success('Collection draft generated!', { id: toastId });
-    } catch (error) {
-      console.error('AI Chat error:', error);
-      toast.error('Failed to generate collection draft.', { id: toastId });
+    } catch (error: any) {
+      console.error('AI error:', error);
+      const timestamp = new Date().toLocaleTimeString('sv-SE', { hour12: false });
+      const errorMessage = error?.message || '';
+      const status = error?.status;
+
+      if (status === 401 || status === 403) {
+        toast.error('Action Required: Please set your Groq API Key in the Integrations Manager.', { 
+          id: toastId,
+          duration: 6000
+        });
+        return;
+      }
+
+      toast.error(`## Error Type\nConsole Error\n\n## Error Message\n[${timestamp}] AI Analysis failed. ${errorMessage}`, { 
+        id: toastId, 
+        duration: 8000 
+      });
     } finally {
       setGenerating(false);
     }
@@ -157,7 +187,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, c
     const toastId = toast.loading('Translating...');
     try {
       const genModel = genAI.getGenerativeModel({ 
-        model: 'gemini-2.5-flash',
+        model: 'llama-3.3-70b-versatile',
         generationConfig: {
           responseMimeType: 'application/json',
         }

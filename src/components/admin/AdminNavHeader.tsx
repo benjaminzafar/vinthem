@@ -8,6 +8,7 @@ import { usePathname } from 'next/navigation';
 export default function AdminNavHeader({ onToggle }: { onToggle: () => void }) {
   const pathname = usePathname();
   const currentTab = pathname.split('/').pop() || 'Dashboard';
+  const isIntegrationsPage = pathname.includes('/integrations');
 
   return (
     <header className="bg-white border-b border-slate-300 sticky top-0 z-30 flex-shrink-0">
@@ -29,14 +30,16 @@ export default function AdminNavHeader({ onToggle }: { onToggle: () => void }) {
         </div>
         
         <div className="flex items-center space-x-4">
-          <div className="hidden md:flex relative">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input 
-              type="text" 
-              placeholder="Search..." 
-              className="pl-10 pr-4 h-9 bg-slate-50 border border-slate-300 rounded text-sm focus:outline-none focus:border-slate-900 transition-all w-64 placeholder:text-slate-400 text-slate-900"
-            />
-          </div>
+          {!isIntegrationsPage && (
+            <div className="hidden md:flex relative">
+              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input 
+                type="text" 
+                placeholder="Search..." 
+                className="pl-10 pr-4 h-9 bg-slate-50 border border-slate-300 rounded text-sm focus:outline-none focus:border-slate-900 transition-all w-64 placeholder:text-slate-400 text-slate-900"
+              />
+            </div>
+          )}
           
           <div className="h-6 w-[1px] bg-slate-200 hidden md:block" />
           

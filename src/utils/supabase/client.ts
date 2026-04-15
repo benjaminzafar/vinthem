@@ -25,8 +25,8 @@ export function createClient() {
     return createBrowserClient(supabaseUrl, supabaseAnonKey);
   }
 
-  if (globalThis.__supabase_client) {
-    return globalThis.__supabase_client;
+  if (typeof window !== 'undefined' && (globalThis as any).__supabase_client) {
+    return (globalThis as any).__supabase_client;
   }
 
   const client = createBrowserClient(
@@ -43,7 +43,12 @@ export function createClient() {
   );
 
   // Store in globalThis for the next call
-  globalThis.__supabase_client = client;
+  if (typeof window !== 'undefined') {
+    (globalThis as any).__supabase_client = client;
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Supabase] Singleton Client Initialized');
+    }
+  }
 
   return client;
 }
