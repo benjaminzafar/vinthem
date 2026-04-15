@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/utils/supabase/server';
+import { requireAdminUser } from '@/lib/admin';
 
 /**
  * SECURITY NOTE:
@@ -12,11 +13,6 @@ import { createClient } from '@/utils/supabase/server';
  * SUPABASE_SERVICE_ROLE_KEY is NOT required for this file.
  */
 
-const ADMIN_EMAILS = new Set([
-  'benjaminzafar10@gmail.com',
-  'benjaminzafar7@gmail.com',
-]);
-
 type CategoryTranslation = {
   name: string;
   description?: string;
@@ -25,8 +21,10 @@ type CategoryTranslation = {
 export type SaveCategoryInput = {
   id?: string;
   name: string;
+  slug?: string;
   description?: string;
   isFeatured: boolean;
+  show_in_hero?: boolean; // Keep for legacy if needed, but we use showInHero in the editor
   showInHero: boolean;
   parentId?: string | null;
   imageUrl?: string | null;
@@ -50,25 +48,7 @@ export type CategoryActionResponse = {
 };
 
 async function requireAdmin() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    throw new Error('Authentication required.');
-  }
-
-  const { data: profile } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  const isAdmin = profile?.role === 'admin' || ADMIN_EMAILS.has(user.email ?? '');
-  if (!isAdmin) {
-    throw new Error('Admin access required.');
-  }
+  await requireAdminUser();
 }
 
 function slugifyCategoryName(name: string) {
@@ -102,7 +82,7 @@ async function ensureUniqueSlug(baseSlug: string, currentId?: string) {
 export async function saveCategoryAction(input: SaveCategoryInput): Promise<CategoryActionResponse> {
   try {
     await requireAdmin();
-    const baseSlug = slugifyCategoryName(input.name);
+    const baseSlug = input.slug || slugifyCategoryName(input.name);
     const slug = await ensureUniqueSlug(baseSlug, input.id);
     const supabase = await createClient();
 

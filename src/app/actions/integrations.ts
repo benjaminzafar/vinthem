@@ -1,13 +1,13 @@
 'use server';
 
-import { createClient } from '@/utils/supabase/server';
 import { encrypt } from '@/lib/encryption';
 import { revalidatePath } from 'next/cache';
+import { requireAdminUser } from '@/lib/admin';
 
 export type IntegrationActionResponse = {
   success: boolean;
   message: string;
-  data?: any;
+  data?: Record<string, string>;
   error?: string;
 };
 
@@ -16,26 +16,15 @@ export type IntegrationActionResponse = {
  */
 export async function getIntegrationsAction(): Promise<IntegrationActionResponse> {
   try {
-    const supabase = await createClient();
-    
-    // 1. Auth Check
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      console.warn('[Integrations] No user found in getIntegrationsAction');
-      return { success: false, message: 'Authentication required' };
-    }
+    const { supabase } = await requireAdminUser();
 
-    // 2. Fetch from database
     const { data: integrations, error } = await supabase
       .from('integrations')
       .select('key, value');
 
     if (error) {
-      console.error('[Integrations] Fetch error:', error);
       throw error;
     }
-
-    console.log(`[Integrations] Fetched ${integrations?.length || 0} keys for user: ${user.email}`);
 
     const config: Record<string, string> = {};
     integrations?.forEach(item => {
@@ -49,9 +38,10 @@ export async function getIntegrationsAction(): Promise<IntegrationActionResponse
     });
 
     return { success: true, message: 'Config loaded', data: config };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to fetch integrations';
     console.error('[Action Error] getIntegrationsAction:', error);
-    return { success: false, message: 'Failed to fetch integrations', error: error.message };
+    return { success: false, message: 'Failed to fetch integrations', error: message };
   }
 }
 
@@ -61,27 +51,7 @@ export async function getIntegrationsAction(): Promise<IntegrationActionResponse
  */
 export async function saveIntegrationAction(updates: Record<string, string>): Promise<IntegrationActionResponse> {
   try {
-    const supabase = await createClient();
-    
-    // 1. Auth & Identity Check
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) return { success: false, message: 'Authentication required' };
-
-    console.log(`[Integrations] Save attempt by: ${user.email}`);
-
-    const { data: profile } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    const isAdmin = profile?.role === 'admin' || 
-                    ['benjaminzafar10@gmail.com', 'benjaminzafar7@gmail.com'].includes(user.email || '');
-
-    if (!isAdmin) {
-      console.warn(`[Integrations] Denied: ${user.email} is not an admin. Role in DB: ${profile?.role}`);
-      return { success: false, message: 'Unauthorized: Admin access required' };
-    }
+    const { supabase } = await requireAdminUser();
 
     const now = new Date().toISOString();
     
@@ -91,8 +61,6 @@ export async function saveIntegrationAction(updates: Record<string, string>): Pr
         const sanitizedValue = value.replace(/[<>]/g, '');
         const isSensitive = ['API_KEY', 'SECRET', 'PASS', 'TOKEN'].some(s => key.includes(s));
         const finalValue = isSensitive ? encrypt(sanitizedValue) : sanitizedValue;
-
-        console.log(`[Integrations] Upserting key: ${key}`);
 
         const { error: upsertError } = await supabase
           .from('integrations')
@@ -109,12 +77,12 @@ export async function saveIntegrationAction(updates: Record<string, string>): Pr
       }
     }
 
-    console.log('[Integrations] Save successful. Revalidating path...');
     revalidatePath('/admin/integrations');
     
     return { success: true, message: 'Settings saved and encrypted securely' };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to save settings';
     console.error('[Action Error] saveIntegrationAction:', error);
-    return { success: false, message: `Failed to save settings: ${error.message}` };
+    return { success: false, message: `Failed to save settings: ${message}` };
   }
 }

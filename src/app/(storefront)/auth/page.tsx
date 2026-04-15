@@ -41,7 +41,6 @@ export default function Auth() {
         if (error) throw error;
 
         if (data.user) {
-          // Create user profile row
           await supabase.from('users').upsert({
             id: data.user.id,
             email,
@@ -60,7 +59,7 @@ export default function Auth() {
           .eq('id', user.id)
           .single();
 
-        setIsAdmin(profile?.role === 'admin' || user.email === 'benjaminzafar10@gmail.com');
+        setIsAdmin(profile?.role === 'admin');
       }
 
       toast.success(isLogin ? settings.loginSuccessText?.[lang] : settings.accountCreatedSuccessText?.[lang]);

@@ -1,0 +1,619 @@
+"use client";
+import React, { useState, useEffect } from 'react';
+import { Product } from '@/store/useCartStore';
+import { Category, StorefrontSettingsType } from '@/types';
+import { X, Save, ArrowLeft, Sparkles, ImageIcon, Plus, ChevronRight, Layout, Package, Tag, Globe, Truck, MoreHorizontal } from 'lucide-react';
+import { SearchableSelect } from '../SearchableSelect';
+import { VariantEditor } from '../VariantEditor';
+import { toast } from 'sonner';
+import { createClient } from '@/utils/supabase/client';
+import { genAI } from '@/lib/gemini';
+import { MediaPickerModal } from './MediaPickerModal';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { normalizeProductOptions, inferOptionsFromLegacyArrays, normalizeGeneratedVariants, buildVariantsFromOptions } from '@/lib/product-variants';
+import { extractFirstJsonObject } from '@/lib/json';
+import { parseCatalogPrompt } from '@/lib/product-import';
+import { saveProductAction } from '@/app/actions/products';
+
+interface ProductEditorProps {
+  initialProduct?: Product | null;
+  categories: Category[];
+  settings: StorefrontSettingsType;
+}
+
+export function ProductEditor({ initialProduct, categories, settings }: ProductEditorProps) {
+  const router = useRouter();
+  const supabase = createClient();
+  const [formData, setFormData] = useState<Partial<Product>>({
+    title: '',
+    description: '',
+    price: 0,
+    stock: 0,
+    sku: '',
+    imageUrl: '',
+    categoryId: '',
+    options: [],
+    tags: [],
+    translations: {},
+    variants: [],
+    isFeatured: false,
+    isNewArrival: false,
+    isSale: false,
+    discountPrice: 0,
+    weight: 0,
+    shippingClass: '',
+    additionalImages: []
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
+  const [selectedLang, setSelectedLang] = useState('sv');
+  const [aiChatInput, setAiChatInput] = useState('');
+
+  const mapDbToForm = (p: any): Partial<Product> => {
+    if (!p) return {};
+    return {
+      ...p,
+      imageUrl: p.image_url || p.imageUrl || '',
+      additionalImages: p.additional_images || p.additionalImages || [],
+      categoryId: p.category_id || p.categoryId || '',
+      isFeatured: p.is_featured ?? p.isFeatured ?? false,
+      isNewArrival: p.is_new ?? p.isNewArrival ?? false,
+      isSale: p.is_sale ?? p.isSale ?? false,
+      discountPrice: p.sale_price ?? p.discountPrice ?? 0,
+      weight: p.weight ?? 0,
+      shippingClass: p.shipping_class || p.shippingClass || ''
+    };
+  };
+
+  useEffect(() => {
+    if (initialProduct) {
+      setFormData(mapDbToForm(initialProduct));
+    }
+  }, [initialProduct]);
+
+  const handleSave = async (statusOverride?: 'published' | 'draft') => {
+    if (!formData.title?.trim()) {
+      toast.error('Product Title is required');
+      return;
+    }
+    if (!formData.price || Number(formData.price) <= 0) {
+      toast.error('Valid Price is required');
+      return;
+    }
+
+    setLoading(true);
+    const currentStatus = statusOverride || (formData.status || 'published');
+    const toastId = toast.loading(initialProduct ? 'Saving changes...' : 'Creating product...');
+
+    try {
+      const result = await saveProductAction({
+        id: initialProduct?.id,
+        title: formData.title || '',
+        description: formData.description,
+        price: Number(formData.price),
+        stock: Number(formData.stock),
+        sku: formData.sku,
+        imageUrl: formData.imageUrl,
+        categoryId: formData.categoryId,
+        options: formData.options,
+        variants: formData.variants as any,
+        translations: formData.translations,
+        tags: formData.tags,
+        isFeatured: formData.isFeatured,
+        isNewArrival: formData.isNewArrival,
+        isSale: formData.isSale,
+        status: currentStatus,
+        discountPrice: Number(formData.discountPrice),
+        additionalImages: formData.additionalImages,
+        weight: Number(formData.weight),
+        shippingClass: formData.shippingClass
+      });
+
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+
+      toast.success(initialProduct ? 'Product updated' : 'Product created', { id: toastId });
+      router.push('/admin/products');
+      router.refresh();
+    } catch (error: any) {
+      console.error('Save error:', error);
+      toast.error(error.message || 'Failed to save', { id: toastId });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAIChatAutoFill = async () => {
+    if (!aiChatInput.trim()) return;
+    setGenerating(true);
+    const toastId = toast.loading('AI is drafting your product...');
+
+    try {
+      const prompt = `Task: Convert the following product description into a highly detailed, professional JSON object for a shop system.
+      Input Text: "${aiChatInput}"
+
+      Extraction Rules:
+      1. Map Swedish labels to fields:
+         - 'Benämning' or 'Titel' -> title
+         - 'Beskrivning' -> description (EXTREMELY IMPORTANT: Generate a detailed, persuasive 2-3 paragraph Swedish marketing description based on the attributes. Do NOT be brief.)
+         - 'Artnr' or 'EAN-nr' -> sku
+         - 'Pris' -> price
+         - 'Antal' -> stock
+         - 'Storlek' -> Attribute "Size"
+         - 'Färg' -> Attribute "Color"
+         - 'Material' -> Attribute "Material"
+         - 'Vikt' -> weight (numeric kg)
+
+      2. Variants & Exhaustive Extraction:
+         - If the input text describes multiple items (e.g., "Item A" and "Item B" with different Artnr/SKUs), you MUST extract them ALL as distinct variants.
+         - For every variant found, provide a dedicated object in the 'variants' array.
+         - Ensure 'options' captures all unique values for Color, Size, and Material.
+
+      Return ONLY this JSON structure:
+      {
+        "title": "Main Product Title",
+        "description": "Long, detailed Swedish marketing description...",
+        "price": number,
+        "stock": number,
+        "sku": "base-sku",
+        "weight": number,
+        "options": [{ "name": "string", "values": ["string"] }],
+        "variants": [{ "options": { "AttributeName": "Value" }, "price": number, "stock": number, "sku": "string" }],
+        "tags": ["string"]
+      }`;
+
+      const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash', generationConfig: { responseMimeType: 'application/json' }});
+      const aiResponse = await model.generateContent(prompt);
+      const result = JSON.parse(extractFirstJsonObject(aiResponse.response.text()) || '{}');
+      
+      const normalizedOptions = normalizeProductOptions(result.options);
+      const inferredOptions = normalizedOptions.length > 0 ? normalizedOptions : inferOptionsFromLegacyArrays({ 
+        colors: result.colors, 
+        sizes: result.sizes,
+        material: result.material 
+      });
+
+      const finalVariants = normalizeGeneratedVariants(result.variants, result.price || formData.price || 0, result.sku || formData.sku || '');
+
+      setFormData(prev => ({
+        ...prev,
+        title: result.title || prev.title,
+        description: result.description || prev.description,
+        price: Number(result.price) || prev.price,
+        stock: Number(result.stock) || prev.stock,
+        sku: result.sku || prev.sku,
+        weight: Number(result.weight) || prev.weight,
+        tags: Array.isArray(result.tags) ? result.tags : prev.tags,
+        options: inferredOptions.length > 0 ? inferredOptions : prev.options,
+        variants: finalVariants.length > 0 ? finalVariants : prev.variants,
+      }));
+      setAiChatInput('');
+      toast.success('AI Draft Generated!', { id: toastId });
+    } catch (error: any) {
+      console.error('AI Processing Error:', error);
+      
+      const timestamp = new Date().toLocaleTimeString('sv-SE', { hour12: false });
+      const errorMessage = error?.message || '';
+      const status = error?.status || (errorMessage.includes('503') ? 503 : errorMessage.includes('429') ? 429 : null);
+
+      let detailedMessage = '';
+      if (status === 503 || errorMessage.toLowerCase().includes('overloaded') || errorMessage.toLowerCase().includes('congestion')) {
+        detailedMessage = `## Error Type\nConsole Error\n\n## Error Message\n[${timestamp}] AI Service Congestion (503). Service is currently at maximum capacity. Please wait 5-10 minutes for regional demand to subside and try again.`;
+      } else if (status === 429 || errorMessage.toLowerCase().includes('quota')) {
+        detailedMessage = `## Error Type\nConsole Error\n\n## Error Message\n[${timestamp}] RATE LIMIT HIT (429) for gemini-2.5-flash. You are sending requests too fast (RPM limit). Please wait 60 seconds and try again.`;
+      } else {
+        detailedMessage = `## Error Type\nConsole Error\n\n## Error Message\n[${timestamp}] AI Draft failed. ${errorMessage}`;
+      }
+
+      toast.error(detailedMessage, { 
+        id: toastId,
+        duration: 8000
+      });
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    const toastId = toast.loading('Uploading...');
+    try {
+      const { uploadImageWithTimeout } = await import('@/lib/upload');
+      const url = await uploadImageWithTimeout(file, `products/${Date.now()}_${file.name}`);
+      setFormData({ ...formData, imageUrl: url });
+      toast.success('Uploaded', { id: toastId });
+    } catch (err: any) {
+      toast.error('Upload failed', { id: toastId });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Respect global languages from storefront settings
+  const languages = settings.languages || ['sv', 'en'];
+
+  return (
+    <div className="min-h-screen bg-slate-50 pb-20">
+      <div className="max-w-[1200px] mx-auto px-6 py-10">
+        {/* Simple Scrolling Header - Removed all sticky and fixed behaviors */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+          <div className="flex items-center gap-4">
+            <button onClick={() => router.push('/admin/products')} className="p-2.5 bg-white border border-slate-200 hover:border-slate-900 rounded-[4px] transition-all">
+              <ArrowLeft className="w-5 h-5 text-slate-600" />
+            </button>
+            <div className="flex flex-col">
+              <h1 className="text-2xl font-black text-slate-900 tracking-tight leading-none mb-1.5">
+                {initialProduct ? `Edit: ${formData.title || 'Product'}` : 'Create New Product'}
+              </h1>
+              <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${formData.status === 'published' ? 'bg-emerald-500' : 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]'}`} />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
+                  {formData.status || 'Draft'} Mode
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => handleSave('draft')}
+              disabled={loading}
+              className="px-6 h-11 bg-white border border-slate-200 rounded-[4px] text-[10px] font-black uppercase tracking-widest text-slate-600 hover:border-slate-900 hover:text-slate-900 transition-all flex items-center"
+            >
+              Save as Draft
+            </button>
+            <button 
+              onClick={() => handleSave('published')}
+              disabled={loading}
+              className="px-8 h-11 bg-slate-900 text-white rounded-[4px] text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all group flex items-center gap-2"
+            >
+              <Save className="w-4 h-4 group-hover:scale-110 transition-transform" />
+              Publish Product
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Main Content */}
+        <div className="lg:col-span-2 space-y-8">
+          
+          {/* AI Drafting Section */}
+          <div className="bg-white border border-slate-200 rounded-[4px] p-6 shadow-sm">
+             <div className="flex items-center gap-2 mb-4">
+                <Sparkles className="w-4 h-4 text-indigo-600" />
+                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-900">AI Designer Assistance</h3>
+             </div>
+             <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  value={aiChatInput}
+                  onChange={(e) => setAiChatInput(e.target.value)}
+                  placeholder="Describe your product or paste raw supplier text here..."
+                  className="flex-1 h-11 border border-slate-200 rounded-[4px] px-4 text-sm focus:outline-none focus:border-indigo-500"
+                />
+                <button 
+                  onClick={handleAIChatAutoFill}
+                  disabled={generating || !aiChatInput.trim()}
+                  className="px-6 bg-indigo-600 text-white rounded-[4px] text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 disabled:opacity-50"
+                >
+                  {generating ? 'Processing...' : 'Auto-Draft'}
+                </button>
+             </div>
+          </div>
+
+          {/* General Information */}
+          <section className="bg-white border border-slate-200 rounded-[4px]">
+            <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
+              <Layout className="w-4 h-4 text-slate-400" />
+              <h3 className="text-xs font-black uppercase tracking-widest text-slate-900">General Information</h3>
+            </div>
+            <div className="p-6 space-y-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Product Title</label>
+                <input 
+                  type="text" 
+                  value={formData.title}
+                  onChange={(e) => setFormData({...formData, title: e.target.value})}
+                  className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm focus:border-slate-900 transition-all font-medium"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Description</label>
+                <textarea 
+                  rows={8}
+                  value={formData.description}
+                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                  className="w-full p-4 border border-slate-200 rounded-[4px] text-sm focus:border-slate-900 transition-all resize-none leading-relaxed"
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Category</label>
+                    <SearchableSelect 
+                      options={categories.map(c => ({ value: c.id!, label: c.name }))}
+                      value={formData.categoryId || ''}
+                      onChange={(val) => setFormData({...formData, categoryId: val as string})}
+                    />
+                 </div>
+                 <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Tags</label>
+                    <input 
+                      type="text"
+                      value={formData.tags?.join(', ')}
+                      onChange={(e) => setFormData({...formData, tags: e.target.value.split(',').map(t => t.trim()).filter(Boolean)})}
+                      placeholder="Minimal, Wood, Premium"
+                      className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm"
+                    />
+                 </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Pricing & Inventory */}
+          <section className="bg-white border border-slate-200 rounded-[4px]">
+            <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
+              <Package className="w-4 h-4 text-slate-400" />
+              <h3 className="text-xs font-black uppercase tracking-widest text-slate-900">Pricing & Inventory</h3>
+            </div>
+            <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+               <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Regular Price (SEK)</label>
+                  <input 
+                    type="number"
+                    value={formData.price || ''}
+                    onChange={(e) => setFormData({...formData, price: parseFloat(e.target.value) || 0})}
+                    className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm font-bold"
+                  />
+               </div>
+               <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Sale Price (SEK)</label>
+                  <input 
+                    type="number"
+                    value={formData.discountPrice || ''}
+                    onChange={(e) => setFormData({...formData, discountPrice: parseFloat(e.target.value) || 0, isSale: parseFloat(e.target.value) > 0})}
+                    className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm font-bold text-rose-600"
+                  />
+               </div>
+               <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">SKU Code</label>
+                  <input 
+                    type="text"
+                    value={formData.sku || ''}
+                    onChange={(e) => setFormData({...formData, sku: e.target.value})}
+                    className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm"
+                  />
+               </div>
+               <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Initial Stock</label>
+                  <input 
+                    type="number"
+                    value={formData.stock || 0}
+                    onChange={(e) => setFormData({...formData, stock: parseInt(e.target.value) || 0})}
+                    className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm font-medium"
+                  />
+               </div>
+               <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Weight (kg)</label>
+                  <input 
+                    type="number"
+                    value={formData.weight || 0}
+                    onChange={(e) => setFormData({...formData, weight: parseFloat(e.target.value) || 0})}
+                    className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm"
+                  />
+               </div>
+               <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Shipping Class</label>
+                  <select 
+                    value={formData.shippingClass || ''}
+                    onChange={(e) => setFormData({...formData, shippingClass: e.target.value})}
+                    className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm"
+                  >
+                    <option value="">Standard Shipping</option>
+                    <option value="heavy">Heavy Items</option>
+                    <option value="fragile">Fragile Box</option>
+                    <option value="oversized">Oversized</option>
+                  </select>
+               </div>
+            </div>
+          </section>
+
+          {/* Variants Management */}
+          <section className="bg-white border border-slate-200 rounded-[4px] overflow-hidden shadow-sm">
+             <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Tag className="w-4 h-4 text-slate-400" />
+                  <h3 className="text-xs font-black uppercase tracking-widest text-slate-900">Advanced Variants</h3>
+                </div>
+             </div>
+             <div className="p-6">
+                <VariantEditor formData={formData} setFormData={setFormData} />
+             </div>
+          </section>
+
+          {/* Multilingual Content */}
+          <section className="bg-white border border-slate-200 rounded-[4px] overflow-hidden shadow-sm">
+            <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
+              <Globe className="w-4 h-4 text-slate-400" />
+              <h3 className="text-xs font-black uppercase tracking-widest text-slate-900">Translations</h3>
+            </div>
+            <div className="p-6 space-y-6">
+               <div className="flex gap-2 p-1 bg-slate-50 rounded w-fit">
+                  {languages.map(lang => (
+                    <button 
+                      key={lang}
+                      onClick={() => setSelectedLang(lang)}
+                      className={`px-6 py-1.5 rounded-[2px] text-[10px] font-black uppercase tracking-widest transition-all ${selectedLang === lang ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-400 hover:bg-slate-100'}`}
+                    >
+                      {lang}
+                    </button>
+                  ))}
+               </div>
+               <div className="grid grid-cols-1 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Translated Title ({selectedLang})</label>
+                    <input 
+                      type="text" 
+                      value={formData.translations?.[selectedLang]?.title || ''}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        translations: {
+                          ...formData.translations,
+                          [selectedLang]: { 
+                            title: e.target.value, 
+                            description: formData.translations?.[selectedLang]?.description || '' 
+                          }
+                        }
+                      })}
+                      className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Translated Description ({selectedLang})</label>
+                    <textarea 
+                      rows={4}
+                      value={formData.translations?.[selectedLang]?.description || ''}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        translations: {
+                          ...formData.translations,
+                          [selectedLang]: { 
+                            description: e.target.value, 
+                            title: formData.translations?.[selectedLang]?.title || '' 
+                          }
+                        }
+                      })}
+                      className="w-full p-4 border border-slate-200 rounded-[4px] text-sm resize-none"
+                    />
+                  </div>
+               </div>
+            </div>
+          </section>
+        </div>
+
+        {/* Sidebar Column */}
+        <div className="space-y-8">
+           
+           {/* Main Media Visual */}
+           <section className="bg-white border border-slate-200 rounded-[4px] overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+                <h3 className="text-xs font-black uppercase tracking-widest text-slate-900">Main Product Image</h3>
+              </div>
+              <div className="p-6 pt-2">
+                <div className="relative aspect-square bg-slate-50 border-2 border-dashed border-slate-200 rounded-[4px] flex items-center justify-center overflow-hidden hover:border-slate-900 transition-all cursor-pointer group mb-4">
+                   {formData.imageUrl ? (
+                     <Image src={formData.imageUrl} alt="" fill className="object-cover" />
+                   ) : (
+                     <div className="text-center p-6">
+                        <ImageIcon className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Click to upload main image</p>
+                     </div>
+                   )}
+                   <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
+                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-white border-white border px-4 py-2">Quick Change</span>
+                   </div>
+                </div>
+                <div className="flex gap-2">
+                   <input 
+                     type="text" 
+                     placeholder="Or paste image URL..."
+                     value={formData.imageUrl}
+                     onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
+                     className="flex-1 h-10 border border-slate-200 rounded-[4px] px-3 text-xs"
+                   />
+                   <button 
+                     onClick={() => setIsMediaPickerOpen(true)}
+                     className="h-10 px-4 bg-slate-50 border border-slate-200 rounded text-[10px] font-black uppercase tracking-widest"
+                   >
+                     Lib
+                   </button>
+                </div>
+              </div>
+           </section>
+
+           {/* Organization & Visibility */}
+           <section className="bg-white border border-slate-200 rounded-[4px] overflow-hidden">
+             <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
+               <h3 className="text-xs font-black uppercase tracking-widest text-slate-900">Optimization</h3>
+             </div>
+             <div className="p-6 space-y-6">
+                <div className="flex items-center justify-between">
+                   <div className="space-y-0.5">
+                     <p className="text-[11px] font-black uppercase tracking-widest text-slate-900">Featured Product</p>
+                     <p className="text-[10px] text-slate-500">Show on homepage collections</p>
+                   </div>
+                   <input 
+                    type="checkbox" 
+                    checked={formData.isFeatured}
+                    onChange={(e) => setFormData({...formData, isFeatured: e.target.checked})}
+                    className="w-4 h-4 rounded-sm border-slate-300 transition-all"
+                   />
+                </div>
+                <div className="flex items-center justify-between">
+                   <div className="space-y-0.5">
+                     <p className="text-[11px] font-black uppercase tracking-widest text-slate-900">New Arrival Badge</p>
+                     <p className="text-[10px] text-slate-500">Apply visual tag on storefront</p>
+                   </div>
+                   <input 
+                    type="checkbox" 
+                    checked={formData.isNewArrival}
+                    onChange={(e) => setFormData({...formData, isNewArrival: e.target.checked})}
+                    className="w-4 h-4 rounded-sm border-slate-300 transition-all"
+                   />
+                </div>
+             </div>
+           </section>
+
+           {/* Gallery Summary */}
+           <section className="bg-white border border-slate-200 rounded-[4px] overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
+                <h3 className="text-xs font-black uppercase tracking-widest text-slate-900">Product Gallery</h3>
+              </div>
+              <div className="p-6">
+                <div className="grid grid-cols-4 gap-2 mb-4">
+                   {formData.additionalImages?.map((img, i) => (
+                     <div key={i} className="relative aspect-square border border-slate-100 rounded group">
+                        <Image src={img} alt="" fill className="object-cover" />
+                        <button 
+                          onClick={() => setFormData(prev => ({ ...prev, additionalImages: prev.additionalImages?.filter((_, idx) => idx !== i) }))}
+                          className="absolute -top-1 -right-1 bg-white border border-slate-200 text-slate-400 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-all"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                     </div>
+                   ))}
+                   <label className="aspect-square border-2 border-dashed border-slate-200 rounded flex items-center justify-center hover:border-slate-400 transition-all cursor-pointer">
+                      <Plus className="w-4 h-4 text-slate-400" />
+                      <input type="file" className="hidden" multiple accept="image/*" onChange={async (e) => {
+                        const files = Array.from(e.target.files || []);
+                        const toastId = toast.loading('Uploading gallery...');
+                        try {
+                          const { uploadImageWithTimeout } = await import('@/lib/upload');
+                          const urls = await Promise.all(files.map(f => uploadImageWithTimeout(f, `gallery/${Date.now()}_${f.name}`)));
+                          setFormData(prev => ({ ...prev, additionalImages: [...(prev.additionalImages || []), ...urls] }));
+                          toast.success('Gallery updated', { id: toastId });
+                        } catch (err) { toast.error('Gallery failed', { id: toastId }); }
+                      }} />
+                   </label>
+                </div>
+              </div>
+           </section>
+        </div>
+      </div>
+
+      <MediaPickerModal 
+        isOpen={isMediaPickerOpen}
+        onClose={() => setIsMediaPickerOpen(false)}
+        onSelect={(url) => { setFormData({ ...formData, imageUrl: url }); setIsMediaPickerOpen(false); }}
+      />
+      </div>
+    </div>
+  );
+}

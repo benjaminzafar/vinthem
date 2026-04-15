@@ -45,6 +45,7 @@ export interface Product {
   isBestSeller?: boolean;
   isComingSoon?: boolean;
   starred?: boolean;
+  status?: 'draft' | 'published';
   createdAt?: string;
   weight?: number;
   shippingClass?: string;

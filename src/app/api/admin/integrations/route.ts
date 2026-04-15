@@ -1,39 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createAdminClient } from '@/utils/supabase/server';
+import { requireAdminBearerUser } from '@/lib/admin';
 
 export async function GET(req: NextRequest) {
   try {
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Unauthorized: Missing token' }, { status: 401 });
-    }
-
-    const token = authHeader.split('Bearer ')[1];
-    const adminClient = createAdminClient();
-
-    // Verify the JWT and get user (Network call)
-    const { data: { user }, error: authError } = await adminClient.auth.getUser(token);
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized: Invalid token' }, { status: 401 });
-    }
-
-    // Parallelize role check and integrations fetch for "super fast" response
-    const [userRes, integrationsRes] = await Promise.all([
-      adminClient.from('users').select('role').eq('id', user.id).single(),
-      adminClient.from('integrations').select('key')
-    ]);
-
-    const { data: userDoc, error: userError } = userRes;
-    const { data, error } = integrationsRes;
-
-    const isAdmin =
-      (!userError && userDoc?.role === 'admin') ||
-      user.email === 'benjaminzafar10@gmail.com' ||
-      user.email === 'benjaminzafar7@gmail.com';
-
-    if (!isAdmin) {
-      return NextResponse.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
-    }
+    const { supabase } = await requireAdminBearerUser(req.headers.get('Authorization'));
+    const { data, error } = await supabase.from('integrations').select('key');
 
     if (error) throw error;
 
@@ -47,7 +18,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(config);
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Internal Server Error';
-    console.error('Integrations GET error:', error);
+    console.error('Integrations GET error:', msg);
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

@@ -5,7 +5,7 @@ export const formatPrice = (price: number, lang: string = 'sv', prices?: Record<
 
   if (currency === 'USD') return `$${displayPrice}`;
   if (currency === 'EUR') return `€${displayPrice}`;
-  if (currency === 'DKK') return `kr ${displayPrice} DKK`;
   
-  return `kr ${displayPrice}`;
+  // High-end storefront standard: Suffix for Nordic currencies
+  return `${displayPrice} ${currency === 'DKK' ? 'DKK' : 'kr'}`;
 };

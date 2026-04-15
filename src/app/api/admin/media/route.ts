@@ -1,29 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
 import { s3Client } from '@/lib/s3';
 import { ListObjectsV2Command, DeleteObjectCommand } from '@aws-sdk/client-s3';
-
-const ADMIN_EMAILS = new Set([
-  'benjaminzafar10@gmail.com',
-  'benjaminzafar7@gmail.com',
-]);
+import { requireAdminUser } from '@/lib/admin';
 
 // Helper to verify admin status
 async function verifyAdmin() {
-  const supabase = await createClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) return { error: 'Unauthorized', status: 401 };
-
-  const { data: profile } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  const isAdmin = profile?.role === 'admin' || ADMIN_EMAILS.has(user.email ?? '');
-  if (!isAdmin) return { error: 'Forbidden', status: 403 };
-
-  return { user };
+  try {
+    const { user } = await requireAdminUser();
+    return { user };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unauthorized';
+    return {
+      error: message === 'Admin access required.' ? 'Forbidden' : 'Unauthorized',
+      status: message === 'Admin access required.' ? 403 : 401,
+    };
+  }
 }
 
 export async function GET() {
@@ -65,9 +56,10 @@ export async function GET() {
         'Expires': '0',
       }
     });
-  } catch (error: any) {
-    console.error('[Media API GET Error]:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to load media';
+    console.error('[Media API GET Error]:', message);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
@@ -79,16 +71,13 @@ export async function DELETE(req: NextRequest) {
     const body = await req.json();
     // Use decodeURIComponent to handle special characters in keys (spaces, ampersands, etc.)
     const key = body.key ? decodeURIComponent(body.key) : null;
-    console.log('[DEBUG] Deleting media key (decoded):', key);
     
     if (!key) return NextResponse.json({ error: 'Missing object key' }, { status: 400 });
 
     const bucketName = process.env.R2_BUCKET_NAME;
-    console.log('[DEBUG] Target Bucket:', bucketName);
 
     // Recursive delete for prefixes (folders)
     if (key.endsWith('/')) {
-      console.log('[DEBUG] Identified as folder, performing recursive delete for prefix:', key);
       const listCommand = new ListObjectsV2Command({
         Bucket: bucketName,
         Prefix: key
@@ -96,7 +85,6 @@ export async function DELETE(req: NextRequest) {
       const listedObjects = await s3Client.send(listCommand);
       
       if (listedObjects.Contents && listedObjects.Contents.length > 0) {
-        console.log(`[DEBUG] Found ${listedObjects.Contents.length} objects inside folder.`);
         const { DeleteObjectsCommand } = await import('@aws-sdk/client-s3');
         const deleteParams = {
           Bucket: bucketName,
@@ -104,22 +92,19 @@ export async function DELETE(req: NextRequest) {
             Objects: listedObjects.Contents.map(({ Key }) => ({ Key }))
           }
         };
-        const result = await s3Client.send(new DeleteObjectsCommand(deleteParams));
-        console.log('[DEBUG] DeleteObjects result:', result);
-      } else {
-        console.log('[DEBUG] Folder appears empty or marker not found.');
+        await s3Client.send(new DeleteObjectsCommand(deleteParams));
       }
     } else {
-      const result = await s3Client.send(new DeleteObjectCommand({
+      await s3Client.send(new DeleteObjectCommand({
         Bucket: bucketName,
         Key: key
       }));
-      console.log('[DEBUG] DeleteObject (file) result:', result);
     }
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
-    console.error('[Media API DELETE Error]:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to delete media';
+    console.error('[Media API DELETE Error]:', message);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

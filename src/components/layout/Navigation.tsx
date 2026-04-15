@@ -10,6 +10,7 @@ import { LanguageSwitcher } from './LanguageSwitcher';
 import { AccountDropdown } from './AccountDropdown';
 import { MobileMenu } from './MobileMenu';
 import { CartBadge } from './CartBadge';
+import { cookies } from 'next/headers';
 
 export default async function Navigation() {
   const supabase = await createClient();
@@ -27,9 +28,10 @@ export default async function Navigation() {
     isAdmin = profile?.role === 'admin';
   }
 
-  // Fallback for languages
+  // Resolve language from cookie
+  const cookieStore = await cookies();
+  const lang = (cookieStore.get('NEXT_LOCALE')?.value || 'en') as string;
   const availableLanguages = settings?.languages?.length ? settings.languages : ['en', 'sv', 'fi', 'da'];
-  const lang = 'en'; // Server default, client will handle its own state
 
   return (
     <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">

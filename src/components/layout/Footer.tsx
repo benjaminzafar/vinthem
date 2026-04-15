@@ -1,13 +1,15 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { cookies } from 'next/headers';
 
 interface FooterProps {
   settings: any;
 }
 
-export default function Footer({ settings }: FooterProps) {
-  const lang = 'en'; // Server default
+export default async function Footer({ settings }: FooterProps) {
+  const cookieStore = await cookies();
+  const lang = cookieStore.get('NEXT_LOCALE')?.value || 'en';
 
   return (
     <footer className="bg-white border-t border-gray-200 pt-24 pb-12 mt-auto">

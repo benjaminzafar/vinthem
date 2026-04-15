@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import i18nInstance from '@/i18n';
 import { useTranslation } from 'react-i18next';
+import { persistLocaleCookie } from '@/lib/locale';
 
 interface LanguageSwitcherProps {
   availableLanguages: string[];
@@ -14,6 +16,7 @@ interface LanguageSwitcherProps {
 export function LanguageSwitcher({ availableLanguages, variant = 'dropdown' }: LanguageSwitcherProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
   const { i18n } = useTranslation();
 
   useEffect(() => {
@@ -30,7 +33,11 @@ export function LanguageSwitcher({ availableLanguages, variant = 'dropdown' }: L
 
   const changeLanguage = (lng: string) => {
     i18nInstance.changeLanguage(lng);
+    // Set cookie for server-side localization
+    persistLocaleCookie(lng);
     setIsOpen(false);
+    // Refresh to update server components (Nav/Footer)
+    router.refresh();
   };
 
   if (variant === 'boxes') {

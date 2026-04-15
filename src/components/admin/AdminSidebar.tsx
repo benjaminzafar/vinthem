@@ -41,10 +41,12 @@ function SidebarContent({
   pathname,
   activeUserEmail,
   onSignOut,
+  onNavItemClick,
 }: {
   pathname: string;
   activeUserEmail?: string;
   onSignOut: () => Promise<void>;
+  onNavItemClick?: () => void;
 }) {
   return (
     <>
@@ -63,6 +65,7 @@ function SidebarContent({
             <Link
               key={item.id}
               href={item.href}
+              onClick={onNavItemClick}
               className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded transition-all ${
                 isActive
                   ? 'bg-slate-900 text-white font-medium'
@@ -98,11 +101,18 @@ function SidebarContent({
   );
 }
 
-export default function AdminSidebar({ activeUserEmail }: { activeUserEmail?: string }) {
+export default function AdminSidebar({ 
+  activeUserEmail,
+  isOpen,
+  onClose
+}: { 
+  activeUserEmail?: string;
+  isOpen: boolean;
+  onClose: () => void;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -116,27 +126,32 @@ export default function AdminSidebar({ activeUserEmail }: { activeUserEmail?: st
         <SidebarContent pathname={pathname} activeUserEmail={activeUserEmail} onSignOut={handleSignOut} />
       </div>
 
-      {/* Mobile Menu Button */}
-      <div className="lg:hidden fixed bottom-6 right-6 z-50">
-        <button
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="w-12 h-12 bg-slate-900 text-white flex items-center justify-center rounded-full shadow-lg"
-        >
-          {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
-      </div>
-
+      {/* Mobile Sidebar Overlay */}
       <AnimatePresence>
-        {isMobileMenuOpen && (
-          <motion.div
-            initial={{ x: '-100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '-100%' }}
-            transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
-            className="fixed inset-0 bg-white text-slate-600 z-[60] flex flex-col lg:hidden"
-          >
-            <SidebarContent pathname={pathname} activeUserEmail={activeUserEmail} onSignOut={handleSignOut} />
-          </motion.div>
+        {isOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={onClose}
+              className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 lg:hidden"
+            />
+            <motion.div
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
+              className="fixed inset-y-0 left-0 w-72 bg-white text-slate-600 z-[60] flex flex-col lg:hidden border-r border-slate-300"
+            >
+              <SidebarContent 
+                pathname={pathname} 
+                activeUserEmail={activeUserEmail} 
+                onSignOut={handleSignOut} 
+                onNavItemClick={onClose}
+              />
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </>

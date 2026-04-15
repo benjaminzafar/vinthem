@@ -14,14 +14,16 @@ export async function uploadImageWithTimeout(
     }, timeoutMs);
 
     try {
-      // 1. Get Presigned URL
       const presignedRes = await fetch('/api/admin/media/presigned', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ path: finalPath, contentType: file.type })
       });
 
-      if (!presignedRes.ok) throw new Error('Failed to get upload permission');
+      if (!presignedRes.ok) {
+        const errorText = await presignedRes.text();
+        throw new Error(`Failed to get upload permission: ${presignedRes.status} ${errorText}`);
+      }
       
       const { uploadUrl, publicUrl } = await presignedRes.json();
 
@@ -32,14 +34,18 @@ export async function uploadImageWithTimeout(
         body: file
       });
 
-      if (!uploadRes.ok) throw new Error('Direct upload to R2 failed');
+      if (!uploadRes.ok) {
+        const errorText = await uploadRes.text();
+        console.error('[Upload] R2 Error Response:', errorText);
+        throw new Error(`Direct upload to R2 failed: ${uploadRes.status} ${errorText}`);
+      }
 
       clearTimeout(timeout);
       resolve(publicUrl);
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       clearTimeout(timeout);
-      console.error('Direct Upload Error:', error);
+      console.error('[Upload] Failed to fetch. Possible causes: CORS blocks, invalid credentials, or network timeout.', error);
       reject(error);
     }
   });

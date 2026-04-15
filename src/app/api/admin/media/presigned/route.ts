@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { s3Client } from "@/lib/s3";
+import { requireAdminUser } from '@/lib/admin';
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,26 +12,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing path' }, { status: 400 });
     }
 
-    // 1. Verify Admin Session
-    const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const { data: profile } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .maybeSingle();
-
-    const allowedEmails = ['benjaminzafar10@gmail.com', 'benjaminzafar7@gmail.com'];
-    const isAdmin = profile?.role === 'admin' || allowedEmails.includes(user.email ?? '');
-
-    if (!isAdmin) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    await requireAdminUser();
 
     // 2. Generate Presigned URL
     const bucketName = process.env.R2_BUCKET_NAME;
@@ -57,8 +38,10 @@ export async function POST(req: NextRequest) {
       publicUrl: publicUrl
     });
 
-  } catch (error: any) {
-    console.error('Presigned URL Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to generate upload URL';
+    console.error('Presigned URL Error:', message);
+    const status = message === 'Authentication required.' ? 401 : message === 'Admin access required.' ? 403 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }

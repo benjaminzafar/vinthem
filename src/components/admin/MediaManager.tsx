@@ -104,7 +104,6 @@ export function MediaManager({ onSelect, selectionMode }: MediaManagerProps) {
     
     setDeletingKey(key);
     setConfirmDelete(null);
-    console.log('[CLIENT DEBUG] Starting deletion for key:', key, 'isFolder:', isFolder);
     
     try {
       const { createClient } = await import('@/utils/supabase/client');
@@ -115,7 +114,6 @@ export function MediaManager({ onSelect, selectionMode }: MediaManagerProps) {
         throw new Error('You must be logged in as an admin to delete media.');
       }
 
-      console.log('[CLIENT DEBUG] Session found, sending DELETE request...');
       const res = await fetch('/api/admin/media', {
         method: 'DELETE',
         headers: {

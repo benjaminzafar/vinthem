@@ -1,16 +1,12 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { AdminHeader } from '@/components/admin/AdminHeader';
 import { 
   Package, 
   Plus, 
   Download, 
-  Upload, 
   Search, 
-  Edit, 
-  Trash2, 
-  X
+  Trash2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -18,9 +14,38 @@ import { useCustomConfirm } from '@/components/ConfirmationContext';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { Product } from '@/store/useCartStore';
 import { Category } from '@/types';
-import { ProductModal } from '@/components/admin/ProductModal';
-import { downloadXLSX } from '@/utils/export';
-import Papa from 'papaparse';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+
+type ProductRecord = {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  stock: number;
+  sku?: string;
+  image_url: string;
+  category_id?: string;
+  is_featured?: boolean;
+  is_new_arrival?: boolean;
+  is_sale?: boolean;
+  sale_price?: number;
+  created_at?: string;
+  status?: 'draft' | 'published';
+};
+
+type CategoryRecord = {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  translations?: Category['translations'];
+  is_featured: boolean;
+  show_in_hero?: boolean;
+  parent_id?: string;
+  image_url?: string;
+  icon_url?: string;
+};
 
 export function ProductManager({ selectedProductId, onClearSelection }: { selectedProductId?: string | null, onClearSelection?: () => void }) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -29,12 +54,10 @@ export function ProductManager({ selectedProductId, onClearSelection }: { select
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const { settings } = useSettingsStore();
+  const supabase = createClient();
+  const router = useRouter();
   const customConfirm = useCustomConfirm();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const supabase = createClient();
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.title.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
@@ -42,8 +65,8 @@ export function ProductManager({ selectedProductId, onClearSelection }: { select
     
     if (!matchesSearch) return false;
 
-    if (activeTab === 'active') return product.stock > 0;
-    if (activeTab === 'drafts') return product.stock === 0; // Simplified for demo
+    if (activeTab === 'active') return product.status === 'published' || (!product.status && product.stock > 0);
+    if (activeTab === 'drafts') return product.status === 'draft';
     return true;
   });
 
@@ -51,7 +74,7 @@ export function ProductManager({ selectedProductId, onClearSelection }: { select
     setLoading(true);
     const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false });
     if (data) {
-      const mappedProducts = (data as any[]).map(p => ({
+      const mappedProducts = data.map((p: ProductRecord) => ({
         ...p,
         imageUrl: p.image_url,
         categoryId: p.category_id,
@@ -61,39 +84,40 @@ export function ProductManager({ selectedProductId, onClearSelection }: { select
         discountPrice: p.sale_price,
         createdAt: p.created_at
       }));
-      setProducts(mappedProducts as Product[]);
+      setProducts(mappedProducts);
     }
     setLoading(false);
   }, [supabase]);
 
   const handleOpenModal = (product?: Product) => {
     if (product) {
-      setEditingProduct(product);
+      router.push(`/admin/products/${product.id}`);
     } else {
-      setEditingProduct(null);
+      router.push('/admin/products/new');
     }
-    setIsModalOpen(true);
   };
 
   useEffect(() => {
-    refreshProducts();
     const fetchCategories = async () => {
       const { data } = await supabase.from('categories').select('*').order('name');
       if (data) {
-        const mappedCategories = (data as any[]).map((c) => ({
+        const mappedCategories = data.map((c: CategoryRecord) => ({
           ...c, isFeatured: c.is_featured, showInHero: c.show_in_hero,
           parentId: c.parent_id, imageUrl: c.image_url, iconUrl: c.icon_url
         }));
-        setCategories(mappedCategories as Category[]);
+        setCategories(mappedCategories);
       }
     };
-    fetchCategories();
+    const initialize = async () => {
+      await Promise.all([refreshProducts(), fetchCategories()]);
+    };
+    void initialize();
 
     // Enable Realtime for Products
     const productsChannel = supabase
       .channel('products-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
-        refreshProducts();
+        void refreshProducts();
       })
       .subscribe();
 
@@ -101,7 +125,7 @@ export function ProductManager({ selectedProductId, onClearSelection }: { select
     const categoriesChannel = supabase
       .channel('categories-realtime-products')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, () => {
-        fetchCategories();
+        void fetchCategories();
       })
       .subscribe();
 
@@ -111,23 +135,26 @@ export function ProductManager({ selectedProductId, onClearSelection }: { select
     };
   }, [supabase, refreshProducts]);
 
-  const selectedProductFromRoute =
-    selectedProductId && products.length > 0
-      ? products.find((product) => product.id === selectedProductId) ?? null
-      : null;
-  const activeProduct = editingProduct ?? selectedProductFromRoute;
-  const modalOpen = isModalOpen || !!selectedProductFromRoute;
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    const confirmed = await customConfirm('Delete Product', 'Are you sure you want to delete this product?');
+    const confirmed = await customConfirm('Delete Product', 'Are you sure you want to delete this product? This action cannot be undone.');
     if (confirmed) {
+      const toastId = toast.loading('Deleting product...');
       try {
-        await supabase.from('products').delete().eq('id', id);
+        const { error } = await supabase.from('products').delete().eq('id', id);
+        
+        if (error) {
+          console.error('[ProductManager] Delete failed:', error);
+          toast.error(`Delete failed: ${error.message || 'Check your permissions'}`, { id: toastId });
+          return;
+        }
+
         setProducts(prev => prev.filter(p => p.id !== id));
-        toast.success('Product deleted');
-      } catch (error) {
-        toast.error('Failed to delete product');
+        toast.success('Product deleted successfully', { id: toastId });
+      } catch (error: unknown) {
+        console.error('[ProductManager] Delete crash:', error);
+        toast.error('A system error occurred during deletion', { id: toastId });
       }
     }
   };
@@ -153,7 +180,7 @@ export function ProductManager({ selectedProductId, onClearSelection }: { select
             />
           </div>
           <button 
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => router.push('/admin/products/new')}
             className="h-10 px-6 bg-slate-900 text-white rounded text-sm font-medium hover:bg-slate-800 transition-all flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
@@ -170,7 +197,7 @@ export function ProductManager({ selectedProductId, onClearSelection }: { select
             {['all', 'active', 'drafts'].map((tab) => (
               <button
                 key={tab}
-                onClick={() => setActiveTab(tab as any)}
+                onClick={() => setActiveTab(tab as 'all' | 'active' | 'drafts')}
                 className={`h-full text-[11px] font-bold uppercase tracking-widest border-b-2 transition-all ${
                   activeTab === tab 
                     ? 'text-slate-900 border-slate-900' 
@@ -220,7 +247,7 @@ export function ProductManager({ selectedProductId, onClearSelection }: { select
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 bg-slate-50 border border-slate-200 rounded flex items-center justify-center overflow-hidden shrink-0 group-hover:border-slate-300 transition-all">
                         {product.imageUrl ? (
-                          <img src={product.imageUrl} alt="" className="w-full h-full object-cover" />
+                          <Image src={product.imageUrl} alt="" width={48} height={48} className="w-full h-full object-cover" />
                         ) : (
                           <Package className="w-5 h-5 text-slate-300" />
                         )}
@@ -244,16 +271,18 @@ export function ProductManager({ selectedProductId, onClearSelection }: { select
                   </td>
                   <td className="px-6 py-4">
                     <div className={`inline-flex items-center gap-2 px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest border ${
-                      product.stock > 10 
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-100' 
-                        : product.stock > 0 
-                          ? 'bg-amber-50 text-amber-700 border-amber-100' 
-                          : 'bg-rose-50 text-rose-700 border-rose-100'
+                      product.status === 'draft'
+                        ? 'bg-zinc-100 text-zinc-600 border-zinc-200'
+                        : product.stock > 10 
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-100' 
+                          : product.stock > 0 
+                            ? 'bg-amber-50 text-amber-700 border-amber-100' 
+                            : 'bg-rose-50 text-rose-700 border-rose-100'
                     }`}>
                       <div className={`w-1 h-1 rounded-full ${
-                        product.stock > 10 ? 'bg-emerald-500' : product.stock > 0 ? 'bg-amber-500' : 'bg-rose-500'
+                        product.status === 'draft' ? 'bg-zinc-400' : product.stock > 10 ? 'bg-emerald-500' : product.stock > 0 ? 'bg-amber-500' : 'bg-rose-500'
                       }`} />
-                      {product.stock > 10 ? 'Active' : product.stock > 0 ? 'Low Stock' : 'Out of Stock'}
+                      {product.status === 'draft' ? 'Draft' : product.stock > 10 ? 'Active' : product.stock > 0 ? 'Low Stock' : 'Out of Stock'}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-right">
@@ -280,16 +309,6 @@ export function ProductManager({ selectedProductId, onClearSelection }: { select
         </div>
       </div>
 
-      {modalOpen && (
-        <ProductModal 
-          isOpen={modalOpen} 
-          onClose={() => { setIsModalOpen(false); setEditingProduct(null); onClearSelection?.(); }}
-          product={activeProduct}
-          categories={categories}
-          settings={settings}
-          onSuccess={refreshProducts}
-        />
-      )}
 
       {/* Import logic removed from UI to minimize clutter, but ref is kept if needed */}
       <input type="file" ref={fileInputRef} className="hidden" accept=".csv" />

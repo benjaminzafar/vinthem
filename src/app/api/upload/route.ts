@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
-
-const ADMIN_EMAILS = new Set([
-  'benjaminzafar10@gmail.com',
-  'benjaminzafar7@gmail.com',
-]);
+import { requireAdminUser } from '@/lib/admin';
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,23 +11,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing file or path' }, { status: 400 });
     }
 
-    // Verify auth using the standard client
-    const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const { data: profile, error: profileError } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .maybeSingle();
-
-    const isAdmin = profile?.role === 'admin' || ADMIN_EMAILS.has(user.email ?? '');
-    if (profileError || !isAdmin) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    try {
+      await requireAdminUser();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unauthorized';
+      const status = message === 'Admin access required.' ? 403 : 401;
+      return NextResponse.json({ error: message }, { status });
     }
 
     const arrayBuffer = await file.arrayBuffer();
@@ -63,9 +47,10 @@ export async function POST(req: NextRequest) {
         : `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${bucketName}/${path}`;
 
       return NextResponse.json({ url: finalUrl });
-    } catch (uploadError: any) {
-      console.error('R2 Upload Error:', uploadError);
-      return NextResponse.json({ error: uploadError.message }, { status: 500 });
+    } catch (uploadError: unknown) {
+      const message = uploadError instanceof Error ? uploadError.message : 'Upload failed';
+      console.error('R2 Upload Error:', message);
+      return NextResponse.json({ error: message }, { status: 500 });
     }
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Upload failed';

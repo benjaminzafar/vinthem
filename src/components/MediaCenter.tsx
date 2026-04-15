@@ -3,16 +3,24 @@ import React, { useState, useEffect } from 'react';
 import { Trash2, Image as ImageIcon, Loader2, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { createClient } from '@/utils/supabase/client';
+import Image from 'next/image';
+
+type MediaFile = {
+  name: string;
+  size: number;
+  contentType?: string;
+  url: string;
+  id: string | null;
+};
 
 export function MediaCenter() {
   const supabase = createClient();
-  const [files, setFiles] = useState<any[]>([]);
+  const [files, setFiles] = useState<MediaFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [storageUsage, setStorageUsage] = useState(0);
 
   const fetchFiles = async () => {
     setLoading(true);
-    console.log('Fetching files from Supabase...');
     
     try {
       // Supabase storage list
@@ -35,7 +43,7 @@ export function MediaCenter() {
       }
 
       let totalSize = 0;
-      const fileDetails = data.map(file => {
+      const fileDetails: MediaFile[] = data.map(file => {
         const { data: { publicUrl } } = supabase
           .storage
           .from('uploads')
@@ -48,15 +56,16 @@ export function MediaCenter() {
           size: file.metadata?.size || 0,
           contentType: file.metadata?.mimetype,
           url: publicUrl,
-          id: file.id
+          id: file.id ?? null
         };
       });
       
       setFiles(fileDetails);
       setStorageUsage(totalSize);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       console.error('Error fetching files:', error);
-      toast.error('Failed to load media files: ' + (error.message || String(error)));
+      toast.error('Failed to load media files: ' + message);
     } finally {
       setLoading(false);
     }
@@ -78,9 +87,10 @@ export function MediaCenter() {
       
       toast.success('File deleted', { id: toastId });
       fetchFiles();
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown delete error';
       console.error('Error deleting file:', error);
-      toast.error('Failed to delete file: ' + error.message, { id: toastId });
+      toast.error('Failed to delete file: ' + message, { id: toastId });
     }
   };
 
@@ -111,7 +121,9 @@ export function MediaCenter() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {files.map((file) => (
             <div key={file.name} className="border border-gray-200 rounded-lg p-2 space-y-2">
-              <img src={file.url} alt={file.name} className="w-full h-32 object-cover rounded" referrerPolicy="no-referrer" />
+                <div className="relative w-full h-32 overflow-hidden rounded">
+                  <Image src={file.url} alt={file.name} fill className="object-cover" sizes="(max-width: 768px) 50vw, 25vw" />
+                </div>
               <p className="text-xs truncate" title={file.name}>{file.name}</p>
               <div className="flex justify-between items-center">
                 <span className="text-xs text-gray-500">{formatSize(file.size)}</span>

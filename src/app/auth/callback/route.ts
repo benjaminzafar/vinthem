@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
+import { ensureUserProfile } from '@/lib/admin';
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
@@ -11,13 +12,7 @@ export async function GET(request: NextRequest) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error && data.user) {
-      // Ensure user row exists in users table
-      await supabase.from('users').upsert({
-        id: data.user.id,
-        email: data.user.email,
-        name: data.user.user_metadata?.full_name || '',
-        role: data.user.email === 'benjaminzafar10@gmail.com' ? 'admin' : 'client',
-      }, { onConflict: 'id', ignoreDuplicates: true });
+      await ensureUserProfile(data.user, data.user.user_metadata?.full_name);
 
       return NextResponse.redirect(`${origin}${next}`);
     }

@@ -3,9 +3,22 @@ import { createAdminClient, createClient } from '@/utils/supabase/server';
 import Stripe from 'stripe';
 import { decrypt } from '@/lib/encryption';
 
+const SHIPPING_RATES: Record<string, number> = {
+  SE: 49,
+  FI: 59,
+  DK: 59,
+  NO: 79,
+};
+
+const COUNTRY_CURRENCY: Record<string, 'sek' | 'eur' | 'dkk'> = {
+  SE: 'sek',
+  FI: 'eur',
+  DK: 'dkk',
+};
+
 export async function POST(req: NextRequest) {
   try {
-    const { items, shippingDetails, shippingCost, currency } = await req.json();
+    const { items, shippingDetails } = await req.json();
     const validatedItems: Array<{
       id: string;
       title: string;
@@ -63,7 +76,9 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const safeShippingCost = parseFloat(String(shippingCost)) || 0;
+    const shippingCountry = sanitizedShipping.country.toUpperCase();
+    const safeShippingCost = SHIPPING_RATES[shippingCountry] ?? SHIPPING_RATES.SE;
+    const orderCurrency = COUNTRY_CURRENCY[shippingCountry] ?? 'sek';
     const finalTotal = validatedSubtotal + safeShippingCost;
 
     // 3. Create order on backend only — never from client
@@ -76,7 +91,7 @@ export async function POST(req: NextRequest) {
         shipping_cost: safeShippingCost,
         subtotal: validatedSubtotal,
         total: finalTotal,
-        currency: currency || 'sek',
+        currency: orderCurrency,
         status: 'Pending',
       })
       .select('id')
@@ -99,8 +114,9 @@ export async function POST(req: NextRequest) {
     if (integrationRow?.value) {
       try {
         stripeSecret = decrypt(integrationRow.value);
-      } catch {
-        console.error('Failed to decrypt Stripe key during checkout');
+      } catch (decryptError: unknown) {
+        const message = decryptError instanceof Error ? decryptError.message : 'Unknown decryption failure';
+        console.error('Failed to decrypt Stripe key during checkout:', message);
       }
     }
 
@@ -112,7 +128,7 @@ export async function POST(req: NextRequest) {
 
       const paymentIntent = await stripe.paymentIntents.create({
         amount: Math.round(finalTotal * 100),
-        currency: currency || 'sek',
+        currency: orderCurrency,
         metadata: { orderId },
       });
 

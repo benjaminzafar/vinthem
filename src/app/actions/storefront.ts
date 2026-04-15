@@ -3,6 +3,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { StorefrontSettings as StorefrontSettingsType } from '@/store/useSettingsStore';
+import { requireAdminUser } from '@/lib/admin';
 
 export type ActionResponse = {
   success: boolean;
@@ -16,21 +17,7 @@ export type ActionResponse = {
  */
 export async function updateSettingsAction(settings: StorefrontSettingsType): Promise<ActionResponse> {
   try {
-    const supabase = await createClient();
-    
-    // Authorization check
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, message: 'Authentication required' };
-
-    const { data: profile } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (profile?.role !== 'admin' && !['benjaminzafar10@gmail.com', 'benjaminzafar7@gmail.com'].includes(user.email || '')) {
-      return { success: false, message: 'Unauthorized. Admin access required.' };
-    }
+    const { supabase } = await requireAdminUser();
 
     // Perform Upsert
     const { error } = await supabase
@@ -48,9 +35,10 @@ export async function updateSettingsAction(settings: StorefrontSettingsType): Pr
     revalidatePath('/admin');
     
     return { success: true, message: 'Settings saved successfully' };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to save settings';
     console.error('[Action Error] updateSettingsAction:', error);
-    return { success: false, message: 'Failed to save settings', error: error.message };
+    return { success: false, message: 'Failed to save settings', error: message };
   }
 }
 

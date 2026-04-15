@@ -6,13 +6,13 @@ import { useSettingsStore } from '@/store/useSettingsStore';
 import { useTranslation } from 'react-i18next';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import type { StripeElementsOptions } from '@stripe/stripe-js';
 import { Lock, Truck, ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { toast } from 'sonner';
 import { motion } from 'motion/react';
 import { formatPrice } from '@/lib/currency';
-import { createClient } from '@/utils/supabase/client';
 
 const stripePromise = fetch('/api/config/stripe-public-key')
   .then(res => res.json())
@@ -287,12 +287,18 @@ function CheckoutForm({
   );
 }
 
+function getStripeLocale(lang: string): StripeElementsOptions['locale'] {
+  if (lang === 'sv') return 'sv';
+  if (lang === 'fi') return 'fi';
+  if (lang === 'da') return 'da';
+  return 'en';
+}
+
 export default function Payment() {
   const [clientSecret, setClientSecret] = useState('');
   const [isMock, setIsMock] = useState(false);
   const { total, items } = useCartStore();
   const { user } = useAuthStore();
-  const supabase = createClient();
   const { i18n } = useTranslation();
   const { settings } = useSettingsStore();
   const lang = i18n.language || 'en';
@@ -328,9 +334,7 @@ export default function Payment() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
             items,
-            shippingDetails,
-            shippingCost,
-            currency: lang === 'en' ? 'usd' : (lang === 'fi' ? 'eur' : (lang === 'da' ? 'dkk' : 'sek'))
+            shippingDetails
           }),
         })
           .then((res) => res.json())
@@ -373,7 +377,7 @@ export default function Payment() {
   }
 
   return (
-    <Elements stripe={stripePromise} options={{ clientSecret, locale: lang as any }}>
+    <Elements stripe={stripePromise} options={{ clientSecret, locale: getStripeLocale(lang) }}>
       <CheckoutForm 
         clientSecret={clientSecret} 
         shippingDetails={shippingDetails}

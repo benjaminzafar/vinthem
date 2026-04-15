@@ -1,42 +1,29 @@
-import { createAdminClient } from '@/utils/supabase/server';
 import { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-
-const ADMIN_EMAILS = new Set([
-  'benjaminzafar10@gmail.com',
-  'benjaminzafar7@gmail.com',
-]);
+import { requireAdminBearerUser } from '@/lib/admin';
 
 export async function GET(request: NextRequest) {
   if (process.env.NODE_ENV !== 'development') {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
-  const authHeader = request.headers.get('Authorization');
-  if (!authHeader?.startsWith('Bearer ')) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const adminContext = await (async () => {
+    try {
+      return await requireAdminBearerUser(request.headers.get('Authorization'));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unauthorized';
+      const status = message === 'Forbidden: Admin access required' ? 403 : 401;
+      return NextResponse.json({ error: message }, { status });
+    }
+  })();
+
+  if (adminContext instanceof NextResponse) {
+    return adminContext;
   }
 
-  const supabase = createAdminClient();
-  const token = authHeader.split('Bearer ')[1];
-  const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-
-  if (authError || !user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const { data: profile, error: profileError } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  const isAdmin = profile?.role === 'admin' || ADMIN_EMAILS.has(user.email ?? '');
-  if (profileError || !isAdmin) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
-  
   try {
+    const { supabase } = adminContext;
+  
     // 1. Clear existing test data (optional, but keep it clean)
     // We won't clear real data, only seed new ones.
 
@@ -132,8 +119,9 @@ export async function GET(request: NextRequest) {
     if (prodError) throw prodError;
 
     return NextResponse.json({ success: true, message: 'Seeded beautiful data successfully' });
-  } catch (error: any) {
-    console.error('Seed Error:', error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Seed failed';
+    console.error('Seed Error:', message);
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }

@@ -34,9 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             .single();
 
           const isAdmin =
-            profile?.role === 'admin' ||
-            user.email === 'benjaminzafar10@gmail.com' ||
-            user.email === 'benjaminzafar7@gmail.com';
+            profile?.role === 'admin';
           setIsAdmin(isAdmin);
         } else {
           setUser(null);
@@ -72,9 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             .single();
 
           const isAdmin =
-            data?.role === 'admin' ||
-            user.email === 'benjaminzafar10@gmail.com' ||
-            user.email === 'benjaminzafar7@gmail.com';
+            data?.role === 'admin';
           setIsAdmin(isAdmin);
         } else {
           setIsAdmin(false);

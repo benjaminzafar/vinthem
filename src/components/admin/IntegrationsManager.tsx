@@ -110,21 +110,27 @@ export function IntegrationsManager({ initialConfig }: { initialConfig: Record<s
       return;
     }
 
-    setSavingSection(section);
-    startTransition(async () => {
-      const toastId = toast.loading(`Saving ${section} settings...`);
-      try {
-        const result = await saveIntegrationAction(updates);
+      setSavingSection(section);
+      startTransition(async () => {
+        const toastId = toast.loading(`Saving ${section} settings...`);
+        try {
+          const result = await saveIntegrationAction(updates);
+        
         if (result.success) {
           toast.success(result.message, { id: toastId });
+          // Refresh local state or re-fetch to confirm persistence
+          // Note: revalidatePath is called on server, but client needs to be aware
         } else {
-          toast.error(result.message, { id: toastId });
+          console.error('[Integrations] Save error from server:', result.message);
+          toast.error(result.message || 'Failed to save settings', { id: toastId });
         }
-      } catch (error: any) {
-        toast.error('Failed to connect to Server Action', { id: toastId });
-      } finally {
-        setSavingSection(null);
-      }
+        } catch (error: unknown) {
+          const message = error instanceof Error ? error.message : 'Failed to connect to server';
+          console.error('[Integrations] Server connection error:', error);
+          toast.error(`System Error: ${message}`, { id: toastId });
+        } finally {
+          setSavingSection(null);
+        }
     });
   };
 
@@ -257,9 +263,8 @@ export function IntegrationsManager({ initialConfig }: { initialConfig: Record<s
       render: () => (
         <>
           {renderInput('GEMINI_MODEL', 'Model', 'select', [
-            { value: 'gemini-3.1-pro-preview', label: 'Gemini 3.1 Pro Preview' },
-            { value: 'gemini-3.1-flash-lite-preview', label: 'Gemini 3.1 Flash Lite Preview' },
-            { value: 'gemini-3-flash-preview', label: 'Gemini 3 Flash Preview' }
+            { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (Most Stable & Verified)' },
+            { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro (Advanced Reasoning)' }
           ])}
           {renderInput('GEMINI_API_KEY', 'API Key', 'password')}
         </>

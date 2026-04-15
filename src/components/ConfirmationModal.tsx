@@ -35,21 +35,35 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg border border-gray-200/60 shadow-xl w-full max-w-sm flex flex-col overflow-hidden">
-        <div className="flex justify-between items-center px-3 py-2 h-[52px] border-b border-zinc-200 bg-zinc-50/50">
-          <h3 className="text-[16px] font-semibold text-zinc-900 tracking-tight">{title}</h3>
-          <button onClick={onClose} className="text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 rounded-md transition-colors h-[36px] w-[36px] flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    <div className="fixed inset-0 min-h-screen w-full bg-zinc-900/40 backdrop-blur-sm flex items-center justify-center z-[999] p-4">
+      <div className="bg-white rounded-lg border border-zinc-200 shadow-2xl w-full max-w-sm flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div className="flex justify-between items-center px-6 py-4 border-b border-zinc-100 bg-zinc-50/50">
+          <h3 className="text-[15px] font-black text-zinc-900 uppercase tracking-widest leading-none">{title}</h3>
+          <button 
+            onClick={onClose} 
+            className="text-zinc-400 hover:text-zinc-900 transition-colors p-2 hover:bg-zinc-100 rounded-full"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
           </button>
         </div>
-        <div className="px-4 py-3 bg-zinc-50/30">
-          <p className="text-gray-600 mb-6">{message}</p>
-          <div className="pt-4 border-t border-zinc-200 flex gap-3">
-            <button onClick={onClose} className="flex-1 flex items-center justify-center bg-white text-zinc-900 hover:bg-zinc-50 border border-zinc-200 px-6 h-[44px] text-sm font-medium rounded-md transition-colors">Cancel</button>
+        
+        <div className="px-8 py-8">
+          <p className="text-zinc-600 text-sm leading-relaxed mb-8 font-medium">{message}</p>
+          <div className="flex gap-3">
             <button 
+              type="button"
+              onClick={onClose} 
+              className="flex-1 h-11 text-[11px] font-black uppercase tracking-widest bg-zinc-100 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900 rounded-[4px] transition-all"
+            >
+              Cancel
+            </button>
+            <button 
+              type="button"
               onClick={() => { onConfirm(); onClose(); }} 
-              className={`flex-1 flex items-center justify-center border border-transparent px-6 h-[44px] text-sm font-medium rounded-md transition-colors ${getVariantClasses()}`}
+              className={`flex-1 h-11 text-[11px] font-black uppercase tracking-widest rounded-[4px] transition-all shadow-lg shadow-zinc-200 ${getVariantClasses()}`}
             >
               {confirmLabel}
             </button>

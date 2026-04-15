@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, X, ChevronDown } from 'lucide-react';
+import { Search, ChevronDown } from 'lucide-react';
 
 interface Option {
   value: string;
@@ -63,41 +63,48 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
   };
 
   return (
-    <div className="relative w-full" ref={containerRef}>
+    <div className="relative w-full text-slate-900" ref={containerRef}>
       <div
-        className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl cursor-pointer flex items-center justify-between"
+        className="w-full h-11 px-4 bg-white border border-slate-200 rounded-[4px] cursor-pointer flex items-center justify-between hover:border-slate-400 transition-all"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <span className="text-sm truncate">{getSelectedLabels() || placeholder}</span>
-        <ChevronDown className="w-4 h-4 text-zinc-400" />
+        <span className="text-sm font-medium truncate">{getSelectedLabels() || placeholder}</span>
+        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180 text-slate-900' : ''}`} />
       </div>
       {isOpen && (
-        <div className="absolute z-50 w-full mt-2 bg-white border border-zinc-200 rounded-xl shadow-lg">
-          <div className="p-2 border-b border-zinc-100 flex items-center">
-            <Search className="w-4 h-4 text-zinc-400 mr-2" />
+        <div className="absolute z-[100] w-full mt-1 bg-white border border-slate-200 rounded-[4px] animate-in fade-in zoom-in-95 duration-100">
+          <div className="p-2 border-b border-slate-100 flex items-center bg-slate-50">
+            <Search className="w-4 h-4 text-slate-400 mr-2" />
             <input
               type="text"
-              className="w-full text-sm outline-none"
-              placeholder="Search..."
+              className="w-full text-sm outline-none bg-transparent font-medium"
+              placeholder="Filter options..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onClick={(e) => e.stopPropagation()}
+              autoFocus
             />
           </div>
-          <div className="max-h-60 overflow-y-auto">
-            {filteredOptions.map(option => (
-              <div
-                key={option.value}
-                className={`px-4 py-2 text-sm cursor-pointer hover:bg-zinc-100 ${
-                  (isMulti && Array.isArray(value) && value.includes(option.value)) || value === option.value
-                    ? 'bg-zinc-50 font-medium'
-                    : ''
-                }`}
-                onClick={() => handleSelect(option.value)}
-              >
-                {option.label}
+          <div className="max-h-60 overflow-y-auto custom-scrollbar">
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map(option => (
+                <div
+                  key={option.value}
+                  className={`px-4 py-2.5 text-sm cursor-pointer transition-colors ${
+                    (isMulti && Array.isArray(value) && value.includes(option.value)) || value === option.value
+                      ? 'bg-slate-900 text-white font-bold'
+                      : 'hover:bg-slate-50 text-slate-600'
+                  }`}
+                  onClick={() => handleSelect(option.value)}
+                >
+                  {option.label}
+                </div>
+              ))
+            ) : (
+              <div className="px-4 py-8 text-center text-xs text-slate-400 font-bold uppercase tracking-widest">
+                No matches found
               </div>
-            ))}
+            )}
           </div>
         </div>
       )}

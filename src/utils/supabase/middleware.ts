@@ -27,6 +27,19 @@ export async function updateSession(request: NextRequest) {
 
   // Refresh session — do not remove this
   const { data: { user } } = await supabase.auth.getUser();
+  let role: string | null = null;
 
-  return { supabaseResponse, user };
+  if (user) {
+    const { data: profile, error } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle<{ role: string | null }>();
+
+    if (!error) {
+      role = profile?.role ?? null;
+    }
+  }
+
+  return { supabaseResponse, user, role };
 }

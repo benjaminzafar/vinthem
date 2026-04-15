@@ -1,11 +1,11 @@
 'use client';
 
 import React from 'react';
-import { Search } from 'lucide-react';
+import { Search, Menu } from 'lucide-react';
 import { NotificationCenter } from '@/components/admin/NotificationCenter';
 import { usePathname } from 'next/navigation';
 
-export default function AdminNavHeader() {
+export default function AdminNavHeader({ onToggle }: { onToggle: () => void }) {
   const pathname = usePathname();
   const currentTab = pathname.split('/').pop() || 'Dashboard';
 
@@ -13,7 +13,14 @@ export default function AdminNavHeader() {
     <header className="bg-white border-b border-slate-300 sticky top-0 z-30 flex-shrink-0">
       <div className="flex items-center justify-between px-6 sm:px-8 h-16">
         <div className="flex items-center">
-          <div className="w-10 lg:hidden" />
+          <button 
+            onClick={onToggle}
+            className="p-2 -ml-2 mr-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all rounded lg:hidden"
+            aria-label="Toggle Menu"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+          
           <div className="hidden lg:flex items-center space-x-2 text-[11px] font-bold uppercase tracking-widest text-slate-500">
              <span>Admin</span>
              <span className="text-slate-300">/</span>

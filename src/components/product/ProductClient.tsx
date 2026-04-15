@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { BackButton } from '@/components/BackButton';
 import Link from 'next/link';
 import { Product, ProductVariant, useCartStore } from '@/store/useCartStore';
@@ -20,11 +20,13 @@ interface ProductClientProps {
 
 export function ProductClient({ initialProduct, relatedProducts }: ProductClientProps) {
   const [product] = useState<Product>(initialProduct);
-  const [activeImage, setActiveImage] = useState<string>(initialProduct.imageUrl || '');
+  const [activeImage, setActiveImage] = useState<string>(() => {
+    const variantImage = initialProduct.variants?.[0]?.imageUrl;
+    return initialProduct.imageUrl || variantImage || '';
+  });
   const [isZoomed, setIsZoomed] = useState(false);
   const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>(() => {
     const initialOptions: Record<string, string> = {};
     if (initialProduct.options && initialProduct.options.length > 0) {
@@ -42,7 +44,7 @@ export function ProductClient({ initialProduct, relatedProducts }: ProductClient
   const { i18n } = useTranslation();
   const lang = i18n.language || 'en';
 
-  const matchedVariant = useMemo(() => {
+  const selectedVariant = useMemo(() => {
     if (!product.variants || product.variants.length === 0) {
       return null;
     }
@@ -56,10 +58,6 @@ export function ProductClient({ initialProduct, relatedProducts }: ProductClient
     return product.variants[0] ?? null;
   }, [product, selectedOptions]);
 
-  useEffect(() => {
-    setSelectedVariant(matchedVariant);
-  }, [matchedVariant]);
-
   const handleOptionChange = (optionName: string, value: string) => {
     const newOptions = { ...selectedOptions, [optionName]: value };
     setSelectedOptions(newOptions);
@@ -69,17 +67,33 @@ export function ProductClient({ initialProduct, relatedProducts }: ProductClient
         v.options && Object.keys(newOptions).every(k => v.options![k] === newOptions[k])
       );
       if (matchingVariant) {
-        setSelectedVariant(matchingVariant);
         if (matchingVariant.imageUrl) setActiveImage(matchingVariant.imageUrl);
-      } else {
-        setSelectedVariant(null);
       }
     }
   };
 
-  const handleVariantChange = (variant: ProductVariant) => {
-    setSelectedVariant(variant);
-    if (variant.imageUrl) setActiveImage(variant.imageUrl);
+  const handleThumbnailSelect = (imageUrl: string) => {
+    setActiveImage(imageUrl);
+
+    if (!product.variants) {
+      return;
+    }
+
+    const matchingVariant = product.variants.find((variant) => variant.imageUrl === imageUrl);
+    if (matchingVariant?.options) {
+      setSelectedOptions((currentOptions) => {
+        const nextOptions = {
+          ...currentOptions,
+          ...matchingVariant.options,
+        };
+
+        const hasChanged = Object.keys(matchingVariant.options ?? {}).some(
+          (key) => currentOptions[key] !== matchingVariant.options?.[key]
+        );
+
+        return hasChanged ? nextOptions : currentOptions;
+      });
+    }
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -143,8 +157,8 @@ export function ProductClient({ initialProduct, relatedProducts }: ProductClient
       try {
         await navigator.share({ title, url });
         return;
-      } catch (err) {
-        console.log('Error sharing', err);
+      } catch {
+        // Fall back to the platform-specific share links below.
       }
     }
 
@@ -191,10 +205,10 @@ export function ProductClient({ initialProduct, relatedProducts }: ProductClient
             {allImages.length > 1 && (
               <div className="flex md:flex-col gap-3 overflow-x-auto md:overflow-y-auto max-h-[500px] scrollbar-hide md:w-20 shrink-0">
                 {allImages.map((img, idx) => (
-                  <button 
-                    key={idx}
-                    onClick={() => setActiveImage(img)}
-                    className={`w-16 h-20 md:w-full md:h-24 rounded-2xl overflow-hidden border-2 flex-shrink-0 transition-all duration-300 ${activeImage === img ? 'border-brand-ink ring-4 ring-brand-ink/5 scale-95' : 'border-transparent hover:border-gray-200'}`}
+                    <button 
+                      key={idx}
+                      onClick={() => handleThumbnailSelect(img)}
+                    className={`w-16 h-20 md:w-full md:h-24 rounded-sm overflow-hidden border-2 flex-shrink-0 transition-all duration-300 ${activeImage === img ? 'border-brand-ink ring-2 ring-brand-ink/5 scale-95' : 'border-transparent hover:border-gray-200'}`}
                   >
                     {isVideo(img) ? (
                       <div className="relative w-full h-full bg-gray-100">
@@ -223,7 +237,7 @@ export function ProductClient({ initialProduct, relatedProducts }: ProductClient
 
             {/* Main Image */}
             <div 
-              className="flex-1 aspect-[4/5] bg-gray-50 rounded-2xl overflow-hidden relative group cursor-zoom-in shadow-sm border border-gray-100"
+              className="flex-1 aspect-[4/5] bg-gray-50 rounded-sm overflow-hidden relative group cursor-zoom-in shadow-sm border border-gray-100"
               onMouseEnter={() => !isVideo(activeImage) && setIsZoomed(true)}
               onMouseLeave={() => setIsZoomed(false)}
               onMouseMove={handleMouseMove}
@@ -251,7 +265,7 @@ export function ProductClient({ initialProduct, relatedProducts }: ProductClient
               )}
               
               {!isVideo(activeImage) && activeImage && (
-                <div className="absolute bottom-6 right-6 bg-white/90 backdrop-blur-md px-4 py-2 rounded-2xl text-[10px] font-bold text-brand-ink uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-2 group-hover:translate-y-0 shadow-sm border border-gray-100 pointer-events-none">
+                <div className="absolute bottom-6 right-6 bg-white/90 backdrop-blur-md px-4 py-2 rounded-sm text-[10px] font-black text-brand-ink uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-2 group-hover:translate-y-0 shadow-sm border border-gray-100 pointer-events-none">
                   {isZoomed ? 'Move to explore' : 'Click to expand'}
                 </div>
               )}
@@ -295,12 +309,12 @@ export function ProductClient({ initialProduct, relatedProducts }: ProductClient
             </p>
             <div>
               {(selectedVariant ? selectedVariant.stock : product.stock) > 0 ? (
-                <div className="flex items-center text-green-600 text-sm font-medium bg-green-50 px-3 py-1 rounded-2xl">
-                  <CheckCircle2 className="w-4 h-4 mr-1.5" />
-                  {settings.inStockText?.[lang]} {(selectedVariant ? selectedVariant.stock : product.stock) < 10 && <span className="ml-1 text-orange-500">({settings.onlyText?.[lang]} {(selectedVariant ? selectedVariant.stock : product.stock)} {settings.leftText?.[lang]})</span>}
+                <div className="flex items-center text-green-600 text-[10px] font-bold uppercase tracking-widest bg-green-50 px-3 py-1.5 rounded-sm border border-green-100">
+                  <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
+                  {settings.inStockText?.[lang]} {(selectedVariant ? selectedVariant.stock : product.stock) < 10 && <span className="ml-1 text-orange-500">({settings.onlyText?.[lang]} {(selectedVariant ? selectedVariant.stock : product.stock)} {settings.leftText?.[lang]}))</span>}
                 </div>
               ) : (
-                <div className="flex items-center text-red-600 text-sm font-medium bg-red-50 px-3 py-1 rounded-2xl">
+                <div className="flex items-center text-red-600 text-[10px] font-bold uppercase tracking-widest bg-red-50 px-3 py-1.5 rounded-sm border border-red-100">
                   <div className="w-1.5 h-1.5 rounded-full bg-red-600 mr-2"></div>
                   {settings.outOfStockText?.[lang]}
                 </div>
@@ -321,10 +335,10 @@ export function ProductClient({ initialProduct, relatedProducts }: ProductClient
                         <button
                           key={vIdx}
                           onClick={() => handleOptionChange(option.name, val)}
-                          className={`px-5 py-2.5 rounded-2xl text-sm font-medium transition-all border ${
+                          className={`px-3.5 py-1.5 rounded-sm text-[10px] font-black uppercase tracking-[0.15em] transition-all border ${
                             selectedOptions[option.name] === val
-                              ? 'bg-brand-ink text-white border-brand-ink'
-                              : 'bg-white text-gray-700 border-gray-200 hover:border-gray-400'
+                              ? 'bg-brand-ink text-white border-brand-ink shadow-sm'
+                              : 'bg-white text-zinc-400 border-zinc-100 hover:border-zinc-900 hover:text-zinc-900'
                           }`}
                         >
                           {val}
@@ -337,16 +351,18 @@ export function ProductClient({ initialProduct, relatedProducts }: ProductClient
             </div>
           )}
 
-          <button
-            onClick={handleAddToCart}
-            disabled={(selectedVariant ? selectedVariant.stock : product.stock) <= 0}
-            className="w-full bg-brand-ink text-white py-4 sm:py-5 rounded-2xl font-medium text-sm uppercase tracking-wide hover:opacity-90 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-all flex items-center justify-center mb-10 active:scale-[0.98]"
-          >
-            <ShoppingBag className="w-4 h-4 mr-3" /> {(selectedVariant ? selectedVariant.stock : product.stock) > 0 ? settings.addToCartButtonText?.[lang] : settings.outOfStockText?.[lang]}
-          </button>
+          <div className="flex justify-start">
+            <button
+              onClick={handleAddToCart}
+              disabled={(selectedVariant ? selectedVariant.stock : product.stock) <= 0}
+              className="w-full sm:w-auto sm:px-20 bg-brand-ink text-white py-4 rounded-sm font-black text-[10px] uppercase tracking-[0.25em] hover:opacity-95 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed transition-all flex items-center justify-center mb-10 active:scale-[0.99] shadow-sm"
+            >
+              <ShoppingBag className="w-3.5 h-3.5 mr-2.5" /> {(selectedVariant ? selectedVariant.stock : product.stock) > 0 ? settings.addToCartButtonText?.[lang] : settings.outOfStockText?.[lang]}
+            </button>
+          </div>
           
-          <div className="prose prose-nordic text-gray-600 mb-8">
-            <p className="leading-relaxed text-lg">{product.translations?.[lang]?.description || product.description}</p>
+          <div className="prose prose-nordic text-gray-600 mb-8 max-w-none">
+            <p className="leading-relaxed text-sm font-medium">{product.translations?.[lang]?.description || product.description}</p>
           </div>
 
           <Reviews productId={product.id!} />
@@ -370,19 +386,19 @@ export function ProductClient({ initialProduct, relatedProducts }: ProductClient
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {relatedProducts.map((p) => (
               <Link key={p.id} href={`/product/${p.id}`} className="group">
-                <div className="aspect-square bg-gray-100 rounded-2xl overflow-hidden mb-2 relative">
+                <div className="aspect-square bg-gray-50 rounded-sm overflow-hidden mb-3 relative border border-gray-100">
                   {p.imageUrl && (
                     <Image 
                       src={p.imageUrl} 
                       alt={p.title} 
                       fill
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
                       sizes="(max-width: 768px) 50vw, 25vw"
                     />
                   )}
                 </div>
-                <h3 className="font-sans font-semibold text-brand-ink text-xs truncate">{p.translations?.[lang]?.title || p.title}</h3>
-                <p className="text-xs text-brand-muted">{formatPrice(p.price || 0, lang, p.prices)}</p>
+                <h3 className="font-sans font-black text-brand-ink text-[11px] uppercase tracking-widest truncate mb-1">{p.translations?.[lang]?.title || p.title}</h3>
+                <p className="text-[11px] text-brand-muted font-bold">{formatPrice(p.price || 0, lang, p.prices)}</p>
               </Link>
             ))}
           </div>
@@ -400,7 +416,7 @@ export function ProductClient({ initialProduct, relatedProducts }: ProductClient
             >
               <button onClick={() => setIsLightboxOpen(false)} className="absolute top-8 right-8 p-3 text-brand-ink hover:bg-gray-100 rounded-2xl transition-colors z-[110]"><X /></button>
               <div className="relative w-full h-full flex items-center justify-center">
-                <motion.img initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} src={activeImage} alt={product.title} className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl" />
+                <motion.img initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} src={activeImage} alt={product.title} className="max-w-full max-h-full object-contain rounded-sm shadow-2xl" />
               </div>
             </motion.div>
           )}

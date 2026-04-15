@@ -22,7 +22,8 @@ export const genAI = {
         const result = await generateAIContentAction({
           model: config.model,
           contents: contents,
-          generationConfig: config.generationConfig
+          generationConfig: config.generationConfig,
+          nonce: Date.now().toString() // Force a fresh execution every time
         });
 
         if (result.error) {
