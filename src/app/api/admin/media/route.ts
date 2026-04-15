@@ -17,9 +17,13 @@ async function verifyAdmin() {
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const adminCheck = await verifyAdmin();
   if (adminCheck.error) return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status });
+
+  const { searchParams } = new URL(req.url);
+  const prefix = searchParams.get('prefix') || '';
+  const continuationToken = searchParams.get('token') || undefined;
 
   const bucketName = process.env.R2_BUCKET_NAME;
   if (!bucketName) return NextResponse.json({ error: 'R2_BUCKET_NAME not configured' }, { status: 500 });
@@ -27,28 +31,40 @@ export async function GET() {
   try {
     const command = new ListObjectsV2Command({
       Bucket: bucketName,
+      Prefix: prefix,
+      Delimiter: '/',
+      ContinuationToken: continuationToken,
+      MaxKeys: 1000 // Reasonable batch
     });
 
     const data = await s3Client.send(command);
-    const objects = data.Contents || [];
     
-    // Sort by LastModified descending
-    objects.sort((a: any, b: any) => (b.LastModified?.getTime() || 0) - (a.LastModified?.getTime() || 0));
-
-    const totalSize = objects.reduce((acc, obj) => acc + (obj.Size || 0), 0);
-    const fileCount = objects.length;
-
-    return NextResponse.json({
-      objects: objects.map(obj => ({
+    // Folders come from CommonPrefixes
+    const folders = data.CommonPrefixes?.map(cp => cp.Prefix?.slice(prefix.length).replace(/\/$/, '')).filter(Boolean) || [];
+    
+    // Files come from Contents
+    const files = (data.Contents || [])
+      .filter(obj => obj.Key !== prefix) // Don't include the folder itself
+      .map(obj => ({
         key: obj.Key,
         size: obj.Size,
         lastModified: obj.LastModified,
         url: `${process.env.R2_PUBLIC_URL}/${obj.Key}`
-      })),
-      stats: {
-        totalSize,
-        fileCount
-      }
+      }));
+
+    // For overall stats, we still might want totals, 
+    // but usually, a specific folder fetch doesn't need global stats.
+    // However, to keep compatibility with existing UI for now:
+    const statsResult = {
+      totalSize: files.reduce((acc, f) => acc + (f.size || 0), 0),
+      fileCount: files.length,
+      nextContinuationToken: data.NextContinuationToken
+    };
+
+    return NextResponse.json({
+      folders: folders.sort(),
+      objects: files,
+      stats: statsResult
     }, {
       headers: {
         'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
