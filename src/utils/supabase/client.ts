@@ -38,7 +38,10 @@ export function createClient() {
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,
-      }
+        // Stability Hardening: Prevent "Lock broken" AbortError
+        lockAcquireTimeout: 10000, 
+        lockRetryDelay: 50,         
+      } as any
     }
   );
 
