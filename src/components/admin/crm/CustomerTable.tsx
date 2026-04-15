@@ -22,13 +22,13 @@ export function CustomerTable({
     <div className="space-y-8">
       {/* 1. Search Logic (Aligned with Slate professional style) */}
       <div className="relative w-full sm:max-w-md">
-        <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+        <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
         <input 
           type="text" 
           value={searchQuery} 
           onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Filter customer database..."
-          className="w-full pl-12 pr-4 h-11 bg-slate-50 border border-slate-300 rounded text-sm font-medium focus:outline-none focus:border-slate-900 transition-all text-slate-900 placeholder:text-slate-400"
+          placeholder="Search customer database..."
+          className="w-full pl-10 pr-4 h-10 bg-white border border-slate-300 rounded text-sm focus:outline-none focus:border-slate-900 transition-all text-slate-900 placeholder:text-slate-400"
         />
       </div>
 
@@ -69,8 +69,8 @@ export function CustomerTable({
                   <td className="px-6 py-4">
                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest border ${
                       customer.role === 'admin' 
-                        ? 'bg-slate-100 text-slate-900 border-slate-900' 
-                        : 'bg-white text-slate-500 border-slate-200'
+                        ? 'bg-slate-900 text-white border-slate-900' 
+                        : 'bg-white text-slate-500 border-slate-300'
                     }`}>
                       {customer.role || 'client'}
                     </span>

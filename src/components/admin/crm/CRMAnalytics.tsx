@@ -55,7 +55,7 @@ export function CRMAnalytics({ tickets, customers, refunds }: CRMAnalyticsProps)
         
         <div className="h-[350px] w-full min-h-[300px]" style={{ minWidth: 0 }}>
           <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={100}>
-            <AreaChart data={chartData} margin={{ top: 10, right: 0, bottom: 0, left: -20 }}>
+            <AreaChart data={chartData} margin={{ top: 10, right: -5, bottom: 0, left: -15 }}>
               <defs>
                 <linearGradient id="colorCRM" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#0f172a" stopOpacity={0.05}/>
@@ -74,6 +74,7 @@ export function CRMAnalytics({ tickets, customers, refunds }: CRMAnalyticsProps)
                 axisLine={false} 
                 tickLine={false} 
                 tick={{ fill: '#64748b', fontSize: 11, fontWeight: 700 }} 
+                width={45}
               />
               <Tooltip 
                 content={({ active, payload, label }) => {

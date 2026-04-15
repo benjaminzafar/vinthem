@@ -118,29 +118,31 @@ export function CRMContainer() {
         refunds={refunds} 
       />
 
-      {/* 2. Management Hub (Aligned with Overview Spacing) */}
+      {/* 2. Management Hub (Unified border-bottom tabs) */}
       <div className="bg-white border border-slate-300 rounded overflow-hidden">
-        <div className="flex px-4 pt-4 bg-slate-50/50 border-b border-slate-300 overflow-x-auto no-scrollbar gap-1">
-          {[
-            { id: 'customers', label: 'Customers', icon: Users },
-            { id: 'tickets', label: 'Support Tickets', icon: MessageSquare },
-            { id: 'refunds', label: 'Returns & Refunds', icon: RefreshCcw },
-            { id: 'newsletter', label: 'Email Campaigns', icon: Megaphone },
-            { id: 'reviews', label: 'Verified Reviews', icon: Target },
-          ].map((tab) => (
-            <button 
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`px-6 py-3 text-[11px] font-bold uppercase tracking-widest transition-all flex items-center gap-2 rounded-t border-t border-x ${
-                activeTab === tab.id 
-                  ? 'bg-white text-slate-900 border-slate-300' 
-                  : 'text-slate-400 hover:text-slate-600 border-transparent'
-              }`}
-            >
-              <tab.icon className="w-3.5 h-3.5" />
-              {tab.label}
-            </button>
-          ))}
+        <div className="px-6 border-b border-slate-300 bg-white flex items-center justify-between h-14 overflow-x-auto no-scrollbar">
+          <div className="flex gap-8 h-full">
+            {[
+              { id: 'customers', label: 'Customers', icon: Users },
+              { id: 'tickets', label: 'Tickets', icon: MessageSquare },
+              { id: 'refunds', label: 'Refunds', icon: RefreshCcw },
+              { id: 'newsletter', label: 'Email', icon: Megaphone },
+              { id: 'reviews', label: 'Reviews', icon: Target },
+            ].map((tab) => (
+              <button 
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`h-full flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest border-b-2 transition-all ${
+                  activeTab === tab.id 
+                    ? 'text-slate-900 border-slate-900' 
+                    : 'text-slate-400 border-transparent hover:text-slate-600'
+                }`}
+              >
+                <tab.icon className="w-3.5 h-3.5" />
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="p-6 sm:p-8">
