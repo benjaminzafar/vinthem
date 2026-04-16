@@ -42,7 +42,7 @@ export function CredentialInput({
         {type === 'select' ? (
           <div className="relative">
             <select
-              value={value}
+              value={value || ""}
               onChange={(e) => onChange(e.target.value)}
               className={`${baseClasses} appearance-none pr-8 cursor-pointer hover:border-zinc-300`}
             >
@@ -71,7 +71,7 @@ export function CredentialInput({
           <>
             <input
               type={isPassword && !showPassword ? 'password' : 'text'}
-              value={value}
+              value={value || ""}
               onChange={(e) => onChange(e.target.value)}
               placeholder={placeholder || (isPassword ? '••••••••' : `Enter ${label}...`)}
               className={baseClasses}

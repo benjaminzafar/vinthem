@@ -5,6 +5,26 @@ import { StorefrontSettings } from '@/store/useSettingsStore';
 // We use react cache to deduplicate requests within a single render cycle (request)
 // Next.js also automatically caches data fetched via the Supabase client if configured,
 // but explicitly caching here is more robust for Server Components.
+export const getIntegrations = cache(async () => {
+  const supabase = await createClient();
+  const { data: integrations, error } = await supabase
+    .from('integrations')
+    .select('key, value')
+    .in('key', ['CLARITY_ID', 'POSTHOG_PROJECT_KEY', 'POSTHOG_HOST']);
+
+  if (error) {
+    console.error('Error fetching integrations:', error);
+    return {};
+  }
+
+  const config: Record<string, string> = {};
+  integrations?.forEach(item => {
+    config[item.key] = item.value;
+  });
+
+  return config;
+});
+
 export const getSettings = cache(async () => {
   const supabase = await createClient();
   const { data: settingsData, error } = await supabase

@@ -10,10 +10,16 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { useCustomConfirm } from '@/components/ConfirmationContext';
 import { motion, AnimatePresence } from 'motion/react';
 
-export function CollectionManager() {
+export function CollectionManager({ 
+  initialCategories = [], 
+  initialProducts = [] 
+}: { 
+  initialCategories?: Category[],
+  initialProducts?: Product[]
+}) {
   const router = useRouter();
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>(initialCategories);
+  const [products, setProducts] = useState<Product[]>(initialProducts);
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [selectedCollections, setSelectedCollections] = useState<string[]>([]);

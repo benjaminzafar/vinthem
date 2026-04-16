@@ -31,6 +31,27 @@
 
 ---
 
+### 2026-04-16: 'Deep Intelligence' & Real-Time Analytics Sync
+**Problem**: The CRM dashboard was purely informational but lacked live traffic awareness and behavioral insights (recordings).
+**Final Solution**:
+1. **Integrated Intelligence Dashboard**: Overhauled `CRMAnalytics.tsx` with live Recharts-driven Traffic Pulse (24h) and Source Origins mapping.
+2. **True Real-Mode Migration**: Implemented a secure proxy (`/api/admin/intelligence/traffic`) linking directly to the PostHog EU API. Completely eliminated mock fallbacks when keys are present.
+3. **Microsoft Clarity Integration**: Globally embedded behavioral sidecar for visual recordings. IDs are fetched server-side from Supabase, allowing no-code updates.
+4. **Global Hydration & Settings**: 
+   - Expanded the master **Integrations Dashboard** with PostHog and Clarity config cards.
+   - Implemented `lib/data.ts` (getIntegrations) to hydrate `RootLayout` with dynamic tracking scripts.
+   - All keys are secured using the platform's **AES-256-GCM encryption** protocol.
+5. **Identity Identity Sync**: Linked Supabase auth users to PostHog and Clarity sessions, enabling identity-aware behavioral mapping in the CRM.
+
+### 2026-04-16: Admin List Zero-Latency SSR
+**Problem**: Products, Collections, and Orders lists appeared empty or stuck on spinners when the browser was refreshed due to client-side-only fetching.
+**Final Solution**:
+1. **Server-Side Hydration**: Migrated initial data fetching for all core admin lists into the `AdminTabPage` (Server Component).
+2. **Prop Injection & Hydration**: Updated `ProductManager`, `CollectionManager`, and `OrderManager` to accept and prioritize `initialData` props.
+3. **Optimized Reload**: Data is now present in the HTML upon delivery, ensuring the UI is populated instantly on refresh while maintaining Realtime sync.
+
+---
+
 ## 🚀 CRITICAL RESOLUTIONS (KNOWLEDGE BASE)
 
 ### 2026-04-15: Product & Collection Editor Migration (Backend Hardening)
@@ -62,6 +83,8 @@
 
 Date       | What was done                              | Mistake that was fixed
 -----------|--------------------------------------------|------------------------
+2026-04-16 | **Deep Intelligence & Identity Sync**      | **FIXED MISTAKE**: Resolved 404/ReferenceErrors caused by incorrect PostHog host and case-insensitive key naming (unified to UPPERCASE).
+2026-04-16 | **Unified Analytics Architecture**         | **FIXED MISTAKE**: Eliminated 'Fake Data' complaints by removing mock fallbacks whenever API keys are present.
 2026-04-15 | **Modularized CRM & Aligned with Overview Style** | **FIXED MISTAKE**: Eliminated monolithic dashboard lag and resolved aesthetic mismatches.
 2026-04-15 | **Universal AI & Storefront Localization** | **FIXED MISTAKE**: Decentralized AI tools to be available for every field and fixed a `Package` icon import error that broke the build.
 2026-04-15 | **Modular Integrations Refactor**         | **FIXED MISTAKE**: Eliminated the buggy monolith and fixed dead "Test Connection" buttons by implementing Server Actions.

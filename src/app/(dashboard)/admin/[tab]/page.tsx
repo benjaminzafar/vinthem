@@ -50,6 +50,22 @@ export default async function AdminTabPage({ params, searchParams }: TabPageProp
     return <Overview initialStats={initialStats} />;
   }
 
+  if (tab === 'orders') {
+    const { data } = await supabase
+      .from('orders')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    const initialOrders = (data || []).map((o: any) => ({
+      ...o,
+      createdAt: o.created_at,
+      orderId: o.order_id,
+      customerEmail: o.shipping_details?.email
+    }));
+
+    return <OrderManager initialOrders={initialOrders} />;
+  }
+
   if (tab === 'integrations') {
     const response = await getIntegrationsAction();
     return <IntegrationsManager initialConfig={response.data || {}} />;
@@ -59,10 +75,69 @@ export default async function AdminTabPage({ params, searchParams }: TabPageProp
     return <StorefrontSettings />;
   }
 
-  // Generic fallback for other managers (we can specialize these later)
-  if (tab === 'orders') return <OrderManager />;
-  if (tab === 'products') return <ProductManager selectedProductId={sParams.id as string} />;
-  if (tab === 'collections') return <CollectionManager />;
+  if (tab === 'products') {
+    const [productsRes, categoriesRes] = await Promise.all([
+      supabase.from('products').select('*').order('created_at', { ascending: false }),
+      supabase.from('categories').select('*').order('name')
+    ]);
+    
+    const initialProducts = (productsRes.data || []).map((p: any) => ({
+      ...p,
+      imageUrl: p.image_url,
+      categoryId: p.category_id,
+      isFeatured: p.is_featured,
+      isNewArrival: p.is_new_arrival,
+      isSale: p.is_sale,
+      discountPrice: p.sale_price,
+      createdAt: p.created_at
+    }));
+
+    const initialCategories = (categoriesRes.data || []).map((c: any) => ({
+      ...c,
+      isFeatured: c.is_featured,
+      showInHero: c.show_in_hero,
+      parentId: c.parent_id,
+      imageUrl: c.image_url,
+      iconUrl: c.icon_url
+    }));
+
+    return (
+      <ProductManager 
+        selectedProductId={sParams.id as string} 
+        initialProducts={initialProducts}
+        initialCategories={initialCategories}
+      />
+    );
+  }
+
+  if (tab === 'collections') {
+    const [categoriesRes, productsRes] = await Promise.all([
+      supabase.from('categories').select('*').order('name'),
+      supabase.from('products').select('id, category_id')
+    ]);
+
+    const initialCategories = (categoriesRes.data || []).map((c: any) => ({
+      ...c,
+      isFeatured: c.is_featured,
+      showInHero: c.show_in_hero,
+      parentId: c.parent_id,
+      imageUrl: c.image_url,
+      iconUrl: c.icon_url
+    }));
+
+    const initialProductsShort = (productsRes.data || []).map((p: any) => ({
+      id: p.id,
+      categoryId: p.category_id
+    }));
+
+    return (
+      <CollectionManager 
+        initialCategories={initialCategories}
+        initialProducts={initialProductsShort as any} 
+      />
+    );
+  }
+
   if (tab === 'customers') return <CustomersAndCRMManager />;
   if (tab === 'blogs') return <BlogManager />;
   if (tab === 'pages') return <PageManager />;

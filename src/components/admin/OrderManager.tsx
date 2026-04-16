@@ -16,12 +16,18 @@ import { toast } from 'sonner';
 import { useDebounce } from '@/hooks/useDebounce';
 import { downloadXLSX } from '@/utils/export';
 
-export function OrderManager({ onSeedClick }: { onSeedClick?: () => void }) {
+export function OrderManager({ 
+  onSeedClick, 
+  initialOrders = [] 
+}: { 
+  onSeedClick?: () => void,
+  initialOrders?: any[]
+}) {
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(initialOrders.length === 0);
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<any[]>(initialOrders);
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
   const supabase = createClient();
 

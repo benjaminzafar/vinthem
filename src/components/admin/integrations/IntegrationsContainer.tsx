@@ -4,7 +4,7 @@ import React, { useState, useEffect, useTransition } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Sparkles, Megaphone, Truck, CreditCard, Settings2, 
-  ShieldCheck, AlertCircle, Loader2, Info, Search 
+  ShieldCheck, AlertCircle, Loader2, Info, Search, Globe, Activity 
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AdminHeader } from '../AdminHeader';
@@ -101,7 +101,7 @@ export function IntegrationsContainer({ initialConfig }: { initialConfig: Record
   const getIntegrationIdsByCategory = (catId: string) => {
     switch (catId) {
       case 'ai': return ['Groq'];
-      case 'marketing': return ['Instagram', 'TikTok', 'Reddit', 'Facebook'];
+      case 'marketing': return ['PostHog', 'Clarity', 'Instagram', 'TikTok', 'Reddit', 'Facebook'];
       case 'shipping': return ['PostNord', 'DHL', 'Bring', 'DBSchenker', 'UPS'];
       case 'system': return ['Stripe', 'Zoho', 'GoogleShopping'];
       default: return [];
@@ -150,6 +150,33 @@ export function IntegrationsContainer({ initialConfig }: { initialConfig: Record
                exit={{ opacity: 0, y: -5 }}
                transition={{ duration: 0.2 }}
              >
+               {id === 'PostHog' && (
+                 <IntegrationCard
+                    id="PostHog"
+                    title="PostHog (Real-time Analytics)"
+                    logo={<Globe className="text-emerald-600" />}
+                    isConnected={config['POSTHOG_API_KEY_CONNECTED'] === 'true'}
+                    isSaving={savingId === 'PostHog'}
+                    onSave={() => handleSave('PostHog', ['POSTHOG_PROJECT_ID', 'POSTHOG_PROJECT_KEY', 'POSTHOG_API_KEY', 'POSTHOG_HOST'])}
+                  >
+                    <CredentialInput label="Project ID" value={config['POSTHOG_PROJECT_ID']} onChange={v => handleUpdate('POSTHOG_PROJECT_ID', v)} />
+                    <CredentialInput label="Project Token (Public)" value={config['POSTHOG_PROJECT_KEY']} onChange={v => handleUpdate('POSTHOG_PROJECT_KEY', v)} />
+                    <CredentialInput label="Personal API Key (Private)" value={config['POSTHOG_API_KEY']} onChange={v => handleUpdate('POSTHOG_API_KEY', v)} type="password" />
+                    <CredentialInput label="Host URL" value={config['POSTHOG_HOST']} onChange={v => handleUpdate('POSTHOG_HOST', v)} placeholder="https://eu.i.posthog.com" />
+                  </IntegrationCard>
+               )}
+               {id === 'Clarity' && (
+                 <IntegrationCard
+                    id="Clarity"
+                    title="Microsoft Clarity (Recordings)"
+                    logo={<Activity className="text-blue-600" />}
+                    isConnected={config['CLARITY_ID_CONNECTED'] === 'true'}
+                    isSaving={savingId === 'Clarity'}
+                    onSave={() => handleSave('Clarity', ['CLARITY_ID'])}
+                  >
+                    <CredentialInput label="Clarity Project ID" value={config['CLARITY_ID']} onChange={v => handleUpdate('CLARITY_ID', v)} placeholder="wcb4auvfrs" />
+                  </IntegrationCard>
+               )}
                {id === 'Groq' && (
                  <IntegrationCard
                     id="Groq"

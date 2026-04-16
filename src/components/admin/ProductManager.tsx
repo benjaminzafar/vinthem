@@ -47,13 +47,23 @@ type CategoryRecord = {
   icon_url?: string;
 };
 
-export function ProductManager({ selectedProductId, onClearSelection }: { selectedProductId?: string | null, onClearSelection?: () => void }) {
+export function ProductManager({ 
+  selectedProductId, 
+  onClearSelection, 
+  initialProducts = [], 
+  initialCategories = [] 
+}: { 
+  selectedProductId?: string | null, 
+  onClearSelection?: () => void,
+  initialProducts?: Product[],
+  initialCategories?: Category[]
+}) {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'all' | 'active' | 'drafts'>('all');
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [categories, setCategories] = useState<Category[]>(initialCategories);
+  const [loading, setLoading] = useState(initialProducts.length === 0);
   const supabase = createClient();
   const router = useRouter();
   const customConfirm = useCustomConfirm();
