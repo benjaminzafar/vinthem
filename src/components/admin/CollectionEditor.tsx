@@ -514,7 +514,7 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
               <div className="p-6">
                  <div className="relative aspect-[16/9] bg-slate-50 border-2 border-dashed border-slate-200 rounded-[4px] flex items-center justify-center overflow-hidden hover:border-slate-900 transition-all cursor-pointer group mb-4">
                     {formData.imageUrl ? (
-                      <Image src={formData.imageUrl} alt="" fill className="object-cover" />
+                      <Image src={formData.imageUrl} alt="" fill sizes="(max-width: 768px) 100vw, 600px" className="object-cover" />
                     ) : (
                       <div className="text-center p-6">
                          <ImageIcon className="w-8 h-8 text-slate-300 mx-auto mb-2" />
@@ -556,7 +556,7 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
                          formData.iconUrl.startsWith('icon:') ? (
                            <IconRenderer iconName={formData.iconUrl} className="w-8 h-8 text-slate-900" />
                          ) : (
-                           <Image src={formData.iconUrl} alt="Icon" fill className="object-cover" />
+                           <Image src={formData.iconUrl} alt="Icon" fill sizes="64px" className="object-cover" />
                          )
                       ) : <Star className="w-6 h-6 text-slate-200" />}
                     </div>

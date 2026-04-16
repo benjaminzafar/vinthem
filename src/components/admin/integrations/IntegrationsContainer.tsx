@@ -1,16 +1,16 @@
 "use client";
 
-import React, { useState, useEffect, useTransition } from 'react';
+import React, { useState, useTransition } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Sparkles, Megaphone, Truck, CreditCard, Settings2, 
-  ShieldCheck, AlertCircle, Loader2, Info, Search, Globe, Activity 
+  Sparkles, Megaphone, Truck, Settings2, 
+  ShieldCheck, Loader2, Search, Globe, Activity 
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AdminHeader } from '../AdminHeader';
 import { IntegrationCard } from './IntegrationCard';
 import { CredentialInput } from './CredentialInput';
-import { saveIntegrationAction, getIntegrationsAction } from '@/app/actions/integrations';
+import { saveIntegrationAction } from '@/app/actions/integrations';
 import { testStripeConnectionAction, testEmailConnectionAction } from '@/app/actions/integrations-test';
 
 // Category Definitions - Sharp Styling
@@ -24,24 +24,9 @@ const CATEGORIES = [
 export function IntegrationsContainer({ initialConfig }: { initialConfig: Record<string, string> }) {
   const [activeCategory, setActiveCategory] = useState('ai');
   const [config, setConfig] = useState<Record<string, string>>(initialConfig || {});
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
   const [savingId, setSavingId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(!initialConfig);
-
-  useEffect(() => {
-    if (!initialConfig) {
-      loadConfig();
-    }
-  }, []);
-
-  const loadConfig = async () => {
-    setIsLoading(true);
-    const result = await getIntegrationsAction();
-    if (result.success && result.data) {
-      setConfig(result.data);
-    }
-    setIsLoading(false);
-  };
+  const [isLoading] = useState(false);
 
   const handleUpdate = (key: string, value: string) => {
     setConfig(prev => ({ ...prev, [key]: value }));
@@ -211,7 +196,7 @@ export function IntegrationsContainer({ initialConfig }: { initialConfig: Record
                  <IntegrationCard
                     id="Instagram"
                     title="Instagram Business"
-                    logo={<img src="https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg" className="w-full h-full object-contain" />}
+                    logo={<img src="https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg" alt="" className="w-full h-full object-contain" />}
                     isConnected={config['INSTAGRAM_API_KEY_CONNECTED'] === 'true'}
                     isSaving={savingId === 'Instagram'}
                     onSave={() => handleSave('Instagram', ['INSTAGRAM_API_KEY', 'INSTAGRAM_CATALOG_ID', 'INSTAGRAM_BUSINESS_ID'])}
@@ -225,7 +210,7 @@ export function IntegrationsContainer({ initialConfig }: { initialConfig: Record
                  <IntegrationCard
                     id="TikTok"
                     title="TikTok Shop"
-                    logo={<img src="https://upload.wikimedia.org/wikipedia/commons/a/a6/Tiktok_icon.svg" className="w-full h-full object-contain" />}
+                    logo={<img src="https://upload.wikimedia.org/wikipedia/commons/a/a6/Tiktok_icon.svg" alt="" className="w-full h-full object-contain" />}
                     isConnected={config['TIKTOK_API_KEY_CONNECTED'] === 'true'}
                     isSaving={savingId === 'TikTok'}
                     onSave={() => handleSave('TikTok', ['TIKTOK_API_KEY', 'TIKTOK_SHOP_ID', 'TIKTOK_REGION'])}
@@ -239,7 +224,7 @@ export function IntegrationsContainer({ initialConfig }: { initialConfig: Record
                  <IntegrationCard
                     id="Reddit"
                     title="Reddit Ads"
-                    logo={<img src="https://upload.wikimedia.org/wikipedia/commons/b/b4/Reddit_logo.svg" className="w-full h-full object-contain" />}
+                    logo={<img src="https://upload.wikimedia.org/wikipedia/commons/b/b4/Reddit_logo.svg" alt="" className="w-full h-full object-contain" />}
                     isConnected={config['REDDIT_API_KEY_CONNECTED'] === 'true'}
                     isSaving={savingId === 'Reddit'}
                     onSave={() => handleSave('Reddit', ['REDDIT_API_KEY', 'REDDIT_AD_ACCOUNT_ID'])}
@@ -252,7 +237,7 @@ export function IntegrationsContainer({ initialConfig }: { initialConfig: Record
                  <IntegrationCard
                     id="Facebook"
                     title="Facebook Marketing"
-                    logo={<img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" className="w-full h-full object-contain" />}
+                    logo={<img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" alt="" className="w-full h-full object-contain" />}
                     isConnected={config['FACEBOOK_PIXEL_ID_CONNECTED'] === 'true'}
                     isSaving={savingId === 'Facebook'}
                     onSave={() => handleSave('Facebook', ['FACEBOOK_PIXEL_ID', 'FACEBOOK_CATALOG_ID'])}
@@ -265,7 +250,7 @@ export function IntegrationsContainer({ initialConfig }: { initialConfig: Record
                  <IntegrationCard
                     id="PostNord"
                     title="PostNord Logistics"
-                    logo={<img src="https://upload.wikimedia.org/wikipedia/commons/7/7b/PostNord_logo.svg" className="w-full h-full object-contain" />}
+                    logo={<img src="https://upload.wikimedia.org/wikipedia/commons/7/7b/PostNord_logo.svg" alt="" className="w-full h-full object-contain" />}
                     isConnected={config['POSTNORD_API_KEY_CONNECTED'] === 'true'}
                     isSaving={savingId === 'PostNord'}
                     onSave={() => handleSave('PostNord', ['POSTNORD_API_KEY'])}
@@ -289,7 +274,7 @@ export function IntegrationsContainer({ initialConfig }: { initialConfig: Record
                  <IntegrationCard
                     id="Bring"
                     title="Bring (Norway/Nordic)"
-                    logo={<img src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Brings_logo.svg" className="w-full h-full object-contain" />}
+                    logo={<img src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Brings_logo.svg" alt="" className="w-full h-full object-contain" />}
                     isConnected={config['BRING_API_KEY_CONNECTED'] === 'true'}
                     isSaving={savingId === 'Bring'}
                     onSave={() => handleSave('Bring', ['BRING_API_KEY'])}
@@ -301,7 +286,7 @@ export function IntegrationsContainer({ initialConfig }: { initialConfig: Record
                  <IntegrationCard
                     id="DBSchenker"
                     title="DB Schenker"
-                    logo={<img src="https://upload.wikimedia.org/wikipedia/commons/0/07/DB_Schenker_Logo.svg" className="w-full h-full object-contain" />}
+                    logo={<img src="https://upload.wikimedia.org/wikipedia/commons/0/07/DB_Schenker_Logo.svg" alt="" className="w-full h-full object-contain" />}
                     isConnected={config['DBSCHENKER_API_KEY_CONNECTED'] === 'true'}
                     isSaving={savingId === 'DBSchenker'}
                     onSave={() => handleSave('DBSchenker', ['DBSCHENKER_API_KEY'])}
@@ -313,7 +298,7 @@ export function IntegrationsContainer({ initialConfig }: { initialConfig: Record
                  <IntegrationCard
                     id="UPS"
                     title="UPS Global"
-                    logo={<img src="https://upload.wikimedia.org/wikipedia/commons/1/1b/UPS_Logo_Shield_2017.svg" className="w-full h-full object-contain" />}
+                    logo={<img src="https://upload.wikimedia.org/wikipedia/commons/1/1b/UPS_Logo_Shield_2017.svg" alt="" className="w-full h-full object-contain" />}
                     isConnected={config['UPS_API_KEY_CONNECTED'] === 'true'}
                     isSaving={savingId === 'UPS'}
                     onSave={() => handleSave('UPS', ['UPS_API_KEY'])}
@@ -325,7 +310,7 @@ export function IntegrationsContainer({ initialConfig }: { initialConfig: Record
                  <IntegrationCard
                     id="Stripe"
                     title="Stripe Payments"
-                    logo={<img src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo,_revised_2016.svg" className="w-full h-full object-contain" />}
+                    logo={<img src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo,_revised_2016.svg" alt="" className="w-full h-full object-contain" />}
                     isConnected={config['STRIPE_SECRET_KEY_CONNECTED'] === 'true'}
                     isSaving={savingId === 'Stripe'}
                     onSave={() => handleSave('Stripe', ['STRIPE_SECRET_KEY', 'VITE_STRIPE_PUBLIC_KEY', 'STRIPE_WEBHOOK_SECRET', 'STRIPE_AUTO_CURRENCY', 'ACTIVE_MARKETS'])}
@@ -363,7 +348,7 @@ export function IntegrationsContainer({ initialConfig }: { initialConfig: Record
                  <IntegrationCard
                     id="GoogleShopping"
                     title="Google Shopping"
-                    logo={<img src="https://upload.wikimedia.org/wikipedia/en/a/ab/Google_Shopping_Logo_2025.svg" className="w-full h-full object-contain" />}
+                    logo={<img src="https://upload.wikimedia.org/wikipedia/en/a/ab/Google_Shopping_Logo_2025.svg" alt="" className="w-full h-full object-contain" />}
                     isConnected={config['GOOGLE_SHOPPING_MERCHANT_ID_CONNECTED'] === 'true'}
                     isSaving={savingId === 'GoogleShopping'}
                     onSave={() => handleSave('GoogleShopping', ['GOOGLE_SHOPPING_MERCHANT_ID', 'GOOGLE_SHOPPING_API_KEY', 'GOOGLE_SHOPPING_CLIENT_ID', 'GOOGLE_SHOPPING_CLIENT_SECRET'])}

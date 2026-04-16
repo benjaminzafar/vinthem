@@ -521,7 +521,7 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
               <div className="p-6 pt-2">
                 <div className="relative aspect-square bg-slate-50 border-2 border-dashed border-slate-200 rounded-[4px] flex items-center justify-center overflow-hidden hover:border-slate-900 transition-all cursor-pointer group mb-4">
                    {formData.imageUrl ? (
-                     <Image src={formData.imageUrl} alt="" fill className="object-cover" />
+                     <Image src={formData.imageUrl} alt="" fill sizes="(max-width: 768px) 100vw, 600px" className="object-cover" />
                    ) : (
                      <div className="text-center p-6">
                         <ImageIcon className="w-8 h-8 text-slate-300 mx-auto mb-2" />
@@ -593,7 +593,7 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
                 <div className="grid grid-cols-4 gap-2 mb-4">
                    {formData.additionalImages?.map((img, i) => (
                      <div key={i} className="relative aspect-square border border-slate-100 rounded group">
-                        <Image src={img} alt="" fill className="object-cover" />
+                        <Image src={img} alt="" fill sizes="200px" className="object-cover" />
                         <button 
                           onClick={() => setFormData(prev => ({ ...prev, additionalImages: prev.additionalImages?.filter((_, idx) => idx !== i) }))}
                           className="absolute -top-1 -right-1 bg-white border border-slate-200 text-slate-400 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-all"

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 import { 
@@ -8,39 +8,114 @@ import {
   RefreshCcw, 
   ChevronRight, 
   ChevronDown, 
-  Package, 
-  RefreshCw 
+  Package
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { toast } from 'sonner';
 import { useDebounce } from '@/hooks/useDebounce';
 import { downloadXLSX } from '@/utils/export';
+import { InfiniteScrollSentinel } from '@/components/admin/InfiniteScrollSentinel';
+import { updateOrderAction } from '@/app/actions/admin-orders';
 
 export function OrderManager({ 
-  onSeedClick, 
-  initialOrders = [] 
+  onSeedClick,
+  initialOrders = [],
 }: { 
-  onSeedClick?: () => void,
-  initialOrders?: any[]
+  onSeedClick?: () => void;
+  initialOrders?: any[];
 }) {
   const [searchQuery, setSearchQuery] = useState('');
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  const debouncedSearchQuery = useDebounce(searchQuery, 400);
   const [loading, setLoading] = useState(initialOrders.length === 0);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const pageRef = useRef(0);
+  const ITEMS_PER_PAGE = 50;
+  
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
   const [orders, setOrders] = useState<any[]>(initialOrders);
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
   const supabase = createClient();
 
+  const fetchOrders = useCallback(async (isFirstPage: boolean = false) => {
+    if (isFirstPage) {
+      setLoading(true);
+      pageRef.current = 0;
+    } else {
+      setLoadingMore(true);
+    }
+
+    const from = pageRef.current * ITEMS_PER_PAGE;
+    const to = from + ITEMS_PER_PAGE - 1;
+
+    try {
+      let query = supabase
+        .from('orders')
+        .select('*', { count: 'exact' });
+
+      if (debouncedSearchQuery) {
+        query = query.or(`order_id.ilike.%${debouncedSearchQuery}%,id.ilike.%${debouncedSearchQuery}%`);
+      }
+
+      const { data, count, error } = await query
+        .order('created_at', { ascending: false })
+        .range(from, to);
+
+      if (error) throw error;
+
+      const mappedOrders = (data || []).map((o: any) => ({
+        ...o,
+        createdAt: o.created_at,
+        orderId: o.order_id,
+        customerEmail: o.shipping_details?.email
+      }));
+
+      if (isFirstPage) {
+        setOrders(mappedOrders);
+      } else {
+        setOrders(prev => {
+          const combined = [...prev, ...mappedOrders];
+          const unique = Array.from(new Map(combined.map(o => [o.id, o])).values());
+          return unique;
+        });
+      }
+
+      const fetchedSoFar = from + mappedOrders.length;
+      setHasMore(count ? fetchedSoFar < count : false);
+      
+      if (mappedOrders.length > 0) {
+        pageRef.current += 1;
+      }
+
+    } catch (error: any) {
+      console.error('[OrderManager] Fetch error:', error);
+      toast.error('Failed to load orders: ' + error.message);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  }, [supabase, debouncedSearchQuery]);
+
+  useEffect(() => {
+    fetchOrders(true);
+  }, [debouncedSearchQuery, fetchOrders]);
+
   const handleUpdateOrder = async (orderId: string, updates: Record<string, unknown>) => {
     setUpdatingOrderId(orderId);
     const toastId = toast.loading('Updating order...');
     try {
-      const { error } = await supabase.from('orders').update(updates).eq('id', orderId);
-      if (error) throw error;
+      const result = await updateOrderAction({
+        orderId,
+        status: typeof updates.status === 'string' ? updates.status : undefined,
+        trackingCarrier: typeof updates.trackingCarrier === 'string' ? updates.trackingCarrier : undefined,
+        trackingNumber: typeof updates.trackingNumber === 'string' ? updates.trackingNumber : undefined,
+      });
+      if (!result.success) {
+        throw new Error(result.message);
+      }
       setOrders(prev => prev.map(o => o.id === orderId ? { ...o, ...updates } : o));
       toast.success('Order updated successfully', { id: toastId });
     } catch (error: any) {
-      console.error('Error updating order:', error);
       toast.error(error.message || 'Failed to update order', { id: toastId });
     } finally {
       setUpdatingOrderId(null);
@@ -48,47 +123,15 @@ export function OrderManager({
   };
 
   useEffect(() => {
-    const fetchOrders = async () => {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('orders')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (error) {
-        console.error('Error fetching orders:', error);
-        toast.error('Failed to load orders');
-      } else {
-        setOrders((data || []).map((o: any) => ({
-          ...o,
-          createdAt: o.created_at,
-          orderId: o.order_id,
-          customerEmail: o.shipping_details?.email
-        })));
-      }
-      setLoading(false);
-    };
-
-    fetchOrders();
-
     const channel = supabase
       .channel('orders_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, fetchOrders)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => fetchOrders(true))
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [supabase]);
-
-  const filteredOrders = orders.filter(order => {
-    const searchLower = debouncedSearchQuery.toLowerCase();
-    return (
-      (order.orderId && order.orderId.toLowerCase().includes(searchLower)) ||
-      (order.id && order.id.toLowerCase().includes(searchLower)) ||
-      (order.customerEmail && order.customerEmail.toLowerCase().includes(searchLower))
-    );
-  });
+  }, [supabase, fetchOrders]);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -102,12 +145,11 @@ export function OrderManager({
         }}
         secondaryActions={[
           ...(onSeedClick ? [{ label: 'Seed Test Data', icon: Database, onClick: onSeedClick }] : []),
-          { label: 'Export XLSX', icon: Download, onClick: () => downloadXLSX(filteredOrders, 'orders') }
+          { label: 'Export XLSX', icon: Download, onClick: () => downloadXLSX(orders, 'orders') }
         ]}
-        statsLabel={`${filteredOrders.length} orders`}
+        statsLabel={`${orders.length} orders`}
       />
 
-      {/* Info Message */}
       <div className="bg-slate-50 border border-slate-300 rounded p-4 text-sm text-slate-700 flex items-center gap-3">
         <RefreshCcw className="w-5 h-5 text-slate-400 shrink-0" />
         <p>Automated label printing requires configuration. Please go to Shipping Settings to enable your preferred service.</p>
@@ -126,14 +168,16 @@ export function OrderManager({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredOrders.length === 0 ? (
+              {loading && orders.length === 0 ? (
+                <tr><td colSpan={5} className="py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-xs">Retrieving Order Ledger...</td></tr>
+              ) : orders.length === 0 ? (
                 <tr>
                    <td colSpan={5} className="py-20 text-center">
                      <Package className="w-12 h-12 mx-auto text-slate-200 mb-3" />
                      <p className="text-sm font-bold text-slate-900 uppercase tracking-widest">No orders found</p>
                    </td>
                 </tr>
-              ) : filteredOrders.map((order) => (
+              ) : orders.map((order) => (
                 <React.Fragment key={order.id}>
                   <tr 
                     className="hover:bg-slate-50 transition-colors cursor-pointer group"
@@ -200,7 +244,7 @@ export function OrderManager({
                                   <option value="Delivered">Delivered</option>
                                   <option value="Cancelled">Cancelled</option>
                                 </select>
-                                {updatingOrderId === order.id && <RefreshCw className="w-5 h-5 animate-spin text-slate-400" />}
+                                {updatingOrderId === order.id && <RefreshCcw className="w-5 h-5 animate-spin text-slate-400" />}
                               </div>
                             </div>
                             
@@ -229,6 +273,13 @@ export function OrderManager({
             </tbody>
           </table>
         </div>
+
+        <InfiniteScrollSentinel 
+          onIntersect={() => fetchOrders(false)}
+          isLoading={loadingMore}
+          hasMore={hasMore}
+          loadingMessage="Streaming order ledger..."
+        />
       </div>
     </div>
   );

@@ -12,6 +12,7 @@ import { DatabaseManager } from '@/components/admin/DatabaseManager';
 import { StorefrontSettings } from '@/components/admin/StorefrontSettings';
 import { MediaManager } from '@/components/admin/MediaManager';
 import { getIntegrationsAction } from '@/app/actions/integrations';
+import { mapBlogRow, mapPageRow } from '@/lib/admin-content';
 
 interface TabPageProps {
   params: Promise<{ tab: string }>;
@@ -139,8 +140,17 @@ export default async function AdminTabPage({ params, searchParams }: TabPageProp
   }
 
   if (tab === 'customers') return <CustomersAndCRMManager />;
-  if (tab === 'blogs') return <BlogManager />;
-  if (tab === 'pages') return <PageManager />;
+  if (tab === 'blogs') {
+    const { data } = await supabase.from('blog_posts').select('*').order('created_at', { ascending: false });
+    const initialPosts = (data || []).map((post) => mapBlogRow(post as Record<string, unknown>));
+    return <BlogManager initialPosts={initialPosts} />;
+  }
+
+  if (tab === 'pages') {
+    const { data } = await supabase.from('pages').select('*').order('updated_at', { ascending: false });
+    const initialPages = (data || []).map((page) => mapPageRow(page as Record<string, unknown>));
+    return <PageManager initialPages={initialPages} />;
+  }
   if (tab === 'database') return <DatabaseManager />;
   if (tab === 'media') return <MediaManager />;
 

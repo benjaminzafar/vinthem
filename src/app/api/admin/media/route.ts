@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
       Prefix: prefix,
       Delimiter: '/',
       ContinuationToken: continuationToken,
-      MaxKeys: 1000 // Reasonable batch
+      MaxKeys: 50 // Faster batch for infinite scroll
     });
 
     const data = await s3Client.send(command);

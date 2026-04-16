@@ -41,6 +41,10 @@ export type DeleteCategoryInput = {
   parentProductIds: string[];
 };
 
+export type DeleteCategoriesInput = {
+  categoryIds: string[];
+};
+
 export type CategoryActionResponse = {
   success: boolean;
   message: string;
@@ -180,6 +184,41 @@ export async function deleteCategoryAction(input: DeleteCategoryInput): Promise<
     return {
       success: false,
       message: 'Failed to delete collection.',
+      error: error?.message || 'Unknown error',
+    };
+  }
+}
+
+export async function deleteCategoriesAction(input: DeleteCategoriesInput): Promise<CategoryActionResponse> {
+  try {
+    await requireAdmin();
+
+    const categoryIds = input.categoryIds
+      .map((id) => id.trim())
+      .filter(Boolean);
+
+    if (categoryIds.length === 0) {
+      throw new Error('Select at least one collection to delete.');
+    }
+
+    const supabase = await createClient();
+    const { error } = await supabase.from('categories').delete().in('id', categoryIds);
+
+    if (error) {
+      throw error;
+    }
+
+    revalidatePath('/admin');
+    revalidatePath('/');
+
+    return {
+      success: true,
+      message: 'Collections deleted successfully.',
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: 'Failed to delete collections.',
       error: error?.message || 'Unknown error',
     };
   }

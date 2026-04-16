@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { encrypt } from '@/lib/encryption';
-import { requireAdminBearerUser } from '@/lib/admin';
+import { requireAdminUser } from '@/lib/admin';
+import { isSensitiveIntegrationKey, normalizePostHogIngestionHost } from '@/lib/integrations';
 
 export async function POST(req: NextRequest) {
   try {
-    const { supabase } = await requireAdminBearerUser(req.headers.get('Authorization'));
+    const { supabase } = await requireAdminUser();
 
     const updates = await req.json();
     if (typeof updates !== 'object' || updates === null) {
@@ -16,11 +17,16 @@ export async function POST(req: NextRequest) {
     for (const [key, value] of Object.entries(updates)) {
       if (typeof value === 'string' && value.trim() !== '') {
         const sanitizedValue = value.replace(/[<>]/g, '');
-        const encryptedValue = encrypt(sanitizedValue);
+        const normalizedValue = key === 'POSTHOG_HOST'
+          ? normalizePostHogIngestionHost(sanitizedValue)
+          : sanitizedValue;
+        const storedValue = isSensitiveIntegrationKey(key)
+          ? encrypt(normalizedValue)
+          : normalizedValue;
 
         const { error: upsertError } = await supabase
           .from('integrations')
-          .upsert({ key, value: encryptedValue, updated_at: now }, { onConflict: 'key' });
+          .upsert({ key, value: storedValue, updated_at: now }, { onConflict: 'key' });
 
         if (upsertError) throw upsertError;
       }

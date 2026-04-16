@@ -20,6 +20,7 @@ const nextConfig: NextConfig = {
         hostname: '**.r2.dev',
       },
     ],
+    qualities: [60, 75],
   },
   experimental: {
     optimizePackageImports: ['lucide-react', 'motion/react', 'sonner'],

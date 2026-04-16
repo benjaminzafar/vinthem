@@ -3,18 +3,18 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronDown, ChevronRight, MessageSquare, Clock, AlertCircle } from 'lucide-react';
-import { createClient } from '@/utils/supabase/client';
+import { replySupportTicketAction } from '@/app/actions/support';
 import { toast } from 'sonner';
+import type { SupportTicket } from './types';
 
 interface SupportManagerProps {
-  tickets: any[];
+  tickets: SupportTicket[];
   loading: boolean;
 }
 
 export function SupportManager({ tickets, loading }: SupportManagerProps) {
-  const supabase = createClient();
   const [expandedTicketId, setExpandedTicketId] = useState<string | null>(null);
-  const [ticketReplyText, setTicketReplyText] = useState('');
+  const [draftReplies, setDraftReplies] = useState<Record<string, string>>({});
   const [isUpdating, setIsUpdating] = useState(false);
 
   const getStatusStyle = (status: string) => {
@@ -26,31 +26,54 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
   };
 
   const handleReplyTicket = async (ticketId: string) => {
-    if (!ticketReplyText.trim()) return;
+    const replyText = draftReplies[ticketId]?.trim() ?? '';
+    if (!replyText) return;
     setIsUpdating(true);
     const toastId = toast.loading('Syncing response...');
 
     try {
       const ticket = tickets.find(t => t.id === ticketId);
-      const newMessages = [
-        ...(ticket?.messages || []),
-        { sender: 'admin', text: ticketReplyText, createdAt: new Date().toISOString() }
-      ];
+      const result = await replySupportTicketAction({
+        ticketId,
+        replyText,
+        status: 'in-progress',
+        existingMessages: ticket?.messages ?? [],
+      });
 
-      const { error } = await supabase
-        .from('support_tickets')
-        .update({
-          messages: newMessages,
-          status: 'in-progress',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', ticketId);
+      if (!result.success) {
+        throw new Error(result.error || result.message);
+      }
 
-      if (error) throw error;
-      toast.success('Response confirmed', { id: toastId });
-      setTicketReplyText('');
-    } catch (error: any) {
-      toast.error(error.message, { id: toastId });
+      toast.success(result.message, { id: toastId });
+      setDraftReplies((current) => ({ ...current, [ticketId]: '' }));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to update support ticket.';
+      toast.error(message, { id: toastId });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleStatusChange = async (ticketId: string, status: SupportTicket['status']) => {
+    setIsUpdating(true);
+    const toastId = toast.loading('Updating ticket...');
+
+    try {
+      const ticket = tickets.find((item) => item.id === ticketId);
+      const result = await replySupportTicketAction({
+        ticketId,
+        status,
+        existingMessages: ticket?.messages ?? [],
+      });
+
+      if (!result.success) {
+        throw new Error(result.error || result.message);
+      }
+
+      toast.success(result.message, { id: toastId });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to update support ticket.';
+      toast.error(message, { id: toastId });
     } finally {
       setIsUpdating(false);
     }
@@ -84,7 +107,7 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
                       <div className="w-6 flex items-center shrink-0">
                         {expandedTicketId === ticket.id ? <ChevronDown className="w-3.5 h-3.5 text-slate-400" /> : <ChevronRight className="w-3.5 h-3.5 text-slate-400" />}
                       </div>
-                      {ticket.customerEmail}
+                      {ticket.customerName || ticket.customerEmail || 'Unknown requester'}
                     </td>
                     <td className="px-6 py-4 text-sm font-medium text-slate-500">{ticket.subject}</td>
                     <td className="px-6 py-4">
@@ -114,7 +137,7 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
                                 <MessageSquare className="w-3.5 h-3.5" /> Conversation Log
                               </h4>
                               <div className="space-y-3 max-h-[300px] overflow-y-auto pr-4 custom-scrollbar">
-                                {ticket.messages?.map((msg: any, idx: number) => (
+                                {ticket.messages?.map((msg, idx) => (
                                   <div key={idx} className={`flex ${msg.sender === 'admin' ? 'justify-end' : 'justify-start'}`}>
                                     <div className={`max-w-[85%] p-4 rounded text-sm ${
                                       msg.sender === 'admin' 
@@ -138,15 +161,15 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
 
                               <div className="pt-4 relative">
                                 <textarea
-                                  value={ticketReplyText}
-                                  onChange={(e) => setTicketReplyText(e.target.value)}
+                                  value={draftReplies[ticket.id] ?? ''}
+                                  onChange={(e) => setDraftReplies((current) => ({ ...current, [ticket.id]: e.target.value }))}
                                   placeholder="Type your official response..."
                                   className="w-full bg-white border border-slate-300 rounded p-4 text-sm font-medium min-h-[100px] focus:outline-none focus:border-slate-900 transition-all"
                                 />
                                 <div className="absolute bottom-4 right-4">
                                   <button 
                                     onClick={() => handleReplyTicket(ticket.id)}
-                                    disabled={isUpdating || !ticketReplyText.trim()}
+                                    disabled={isUpdating || !(draftReplies[ticket.id] ?? '').trim()}
                                     className="bg-slate-900 text-white px-5 py-2 rounded text-[10px] font-bold uppercase tracking-widest hover:bg-slate-800 disabled:opacity-50 transition-all"
                                   >
                                     {isUpdating ? 'Syncing...' : 'Send Response'}
@@ -163,9 +186,11 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
                                 {['open', 'resolved'].map((s) => (
                                   <button 
                                     key={s}
+                                    onClick={() => handleStatusChange(ticket.id, s as SupportTicket['status'])}
+                                    disabled={isUpdating}
                                     className={`py-2 px-3 rounded text-[10px] font-bold uppercase tracking-widest border transition-all ${
                                       ticket.status === s ? 'bg-slate-900 text-white border-slate-900' : 'bg-slate-50 text-slate-500 border-slate-300'
-                                    }`}
+                                    } disabled:opacity-50`}
                                   >
                                     Mark as {s}
                                   </button>

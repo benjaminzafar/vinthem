@@ -4,9 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import i18nInstance from '@/i18n';
-import { useTranslation } from 'react-i18next';
-import { persistLocaleCookie } from '@/lib/locale';
+import { getClientLocale, persistLocaleCookie } from '@/lib/locale';
 
 interface LanguageSwitcherProps {
   availableLanguages: string[];
@@ -17,7 +15,7 @@ export function LanguageSwitcher({ availableLanguages, variant = 'dropdown' }: L
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-  const { i18n } = useTranslation();
+  const currentLocale = getClientLocale();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -32,7 +30,6 @@ export function LanguageSwitcher({ availableLanguages, variant = 'dropdown' }: L
   }, [isOpen]);
 
   const changeLanguage = (lng: string) => {
-    i18nInstance.changeLanguage(lng);
     // Set cookie for server-side localization
     persistLocaleCookie(lng);
     setIsOpen(false);
@@ -48,7 +45,7 @@ export function LanguageSwitcher({ availableLanguages, variant = 'dropdown' }: L
             key={lng}
             onClick={() => changeLanguage(lng)}
             className={`w-12 h-10 flex items-center justify-center text-[11px] font-bold uppercase tracking-widest transition-all ${
-              i18n.language === lng 
+              currentLocale === lng 
                 ? 'bg-slate-900 text-white' 
                 : 'bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-900'
             }`}
@@ -66,7 +63,7 @@ export function LanguageSwitcher({ availableLanguages, variant = 'dropdown' }: L
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center space-x-1 p-2 text-gray-600 hover:text-black hover:bg-gray-50 rounded-none transition-colors text-xs font-medium uppercase"
       >
-        <span>{i18n.language}</span>
+        <span>{currentLocale}</span>
         <ChevronDown className="w-3 h-3" strokeWidth={1.5} />
       </button>
 
@@ -82,7 +79,7 @@ export function LanguageSwitcher({ availableLanguages, variant = 'dropdown' }: L
               <button
                 key={lng}
                 onClick={() => changeLanguage(lng)}
-                className={`block w-full text-left px-5 py-2 text-sm transition-colors ${i18n.language === lng ? 'text-slate-900 font-bold bg-slate-50' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'}`}
+                className={`block w-full text-left px-5 py-2 text-sm transition-colors ${currentLocale === lng ? 'text-slate-900 font-bold bg-slate-50' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'}`}
               >
                 {lng.toUpperCase()}
               </button>

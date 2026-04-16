@@ -6,20 +6,55 @@ import {
   CheckCircle2, XCircle, Mail, Send, 
   Package, Star, User 
 } from 'lucide-react';
-import { createClient } from '@/utils/supabase/client';
+import { updateRefundStatusAction } from '@/app/actions/support';
 import { toast } from 'sonner';
+import type { RefundRecord, ReviewRecord } from './types';
 
 interface OperationsManagerProps {
   type: 'refunds' | 'newsletter' | 'reviews';
-  data: any;
+  data: unknown;
   loading: boolean;
 }
 
 export function OperationsManager({ type, data, loading }: OperationsManagerProps) {
-  const supabase = createClient();
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
 
-  // 1. Refunds Logic (Aligned with Overview 'Inventory Health' style)
+  const refunds = Array.isArray(data) ? data as RefundRecord[] : [];
+  const reviews = Array.isArray(data) ? data as ReviewRecord[] : [];
+  const newsletterData = (!Array.isArray(data) && typeof data === 'object' && data !== null
+    ? data as {
+        subscribers?: Array<Record<string, unknown> & {
+          email?: string;
+          source?: string;
+          status?: string;
+          customerName?: string | null;
+          subscribedAt?: string | null;
+          unsubscribedAt?: string | null;
+          consentedAt?: string | null;
+        }>;
+        campaigns?: Array<Record<string, unknown> & { sentAt?: string | null; recipientCount?: number }>;
+      }
+    : { subscribers: [], campaigns: [] });
+
+  const handleRefundStatus = async (refundId: string, status: RefundRecord['status']) => {
+    setIsUpdating(refundId);
+    const toastId = toast.loading('Updating refund request...');
+
+    try {
+      const result = await updateRefundStatusAction({ refundRequestId: refundId, status });
+      if (!result.success) {
+        throw new Error(result.error || result.message);
+      }
+
+      toast.success(result.message, { id: toastId });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to update refund status.';
+      toast.error(message, { id: toastId });
+    } finally {
+      setIsUpdating(null);
+    }
+  };
+
   const renderRefunds = () => (
     <div className="overflow-x-auto">
       <table className="w-full text-left">
@@ -32,23 +67,39 @@ export function OperationsManager({ type, data, loading }: OperationsManagerProp
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100">
-          {data.length === 0 ? (
+          {refunds.length === 0 ? (
             <tr><td colSpan={4} className="py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-[11px]">No active refund requests</td></tr>
-          ) : data.map((refund: any) => (
+          ) : refunds.map((refund) => (
             <tr key={refund.id} className="hover:bg-slate-50 transition-colors">
-              <td className="px-6 py-4 font-bold text-slate-900 text-sm">#{refund.orderId?.slice(0, 8)}</td>
-              <td className="px-6 py-4 text-xs font-medium text-slate-500">{new Date(refund.createdAt).toLocaleDateString()}</td>
+              <td className="px-6 py-4 font-bold text-slate-900 text-sm">#{refund.orderId?.slice(0, 8) || refund.id.slice(0, 8)}</td>
+              <td className="px-6 py-4 text-xs font-medium text-slate-500">{refund.createdAt ? new Date(refund.createdAt).toLocaleDateString() : 'N/A'}</td>
               <td className="px-6 py-4">
                 <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest border ${
-                  refund.status === 'Approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-amber-50 text-amber-700 border-amber-100'
+                  refund.status === 'Approved' || refund.status === 'Refunded'
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
+                    : refund.status === 'Rejected'
+                      ? 'bg-rose-50 text-rose-700 border-rose-100'
+                      : 'bg-amber-50 text-amber-700 border-amber-100'
                 }`}>
                   {refund.status}
                 </span>
               </td>
               <td className="px-6 py-4 text-right">
                 <div className="flex items-center justify-end gap-2">
-                  <button className="p-2 border border-slate-300 rounded hover:bg-slate-50 transition-all text-slate-400 hover:text-slate-900"><CheckCircle2 className="w-4 h-4" /></button>
-                  <button className="p-2 border border-slate-300 rounded hover:bg-slate-50 transition-all text-slate-400 hover:text-slate-900"><XCircle className="w-4 h-4" /></button>
+                  <button
+                    onClick={() => handleRefundStatus(refund.id, refund.status === 'Approved' ? 'Refunded' : 'Approved')}
+                    disabled={isUpdating === refund.id}
+                    className="p-2 border border-slate-300 rounded hover:bg-slate-50 transition-all text-slate-400 hover:text-slate-900 disabled:opacity-50"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleRefundStatus(refund.id, 'Rejected')}
+                    disabled={isUpdating === refund.id}
+                    className="p-2 border border-slate-300 rounded hover:bg-slate-50 transition-all text-slate-400 hover:text-slate-900 disabled:opacity-50"
+                  >
+                    <XCircle className="w-4 h-4" />
+                  </button>
                 </div>
               </td>
             </tr>
@@ -58,7 +109,6 @@ export function OperationsManager({ type, data, loading }: OperationsManagerProp
     </div>
   );
 
-  // 2. Newsletter Logic
   const renderNewsletter = () => (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
       <div className="space-y-6">
@@ -68,11 +118,27 @@ export function OperationsManager({ type, data, loading }: OperationsManagerProp
         <div className="max-h-[400px] overflow-y-auto border border-slate-300 rounded bg-slate-50/30 custom-scrollbar">
           <table className="w-full text-left">
             <tbody className="divide-y divide-slate-100">
-              {data.subscribers?.map((sub: any) => (
-                <tr key={sub.id} className="hover:bg-slate-100 transition-colors">
-                  <td className="px-6 py-4 text-sm font-bold text-slate-900">{sub.email}</td>
+              {newsletterData.subscribers?.map((sub) => (
+                <tr key={String(sub.id)} className="hover:bg-slate-100 transition-colors">
+                  <td className="px-6 py-4">
+                    <p className="text-sm font-bold text-slate-900">{typeof sub.email === 'string' ? sub.email : ''}</p>
+                    <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                      {typeof sub.customerName === 'string' && sub.customerName ? sub.customerName : (typeof sub.source === 'string' ? sub.source.replace(/_/g, ' ') : 'unknown source')}
+                    </p>
+                  </td>
                   <td className="px-6 py-4 text-right">
-                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{new Date(sub.subscribedAt).toLocaleDateString()}</span>
+                    <span className={`inline-flex rounded-full px-2 py-1 text-[9px] font-bold uppercase tracking-widest ${
+                      sub.status === 'unsubscribed'
+                        ? 'bg-rose-50 text-rose-700'
+                        : 'bg-emerald-50 text-emerald-700'
+                    }`}>
+                      {sub.status === 'unsubscribed' ? 'unsubscribed' : 'subscribed'}
+                    </span>
+                    <p className="mt-2 text-[9px] font-bold uppercase tracking-widest text-slate-400">
+                      {sub.status === 'unsubscribed'
+                        ? (sub.unsubscribedAt ? new Date(sub.unsubscribedAt).toLocaleDateString() : 'N/A')
+                        : (sub.subscribedAt ? new Date(sub.subscribedAt).toLocaleDateString() : 'N/A')}
+                    </p>
                   </td>
                 </tr>
               ))}
@@ -90,11 +156,11 @@ export function OperationsManager({ type, data, loading }: OperationsManagerProp
             <Mail className="w-4 h-4" /> Launch New Campaign
           </button>
           <div className="space-y-3">
-            {data.campaigns?.map((camp: any) => (
-              <div key={camp.id} className="p-5 border border-slate-300 rounded bg-white hover:bg-slate-50 transition-all">
+            {newsletterData.campaigns?.map((camp) => (
+              <div key={String(camp.id)} className="p-5 border border-slate-300 rounded bg-white hover:bg-slate-50 transition-all">
                 <div className="flex justify-between items-start mb-2">
-                  <h5 className="font-bold text-slate-900 text-sm truncate max-w-[70%]">{camp.subject}</h5>
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{new Date(camp.sentAt).toLocaleDateString()}</span>
+                  <h5 className="font-bold text-slate-900 text-sm truncate max-w-[70%]">{typeof camp.subject === 'string' ? camp.subject : 'Untitled campaign'}</h5>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{camp.sentAt ? new Date(camp.sentAt).toLocaleDateString() : 'N/A'}</span>
                 </div>
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{camp.recipientCount} Contacts reached</p>
               </div>
@@ -105,18 +171,17 @@ export function OperationsManager({ type, data, loading }: OperationsManagerProp
     </div>
   );
 
-  // 3. Reviews Logic
   const renderReviews = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {data.map((review: any) => (
+      {reviews.map((review) => (
         <div key={review.id} className="bg-white border border-slate-300 p-6 sm:p-8 rounded hover:bg-slate-50 transition-all">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
               {[...Array(5)].map((_, i) => (
-                <Star key={i} className={`w-3.5 h-3.5 ${i < review.rating ? 'fill-slate-900 text-slate-900' : 'text-slate-200'}`} />
+                <Star key={i} className={`w-3.5 h-3.5 ${i < (review.rating ?? 0) ? 'fill-slate-900 text-slate-900' : 'text-slate-200'}`} />
               ))}
             </div>
-            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{new Date(review.createdAt).toLocaleDateString()}</span>
+            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{review.createdAt ? new Date(review.createdAt).toLocaleDateString() : 'N/A'}</span>
           </div>
           
           <p className="text-sm font-medium text-slate-900 leading-relaxed mb-6">{review.comment}</p>

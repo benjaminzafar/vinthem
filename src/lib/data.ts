@@ -1,6 +1,10 @@
 import { createClient } from '@/utils/supabase/server';
 import { cache } from 'react';
 import { StorefrontSettings } from '@/store/useSettingsStore';
+import {
+  maybeDecryptStoredValue,
+  normalizePostHogIngestionHost,
+} from '@/lib/integrations';
 
 // We use react cache to deduplicate requests within a single render cycle (request)
 // Next.js also automatically caches data fetched via the Supabase client if configured,
@@ -19,7 +23,12 @@ export const getIntegrations = cache(async () => {
 
   const config: Record<string, string> = {};
   integrations?.forEach(item => {
-    config[item.key] = item.value;
+    if (item.key === 'POSTHOG_HOST') {
+      config[item.key] = normalizePostHogIngestionHost(item.value);
+      return;
+    }
+
+    config[item.key] = maybeDecryptStoredValue(item.value);
   });
 
   return config;

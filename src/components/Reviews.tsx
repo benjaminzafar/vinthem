@@ -1,12 +1,13 @@
 "use client";
 import React, { useEffect, useState } from 'react';
+import { submitProductReviewAction } from '@/app/actions/reviews';
 import { createClient } from '@/utils/supabase/client';
 import { Review } from '@/types';
 import { Star, CheckCircle2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { useSettingsStore } from '@/store/useSettingsStore';
-import { useTranslation } from 'react-i18next';
+import { getClientLocale } from '@/lib/locale';
 
 import { User } from '@supabase/supabase-js';
 
@@ -26,10 +27,10 @@ export default function Reviews({ productId }: ReviewsProps) {
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [hasPurchased, setHasPurchased] = useState<boolean | null>(null);
   const { settings } = useSettingsStore();
-  const { i18n } = useTranslation();
-  const lang = i18n.language || 'en';
+  const lang = getClientLocale();
   const supabase = createClient();
 
   useEffect(() => {
@@ -104,24 +105,24 @@ export default function Reviews({ productId }: ReviewsProps) {
     }
 
     try {
-      const { error } = await supabase
-        .from('reviews')
-        .insert({
-          product_id: productId,
-          user_id: user.id,
-          user_name: user.user_metadata?.full_name || 'Anonymous',
-          rating,
-          comment,
-          created_at: new Date().toISOString()
-        });
+      setSubmitting(true);
+      const result = await submitProductReviewAction({
+        productId,
+        rating,
+        comment,
+      });
 
-      if (error) throw error;
+      if (!result.success) {
+        throw new Error(result.error || result.message);
+      }
 
       setComment('');
-      toast.success(settings.reviewSubmittedText?.[lang] || 'Review submitted successfully!');
+      toast.success(settings.reviewSubmittedText?.[lang] || result.message);
     } catch (error) {
       console.error("Error submitting review:", error);
       toast.error(settings.failedToSubmitReviewText?.[lang] || 'Failed to submit review.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -161,8 +162,12 @@ export default function Reviews({ productId }: ReviewsProps) {
               rows={4}
               required
             />
-            <button type="submit" className="bg-brand-ink text-white px-10 py-4 rounded-full font-black text-[10px] uppercase tracking-[0.2em] hover:opacity-90 transition-all active:scale-[0.98] shadow-lg shadow-brand-ink/10">
-              {settings.submitReviewButtonText?.[lang] || 'Submit Review'}
+            <button
+              type="submit"
+              disabled={submitting}
+              className="bg-brand-ink text-white px-10 py-4 rounded-full font-black text-[10px] uppercase tracking-[0.2em] hover:opacity-90 transition-all active:scale-[0.98] shadow-lg shadow-brand-ink/10 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {submitting ? 'Submitting...' : (settings.submitReviewButtonText?.[lang] || 'Submit Review')}
             </button>
           </form>
         ) : hasPurchased === false ? (

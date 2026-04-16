@@ -42,28 +42,51 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
   const [uploading, setUploading] = useState(false);
   const [deletingKey, setDeletingKey] = useState<string | null>(null);
   const [copyingKeys, setCopyingKeys] = useState<Set<string>>(new Set());
+  const [nextToken, setNextToken] = useState<string | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<{ key: string, isFolder: boolean } | null>(null);
 
-  const fetchMedia = useCallback(async (pathArr: string[] = currentPath) => {
-    setLoading(true);
+  const fetchMedia = useCallback(async (pathArr: string[] = currentPath, token?: string) => {
+    const isInitial = !token;
+    if (isInitial) {
+      setLoading(true);
+    } else {
+      setLoadingMore(true);
+    }
+    
     const prefix = pathArr.length > 0 ? pathArr.join('/') + '/' : '';
+    const url = `/api/admin/media?prefix=${encodeURIComponent(prefix)}&t=${Date.now()}${token ? `&token=${encodeURIComponent(token)}` : ''}`;
     
     try {
-      const res = await fetch(`/api/admin/media?prefix=${encodeURIComponent(prefix)}&t=${Date.now()}`, {
-        cache: 'no-store'
-      });
+      const res = await fetch(url, { cache: 'no-store' });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       
-      setFolders(data.folders || []);
-      setAssets(data.objects || []);
-      setStats(data.stats || { totalSize: 0, fileCount: 0 });
+      if (isInitial) {
+        setFolders(data.folders || []);
+        setAssets(data.objects || []);
+        // Update stats if available
+        if (data.stats) {
+          setStats(data.stats);
+        }
+      } else {
+        setAssets(prev => [...prev, ...(data.objects || [])]);
+      }
+      
+      setNextToken(data.stats?.nextContinuationToken || null);
     } catch (error: any) {
       toast.error('Failed to load media: ' + error.message);
     } finally {
-      setLoading(false);
+      if (isInitial) setLoading(false);
+      else setLoadingMore(false);
     }
   }, [currentPath]);
+
+  const handleLoadMore = () => {
+    if (nextToken && !loadingMore) {
+      fetchMedia(currentPath, nextToken);
+    }
+  };
 
   useEffect(() => {
     fetchMedia();
@@ -249,6 +272,9 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
                 <AssetGrid 
                   assets={filteredAssets}
                   loading={loading}
+                  loadingMore={loadingMore}
+                  hasMore={!!nextToken}
+                  onLoadMore={handleLoadMore}
                   onSelect={onSelect}
                   onDelete={(asset) => setConfirmDelete({ key: asset.key, isFolder: false })}
                   onCopyUrl={handleCopyUrl}

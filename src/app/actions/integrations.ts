@@ -3,6 +3,11 @@
 import { encrypt } from '@/lib/encryption';
 import { revalidatePath } from 'next/cache';
 import { requireAdminUser } from '@/lib/admin';
+import {
+  isSensitiveIntegrationKey,
+  maybeDecryptStoredValue,
+  normalizePostHogIngestionHost,
+} from '@/lib/integrations';
 
 export type IntegrationActionResponse = {
   success: boolean;
@@ -29,12 +34,14 @@ export async function getIntegrationsAction(): Promise<IntegrationActionResponse
     const config: Record<string, string> = {};
     integrations?.forEach(item => {
       config[`${item.key}_CONNECTED`] = 'true';
-      // Mask sensitive values
-      if (!['API_KEY', 'SECRET', 'PASS', 'TOKEN'].some(sensitive => item.key.includes(sensitive))) {
-          config[item.key] = item.value;
-      } else {
+      if (isSensitiveIntegrationKey(item.key)) {
         config[item.key] = '********';
+        return;
       }
+
+      config[item.key] = item.key === 'POSTHOG_HOST'
+        ? normalizePostHogIngestionHost(item.value)
+        : maybeDecryptStoredValue(item.value);
     });
 
     return { success: true, message: 'Config loaded', data: config };
@@ -59,8 +66,12 @@ export async function saveIntegrationAction(updates: Record<string, string>): Pr
     for (const [key, value] of Object.entries(updates)) {
       if (typeof value === 'string' && value.trim() !== '' && value !== '********') {
         const sanitizedValue = value.replace(/[<>]/g, '');
-        const isSensitive = ['API_KEY', 'SECRET', 'PASS', 'TOKEN'].some(s => key.includes(s));
-        const finalValue = isSensitive ? encrypt(sanitizedValue) : sanitizedValue;
+        const normalizedValue = key === 'POSTHOG_HOST'
+          ? normalizePostHogIngestionHost(sanitizedValue)
+          : sanitizedValue;
+        const finalValue = isSensitiveIntegrationKey(key)
+          ? encrypt(normalizedValue)
+          : normalizedValue;
 
         const { error: upsertError } = await supabase
           .from('integrations')

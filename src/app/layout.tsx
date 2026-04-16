@@ -7,8 +7,9 @@ import { StoreHydrator } from "@/components/StoreHydrator";
 import { Analytics } from "@vercel/analytics/next";
 import { getSettings, getIntegrations } from "@/lib/data";
 import { LazyMotion, domAnimation } from "motion/react";
-import Script from "next/script";
 import { PostHogProvider } from "@/components/PostHogProvider";
+import { cookies } from "next/headers";
+import { CookieBannerMount } from "@/components/CookieBannerMount";
 
 export const metadata: Metadata = {
   title: {
@@ -24,6 +25,8 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const lang = cookieStore.get('NEXT_LOCALE')?.value || 'en';
   // Fetch settings on the server for hydration (cached)
   const settings = await getSettings() || {};
   const integrations = await getIntegrations() || {};
@@ -41,21 +44,13 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col font-sans" suppressHydrationWarning>
         <PostHogProvider apiKey={integrations.POSTHOG_PROJECT_KEY} host={integrations.POSTHOG_HOST}>
           <StoreHydrator settings={settings} />
+          <CookieBannerMount lang={lang} />
           <AuthProvider>
             <ConfirmationProvider>
               <LazyMotion features={domAnimation}>
                 {children}
               </LazyMotion>
               <Analytics />
-              <Script id="microsoft-clarity" strategy="afterInteractive">
-                {`
-                  (function(c,l,a,r,i,t,y){
-                      c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-                      t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-                      y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-                  })(window, document, "clarity", "script", "${clarityId}");
-                `}
-              </Script>
             </ConfirmationProvider>
           </AuthProvider>
         </PostHogProvider>

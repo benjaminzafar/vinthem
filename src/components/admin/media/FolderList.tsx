@@ -14,10 +14,13 @@ export function FolderList({ folders, onNavigate, onDelete, selectionMode }: Fol
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-10">
       {folders.map(folder => (
-        <button
+        <div
           key={folder}
-          className="group flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded hover:border-slate-900 transition-all text-left"
+          role="button"
+          tabIndex={0}
+          className="group flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded hover:border-slate-900 transition-all text-left cursor-pointer"
           onClick={() => onNavigate(folder)}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onNavigate(folder); }}
         >
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-10 h-10 bg-white border border-slate-300 rounded flex items-center justify-center text-slate-400 group-hover:text-slate-900 transition-colors shrink-0">
@@ -40,7 +43,7 @@ export function FolderList({ folders, onNavigate, onDelete, selectionMode }: Fol
             )}
             <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-slate-900 transition-colors" />
           </div>
-        </button>
+        </div>
       ))}
     </div>
   );

@@ -4,50 +4,74 @@ import React, { useState } from 'react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { 
   Package, 
-  User, 
   MapPin, 
-  ChevronRight, 
   ChevronDown, 
   LogOut, 
   MessageSquare, 
   HelpCircle, 
-  RotateCw,
   CreditCard,
   History,
-  Info,
   X,
   Send,
   Loader2,
   RefreshCcw,
-  Truck,
   ShieldCheck,
   Settings,
-  ArrowRight,
   Lock,
   Eye,
-  EyeOff
+  EyeOff,
+  ArrowLeft,
+  Pencil,
+  Trash2,
+  Plus,
+  CheckCircle2
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { createClient } from '@/utils/supabase/client';
 import { toast } from 'sonner';
 import { formatPrice } from '@/lib/currency';
+import { submitSupportRequestAction } from '@/app/actions/support';
+import { deleteAddressAction, saveAddressAction, setDefaultAddressAction } from '@/app/actions/profile';
+import type { StorefrontSettings } from '@/store/useSettingsStore';
 
 interface ProfileClientProps {
   initialOrders: any[];
-  initialAddresses: any[];
+  initialAddresses: AddressRecord[];
   profile: { full_name: string | null };
-  settings: any;
+  settings: StorefrontSettings;
   lang: string;
 }
 
 type SupportType = 'help' | 'replacement' | 'refund' | 'chat' | null;
 
+type AddressRecord = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  street: string;
+  city: string;
+  postalCode: string;
+  country: string;
+  isDefault?: boolean;
+};
+
+type AddressFormState = {
+  id?: string;
+  firstName: string;
+  lastName: string;
+  street: string;
+  city: string;
+  postalCode: string;
+  country: string;
+  isDefault: boolean;
+};
+
 export function ProfileClient({ initialOrders, initialAddresses, profile, settings, lang }: ProfileClientProps) {
   const { user, setUser, setIsAdmin } = useAuthStore();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('orders');
-  const [orders, setOrders] = useState(initialOrders);
+  const [orders] = useState(initialOrders);
   const [addresses, setAddresses] = useState(initialAddresses);
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
   
@@ -62,6 +86,18 @@ export function ProfileClient({ initialOrders, initialAddresses, profile, settin
   const [passwordData, setPasswordData] = useState({ new: '', confirm: '' });
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
   const [showPass, setShowPass] = useState(false);
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+  const [addressForm, setAddressForm] = useState<AddressFormState>({
+    firstName: '',
+    lastName: '',
+    street: '',
+    city: '',
+    postalCode: '',
+    country: 'SE',
+    isDefault: false,
+  });
+  const [isSavingAddress, setIsSavingAddress] = useState(false);
+  const [busyAddressId, setBusyAddressId] = useState<string | null>(null);
 
   const supabase = createClient();
 
@@ -110,29 +146,14 @@ export function ProfileClient({ initialOrders, initialAddresses, profile, settin
     const toastId = toast.loading('Sending request...');
 
     try {
-      if (supportType === 'refund') {
-        const { error } = await supabase.from('refund_requests').insert({
-          order_id: supportOrder.orderId,
-          reason: supportMessage || 'No reason provided',
-          user_id: user?.id,
-          status: 'Pending'
-        });
-        if (error) throw error;
-      } else {
-        const subject = supportType === 'replacement' ? `Replacement Request: ${supportOrder.orderId}` : 
-                        supportType === 'chat' ? `Chat Inquiry: ${supportOrder.orderId}` : 
-                        `Order Help: ${supportOrder.orderId}`;
-        
-        const { error } = await supabase.from('support_tickets').insert({
-          subject,
-          message: supportMessage,
-          user_id: user?.id,
-          status: 'open'
-        });
-        if (error) throw error;
-      }
+      const result = await submitSupportRequestAction({
+        orderId: supportOrder.orderId || supportOrder.id,
+        type: supportType as 'help' | 'replacement' | 'refund' | 'chat',
+        message: supportMessage,
+      });
+      if (!result.success) throw new Error(result.message);
 
-      toast.success('Request sent successfully. Support will contact you shortly.', { id: toastId });
+      toast.success(result.message, { id: toastId });
       setSupportOrder(null);
       setSupportType(null);
       setSupportMessage('');
@@ -144,26 +165,183 @@ export function ProfileClient({ initialOrders, initialAddresses, profile, settin
     }
   };
 
+  const resetAddressForm = () => {
+    setAddressForm({
+      firstName: '',
+      lastName: '',
+      street: '',
+      city: '',
+      postalCode: '',
+      country: 'SE',
+      isDefault: false,
+    });
+    setIsAddressModalOpen(false);
+  };
+
+  const openAddAddressModal = () => {
+    setAddressForm({
+      firstName: '',
+      lastName: '',
+      street: '',
+      city: '',
+      postalCode: '',
+      country: 'SE',
+      isDefault: addresses.length === 0,
+    });
+    setIsAddressModalOpen(true);
+  };
+
+  const openEditAddressModal = (address: AddressRecord) => {
+    setAddressForm({
+      id: address.id,
+      firstName: address.firstName,
+      lastName: address.lastName,
+      street: address.street,
+      city: address.city,
+      postalCode: address.postalCode,
+      country: address.country,
+      isDefault: Boolean(address.isDefault),
+    });
+    setIsAddressModalOpen(true);
+  };
+
+  const handleAddressFieldChange = (field: keyof AddressFormState, value: string | boolean) => {
+    setAddressForm((current) => ({
+      ...current,
+      [field]: value,
+    }));
+  };
+
+  const handleSaveAddress = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingAddress(true);
+    const toastId = toast.loading(addressForm.id ? 'Updating address...' : 'Saving address...');
+
+    try {
+      const result = await saveAddressAction(addressForm);
+      if (!result.success || !result.addresses) {
+        throw new Error(result.message);
+      }
+
+      setAddresses(result.addresses);
+      toast.success(
+        addressForm.id
+          ? settings.addressUpdatedText?.[lang] || 'Address updated successfully!'
+          : settings.addressAddedText?.[lang] || 'Address added successfully!',
+        { id: toastId }
+      );
+      resetAddressForm();
+    } catch (error: unknown) {
+      const message = error instanceof Error
+        ? error.message
+        : settings.failedToSaveAddressText?.[lang] || 'Failed to save address. Please try again.';
+      toast.error(message, { id: toastId });
+    } finally {
+      setIsSavingAddress(false);
+    }
+  };
+
+  const handleDeleteAddress = async (addressId: string) => {
+    setBusyAddressId(addressId);
+    const toastId = toast.loading('Deleting address...');
+
+    try {
+      const result = await deleteAddressAction(addressId);
+      if (!result.success || !result.addresses) {
+        throw new Error(result.message);
+      }
+
+      setAddresses(result.addresses);
+      toast.success(settings.addressDeletedText?.[lang] || 'Address deleted successfully!', { id: toastId });
+    } catch (error: unknown) {
+      const message = error instanceof Error
+        ? error.message
+        : settings.failedToDeleteAddressText?.[lang] || 'Failed to delete address. Please try again.';
+      toast.error(message, { id: toastId });
+    } finally {
+      setBusyAddressId(null);
+    }
+  };
+
+  const handleSetDefaultAddress = async (addressId: string) => {
+    setBusyAddressId(addressId);
+    const toastId = toast.loading('Updating default address...');
+
+    try {
+      const result = await setDefaultAddressAction(addressId);
+      if (!result.success || !result.addresses) {
+        throw new Error(result.message);
+      }
+
+      setAddresses(result.addresses);
+      toast.success(settings.defaultAddressUpdatedText?.[lang] || 'Default address updated successfully!', { id: toastId });
+    } catch (error: unknown) {
+      const message = error instanceof Error
+        ? error.message
+        : settings.failedToUpdateDefaultAddressText?.[lang] || 'Failed to update default address. Please try again.';
+      toast.error(message, { id: toastId });
+    } finally {
+      setBusyAddressId(null);
+    }
+  };
+
   if (!user) return null;
 
   const displayName = profile?.full_name || user.email?.split('@')[0] || 'Member';
+  const totalSpent = orders.reduce((sum: number, order: any) => sum + Number(order.total || 0), 0);
+  const activeOrders = orders.filter((order: any) => !['Delivered', 'Cancelled'].includes(order.status || '')).length;
+  const lastOrderDate = orders[0]?.createdAt ? new Date(orders[0].createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'No orders yet';
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 pt-0 pb-12 animate-in fade-in duration-300">
-      {/* Strict Design Header */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 mb-8 mt-0">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-             <div className="w-2 h-2 bg-slate-900" />
+      <div className="mb-8 border border-slate-300 bg-white">
+        <div className="grid gap-0 lg:grid-cols-[1.5fr_1fr]">
+          <div className="border-b border-slate-300 p-8 lg:border-b-0 lg:border-r lg:p-10">
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 bg-slate-900" />
+              <span className="text-[11px] font-bold uppercase tracking-[0.24em] text-slate-400">Customer Workspace</span>
+            </div>
+            <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-900">
+              Hello, {displayName.split(' ')[0]}.
+            </h1>
+            <p className="mt-4 max-w-2xl text-sm font-medium leading-relaxed text-slate-500">
+              Manage your orders, personal data, saved addresses, and support requests from one calm control center.
+            </p>
+            <div className="mt-8 hidden flex-wrap gap-3 lg:flex">
+              <button
+                onClick={() => setActiveTab('orders')}
+                className="inline-flex items-center gap-2 border border-slate-900 bg-slate-900 px-5 py-3 text-[11px] font-bold uppercase tracking-widest text-white transition-all hover:bg-slate-800"
+              >
+                <History className="h-4 w-4" /> Review Orders
+              </button>
+              <button
+                onClick={() => setActiveTab('profile')}
+                className="inline-flex items-center gap-2 border border-slate-300 px-5 py-3 text-[11px] font-bold uppercase tracking-widest text-slate-900 transition-all hover:bg-slate-50"
+              >
+                <ShieldCheck className="h-4 w-4" /> Security Settings
+              </button>
+            </div>
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-            Hello, {displayName.split(' ')[0]}.
-          </h1>
-          <p className="text-slate-500 text-sm max-w-xl font-medium leading-relaxed">
-            Manage your orders, personal data, and interior design preferences in your professional member workspace.
-          </p>
-        </div>
 
+          <div className="grid grid-cols-2 bg-slate-50">
+            <div className="border-b border-r border-slate-300 p-6">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Lifetime Spend</p>
+              <p className="mt-4 text-2xl font-bold text-slate-900">{formatPrice(totalSpent, lang)}</p>
+            </div>
+            <div className="border-b border-slate-300 p-6">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Active Orders</p>
+              <p className="mt-4 text-2xl font-bold text-slate-900">{activeOrders}</p>
+            </div>
+            <div className="border-r border-slate-300 p-6">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Saved Addresses</p>
+              <p className="mt-4 text-2xl font-bold text-slate-900">{addresses.length}</p>
+            </div>
+            <div className="p-6">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Last Activity</p>
+              <p className="mt-4 text-sm font-bold text-slate-900">{lastOrderDate}</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
@@ -172,7 +350,7 @@ export function ProfileClient({ initialOrders, initialAddresses, profile, settin
           <div className="h-10 border-b-2 border-slate-300 pb-3 hidden lg:flex items-center">
             <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Navigation</h3>
           </div>
-          <nav className="border border-slate-300 bg-white">
+          <nav className="grid grid-cols-1 border border-slate-300 bg-white sm:grid-cols-3 lg:block">
             {[
               { id: 'orders', label: 'Orders', icon: Package },
               { id: 'profile', label: 'Settings', icon: Settings },
@@ -181,13 +359,13 @@ export function ProfileClient({ initialOrders, initialAddresses, profile, settin
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center justify-between px-6 py-4 transition-all border-b border-slate-300 last:border-b-0 ${
+                className={`w-full flex items-center justify-between px-5 py-4 transition-all lg:px-6 ${
                   activeTab === item.id 
                     ? 'bg-slate-50 text-slate-900' 
                     : 'text-slate-500 hover:bg-slate-50/50 hover:text-slate-900'
-                }`}
+                } ${item.id !== 'addresses' ? 'border-b border-slate-300 sm:border-r lg:border-r-0' : ''} ${item.id === 'addresses' ? 'sm:border-r-0' : ''}`}
               >
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3 lg:gap-4">
                   <item.icon className={`w-4 h-4 ${activeTab === item.id ? 'text-slate-900' : 'text-slate-300'}`} />
                   <span className="text-sm font-bold tracking-tight uppercase">{item.label}</span>
                 </div>
@@ -447,29 +625,82 @@ export function ProfileClient({ initialOrders, initialAddresses, profile, settin
                  animate={{ opacity: 1, y: 0 }}
                  className="space-y-6"
               >
-                 <div className="h-10 flex items-center justify-between border-b-2 border-slate-300 pb-3">
-                   <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Global Registry</h3>
-                   <button className="text-[11px] font-bold uppercase tracking-widest bg-slate-900 text-white px-8 py-3 hover:bg-slate-800 transition-all h-full flex items-center">Add New Address</button>
+                 <div className="flex flex-col gap-4 border-b-2 border-slate-300 pb-3 sm:flex-row sm:items-center sm:justify-between">
+                   <div>
+                     <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">{settings.savedAddressesTitleText?.[lang] || 'Saved Addresses'}</h3>
+                     <p className="mt-2 text-xs font-medium text-slate-500">{settings.addAddressFasterCheckoutText?.[lang] || 'Add an address for faster checkout.'}</p>
+                   </div>
+                   <button
+                     onClick={openAddAddressModal}
+                     className="text-[11px] font-bold uppercase tracking-widest bg-slate-900 text-white px-8 py-3 hover:bg-slate-800 transition-all h-11 inline-flex items-center justify-center gap-2"
+                   >
+                     <Plus className="w-4 h-4" />
+                     {settings.addNewAddressTitleText?.[lang] || 'Add New Address'}
+                   </button>
                  </div>
                  
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                    {addresses.length === 0 ? (
                      <div className="col-span-2 py-32 text-center border border-slate-300 bg-white">
                        <MapPin className="w-10 h-10 mx-auto text-slate-100 mb-4" />
-                       <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest">Registry empty</p>
+                       <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest">{settings.noAddressesSavedText?.[lang] || 'No addresses saved'}</p>
+                       <button
+                         onClick={openAddAddressModal}
+                         className="mt-6 inline-flex items-center gap-2 border border-slate-900 px-5 py-3 text-[11px] font-bold uppercase tracking-widest text-slate-900 transition-all hover:bg-slate-900 hover:text-white"
+                       >
+                         <Plus className="w-4 h-4" />
+                         {settings.addNewButtonText?.[lang] || 'Add New'}
+                       </button>
                      </div>
                    ) : (
                      addresses.map((addr, idx) => (
-                       <div key={idx} className="bg-white border border-slate-300 p-8 relative hover:border-slate-900 transition-all">
+                       <div key={addr.id || idx} className="bg-white border border-slate-300 p-8 relative hover:border-slate-900 transition-all">
                          <MapPin className="w-4 h-4 text-slate-300 absolute top-8 right-8" />
-                         <div className="flex items-center gap-3 mb-6">
-                            <span className="w-6 h-6 bg-slate-900 flex items-center justify-center text-[11px] font-bold text-white tracking-widest">#{idx + 1}</span>
-                            <p className="text-sm font-bold text-slate-900 uppercase tracking-tight">{addr.firstName} {addr.lastName}</p>
+                         <div className="flex items-start justify-between gap-4 mb-6">
+                           <div className="flex items-center gap-3">
+                              <span className="w-6 h-6 bg-slate-900 flex items-center justify-center text-[11px] font-bold text-white tracking-widest">#{idx + 1}</span>
+                              <div>
+                                <p className="text-sm font-bold text-slate-900 uppercase tracking-tight">{addr.firstName} {addr.lastName}</p>
+                                {addr.isDefault && (
+                                  <span className="mt-2 inline-flex items-center gap-1 border border-emerald-300 bg-emerald-50 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-emerald-700">
+                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                    {settings.defaultBadgeText?.[lang] || 'Default'}
+                                  </span>
+                                )}
+                              </div>
+                           </div>
                          </div>
                          <div className="text-[11px] text-slate-500 font-bold leading-relaxed space-y-1 uppercase tracking-widest">
                             <p className="text-slate-900 font-bold">{addr.street}</p>
                             <p>{addr.postalCode} {addr.city}</p>
                             <p className="text-slate-900 font-black border-t border-slate-100 mt-2 pt-2">{addr.country}</p>
+                         </div>
+                         <div className="mt-8 flex flex-wrap gap-3">
+                           {!addr.isDefault && (
+                             <button
+                               onClick={() => handleSetDefaultAddress(addr.id)}
+                               disabled={busyAddressId === addr.id}
+                               className="inline-flex items-center gap-2 border border-slate-300 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-slate-900 transition-all hover:bg-slate-50 disabled:opacity-50"
+                             >
+                               {busyAddressId === addr.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                               {settings.setDefaultButtonText?.[lang] || 'Set Default'}
+                             </button>
+                           )}
+                           <button
+                             onClick={() => openEditAddressModal(addr)}
+                             className="inline-flex items-center gap-2 border border-slate-300 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-slate-900 transition-all hover:bg-slate-50"
+                           >
+                             <Pencil className="w-4 h-4" />
+                             {settings.editButtonText?.[lang] || 'Edit'}
+                           </button>
+                           <button
+                             onClick={() => handleDeleteAddress(addr.id)}
+                             disabled={busyAddressId === addr.id}
+                             className="inline-flex items-center gap-2 border border-rose-200 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-rose-600 transition-all hover:bg-rose-50 disabled:opacity-50"
+                           >
+                             {busyAddressId === addr.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                             {settings.deleteButtonText?.[lang] || 'Delete'}
+                           </button>
                          </div>
                        </div>
                      ))
@@ -480,6 +711,98 @@ export function ProfileClient({ initialOrders, initialAddresses, profile, settin
           </AnimatePresence>
         </div>
       </div>
+
+      <AnimatePresence>
+        {isAddressModalOpen && (
+          <div className="fixed inset-0 z-[105] flex items-center justify-center p-4 md:p-8">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+              onClick={() => {
+                if (!isSavingAddress) resetAddressForm();
+              }}
+            />
+
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 12 }}
+              className="relative z-[106] w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-slate-300 bg-white shadow-2xl"
+            >
+              <div className="flex items-center justify-between border-b border-slate-300 bg-slate-50 px-6 py-5 md:px-8">
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                    {addressForm.id ? settings.editAddressTitleText?.[lang] || 'Edit Address' : settings.addNewAddressTitleText?.[lang] || 'Add New Address'}
+                  </p>
+                  <h3 className="mt-2 text-xl font-bold tracking-tight text-slate-900">
+                    {settings.addAddressDescriptionText?.[lang] || 'Add an address for faster checkout.'}
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  disabled={isSavingAddress}
+                  onClick={resetAddressForm}
+                  className="w-10 h-10 border border-slate-300 flex items-center justify-center text-slate-900 transition-all hover:border-slate-900"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveAddress} className="space-y-8 p-6 md:p-8">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400">{settings.firstNameLabelText?.[lang] || 'First Name'}</label>
+                    <input value={addressForm.firstName} onChange={(e) => handleAddressFieldChange('firstName', e.target.value)} className="w-full border border-slate-300 bg-white p-4 text-sm font-bold text-slate-900 transition-all focus:outline-none focus:border-slate-900" required />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400">{settings.lastNameLabelText?.[lang] || 'Last Name'}</label>
+                    <input value={addressForm.lastName} onChange={(e) => handleAddressFieldChange('lastName', e.target.value)} className="w-full border border-slate-300 bg-white p-4 text-sm font-bold text-slate-900 transition-all focus:outline-none focus:border-slate-900" required />
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400">{settings.streetAddressLabelText?.[lang] || 'Street Address'}</label>
+                    <input value={addressForm.street} onChange={(e) => handleAddressFieldChange('street', e.target.value)} className="w-full border border-slate-300 bg-white p-4 text-sm font-bold text-slate-900 transition-all focus:outline-none focus:border-slate-900" required />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400">{settings.cityLabelText?.[lang] || 'City'}</label>
+                    <input value={addressForm.city} onChange={(e) => handleAddressFieldChange('city', e.target.value)} className="w-full border border-slate-300 bg-white p-4 text-sm font-bold text-slate-900 transition-all focus:outline-none focus:border-slate-900" required />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400">{settings.postalCodeLabelText?.[lang] || 'Postal Code'}</label>
+                    <input value={addressForm.postalCode} onChange={(e) => handleAddressFieldChange('postalCode', e.target.value)} className="w-full border border-slate-300 bg-white p-4 text-sm font-bold text-slate-900 transition-all focus:outline-none focus:border-slate-900" required />
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400">{settings.countryLabelText?.[lang] || 'Country'}</label>
+                    <select value={addressForm.country} onChange={(e) => handleAddressFieldChange('country', e.target.value)} className="w-full border border-slate-300 bg-white p-4 text-sm font-bold text-slate-900 transition-all focus:outline-none focus:border-slate-900">
+                      <option value="SE">Sweden</option>
+                      <option value="DK">Denmark</option>
+                      <option value="FI">Finland</option>
+                      <option value="NO">Norway</option>
+                      <option value="IS">Iceland</option>
+                    </select>
+                  </div>
+                </div>
+
+                <label className="flex items-start gap-3 border border-slate-200 bg-slate-50 p-4">
+                  <input type="checkbox" checked={addressForm.isDefault} onChange={(e) => handleAddressFieldChange('isDefault', e.target.checked)} className="mt-1 h-4 w-4 border-slate-300 text-slate-900 focus:ring-slate-900" />
+                  <span className="text-sm font-medium text-slate-700">{settings.setDefaultAddressLabelText?.[lang] || 'Set as default shipping address'}</span>
+                </label>
+
+                <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                  <button type="button" onClick={resetAddressForm} disabled={isSavingAddress} className="border border-slate-300 px-6 py-3 text-[11px] font-bold uppercase tracking-widest text-slate-900 transition-all hover:bg-slate-50 disabled:opacity-50">
+                    {settings.cancelButtonText?.[lang] || 'Cancel'}
+                  </button>
+                  <button type="submit" disabled={isSavingAddress} className="bg-slate-900 text-white px-6 py-3 text-[11px] font-bold uppercase tracking-widest transition-all hover:bg-slate-800 disabled:opacity-50 inline-flex items-center justify-center gap-2">
+                    {isSavingAddress ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                    {settings.saveAddressButtonText?.[lang] || 'Save Address'}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* SUPPORT MODAL (Standardized Design) */}
       <AnimatePresence>

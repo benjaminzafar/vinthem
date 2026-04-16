@@ -11,11 +11,12 @@ import {
 import { toast } from 'sonner';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useCustomConfirm } from '@/components/ConfirmationContext';
-import { useSettingsStore } from '@/store/useSettingsStore';
 import { Product } from '@/store/useCartStore';
 import { Category } from '@/types';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { InfiniteScrollSentinel } from '@/components/admin/InfiniteScrollSentinel';
+import { deleteProductAction } from '@/app/actions/admin-products';
 
 type ProductRecord = {
   id: string;
@@ -48,9 +49,6 @@ type CategoryRecord = {
 };
 
 export function ProductManager({ 
-  selectedProductId, 
-  onClearSelection, 
-  initialProducts = [], 
   initialCategories = [] 
 }: { 
   selectedProductId?: string | null, 
@@ -59,32 +57,56 @@ export function ProductManager({
   initialCategories?: Category[]
 }) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'all' | 'active' | 'drafts'>('all');
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
-  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [activeTab, setActiveTab ] = useState<'all' | 'active' | 'drafts'>('all');
+  const debouncedSearchQuery = useDebounce(searchQuery, 400);
+  const [products, setProducts] = useState<Product[]>([]); 
   const [categories, setCategories] = useState<Category[]>(initialCategories);
-  const [loading, setLoading] = useState(initialProducts.length === 0);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  
+  // Use pageRef to avoid dependency loop in fetch function
+  const pageRef = useRef(0);
+  const ITEMS_PER_PAGE = 50;
+  
   const supabase = createClient();
   const router = useRouter();
   const customConfirm = useCustomConfirm();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const filteredProducts = products.filter(product => {
-    const matchesSearch = product.title.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
-      (product.sku && product.sku.toLowerCase().includes(debouncedSearchQuery.toLowerCase()));
-    
-    if (!matchesSearch) return false;
+  const fetchProducts = useCallback(async (isFirstPage: boolean = false) => {
+    if (isFirstPage) {
+      setLoading(true);
+      pageRef.current = 0;
+    } else {
+      setLoadingMore(true);
+    }
 
-    if (activeTab === 'active') return product.status === 'published' || (!product.status && product.stock > 0);
-    if (activeTab === 'drafts') return product.status === 'draft';
-    return true;
-  });
+    const from = pageRef.current * ITEMS_PER_PAGE;
+    const to = from + ITEMS_PER_PAGE - 1;
 
-  const refreshProducts = useCallback(async () => {
-    setLoading(true);
-    const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false });
-    if (data) {
-      const mappedProducts = data.map((p: ProductRecord) => ({
+    try {
+      let query = supabase
+        .from('products')
+        .select('*', { count: 'exact' });
+
+      if (debouncedSearchQuery) {
+        query = query.or(`title.ilike.%${debouncedSearchQuery}%,sku.ilike.%${debouncedSearchQuery}%`);
+      }
+
+      if (activeTab === 'active') {
+        query = query.or('status.eq.published,and(status.is.null,stock.gt.0)');
+      } else if (activeTab === 'drafts') {
+        query = query.eq('status', 'draft');
+      }
+
+      const { data, count, error } = await query
+        .order('created_at', { ascending: false })
+        .range(from, to);
+
+      if (error) throw error;
+
+      const mappedProducts = (data || []).map((p: ProductRecord) => ({
         ...p,
         imageUrl: p.image_url,
         categoryId: p.category_id,
@@ -94,18 +116,36 @@ export function ProductManager({
         discountPrice: p.sale_price,
         createdAt: p.created_at
       }));
-      setProducts(mappedProducts);
-    }
-    setLoading(false);
-  }, [supabase]);
 
-  const handleOpenModal = (product?: Product) => {
-    if (product) {
-      router.push(`/admin/products/${product.id}`);
-    } else {
-      router.push('/admin/products/new');
+      if (isFirstPage) {
+        setProducts(mappedProducts);
+      } else {
+        setProducts(prev => {
+          const combined = [...prev, ...mappedProducts];
+          const unique = Array.from(new Map(combined.map(p => [p.id, p])).values());
+          return unique;
+        });
+      }
+
+      const fetchedSoFar = from + mappedProducts.length;
+      setHasMore(count ? fetchedSoFar < count : false);
+      
+      if (mappedProducts.length > 0) {
+        pageRef.current += 1;
+      }
+
+    } catch (error: any) {
+      console.error('[ProductManager] Fetch error:', error);
+      toast.error('Failed to load products: ' + error.message);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
     }
-  };
+  }, [supabase, debouncedSearchQuery, activeTab]);
+
+  useEffect(() => {
+    fetchProducts(true);
+  }, [debouncedSearchQuery, activeTab, fetchProducts]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -118,60 +158,47 @@ export function ProductManager({
         setCategories(mappedCategories);
       }
     };
-    const initialize = async () => {
-      await Promise.all([refreshProducts(), fetchCategories()]);
-    };
-    void initialize();
+    
+    fetchCategories();
 
-    // Enable Realtime for Products
     const productsChannel = supabase
       .channel('products-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
-        void refreshProducts();
-      })
-      .subscribe();
-
-    // Enable Realtime for Categories (in case a category name changes)
-    const categoriesChannel = supabase
-      .channel('categories-realtime-products')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, () => {
-        void fetchCategories();
+        fetchProducts(true);
       })
       .subscribe();
 
     return () => {
       supabase.removeChannel(productsChannel);
-      supabase.removeChannel(categoriesChannel);
     };
-  }, [supabase, refreshProducts]);
+  }, [supabase, fetchProducts]);
 
+  const handleOpenModal = (product?: Product) => {
+    if (product) {
+      router.push(`/admin/products/${product.id}`);
+    } else {
+      router.push('/admin/products/new');
+    }
+  };
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    const confirmed = await customConfirm('Delete Product', 'Are you sure you want to delete this product? This action cannot be undone.');
+    const confirmed = await customConfirm('Delete Product', 'Are you sure you want to delete this product?');
     if (confirmed) {
       const toastId = toast.loading('Deleting product...');
       try {
-        const { error } = await supabase.from('products').delete().eq('id', id);
-        
-        if (error) {
-          console.error('[ProductManager] Delete failed:', error);
-          toast.error(`Delete failed: ${error.message || 'Check your permissions'}`, { id: toastId });
-          return;
-        }
-
+        const result = await deleteProductAction(id);
+        if (!result.success) throw new Error(result.message);
         setProducts(prev => prev.filter(p => p.id !== id));
         toast.success('Product deleted successfully', { id: toastId });
-      } catch (error: unknown) {
-        console.error('[ProductManager] Delete crash:', error);
-        toast.error('A system error occurred during deletion', { id: toastId });
+      } catch (error: any) {
+        toast.error('Delete failed: ' + error.message, { id: toastId });
       }
     }
   };
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      {/* Header - Flat & Professional */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Products</h1>
@@ -186,7 +213,7 @@ export function ProductManager({
               placeholder="Search products..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-4 h-10 bg-white border border-slate-300 rounded text-sm focus:outline-none focus:border-slate-900 transition-all w-64 placeholder:text-slate-400 text-slate-900"
+              className="pl-10 pr-4 h-10 bg-white border border-slate-300 rounded text-sm focus:outline-none focus:border-slate-900 transition-all w-64 text-slate-900"
             />
           </div>
           <button 
@@ -199,15 +226,13 @@ export function ProductManager({
         </div>
       </div>
 
-      {/* View Controls & Table */}
       <div className="bg-white border border-slate-300 rounded overflow-hidden shadow-none">
-        {/* Tabs Bar */}
         <div className="px-6 border-b border-slate-300 bg-white flex items-center justify-between h-14">
           <div className="flex gap-8 h-full">
             {['all', 'active', 'drafts'].map((tab) => (
               <button
                 key={tab}
-                onClick={() => setActiveTab(tab as 'all' | 'active' | 'drafts')}
+                onClick={() => setActiveTab(tab as any)}
                 className={`h-full text-[11px] font-bold uppercase tracking-widest border-b-2 transition-all ${
                   activeTab === tab 
                     ? 'text-slate-900 border-slate-900' 
@@ -218,14 +243,12 @@ export function ProductManager({
               </button>
             ))}
           </div>
-          
           <button className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-900 transition-all">
              <Download className="w-4 h-4" />
              Export
           </button>
         </div>
 
-        {/* Table - 2D Grid */}
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -240,22 +263,22 @@ export function ProductManager({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {loading ? (
+              {loading && products.length === 0 ? (
                 <tr><td colSpan={7} className="py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-xs">Accessing Inventory...</td></tr>
-              ) : filteredProducts.length === 0 ? (
+              ) : products.length === 0 ? (
                 <tr><td colSpan={7} className="py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-xs">No entries found</td></tr>
-              ) : filteredProducts.map((product) => (
+              ) : products.map((product) => (
                 <tr 
                   key={product.id} 
                   onClick={() => handleOpenModal(product)}
                   className="hover:bg-slate-50 transition-colors group cursor-pointer"
                 >
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
                     <div className="w-4 h-4 border border-slate-300 rounded-sm mx-auto group-hover:border-slate-900 transition-colors" />
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-slate-50 border border-slate-200 rounded flex items-center justify-center overflow-hidden shrink-0 group-hover:border-slate-300 transition-all">
+                      <div className="w-12 h-12 bg-slate-50 border border-slate-200 rounded flex items-center justify-center overflow-hidden shrink-0">
                         {product.imageUrl ? (
                           <Image src={product.imageUrl} alt="" width={48} height={48} className="w-full h-full object-cover" />
                         ) : (
@@ -268,12 +291,10 @@ export function ProductManager({
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="text-xs text-slate-600 font-medium whitespace-nowrap">
-                      {categories.find(c => c.id === product.categoryId)?.name || 'General Item'}
-                    </div>
+                  <td className="px-6 py-4 text-xs font-medium text-slate-600">
+                    {categories.find(c => c.id === product.categoryId)?.name || 'General Item'}
                   </td>
-                  <td className="px-6 py-4 text-sm font-bold text-slate-900">
+                  <td className="px-6 py-4 text-sm font-bold text-slate-900 whitespace-nowrap">
                     {product.price.toLocaleString()} SEK
                   </td>
                   <td className="px-6 py-4 text-xs font-medium text-slate-500">
@@ -281,13 +302,10 @@ export function ProductManager({
                   </td>
                   <td className="px-6 py-4">
                     <div className={`inline-flex items-center gap-2 px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest border ${
-                      product.status === 'draft'
-                        ? 'bg-zinc-100 text-zinc-600 border-zinc-200'
-                        : product.stock > 10 
-                          ? 'bg-emerald-50 text-emerald-700 border-emerald-100' 
-                          : product.stock > 0 
-                            ? 'bg-amber-50 text-amber-700 border-amber-100' 
-                            : 'bg-rose-50 text-rose-700 border-rose-100'
+                      product.status === 'draft' ? 'bg-zinc-100 text-zinc-600 border-zinc-200' :
+                      product.stock > 10 ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 
+                      product.stock > 0 ? 'bg-amber-50 text-amber-700 border-amber-100' : 
+                      'bg-rose-50 text-rose-700 border-rose-100'
                     }`}>
                       <div className={`w-1 h-1 rounded-full ${
                         product.status === 'draft' ? 'bg-zinc-400' : product.stock > 10 ? 'bg-emerald-500' : product.stock > 0 ? 'bg-amber-500' : 'bg-rose-500'
@@ -309,18 +327,21 @@ export function ProductManager({
           </table>
         </div>
 
-        {/* Footer Statistics */}
+        <InfiniteScrollSentinel 
+          onIntersect={() => fetchProducts(false)}
+          isLoading={loadingMore}
+          hasMore={hasMore}
+          loadingMessage="Streaming inventory entries..."
+        />
+
         <div className="px-6 py-4 border-t border-slate-300 bg-slate-50 flex items-center justify-between h-14">
-           <p className="text-xs font-medium text-slate-500">Showing <span className="text-slate-900 font-bold">{filteredProducts.length}</span> of <span className="text-slate-900 font-bold">{products.length}</span> entries</p>
-           <div className="flex gap-2">
-             <button className="h-8 px-4 border border-slate-300 rounded text-[11px] font-bold uppercase tracking-widest text-slate-500 hover:border-slate-900 hover:text-slate-900 transition-all disabled:opacity-30" disabled>Prev</button>
-             <button className="h-8 px-4 border border-slate-300 rounded text-[11px] font-bold uppercase tracking-widest text-slate-500 hover:border-slate-900 hover:text-slate-900 transition-all disabled:opacity-30" disabled>Next</button>
-           </div>
+           <p className="text-xs font-medium text-slate-500">
+             Showing <span className="text-slate-900 font-bold">{products.length}</span> entries 
+             {debouncedSearchQuery && <span> matching "{debouncedSearchQuery}"</span>}
+           </p>
         </div>
       </div>
 
-
-      {/* Import logic removed from UI to minimize clutter, but ref is kept if needed */}
       <input type="file" ref={fileInputRef} className="hidden" accept=".csv" />
     </div>
   );

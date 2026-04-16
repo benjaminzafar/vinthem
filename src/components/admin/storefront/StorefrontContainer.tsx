@@ -334,7 +334,7 @@ export function StorefrontContainer() {
                      <div className="space-y-4">
                         <div className="aspect-[4/5] bg-zinc-50 border border-zinc-100 rounded-md relative group overflow-hidden">
                            {settings.futureImage1 ? (
-                              <img src={settings.futureImage1} className="w-full h-full object-cover" />
+                              <img src={settings.futureImage1} alt="Future product preview 1" className="w-full h-full object-cover" />
                            ) : <ImageIcon className="w-8 h-8 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-zinc-200" />}
                            <input type="file" onChange={e => handleImageUpload(e, 'futureImage1')} className="absolute inset-0 opacity-0 cursor-pointer" />
                         </div>
@@ -344,7 +344,7 @@ export function StorefrontContainer() {
                      <div className="space-y-4">
                         <div className="aspect-[4/5] bg-zinc-50 border border-zinc-100 rounded-md relative group overflow-hidden">
                            {settings.futureImage2 ? (
-                              <img src={settings.futureImage2} className="w-full h-full object-cover" />
+                              <img src={settings.futureImage2} alt="Future product preview 2" className="w-full h-full object-cover" />
                            ) : <ImageIcon className="w-8 h-8 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-zinc-200" />}
                            <input type="file" onChange={e => handleImageUpload(e, 'futureImage2')} className="absolute inset-0 opacity-0 cursor-pointer" />
                         </div>
@@ -390,6 +390,68 @@ export function StorefrontContainer() {
                         <LocalizedSettingInput label="Shipping Class Label" value={settings.shippingClassText} onChange={v => handleUpdate('shippingClassText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('shippingClassText', 'Shipping Class')} onAIAutoComplete={() => handleAIAutoComplete('shippingClassText', 'Shipping Class')} isGenerating={generating} />
                       </div>
                    </div>
+                </SettingCard>
+
+                <SettingCard id="PrivacyConsent" title="Privacy, Consent & Auth" icon={FileCode}>
+                  <div className="space-y-8">
+                    <div className="rounded-md border border-zinc-200 bg-zinc-50 p-4">
+                      <label className="flex items-start justify-between gap-6">
+                        <div className="space-y-1">
+                          <p className="text-[11px] font-black uppercase tracking-widest text-zinc-500">Google OAuth Button</p>
+                          <p className="text-[12px] text-zinc-500">
+                            Only enable this after Google provider is fully configured in Supabase Auth.
+                          </p>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={settings.googleAuthEnabled}
+                          onChange={(event) => handleUpdate('googleAuthEnabled', event.target.checked)}
+                          className="mt-1 h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900"
+                        />
+                      </label>
+                    </div>
+
+                    <LocalizedSettingInput label="Google Login Unavailable Message" value={settings.googleLoginUnavailableText} onChange={v => handleUpdate('googleLoginUnavailableText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('googleLoginUnavailableText', 'Google Login Unavailable Message')} isGenerating={generating} />
+                    <LocalizedSettingInput label="Cookie Preferences Footer Button" value={settings.cookiePreferencesButtonText} onChange={v => handleUpdate('cookiePreferencesButtonText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('cookiePreferencesButtonText', 'Cookie Preferences Footer Button')} isGenerating={generating} />
+                    <LocalizedSettingInput label="Unsubscribe Footer Link" value={settings.unsubscribeLinkText} onChange={v => handleUpdate('unsubscribeLinkText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('unsubscribeLinkText', 'Unsubscribe Footer Link')} isGenerating={generating} />
+                    <LocalizedSettingInput label="Sign Up Terms Consent Prefix" value={settings.signUpTermsConsentText} onChange={v => handleUpdate('signUpTermsConsentText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('signUpTermsConsentText', 'Sign Up Terms Consent Prefix')} isGenerating={generating} />
+                    <LocalizedSettingInput label="Sign Up Privacy Consent Prefix" value={settings.signUpPrivacyConsentText} onChange={v => handleUpdate('signUpPrivacyConsentText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('signUpPrivacyConsentText', 'Sign Up Privacy Consent Prefix')} isGenerating={generating} />
+                    <LocalizedSettingInput label="Sign Up Marketing Consent Text" value={settings.signUpMarketingConsentText} onChange={v => handleUpdate('signUpMarketingConsentText', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('signUpMarketingConsentText', 'Sign Up Marketing Consent Text')} isGenerating={generating} />
+
+                    <LocalizedSettingInput label="Consent Banner Eyebrow" value={settings.consentBannerEyebrowText} onChange={v => handleUpdate('consentBannerEyebrowText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentBannerEyebrowText', 'Consent Banner Eyebrow')} isGenerating={generating} />
+                    <LocalizedSettingInput label="Consent Banner Title" value={settings.consentBannerTitleText} onChange={v => handleUpdate('consentBannerTitleText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentBannerTitleText', 'Consent Banner Title')} isGenerating={generating} />
+                    <LocalizedSettingInput label="Consent Banner Description" value={settings.consentBannerDescriptionText} onChange={v => handleUpdate('consentBannerDescriptionText', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('consentBannerDescriptionText', 'Consent Banner Description')} isGenerating={generating} />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <LocalizedSettingInput label="Consent Privacy Link Label" value={settings.consentPrivacyLinkText} onChange={v => handleUpdate('consentPrivacyLinkText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentPrivacyLinkText', 'Consent Privacy Link Label')} isGenerating={generating} />
+                      <LocalizedSettingInput label="Consent Cookie Link Label" value={settings.consentCookieLinkText} onChange={v => handleUpdate('consentCookieLinkText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentCookieLinkText', 'Consent Cookie Link Label')} isGenerating={generating} />
+                      <LocalizedSettingInput label="Consent Choose Settings Label" value={settings.consentChooseSettingsText} onChange={v => handleUpdate('consentChooseSettingsText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentChooseSettingsText', 'Consent Choose Settings Label')} isGenerating={generating} />
+                      <LocalizedSettingInput label="Consent Accept All Label" value={settings.consentAcceptAllText} onChange={v => handleUpdate('consentAcceptAllText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentAcceptAllText', 'Consent Accept All Label')} isGenerating={generating} />
+                      <LocalizedSettingInput label="Consent Essential Only Label" value={settings.consentEssentialOnlyText} onChange={v => handleUpdate('consentEssentialOnlyText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentEssentialOnlyText', 'Consent Essential Only Label')} isGenerating={generating} />
+                      <LocalizedSettingInput label="Consent Modal Eyebrow" value={settings.consentModalEyebrowText} onChange={v => handleUpdate('consentModalEyebrowText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentModalEyebrowText', 'Consent Modal Eyebrow')} isGenerating={generating} />
+                      <LocalizedSettingInput label="Consent Modal Title" value={settings.consentModalTitleText} onChange={v => handleUpdate('consentModalTitleText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentModalTitleText', 'Consent Modal Title')} isGenerating={generating} />
+                      <LocalizedSettingInput label="Consent Close Label" value={settings.consentCloseText} onChange={v => handleUpdate('consentCloseText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentCloseText', 'Consent Close Label')} isGenerating={generating} />
+                      <LocalizedSettingInput label="Consent Essential Title" value={settings.consentEssentialTitleText} onChange={v => handleUpdate('consentEssentialTitleText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentEssentialTitleText', 'Consent Essential Title')} isGenerating={generating} />
+                      <LocalizedSettingInput label="Consent Always On Label" value={settings.consentAlwaysOnText} onChange={v => handleUpdate('consentAlwaysOnText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentAlwaysOnText', 'Consent Always On Label')} isGenerating={generating} />
+                      <LocalizedSettingInput label="Consent Analytics Title" value={settings.consentAnalyticsTitleText} onChange={v => handleUpdate('consentAnalyticsTitleText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentAnalyticsTitleText', 'Consent Analytics Title')} isGenerating={generating} />
+                      <LocalizedSettingInput label="Consent Marketing Title" value={settings.consentMarketingTitleText} onChange={v => handleUpdate('consentMarketingTitleText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentMarketingTitleText', 'Consent Marketing Title')} isGenerating={generating} />
+                      <LocalizedSettingInput label="Consent Save Preferences Label" value={settings.consentSavePreferencesText} onChange={v => handleUpdate('consentSavePreferencesText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentSavePreferencesText', 'Consent Save Preferences Label')} isGenerating={generating} />
+                      <LocalizedSettingInput label="Consent Reject Optional Label" value={settings.consentRejectOptionalText} onChange={v => handleUpdate('consentRejectOptionalText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentRejectOptionalText', 'Consent Reject Optional Label')} isGenerating={generating} />
+                    </div>
+                    <LocalizedSettingInput label="Consent Essential Description" value={settings.consentEssentialDescriptionText} onChange={v => handleUpdate('consentEssentialDescriptionText', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('consentEssentialDescriptionText', 'Consent Essential Description')} isGenerating={generating} />
+                    <LocalizedSettingInput label="Consent Analytics Description" value={settings.consentAnalyticsDescriptionText} onChange={v => handleUpdate('consentAnalyticsDescriptionText', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('consentAnalyticsDescriptionText', 'Consent Analytics Description')} isGenerating={generating} />
+                    <LocalizedSettingInput label="Consent Marketing Description" value={settings.consentMarketingDescriptionText} onChange={v => handleUpdate('consentMarketingDescriptionText', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('consentMarketingDescriptionText', 'Consent Marketing Description')} isGenerating={generating} />
+                  </div>
+                </SettingCard>
+
+                <SettingCard id="PolicyPages" title="Policy Pages" icon={Mail}>
+                  <div className="space-y-8">
+                    <LocalizedSettingInput label="Privacy Policy Page Title" value={settings.privacyPolicyPageTitle} onChange={v => handleUpdate('privacyPolicyPageTitle', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('privacyPolicyPageTitle', 'Privacy Policy Page Title')} isGenerating={generating} />
+                    <LocalizedSettingInput label="Privacy Policy Page Content (Markdown)" value={settings.privacyPolicyPageContent} onChange={v => handleUpdate('privacyPolicyPageContent', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('privacyPolicyPageContent', 'Privacy Policy Page Content')} isGenerating={generating} />
+                    <LocalizedSettingInput label="Cookie Policy Page Title" value={settings.cookiePolicyPageTitle} onChange={v => handleUpdate('cookiePolicyPageTitle', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('cookiePolicyPageTitle', 'Cookie Policy Page Title')} isGenerating={generating} />
+                    <LocalizedSettingInput label="Cookie Policy Page Content (Markdown)" value={settings.cookiePolicyPageContent} onChange={v => handleUpdate('cookiePolicyPageContent', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('cookiePolicyPageContent', 'Cookie Policy Page Content')} isGenerating={generating} />
+                    <LocalizedSettingInput label="Terms Page Title" value={settings.termsOfServicePageTitle} onChange={v => handleUpdate('termsOfServicePageTitle', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('termsOfServicePageTitle', 'Terms Page Title')} isGenerating={generating} />
+                    <LocalizedSettingInput label="Terms Page Content (Markdown)" value={settings.termsOfServicePageContent} onChange={v => handleUpdate('termsOfServicePageContent', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('termsOfServicePageContent', 'Terms Page Content')} isGenerating={generating} />
+                  </div>
                 </SettingCard>
               </div>
             </motion.div>

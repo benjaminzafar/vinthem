@@ -18,6 +18,7 @@ export type ActionResponse = {
 export async function updateSettingsAction(settings: StorefrontSettingsType): Promise<ActionResponse> {
   try {
     const { supabase } = await requireAdminUser();
+    const now = new Date().toISOString();
 
     // Perform Upsert
     const { error } = await supabase
@@ -25,14 +26,52 @@ export async function updateSettingsAction(settings: StorefrontSettingsType): Pr
       .upsert({ 
         id: 'primary', 
         data: settings,
-        updated_at: new Date().toISOString()
+        updated_at: now
       });
 
     if (error) throw error;
 
+    const policyPages = [
+      {
+        slug: 'privacy-policy',
+        title: settings.privacyPolicyPageTitle,
+        content: settings.privacyPolicyPageContent,
+      },
+      {
+        slug: 'cookie-policy',
+        title: settings.cookiePolicyPageTitle,
+        content: settings.cookiePolicyPageContent,
+      },
+      {
+        slug: 'terms-of-service',
+        title: settings.termsOfServicePageTitle,
+        content: settings.termsOfServicePageContent,
+      },
+    ];
+
+    for (const page of policyPages) {
+      const { error: pageError } = await supabase
+        .from('pages')
+        .upsert({
+          slug: page.slug,
+          title: page.title,
+          content: page.content,
+          updated_at: now,
+        }, {
+          onConflict: 'slug',
+        });
+
+      if (pageError) {
+        throw pageError;
+      }
+    }
+
     // Purge cache to reflect changes immediately across the site
     revalidatePath('/', 'layout');
     revalidatePath('/admin');
+    revalidatePath('/p/privacy-policy');
+    revalidatePath('/p/cookie-policy');
+    revalidatePath('/p/terms-of-service');
     
     return { success: true, message: 'Settings saved successfully' };
   } catch (error: unknown) {

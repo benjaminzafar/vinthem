@@ -4,6 +4,7 @@ import { createClient } from '@/utils/supabase/client';
 import { Product } from '@/store/useCartStore';
 import { genAI } from '@/lib/ai';
 import { toast } from 'sonner';
+import { createAdminReviewAction } from '@/app/actions/reviews';
 
 export function ReviewGenerator() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -48,14 +49,13 @@ export function ReviewGenerator() {
       const aiResponse = await model.generateContent(prompt);
       const review = JSON.parse(aiResponse.response.text() || '{}');
       
-      const { error } = await supabase.from('reviews').insert({
-        product_id: product.id,
-        user_id: null,
+      const result = await createAdminReviewAction({
+        productId: product.id,
         rating: review.rating || 5,
         comment: review.comment || 'Great product!',
       });
 
-      if (error) throw error;
+      if (!result.success) throw new Error(result.message);
 
       toast.success('Fake review generated!', { id: toastId });
     } catch (error: any) {

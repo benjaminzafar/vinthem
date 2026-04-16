@@ -4,20 +4,26 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { useAuthStore } from '@/store/useAuthStore';
 import { toast } from 'sonner';
-import { Mail, Lock, User, ArrowRight } from 'lucide-react';
+import { Mail, Lock, User } from 'lucide-react';
 import { useSettingsStore } from '@/store/useSettingsStore';
-import { useTranslation } from 'react-i18next';
+import Link from 'next/link';
+import { recordSignupConsentAction, syncCurrentUserProfileAction } from '@/app/actions/auth';
+import { getClientLocale } from '@/lib/locale';
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
+  const [marketingOptIn, setMarketingOptIn] = useState(false);
   const navigate = useRouter();
   const { setIsAdmin } = useAuthStore();
   const { settings } = useSettingsStore();
-  const { i18n } = useTranslation();
-  const lang = i18n.language || 'en';
+  const lang = getClientLocale();
+  const signUpTermsPrefix = settings.signUpTermsConsentText?.[lang] || 'I agree to the';
+  const signUpPrivacyText = settings.signUpPrivacyConsentText?.[lang] || 'I have read the Privacy Policy and Cookie Policy.';
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,6 +37,10 @@ export default function Auth() {
         });
         if (error) throw error;
       } else {
+        if (!acceptedTerms || !acceptedPrivacy) {
+          throw new Error('You must accept the Terms and Privacy Policy to create an account.');
+        }
+
         const { data, error } = await supabase.auth.signUp({ 
           email, 
           password,
@@ -41,18 +51,25 @@ export default function Auth() {
         if (error) throw error;
 
         if (data.user) {
-          await supabase.from('users').upsert({
-            id: data.user.id,
-            email,
-            name,
-            role: 'client',
+          const syncResult = await syncCurrentUserProfileAction(name);
+          if (!syncResult.success) throw new Error(syncResult.message);
+
+          const consentResult = await recordSignupConsentAction({
+            fullName: name,
+            acceptedTerms,
+            acceptedPrivacy,
+            marketingOptIn,
           });
+
+          if (!consentResult.success) throw new Error(consentResult.message);
         }
       }
 
       // Check admin role
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
+        const syncResult = await syncCurrentUserProfileAction(name);
+        if (!syncResult.success) throw new Error(syncResult.message);
         const { data: profile } = await supabase
           .from('users')
           .select('role')
@@ -71,6 +88,11 @@ export default function Auth() {
   };
 
   const handleGoogleLogin = async () => {
+    if (!settings.googleAuthEnabled) {
+      toast.error(settings.googleLoginUnavailableText?.[lang] || 'Google sign-in is not available right now.');
+      return;
+    }
+
     const supabase = createClient();
     try {
       const { error } = await supabase.auth.signInWithOAuth({
@@ -136,19 +158,79 @@ export default function Auth() {
           >
             {isLogin ? settings.signInButtonText?.[lang] : settings.signUpButtonText?.[lang]}
           </button>
+
+          {!isLogin && (
+            <div className="space-y-4 rounded-2xl border border-gray-200 bg-gray-50/70 p-4">
+              <label className="flex items-start gap-3 text-sm text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={acceptedTerms}
+                  onChange={(event) => setAcceptedTerms(event.target.checked)}
+                  className="mt-1 h-4 w-4 rounded border-gray-300 text-zinc-900 focus:ring-zinc-900"
+                  required
+                />
+                <span>
+                  {signUpTermsPrefix}{' '}
+                  <Link href="/p/terms-of-service" className="font-medium underline underline-offset-4">
+                    {settings.termsOfServicePageTitle?.[lang] || 'Terms of Service'}
+                  </Link>.
+                </span>
+              </label>
+
+              <label className="flex items-start gap-3 text-sm text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={acceptedPrivacy}
+                  onChange={(event) => setAcceptedPrivacy(event.target.checked)}
+                  className="mt-1 h-4 w-4 rounded border-gray-300 text-zinc-900 focus:ring-zinc-900"
+                  required
+                />
+                <span>
+                  {signUpPrivacyText}{' '}
+                  <Link href="/p/privacy-policy" className="font-medium underline underline-offset-4">
+                    {settings.privacyPolicyPageTitle?.[lang] || 'Privacy Policy'}
+                  </Link>{' '}
+                  {lang === 'sv' ? 'och' : lang === 'fi' ? 'ja' : lang === 'da' ? 'og' : 'and'}{' '}
+                  <Link href="/p/cookie-policy" className="font-medium underline underline-offset-4">
+                    {settings.cookiePolicyPageTitle?.[lang] || 'Cookie Policy'}
+                  </Link>.
+                </span>
+              </label>
+
+              <label className="flex items-start gap-3 text-sm text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={marketingOptIn}
+                  onChange={(event) => setMarketingOptIn(event.target.checked)}
+                  className="mt-1 h-4 w-4 rounded border-gray-300 text-zinc-900 focus:ring-zinc-900"
+                />
+                <span>
+                  {settings.signUpMarketingConsentText?.[lang] || 'Email me about launches, editorial stories, and offers. You can unsubscribe at any time.'}
+                </span>
+              </label>
+            </div>
+          )}
         </form>
 
         <div className="mt-6">
           <button
+            type="button"
             onClick={handleGoogleLogin}
+            disabled={!settings.googleAuthEnabled}
             className="w-full flex justify-center py-3 px-4 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zinc-900"
           >
             {settings.continueWithGoogleText?.[lang]}
           </button>
+          {!settings.googleAuthEnabled && (
+            <p className="mt-3 text-center text-xs text-gray-500">
+              {settings.googleLoginUnavailableText?.[lang] || 'Google sign-in is not available right now.'}
+            </p>
+          )}
         </div>
 
         <div className="text-center mt-4">
           <button
+            type="button"
             onClick={() => setIsLogin(!isLogin)}
             className="text-sm text-zinc-900 hover:text-zinc-900"
           >

@@ -12,7 +12,11 @@ export async function GET(request: NextRequest) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error && data.user) {
-      await ensureUserProfile(data.user, data.user.user_metadata?.full_name);
+      try {
+        await ensureUserProfile(data.user, data.user.user_metadata?.full_name);
+      } catch (profileError) {
+        console.error('[Auth Callback] Profile sync skipped:', profileError);
+      }
 
       return NextResponse.redirect(`${origin}${next}`);
     }

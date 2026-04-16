@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/server';
+import { cookies } from 'next/headers';
 import ReactMarkdown from 'react-markdown';
 import { Home, ChevronRight } from 'lucide-react';
 import { StaticPage } from '@/types';
@@ -17,8 +18,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
   if (!page) return { title: 'Page Not Found' };
 
+  const lang = (await cookies()).get('NEXT_LOCALE')?.value || 'en';
+
   return {
-    title: `${page.title['en'] || 'Page'} | Mavren Shop`,
+    title: `${page.title[lang] || page.title['en'] || 'Page'} | Mavren Shop`,
   };
 }
 
@@ -47,7 +50,7 @@ export default async function StaticPageDetail({ params }: { params: Promise<{ s
     .single();
 
   const settings = settingsData?.data || {};
-  const lang = 'en'; // Default to en for server rendering, or handle via cookies if implemented
+  const lang = (await cookies()).get('NEXT_LOCALE')?.value || 'en';
 
   return (
     <div className="bg-brand-bg min-h-screen pb-20 animate-in fade-in duration-700">

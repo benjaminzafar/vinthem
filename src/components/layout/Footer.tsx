@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { cookies } from 'next/headers';
+import { CookiePreferencesButton } from '@/components/CookiePreferencesButton';
 
 interface FooterProps {
   settings: any;
@@ -58,7 +59,11 @@ export default async function Footer({ settings }: FooterProps) {
           <p className="text-sm text-gray-600">
             &copy; {new Date().getFullYear()} {settings.storeName?.[lang]}. {settings.footerCopyright?.[lang]}
           </p>
-          <div className="flex space-x-6 text-sm text-gray-500">
+          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-500">
+            <CookiePreferencesButton label={settings.cookiePreferencesButtonText?.[lang] || 'Cookie Preferences'} />
+            <Link href="/unsubscribe" className="hover:text-brand-ink transition-colors">
+              {settings.unsubscribeLinkText?.[lang] || 'Unsubscribe'}
+            </Link>
             {settings.socialInstagram && <a href={settings.socialInstagram} target="_blank" rel="noopener noreferrer" className="hover:text-brand-ink transition-colors" aria-label="Visit our Instagram">{settings.instagramText?.[lang] || 'Instagram'}</a>}
             {settings.socialTikTok && <a href={settings.socialTikTok} target="_blank" rel="noopener noreferrer" className="hover:text-brand-ink transition-colors" aria-label="Visit our TikTok">{settings.tiktokText?.[lang] || 'TikTok'}</a>}
             {settings.socialFacebook && <a href={settings.socialFacebook} target="_blank" rel="noopener noreferrer" className="hover:text-brand-ink transition-colors" aria-label="Visit our Facebook">{settings.facebookText?.[lang] || 'Facebook'}</a>}

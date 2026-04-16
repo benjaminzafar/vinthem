@@ -1,44 +1,54 @@
 "use client";
 
 import React from 'react';
-import { Search } from 'lucide-react';
+import { LifeBuoy, RotateCcw, Search, ShieldCheck, ShoppingBag } from 'lucide-react';
+import { formatPrice } from '@/lib/currency';
+import type { CRMCustomer } from './types';
 
 interface CustomerTableProps {
-  customers: any[];
+  customers: CRMCustomer[];
   loading: boolean;
   searchQuery: string;
   onSearchChange: (value: string) => void;
-  onSelectCustomer: (customer: any) => void;
+  onSelectCustomer: (customer: CRMCustomer) => void;
 }
 
-export function CustomerTable({ 
-  customers, 
-  loading, 
-  searchQuery, 
-  onSearchChange, 
-  onSelectCustomer 
+export function CustomerTable({
+  customers,
+  loading,
+  searchQuery,
+  onSearchChange,
+  onSelectCustomer,
 }: CustomerTableProps) {
   return (
     <div className="space-y-8">
-      {/* 1. Search Logic (Aligned with Slate professional style) */}
-      <div className="relative w-full sm:max-w-md">
-        <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-        <input 
-          type="text" 
-          value={searchQuery} 
-          onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Search customer database..."
-          className="w-full pl-10 pr-4 h-10 bg-white border border-slate-300 rounded text-sm focus:outline-none focus:border-slate-900 transition-all text-slate-900 placeholder:text-slate-400"
-        />
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div className="space-y-2">
+          <h3 className="text-lg font-bold text-slate-900 tracking-tight">Customer Intelligence Desk</h3>
+          <p className="max-w-2xl text-sm text-slate-500">
+            Inspect order value, support history, refunds, and recent activity without leaving the CRM workspace.
+          </p>
+        </div>
+
+        <div className="relative w-full sm:max-w-md">
+          <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            placeholder="Search customer database..."
+            className="h-11 w-full rounded border border-slate-300 bg-white pl-10 pr-4 text-sm text-slate-900 transition-all placeholder:text-slate-400 focus:border-slate-900 focus:outline-none"
+          />
+        </div>
       </div>
 
-      {/* 2. Table Section (Aligned with Overview 'Top Performers' table) */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto rounded border border-slate-300">
         <table className="w-full text-left">
           <thead>
-            <tr className="border-b border-slate-300 text-[11px] uppercase tracking-widest text-slate-500 font-bold">
+            <tr className="border-b border-slate-300 text-[11px] font-bold uppercase tracking-widest text-slate-500">
               <th className="px-6 py-4">Client Identity</th>
-              <th className="px-6 py-4">Joined At</th>
+              <th className="px-6 py-4">Portfolio</th>
+              <th className="px-6 py-4">Activity</th>
               <th className="px-6 py-4">Access Level</th>
               <th className="px-6 py-4 text-right">Actions</th>
             </tr>
@@ -46,39 +56,68 @@ export function CustomerTable({
           <tbody className="divide-y divide-slate-100">
             {loading ? (
               <tr>
-                <td colSpan={4} className="py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-[11px]">Syncing CRM databases...</td>
+                <td colSpan={5} className="py-20 text-center text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                  Syncing CRM databases...
+                </td>
               </tr>
             ) : customers.length === 0 ? (
               <tr>
-                <td colSpan={4} className="py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-[11px]">No matching records found</td>
+                <td colSpan={5} className="py-20 text-center text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                  No matching records found
+                </td>
               </tr>
             ) : (
               customers.map((customer) => (
-                <tr key={customer.id} className="group hover:bg-slate-50 transition-colors">
+                <tr key={customer.id} className="group transition-colors hover:bg-slate-50">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-4">
-                      <div className="w-9 h-9 bg-slate-100 border border-slate-200 text-slate-900 rounded flex items-center justify-center text-[10px] font-bold shrink-0">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded border border-slate-200 bg-slate-100 text-[10px] font-bold text-slate-900">
                         {customer.email?.charAt(0).toUpperCase() || '?'}
                       </div>
-                      <span className="font-bold text-slate-900 text-sm">{customer.email}</span>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-bold text-slate-900">{customer.name || customer.email}</p>
+                        <p className="truncate text-xs text-slate-400">{customer.email}</p>
+                      </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-xs font-medium text-slate-500">
-                    {customer.createdAt ? new Date(customer.createdAt).toLocaleDateString() : '—'}
+                  <td className="px-6 py-4">
+                    <div className="flex flex-wrap gap-2">
+                      <span className="inline-flex items-center gap-1 rounded border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                        <ShoppingBag className="h-3 w-3" /> {customer.orderCount} Orders
+                      </span>
+                      <span className="inline-flex items-center rounded border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                        {formatPrice(customer.totalSpent, 'en')}
+                      </span>
+                    </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest border ${
-                      customer.role === 'admin' 
-                        ? 'bg-slate-900 text-white border-slate-900' 
-                        : 'bg-white text-slate-500 border-slate-300'
-                    }`}>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="inline-flex items-center gap-1 rounded border border-slate-200 bg-white px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                        <LifeBuoy className="h-3 w-3" /> {customer.ticketCount}
+                      </span>
+                      <span className="inline-flex items-center gap-1 rounded border border-slate-200 bg-white px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                        <RotateCcw className="h-3 w-3" /> {customer.refundCount}
+                      </span>
+                      <span className="inline-flex items-center gap-1 rounded border border-slate-200 bg-white px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                        <ShieldCheck className="h-3 w-3" /> {customer.lastActiveAt ? new Date(customer.lastActiveAt).toLocaleDateString() : 'No activity'}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span
+                      className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest border ${
+                        customer.role === 'admin'
+                          ? 'border-slate-900 bg-slate-900 text-white'
+                          : 'border-slate-300 bg-white text-slate-500'
+                      }`}
+                    >
                       {customer.role || 'client'}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button 
-                      onClick={() => onSelectCustomer(customer)} 
-                      className="text-[11px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-all border-b border-transparent hover:border-slate-900"
+                    <button
+                      onClick={() => onSelectCustomer(customer)}
+                      className="border-b border-transparent text-[11px] font-bold uppercase tracking-widest text-slate-400 transition-all hover:border-slate-900 hover:text-slate-900"
                     >
                       View Profile
                     </button>

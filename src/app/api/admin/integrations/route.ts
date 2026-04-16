@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { requireAdminBearerUser } from '@/lib/admin';
+import { NextResponse } from 'next/server';
+import { requireAdminUser } from '@/lib/admin';
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
-    const { supabase } = await requireAdminBearerUser(req.headers.get('Authorization'));
+    const { supabase } = await requireAdminUser();
     const { data, error } = await supabase.from('integrations').select('key');
 
     if (error) throw error;

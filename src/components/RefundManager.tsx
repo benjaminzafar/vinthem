@@ -3,15 +3,27 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { RefreshCcw, CheckCircle, XCircle, Clock, DollarSign } from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { updateRefundStatusAction } from '@/app/actions/support';
 import { createClient } from '@/utils/supabase/client';
 
 const COLORS = ['#18181b', '#3f3f46', '#71717a', '#a1a1aa', '#d4d4d8'];
 
 import { AdminHeader } from './admin/AdminHeader';
 
+type RefundRequest = {
+  id: string;
+  created_at: string;
+  createdAt: string;
+  order_id: string;
+  orderId: string;
+  reason: string | null;
+  comments?: string | null;
+  status: 'Pending' | 'Approved' | 'Rejected' | 'Refunded';
+};
+
 export function RefundManager() {
   const supabase = createClient();
-  const [requests, setRequests] = useState<any[]>([]);
+  const [requests, setRequests] = useState<RefundRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -25,11 +37,11 @@ export function RefundManager() {
       console.error('Error fetching refund requests:', error);
       toast.error('Failed to load refund requests');
     } else {
-      setRequests(data.map(r => ({
+      setRequests((data ?? []).map((r) => ({
         ...r,
         createdAt: r.created_at,
         orderId: r.order_id
-      })));
+      })) as RefundRequest[]);
     }
     setLoading(false);
   };
@@ -53,18 +65,20 @@ export function RefundManager() {
     return Object.entries(counts).map(([name, value]) => ({ name, value }));
   }, [requests]);
 
-  const handleUpdateStatus = async (id: string, newStatus: string) => {
+  const handleUpdateStatus = async (id: string, newStatus: RefundRequest['status']) => {
     const toastId = toast.loading('Updating status...');
     try {
-      const { error } = await supabase
-        .from('refund_requests')
-        .update({ status: newStatus })
-        .eq('id', id);
-      if (error) throw error;
-      toast.success(`Request marked as ${newStatus}`, { id: toastId });
-    } catch (error: any) {
+      const result = await updateRefundStatusAction({ refundRequestId: id, status: newStatus });
+      if (!result.success) {
+        throw new Error(result.error || result.message);
+      }
+
+      toast.success(result.message, { id: toastId });
+      fetchRequests();
+    } catch (error) {
       console.error('Error updating status:', error);
-      toast.error(error.message || 'Failed to update status', { id: toastId });
+      const message = error instanceof Error ? error.message : 'Failed to update status';
+      toast.error(message, { id: toastId });
     }
   };
 
@@ -174,7 +188,7 @@ export function RefundManager() {
                     <td className="p-4">
                       <span className="text-sm text-zinc-900">{req.reason}</span>
                     </td>
-                    <td className="p-4 max-w-xs truncate text-sm text-zinc-500" title={req.comments}>
+                    <td className="p-4 max-w-xs truncate text-sm text-zinc-500" title={req.comments ?? undefined}>
                       {req.comments || '-'}
                     </td>
                     <td className="p-4">

@@ -1,6 +1,7 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { deleteCategoriesAction } from '@/app/actions/categories';
 import { createClient } from '@/utils/supabase/client';
 import { Product } from '@/store/useCartStore';
 import { Category } from '@/types';
@@ -9,40 +10,110 @@ import { toast } from 'sonner';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useCustomConfirm } from '@/components/ConfirmationContext';
 import { motion, AnimatePresence } from 'motion/react';
+import { InfiniteScrollSentinel } from '@/components/admin/InfiniteScrollSentinel';
 
 export function CollectionManager({ 
-  initialCategories = [], 
   initialProducts = [] 
 }: { 
   initialCategories?: Category[],
   initialProducts?: Product[]
 }) {
   const router = useRouter();
-  const [categories, setCategories] = useState<Category[]>(initialCategories);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [searchQuery, setSearchQuery] = useState('');
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  const debouncedSearchQuery = useDebounce(searchQuery, 400);
   const [selectedCollections, setSelectedCollections] = useState<string[]>([]);
+  
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const pageRef = useRef(0);
+  const ITEMS_PER_PAGE = 30;
+
   const customConfirm = useCustomConfirm();
   const supabase = createClient();
 
-  const refreshCategories = async () => {
+  const fetchCategories = useCallback(async (isFirstPage: boolean = false) => {
+    if (isFirstPage) {
+      setLoading(true);
+      pageRef.current = 0;
+    } else {
+      setLoadingMore(true);
+    }
+
+    const from = pageRef.current * ITEMS_PER_PAGE;
+    const to = from + ITEMS_PER_PAGE - 1;
+
     try {
-      const { data, error } = await supabase.from('categories').select('*').order('name');
+      let query = supabase
+        .from('categories')
+        .select('*', { count: 'exact' });
+
+      if (debouncedSearchQuery) {
+        query = query.ilike('name', `%${debouncedSearchQuery}%`);
+      } else {
+        query = query.is('parent_id', null);
+      }
+
+      const { data: rootData, count, error } = await query
+        .order('name')
+        .range(from, to);
+
       if (error) throw error;
-      const mappedCategories = ((data || []) as any[]).map((c) => ({
+
+      let batchCategories = (rootData || []).map((c: any) => ({
         ...c, isFeatured: c.is_featured, showInHero: c.show_in_hero, 
         parentId: c.parent_id, imageUrl: c.image_url, iconUrl: c.icon_url
-      }));
-      setCategories(mappedCategories as unknown as Category[]);
-    } catch (error: any) {
-      toast.error('Load failed: ' + error.message);
-    }
-  };
+      })) as unknown as Category[];
 
-  const filteredCategories = categories.filter(category => 
-    category.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
-  );
+      if (!debouncedSearchQuery && rootData && rootData.length > 0) {
+        const rootIds = rootData.map(r => r.id);
+        const { data: childrenData } = await supabase
+          .from('categories')
+          .select('*')
+          .in('parent_id', rootIds);
+        
+        if (childrenData) {
+          const mappedChildren = childrenData.map((c: any) => ({
+            ...c, isFeatured: c.is_featured, showInHero: c.show_in_hero, 
+            parentId: c.parent_id, imageUrl: c.image_url, iconUrl: c.icon_url
+          })) as unknown as Category[];
+          batchCategories = [...batchCategories, ...mappedChildren];
+        }
+      }
+
+      if (isFirstPage) {
+        setCategories(batchCategories);
+      } else {
+        setCategories(prev => {
+          const combined = [...prev, ...batchCategories];
+          const unique = Array.from(new Map(combined.map(c => [c.id, c])).values());
+          return unique;
+        });
+      }
+
+      const fetchedRootsSoFar = from + (rootData?.length || 0);
+      setHasMore(count ? fetchedRootsSoFar < count : false);
+      
+      if (rootData && rootData.length > 0) {
+        pageRef.current += 1;
+      }
+
+    } catch (error: any) {
+      console.error('[CollectionManager] Fetch error:', error);
+      toast.error('Load failed: ' + error.message);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  }, [supabase, debouncedSearchQuery]);
+
+  useEffect(() => {
+    fetchCategories(true);
+  }, [debouncedSearchQuery, fetchCategories]);
+
+  const refreshCategories = () => fetchCategories(true);
 
   const toggleAll = () => {
     const parents = categories.filter(c => !c.parentId);
@@ -54,9 +125,11 @@ export function CollectionManager({
     const confirmed = await customConfirm('Delete', `Remove ${selectedCollections.length} collections?`);
     if (!confirmed) return;
     try {
-      const { error } = await supabase.from('categories').delete().in('id', selectedCollections);
-      if (error) throw error;
-      toast.success('Deleted');
+      const result = await deleteCategoriesAction({ categoryIds: selectedCollections });
+      if (!result.success) {
+        throw new Error(result.error || result.message);
+      }
+      toast.success(result.message);
       setSelectedCollections([]);
       refreshCategories();
     } catch (error: any) {
@@ -65,8 +138,6 @@ export function CollectionManager({
   };
 
   useEffect(() => {
-    refreshCategories();
-    // Enable Realtime
     const channel = supabase
       .channel('categories-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, () => {
@@ -77,11 +148,10 @@ export function CollectionManager({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [supabase, fetchCategories]);
 
   useEffect(() => {
     const fetchProductCounts = async () => {
-      // Optimization: Only select columns needed for the parent count
       const { data } = await supabase.from('products').select('id, category_id');
       if (data) {
         setProducts(data.map((p: any) => ({
@@ -90,18 +160,19 @@ export function CollectionManager({
       }
     };
     fetchProductCounts();
+  }, [supabase]);
 
-    const channel = supabase
-      .channel('products-changes-collections')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
-        fetchProductCounts();
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
+  const sortedData = useMemo(() => {
+    const getSorted = (parentId: string | null = null, level: number = 0): { category: Category, level: number }[] => {
+      const result: { category: Category, level: number }[] = [];
+      categories.filter(c => c.parentId === parentId).forEach(child => {
+        result.push({ category: child, level });
+        result.push(...getSorted(child.id!, level + 1));
+      });
+      return result;
     };
-  }, []);
+    return getSorted();
+  }, [categories]);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -119,7 +190,7 @@ export function CollectionManager({
               placeholder="Search collections..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-4 h-11 bg-white border border-slate-200 rounded-[4px] text-xs font-medium focus:outline-none focus:border-slate-900 transition-all w-64 placeholder:text-slate-400 text-slate-900"
+              className="pl-10 pr-4 h-11 bg-white border border-slate-200 rounded-[4px] text-xs font-medium focus:outline-none focus:border-slate-900 transition-all w-64 text-slate-900"
             />
           </div>
           <button 
@@ -167,63 +238,60 @@ export function CollectionManager({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {(() => {
-                const getSorted = (parentId: string | null = null, level: number = 0): { category: Category, level: number }[] => {
-                  const result: { category: Category, level: number }[] = [];
-                  filteredCategories.filter(c => c.parentId === parentId).forEach(child => {
-                    result.push({ category: child, level });
-                    result.push(...getSorted(child.id!, level + 1));
-                  });
-                  return result;
-                };
-
-                const sortedData = getSorted();
-                if (sortedData.length === 0) return <tr><td colSpan={5} className="py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-[10px]">No collection entries found</td></tr>;
-
-                return sortedData.map(({ category: parent, level }) => (
-                  <tr 
-                    key={parent.id} 
-                    onClick={() => router.push(`/admin/collections/${parent.id}`)}
-                    className="hover:bg-slate-50 transition-colors group cursor-pointer"
-                  >
-                    <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
-                      <input 
-                        type="checkbox" 
-                        checked={selectedCollections.includes(parent.id!)} 
-                        onChange={() => setSelectedCollections(prev => prev.includes(parent.id!) ? prev.filter(i => i !== parent.id) : [...prev, parent.id!])} 
-                        className="w-4 h-4 rounded-sm border-slate-300 transition-all" 
-                      />
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-4" style={{ marginLeft: `${level * 24}px` }}>
-                        <div className="w-10 h-10 bg-slate-50 border border-slate-200 rounded-[4px] flex items-center justify-center overflow-hidden shrink-0 group-hover:border-slate-900 transition-all">
-                          {parent.imageUrl ? <img src={parent.imageUrl} alt="" className="w-full h-full object-cover" /> : <Package className="w-4 h-4 text-slate-300" />}
-                        </div>
-                        <div className="min-w-0">
-                           <p className="font-black text-slate-900 text-xs tracking-tight truncate">{parent.name}</p>
-                           {level > 0 && <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest mt-0.5">Nested Path Indicator</p>}
-                        </div>
+              {loading && categories.length === 0 ? (
+                <tr><td colSpan={5} className="py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-[10px]">Retrieving Catalog Hierarchy...</td></tr>
+              ) : sortedData.length === 0 ? (
+                <tr><td colSpan={5} className="py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-[10px]">No collection entries found</td></tr>
+              ) : sortedData.map(({ category: parent, level }) => (
+                <tr 
+                  key={parent.id} 
+                  onClick={() => router.push(`/admin/collections/${parent.id}`)}
+                  className="hover:bg-slate-50 transition-colors group cursor-pointer"
+                >
+                  <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                    <input 
+                      type="checkbox" 
+                      checked={selectedCollections.includes(parent.id!)} 
+                      onChange={() => setSelectedCollections(prev => prev.includes(parent.id!) ? prev.filter(i => i !== parent.id) : [...prev, parent.id!])} 
+                      className="w-4 h-4 rounded-sm border-slate-300 transition-all" 
+                    />
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-4" style={{ marginLeft: `${level * 24}px` }}>
+                      <div className="w-10 h-10 bg-slate-50 border border-slate-200 rounded-[4px] flex items-center justify-center overflow-hidden shrink-0 group-hover:border-slate-900 transition-all">
+                        {parent.imageUrl ? <img src={parent.imageUrl} alt="" className="w-full h-full object-cover" /> : <Package className="w-4 h-4 text-slate-300" />}
                       </div>
-                    </td>
-                    <td className="px-6 py-4">
-                       <div className="px-2.5 py-1 bg-white text-slate-600 rounded-[4px] text-[9px] font-black uppercase tracking-widest inline-block border border-slate-100">
-                          {level === 0 ? 'Root Layer' : 'Sub Layer'}
-                       </div>
-                    </td>
-                    <td className="px-6 py-4 text-[10px] font-black text-slate-500 text-center">
-                      {products.filter(p => p.categoryId === parent.id).length} PDTS
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                       <button className="p-2 text-slate-300 group-hover:text-slate-900 transition-all">
-                          <Edit className="w-4 h-4" />
-                       </button>
-                    </td>
-                  </tr>
-                ));
-              })()}
+                      <div className="min-w-0">
+                         <p className="font-black text-slate-900 text-xs tracking-tight truncate">{parent.name}</p>
+                         {level > 0 && <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest mt-0.5">Nested Path Indicator</p>}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                     <div className="px-2.5 py-1 bg-white text-slate-600 rounded-[4px] text-[9px] font-black uppercase tracking-widest inline-block border border-slate-100">
+                        {level === 0 ? 'Root Layer' : 'Sub Layer'}
+                     </div>
+                  </td>
+                  <td className="px-6 py-4 text-[10px] font-black text-slate-500 text-center">
+                    {products.filter(p => p.categoryId === parent.id).length} PDTS
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                     <button className="p-2 text-slate-300 group-hover:text-slate-900 transition-all">
+                        <Edit className="w-4 h-4" />
+                     </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
+
+        <InfiniteScrollSentinel 
+          onIntersect={() => fetchCategories(false)}
+          isLoading={loadingMore}
+          hasMore={hasMore}
+          loadingMessage="Expanding catalog levels..."
+        />
       </div>
     </div>
   );

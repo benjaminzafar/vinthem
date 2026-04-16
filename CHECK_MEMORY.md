@@ -50,6 +50,22 @@
 2. **Prop Injection & Hydration**: Updated `ProductManager`, `CollectionManager`, and `OrderManager` to accept and prioritize `initialData` props.
 3. **Optimized Reload**: Data is now present in the HTML upon delivery, ensuring the UI is populated instantly on refresh while maintaining Realtime sync.
 
+### 2026-04-16: Media Center Infinite Stream & Zero-Lag Grid
+**Problem**: The Media Center attempted to load 1000 items simultaneously, causing severe browser lag, slow initial paint times, and excessive memory usage.
+**Final Solution**:
+1. **Batch Size Optimization**: Reduced API `MaxKeys` from 1000 to 50 in `route.ts`, ensuring ultra-fast initial response times.
+2. **Pagination Engine**: Refactored `MediaContainer.tsx` to utilize `continuationToken` logic, enabling seamless appending of asset batches.
+3. **Infinite Scroll Mechanism**: Implemented `IntersectionObserver` in `AssetGrid.tsx` to trigger background loading only when the user approaches the bottom of the grid.
+4. **Visual Continuity**: Integrated skeleton loading placeholders to maintain structural integrity during background fetches.
+
+### 2026-04-16: Admin-Wide Infinite Scrolling & Backend Search
+**Problem**: Products, Orders, and Collections management lists were client-side heavy, loading entire datasets into memory and freezing the UI during hydration.
+**Final Solution**:
+1. **Universal Sentinel Component**: Created `InfiniteScrollSentinel.tsx` as a standard for all admin lists.
+2. **Supabase Range Fetching**: Migrated `ProductManager`, `OrderManager`, and `CollectionManager` to use Supabase `.range(from, to)` to fetch data in manageable 50-item batches.
+3. **Hybrid Backend Search**: Moved search logic for Products and Orders to the database (`.ilike()`), allowing instant "Search All" functionality without loading the whole list.
+4. **Hierarchical Pagination**: Implemented root-level streaming for categories to maintain the catalogue tree while improving collection management speed.
+
 ---
 
 ## 🚀 CRITICAL RESOLUTIONS (KNOWLEDGE BASE)
@@ -83,6 +99,29 @@
 
 Date       | What was done                              | Mistake that was fixed
 -----------|--------------------------------------------|------------------------
+2026-04-16 | **Profile Mobile Nav & Address Actions** | **FIXED MISTAKE**: Removed duplicated profile CTA/navigation patterns on mobile and completed the unfinished address area by wiring add/edit/delete/default flows to authenticated Server Actions instead of leaving a dead "Add New Address" button.
+2026-04-16 | **Cookie Banner Admin Hydration Fix** | **FIXED MISTAKE**: Prevented the simplified cookie banner from server-rendering inside the root layout by mounting it through a client-only wrapper, eliminating admin-side hydration mismatches against SSR content.
+2026-04-16 | **OAuth Callback Recovery** | **FIXED MISTAKE**: Stopped the Google auth callback from crashing locally when `SUPABASE_SERVICE_ROLE_KEY` is absent by making post-login profile sync best-effort instead of blocking the session exchange redirect.
+2026-04-16 | **Minimal Auth & Cookie Banner Rollback** | **FIXED MISTAKE**: Reverted the affected user-facing controls to a simpler path by restoring Google auth availability by default, making auth buttons explicit, and replacing the complex consent UI with a lightweight cookie banner that cannot block the whole storefront.
+2026-04-16 | **Storefront Translation Runtime Removal** | **FIXED MISTAKE**: Removed the remaining `react-i18next` runtime dependency from the shared language switcher so navigation no longer relies on a global i18n instance during storefront hydration.
+2026-04-16 | **Emergency Storefront Interaction Rollback** | **FIXED MISTAKE**: Removed the root-level consent overlay from the public layout after it remained the most likely global interaction blocker, prioritizing site usability before reintroducing consent UI in a safer form.
+2026-04-16 | **Storefront i18n Runtime Cleanup** | **FIXED MISTAKE**: Removed `react-i18next` instance assumptions from critical storefront client paths (`auth`, `reviews`, consent locale flow) and restored the locale cookie helper so runtime translation errors no longer destabilize clicks or builds.
+2026-04-16 | **Consent Runtime Interaction Fix** | **FIXED MISTAKE**: Removed the unstable `react-i18next` dependency from the root-level consent manager and switched it to server-provided locale so hydration no longer risks breaking clicks across the storefront.
+2026-04-16 | **OAuth Guard & Policy Localization Upgrade** | **FIXED MISTAKE**: Stopped exposing users to the broken `disabled_client` Google OAuth flow by gating the storefront button behind an admin-controlled toggle, and moved consent/policy copy plus privacy/cookie/terms page content into localized storefront settings with live page sync.
+2026-04-16 | **Consent, Newsletter & Unsubscribe Hardening** | **FIXED MISTAKE**: Replaced the old email-only newsletter insert and always-on analytics with explicit signup/newsletter consent capture, a real unsubscribe flow, footer cookie controls, and consent-gated PostHog/Clarity behavior backed by a Supabase migration.
+2026-04-16 | **CRM & Customer Workspace Repair** | **FIXED MISTAKE**: Replaced brittle CRM field assumptions (`customer_email`, weak customer mapping, inert refund controls) with real user-linked enrichment, working admin ticket/refund actions, and a more complete customer profile workspace UI.
+2026-04-16 | **Security Hardening Phase 7** | **FIXED MISTAKE**: Applied the prepared Supabase RLS/storage hardening migration to the linked remote project so the stricter database protections are now active, not just committed in code.
+2026-04-16 | **Security Hardening Phase 6** | **FIXED MISTAKE**: Removed the remaining admin-side ticket update path from the browser, added optional distributed rate limiting with Upstash fallback, and prepared a strict Supabase RLS/storage migration to eliminate overly broad insert policies.
+2026-04-16 | **Security Hardening Phase 5** | **FIXED MISTAKE**: Replaced the overly broad CSP and one-size-fits-all API limiter with a nonce-based CSP, stricter domain allowlists, route-aware rate limits, and bounded in-memory cleanup to reduce abuse surface without breaking production.
+2026-04-16 | **Security Hardening Phase 4** | **FIXED MISTAKE**: Removed the remaining browser-side writes for refund status changes and customer review submission by routing both flows through validated server actions.
+2026-04-16 | **Security Hardening Phase 3** | **FIXED MISTAKE**: Removed the last browser-side bulk collection deletion path by moving admin collection deletes into a server action and keeping admin authorization on the server.
+2026-04-16 | **Security Hardening Phase 2** | **FIXED MISTAKE**: Removed more browser-side writes from signup/profile/review flows by moving user-profile sync, support/refund submission, and admin fake-review creation behind server actions.
+2026-04-16 | **Security Hardening Phase 1** | **FIXED MISTAKE**: Removed several admin-side browser writes for orders, product deletion, and database test-data tools by moving them to server actions, and added baseline browser security headers in middleware.
+2026-04-16 | **Refactored Journal & Pages Into Full Editors** | **FIXED MISTAKE**: Removed the old modal-based blog/pages admin flow that was hiding broken date mappings and list/editor state bugs; replaced it with collection-style lists plus dedicated editor routes and server-side admin save/delete actions.
+2026-04-16 | **Repaired CRM PostHog Feed & Admin Panel Build** | **FIXED MISTAKE**: Stopped encrypting non-secret PostHog fields (`POSTHOG_HOST`, `POSTHOG_PROJECT_ID`, `POSTHOG_PROJECT_KEY`) in the CRM save path, which had broken analytics queries and frontend tracking bootstrap.
+2026-04-16 | **Admin-Wide Infinite Scroll Optimization** | **FIXED MISTAKE**: Resolved UI "freezes" by implementing backend range partials and fixed a code-mangling issue in `OrderManager.tsx` caused by a failed `multi_replace_file_content` block.
+2026-04-16 | **Fixed ReferenceError in MediaContainer** | **FIXED MISTAKE**: Restored core state variables (`currentPath`, `loading`, etc.) that were accidentally deleted during code refactor.
+2026-04-16 | **Infinite Media Stream & Performance Fix** | **FIXED MISTAKE**: Eliminated browser "freeze" and high memory usage by replacing monolithic 1000-item loads with a 50-item infinite scroll system.
 2026-04-16 | **Deep Intelligence & Identity Sync**      | **FIXED MISTAKE**: Resolved 404/ReferenceErrors caused by incorrect PostHog host and case-insensitive key naming (unified to UPPERCASE).
 2026-04-16 | **Unified Analytics Architecture**         | **FIXED MISTAKE**: Eliminated 'Fake Data' complaints by removing mock fallbacks whenever API keys are present.
 2026-04-15 | **Modularized CRM & Aligned with Overview Style** | **FIXED MISTAKE**: Eliminated monolithic dashboard lag and resolved aesthetic mismatches.

@@ -1,107 +1,179 @@
 import { NextResponse } from 'next/server';
 
-import { decrypt } from '@/lib/encryption';
 import { createClient } from '@/utils/supabase/server';
+import {
+  maybeDecryptStoredValue,
+  normalizePostHogAppHost,
+} from '@/lib/integrations';
 
-export async function GET() {
-  const supabase = await createClient();
+type IntegrationRow = {
+  key: string;
+  value: string;
+};
 
-  // 1. Fetch encrypted PostHog keys (Try both cases)
-  const { data: keysData } = await supabase
-    .from('integrations')
-    .select('key, value');
+type PostHogSeries = {
+  action?: {
+    name?: string;
+  };
+  breakdown_value?: string | null;
+  count?: number | string;
+  data?: Array<number | string | null>;
+  labels?: Array<string | null>;
+};
 
-  const config: Record<string, string> = {};
-  keysData?.forEach(k => { config[k.key.toUpperCase()] = k.value; });
+type PulsePoint = {
+  name: string;
+  visits: number;
+  unique: number;
+};
 
-  const apiKey = config.POSTHOG_API_KEY;
-  const projectId = config.POSTHOG_PROJECT_ID;
-  let host = config.POSTHOG_HOST || 'https://eu.posthog.com';
+type TrafficSource = {
+  name: string;
+  value: number;
+  color: string;
+};
 
-  // Force API host if Ingestion host was saved by mistake
-  if (host.includes('.i.posthog.com')) {
-    host = host.replace('.i.posthog.com', '.posthog.com');
+type PageSummary = {
+  path: string;
+  views: number;
+  growth: string;
+};
+
+type ActivityItem = {
+  id: number;
+  user: string;
+  action: string;
+  target: string;
+  path: string;
+  time: string;
+};
+
+type TrafficPayload = {
+  pulse: PulsePoint[];
+  sources: TrafficSource[];
+  topPages: PageSummary[];
+  recentActivity: ActivityItem[];
+  activeNow: number;
+  isReal: boolean;
+  error?: string;
+};
+
+const SOURCE_COLORS = ['#0f172a', '#334155', '#64748b', '#94a3b8'];
+
+function toNumber(value: number | string | null | undefined): number {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : 0;
   }
 
-  // 2. Logic for Real Data (if configured)
-  if (apiKey && projectId) {
-    try {
-      const decryptedApiKey = decrypt(apiKey);
+  if (typeof value === 'string') {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
 
-      // Fetch 24h Trends (Pulse) and Referrers (Sources)
-      const queryResponse = await fetch(`${host}/api/projects/${projectId}/query/`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${decryptedApiKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          kind: "InsightVizNode",
-          source: {
-            kind: "TrendsQuery",
-            series: [{ kind: "EventsNode", event: "$pageview", name: "Pageviews" }],
-            dateRange: { date_from: "-24h" },
-            interval: "hour",
-            breakdownFilter: { breakdown: "$initial_referrer", breakdown_type: "event" }
-          }
-        })
-      });
+  return 0;
+}
 
-      if (queryResponse.ok) {
-        const rawData = await queryResponse.json();
-        const results = rawData.results || [];
-        
-        // 1. Map Trend Data (Pulse)
-        const trendData = results.find((r: any) => !r.breakdown_value);
-        const mappedPulse = trendData?.data?.map((val: number, i: number) => ({
-          name: trendData.labels[i] || `${i}:00`,
-          visits: val,
-          unique: Math.ceil(val * 0.7)
-        })) || []; // Pure 0 if no data
+function extractSeries(payload: unknown): PostHogSeries[] {
+  if (!payload || typeof payload !== 'object') {
+    return [];
+  }
 
-        // 2. Map Breakdown Data (Sources)
-        const sourceData = results
-          .filter((r: any) => r.breakdown_value)
-          .map((r: any, i: number) => ({
-            name: r.breakdown_value === 'null' ? 'Direct' : r.breakdown_value,
-            value: Math.round((r.count / results.reduce((a: any, b: any) => a + (b.count || 0), 0)) * 100),
-            color: ['#0f172a', '#334155', '#64748b', '#94a3b8'][i % 4]
-          }))
-          .slice(0, 4);
+  const typedPayload = payload as {
+    results?: unknown;
+    result?: unknown;
+    query?: { results?: unknown; result?: unknown };
+  };
 
-        return NextResponse.json({
-          pulse: mappedPulse.length > 0 ? mappedPulse.slice(-24) : Array.from({ length: 24 }).map((_, i) => ({ name: `${i}:00`, visits: 0, unique: 0 })),
-          sources: sourceData.length > 0 ? sourceData : [{ name: 'Collecting...', value: 100, color: '#f1f5f9' }],
-          topPages: [], // Pure real (empty if no hits)
-          recentActivity: [], // Pure real (empty if no events)
-          activeNow: trendData?.count || 0,
-          isReal: true
-        });
-      }
-      
-      // If keys present but API failed, return empty but real
-      return NextResponse.json({ 
-        pulse: [], 
-        sources: [], 
-        topPages: [], 
-        recentActivity: [], 
-        activeNow: 0,
-        isReal: true,
-        error: 'PostHog API connectivity failed. Check keys.'
-      });
-    } catch (error) {
-      console.error('Real-mode fetch failed:', error);
-      return NextResponse.json({ ...getMockTrafficData(), isReal: false });
+  const candidates = [
+    typedPayload.results,
+    typedPayload.result,
+    typedPayload.query?.results,
+    typedPayload.query?.result,
+  ];
+
+  for (const candidate of candidates) {
+    if (Array.isArray(candidate)) {
+      return candidate as PostHogSeries[];
     }
   }
 
-  // 3. Fallback to high-quality Mock Data for Demonstration
-  return NextResponse.json({ ...getMockTrafficData(), isReal: false });
+  return [];
 }
 
-function getMockTrafficData() {
-  const hours = Array.from({ length: 24 }, (_, i) => {
-    const hour = (new Date().getHours() - (23 - i) + 24) % 24;
+function buildPulse(results: PostHogSeries[]): PulsePoint[] {
+  const seriesLength = results.reduce((maxLength, series) => {
+    return Math.max(maxLength, series.data?.length ?? 0);
+  }, 0);
+
+  return Array.from({ length: seriesLength }).map((_, index) => {
+    const defaultLabel = `${index}:00`;
+
+    return results.reduce<PulsePoint>(
+      (accumulator, series) => {
+        const label = series.labels?.[index];
+        if (typeof label === 'string' && label.trim().length > 0) {
+          accumulator.name = label;
+        }
+
+        const value = toNumber(series.data?.[index]);
+        if (series.action?.name === 'Pageviews') {
+          accumulator.visits += value;
+        }
+
+        if (series.action?.name === 'Unique Users') {
+          accumulator.unique += value;
+        }
+
+        return accumulator;
+      },
+      { name: defaultLabel, visits: 0, unique: 0 }
+    );
+  });
+}
+
+function buildSources(results: PostHogSeries[]): TrafficSource[] {
+  const sourceTotals = new Map<string, number>();
+
+  for (const series of results) {
+    if (series.action?.name !== 'Pageviews') {
+      continue;
+    }
+
+    const key = series.breakdown_value && series.breakdown_value !== 'null'
+      ? series.breakdown_value
+      : 'Direct';
+
+    const total = (series.data ?? []).reduce<number>((sum, value) => sum + toNumber(value), 0);
+    sourceTotals.set(key, (sourceTotals.get(key) ?? 0) + total);
+  }
+
+  const totalVisits = Array.from(sourceTotals.values()).reduce((sum, value) => sum + value, 0);
+
+  return Array.from(sourceTotals.entries())
+    .map(([name, count], index) => ({
+      name,
+      value: totalVisits > 0 ? Math.round((count / totalVisits) * 100) : 0,
+      color: SOURCE_COLORS[index % SOURCE_COLORS.length],
+    }))
+    .sort((left, right) => right.value - left.value)
+    .slice(0, 4);
+}
+
+function buildEmptyRealPayload(error: string): TrafficPayload {
+  return {
+    pulse: [],
+    sources: [],
+    topPages: [],
+    recentActivity: [],
+    activeNow: 0,
+    isReal: true,
+    error,
+  };
+}
+
+function getMockTrafficData(): TrafficPayload {
+  const hours = Array.from({ length: 24 }, (_, index) => {
+    const hour = (new Date().getHours() - (23 - index) + 24) % 24;
     return `${hour}:00`;
   });
 
@@ -116,8 +188,8 @@ function getMockTrafficData() {
   const recentNames = ['Someone', 'A guest', 'Returning client', 'User'];
 
   return {
-    pulse: hours.map(h => ({
-      name: h,
+    pulse: hours.map((hour) => ({
+      name: hour,
       visits: Math.floor(Math.random() * 50) + 10,
       unique: Math.floor(Math.random() * 30) + 5,
     })),
@@ -134,14 +206,94 @@ function getMockTrafficData() {
       { path: '/product/scandinavian-rug', views: 321, growth: '-2%' },
       { path: '/blog/interior-trends-2026', views: 189, growth: '+10%' },
     ],
-    recentActivity: Array.from({ length: 6 }, (_, i) => ({
-      id: i,
-      user: recentNames[Math.floor(Math.random() * recentNames.length)],
-      action: 'viewed',
-      target: products[Math.floor(Math.random() * products.length)].name,
-      path: products[Math.floor(Math.random() * products.length)].path,
-      time: `${i + 1}m ago`
-    })),
-    activeNow: Math.floor(Math.random() * 14) + 5
+    recentActivity: Array.from({ length: 6 }, (_, index) => {
+      const product = products[Math.floor(Math.random() * products.length)];
+
+      return {
+        id: index,
+        user: recentNames[Math.floor(Math.random() * recentNames.length)],
+        action: 'viewed',
+        target: product.name,
+        path: product.path,
+        time: `${index + 1}m ago`,
+      };
+    }),
+    activeNow: Math.floor(Math.random() * 14) + 5,
+    isReal: false,
   };
+}
+
+export async function GET() {
+  const supabase = await createClient();
+  const { data } = await supabase.from('integrations').select('key, value');
+
+  const config = (data ?? []).reduce<Record<string, string>>((accumulator, row) => {
+    const integration = row as IntegrationRow;
+    accumulator[integration.key.toUpperCase()] = integration.value;
+    return accumulator;
+  }, {});
+
+  const apiKey = maybeDecryptStoredValue(config.POSTHOG_API_KEY);
+  const projectId = maybeDecryptStoredValue(config.POSTHOG_PROJECT_ID);
+  const host = normalizePostHogAppHost(config.POSTHOG_HOST);
+
+  if (!apiKey || !projectId) {
+    return NextResponse.json(getMockTrafficData());
+  }
+
+  try {
+    const queryResponse = await fetch(`${host}/api/projects/${projectId}/query/`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query: {
+          kind: 'InsightVizNode',
+          source: {
+            kind: 'TrendsQuery',
+            series: [
+              { kind: 'EventsNode', event: '$pageview', name: 'Pageviews', math: 'total' },
+              { kind: 'EventsNode', event: '$pageview', name: 'Unique Users', math: 'dau' },
+            ],
+            dateRange: { date_from: '-24h' },
+            interval: 'hour',
+            breakdownFilter: { breakdown: '$initial_referrer', breakdown_type: 'event' },
+          },
+        },
+      }),
+      cache: 'no-store',
+    });
+
+    if (!queryResponse.ok) {
+      const errorText = await queryResponse.text();
+      return NextResponse.json(
+        buildEmptyRealPayload(`PostHog query failed (${queryResponse.status}). ${errorText.slice(0, 160)}`)
+      );
+    }
+
+    const payload = await queryResponse.json();
+    const results = extractSeries(payload);
+
+    if (results.length === 0) {
+      return NextResponse.json(buildEmptyRealPayload('PostHog returned no usable chart series.'));
+    }
+
+    const pulse = buildPulse(results);
+    const sources = buildSources(results);
+
+    return NextResponse.json({
+      pulse,
+      sources,
+      topPages: [],
+      recentActivity: [],
+      activeNow: pulse[pulse.length - 1]?.visits ?? 0,
+      isReal: true,
+    } satisfies TrafficPayload);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown PostHog error';
+    console.error('Real-mode fetch failed:', error);
+    return NextResponse.json(buildEmptyRealPayload(message));
+  }
 }

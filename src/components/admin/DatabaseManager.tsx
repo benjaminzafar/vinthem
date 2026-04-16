@@ -1,6 +1,5 @@
 "use client";
 import React, { useState } from 'react';
-import { createClient } from '@/utils/supabase/client';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 import { 
   Database, 
@@ -10,11 +9,11 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCustomConfirm } from '@/components/ConfirmationContext';
+import { clearAdminTestDataAction, seedAdminTestDataAction } from '@/app/actions/admin-database';
 
 export function DatabaseManager() {
   const [loading, setLoading] = useState(false);
   const customConfirm = useCustomConfirm();
-  const supabase = createClient();
 
   const handleSeedData = async () => {
     const confirmed = await customConfirm(
@@ -27,47 +26,9 @@ export function DatabaseManager() {
     setLoading(true);
     const toastId = toast.loading('Seeding test data...');
     try {
-      const ticketStatuses = ['open', 'in-progress', 'resolved', 'closed'];
-      const tickets = ticketStatuses.map((status, i) => ({
-        subject: `Test Ticket ${i + 1}`,
-        message: `This is a test support ticket with status ${status}.`,
-        status: status,
-        user_id: null,
-        is_test_data: true,
-        created_at: new Date().toISOString()
-      }));
-
-      const { error: ticketError } = await supabase.from('support_tickets').insert(tickets);
-      if (ticketError) throw ticketError;
-
-      const orderStatuses = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
-      const orders = orderStatuses.map((status, i) => ({
-        items: [
-          { id: 'test-item-1', name: 'Test Product A', price: 299, quantity: 1 },
-          { id: 'test-item-2', name: 'Test Product B', price: 499, quantity: 2 }
-        ],
-        shipping_details: {
-          name: 'Test Customer',
-          email: 'test-customer@example.com',
-          address: '123 Test St',
-          city: 'Test City',
-          postalCode: '12345',
-          country: 'SE'
-        },
-        shipping_cost: 0,
-        subtotal: 1297,
-        total: 1297,
-        currency: 'sek',
-        status: status,
-        user_id: null,
-        created_at: new Date(Date.now() - i * 86400000).toISOString(),
-        is_test_data: true
-      }));
-
-      const { error: orderError } = await supabase.from('orders').insert(orders);
-      if (orderError) throw orderError;
-
-      toast.success('Test data seeded successfully', { id: toastId });
+      const result = await seedAdminTestDataAction();
+      if (!result.success) throw new Error(result.message);
+      toast.success(result.message, { id: toastId });
     } catch (error: any) {
       console.error('Seed error:', error);
       toast.error(error.message, { id: toastId });
@@ -87,20 +48,9 @@ export function DatabaseManager() {
     setLoading(true);
     const toastId = toast.loading('Clearing test data...');
     try {
-      const tables = ['support_tickets', 'orders'];
-      let totalDeleted = 0;
-
-      for (const tableName of tables) {
-        const { error, count } = await supabase
-          .from(tableName)
-          .delete({ count: 'exact' })
-          .eq('is_test_data', true);
-        
-        if (error) throw error;
-        totalDeleted += (count || 0);
-      }
-
-      toast.success(`Cleared ${totalDeleted} test records.`, { id: toastId });
+      const result = await clearAdminTestDataAction();
+      if (!result.success) throw new Error(result.message);
+      toast.success(result.message, { id: toastId });
     } catch (error: any) {
       console.error('Clear error:', error);
       toast.error(error.message, { id: toastId });

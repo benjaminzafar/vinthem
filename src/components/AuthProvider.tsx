@@ -4,12 +4,13 @@ import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 import { createClient } from '@/utils/supabase/client';
 import posthog from 'posthog-js';
 import { useAuthStore } from '@/store/useAuthStore';
+import { hasAnalyticsConsent } from '@/lib/consent';
 
 const supabase = createClient();
 
 declare global {
   interface Window {
-    clarity?: (...args: any[]) => void;
+    clarity?: (...args: Array<string>) => void;
   }
 }
 
@@ -18,7 +19,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const initialized = useRef(false);
 
   const identifyUser = (user: any) => {
-    if (user && typeof window !== 'undefined') {
+    if (user && typeof window !== 'undefined' && hasAnalyticsConsent()) {
       // 1. Identify in PostHog
       posthog.identify(user.id, {
         email: user.email,
