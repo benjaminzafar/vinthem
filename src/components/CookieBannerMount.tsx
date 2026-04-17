@@ -1,26 +1,42 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useEffect, useState } from "react";
 import { SimpleCookieBanner } from "@/components/SimpleCookieBanner";
 
-function subscribe() {
-  return () => undefined;
-}
+type CookieBannerCopy = {
+  eyebrow: string;
+  description: string;
+  privacyLabel: string;
+  cookieLabel: string;
+  acceptAllLabel: string;
+  essentialOnlyLabel: string;
+};
 
-function getServerSnapshot() {
-  return false;
-}
+export function CookieBannerMount({ copy }: { copy: CookieBannerCopy }) {
+  const [shouldRender, setShouldRender] = useState(false);
 
-function getClientSnapshot() {
-  return true;
-}
+  useEffect(() => {
+    const win = window as Window & {
+      requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
 
-export function CookieBannerMount({ lang = "en" }: { lang?: string }) {
-  const isMounted = useSyncExternalStore(subscribe, getClientSnapshot, getServerSnapshot);
+    if (typeof win.requestIdleCallback === "function") {
+      const idleId = win.requestIdleCallback(() => setShouldRender(true), { timeout: 1500 });
+      return () => {
+        if (typeof win.cancelIdleCallback === "function") {
+          win.cancelIdleCallback(idleId);
+        }
+      };
+    }
 
-  if (!isMounted) {
+    const timeoutId = window.setTimeout(() => setShouldRender(true), 1200);
+    return () => window.clearTimeout(timeoutId);
+  }, []);
+
+  if (!shouldRender) {
     return null;
   }
 
-  return <SimpleCookieBanner lang={lang} />;
+  return <SimpleCookieBanner copy={copy} />;
 }

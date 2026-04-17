@@ -26,6 +26,7 @@ import {
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { Product } from '@/store/useCartStore';
 import { downloadXLSX } from '@/utils/export';
+import { StableChartContainer } from '@/components/admin/charts/StableChartContainer';
 
 import { StorefrontSettingsType } from '@/types';
 
@@ -339,7 +340,7 @@ export function Overview({ initialStats, onProductClick, onSeedClick }: { initia
           </div>
         </div>
         
-        <div className="h-[350px] w-full min-h-[300px]" style={{ minWidth: 0 }}>
+        <StableChartContainer className="h-[350px] w-full min-h-[300px]">
           <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={100}>
             <AreaChart data={trendData} margin={{ top: 10, right: 0, bottom: 0, left: -15 }}>
               <defs>
@@ -391,7 +392,7 @@ export function Overview({ initialStats, onProductClick, onSeedClick }: { initia
               />
             </AreaChart>
           </ResponsiveContainer>
-        </div>
+        </StableChartContainer>
       </div>
 
       {/* Stats Grid */}

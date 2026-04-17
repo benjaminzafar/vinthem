@@ -2,6 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { requireAdminUser } from '@/lib/admin';
 
 export type ProductVariantInput = {
   options: Record<string, string>;
@@ -35,35 +36,62 @@ export type SaveProductInput = {
   additionalImages?: string[];
   weight?: number;
   shippingClass?: string;
-  translations?: Record<string, any>;
+  translations?: Record<string, unknown>;
 };
 
+function sanitizeText(value: string | undefined, maxLength = 500): string | undefined {
+  if (typeof value !== 'string') {
+    return value;
+  }
+
+  return value.replace(/[<>]/g, '').trim().slice(0, maxLength);
+}
+
+function sanitizeTags(tags: string[] | undefined): string[] {
+  if (!Array.isArray(tags)) {
+    return [];
+  }
+
+  return tags
+    .map((tag) => sanitizeText(tag, 60))
+    .filter((tag): tag is string => Boolean(tag));
+}
+
 export async function saveProductAction(input: SaveProductInput) {
+  await requireAdminUser();
   const supabase = await createClient();
 
   const productData = {
-    title: input.title,
-    description: input.description,
-    price: input.price,
-    stock: input.stock,
-    sku: input.sku,
-    image_url: input.imageUrl,
+    title: sanitizeText(input.title, 200),
+    description: sanitizeText(input.description, 5000),
+    price: Number(input.price) || 0,
+    stock: Number(input.stock) || 0,
+    sku: sanitizeText(input.sku, 120),
+    image_url: sanitizeText(input.imageUrl, 1000),
     category_id: input.categoryId || null,
     options: input.options || [],
     variants: input.variants || [],
-    tags: input.tags || [],
+    tags: sanitizeTags(input.tags),
     is_featured: input.isFeatured || false,
     is_new: input.isNewArrival || false,
     is_sale: input.isSale || false,
-    sale_price: input.discountPrice || 0,
+    sale_price: Number(input.discountPrice) || 0,
     status: input.status,
-    additional_images: input.additionalImages || [],
-    weight: input.weight || 0,
-    shipping_class: input.shippingClass || '',
+    additional_images: (input.additionalImages || []).map((image) => sanitizeText(image, 1000)).filter(Boolean),
+    weight: Number(input.weight) || 0,
+    shipping_class: sanitizeText(input.shippingClass, 80) || '',
     translations: input.translations || {}
   };
 
   try {
+    if (!productData.title) {
+      throw new Error('Product title is required.');
+    }
+
+    if (productData.price <= 0) {
+      throw new Error('Valid product price is required.');
+    }
+
     if (input.id) {
       const { data, error } = await supabase
         .from('products')
@@ -73,7 +101,9 @@ export async function saveProductAction(input: SaveProductInput) {
         .single();
 
       if (error) throw error;
+      revalidatePath('/admin');
       revalidatePath('/admin/products');
+      revalidatePath(`/admin/products/${input.id}`);
       return { success: true, data };
     } else {
       const { data, error } = await supabase
@@ -83,11 +113,12 @@ export async function saveProductAction(input: SaveProductInput) {
         .single();
 
       if (error) throw error;
+      revalidatePath('/admin');
       revalidatePath('/admin/products');
       return { success: true, data };
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in saveProductAction:', error);
-    return { success: false, error: error.message };
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to save product.' };
   }
 }

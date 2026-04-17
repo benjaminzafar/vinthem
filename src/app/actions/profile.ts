@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { createClient } from '@/utils/supabase/server';
+import { createAdminClient, createClient } from '@/utils/supabase/server';
 
 type AddressRecord = {
   id: string;
@@ -55,11 +55,11 @@ function sanitizeAddressInput(input: AddressInput): AddressInput {
 }
 
 async function getAuthenticatedClient() {
-  const supabase = await createClient();
+  const sessionClient = await createClient();
   const {
     data: { user },
     error,
-  } = await supabase.auth.getUser();
+  } = await sessionClient.auth.getUser();
 
   if (error) {
     throw error;
@@ -69,11 +69,15 @@ async function getAuthenticatedClient() {
     throw new Error('Authentication required.');
   }
 
-  return { supabase, user };
+  const privilegedClient = process.env.SUPABASE_SERVICE_ROLE_KEY ? createAdminClient() : null;
+
+  return { supabase: privilegedClient ?? sessionClient, user };
 }
 
-async function fetchUserAddresses(userId: string): Promise<AddressRecord[]> {
-  const supabase = await createClient();
+async function fetchUserAddresses(
+  supabase: Awaited<ReturnType<typeof createClient>> | ReturnType<typeof createAdminClient>,
+  userId: string
+): Promise<AddressRecord[]> {
   const { data, error } = await supabase
     .from('addresses')
     .select('id, firstName:first_name, lastName:last_name, street, city, postalCode:postal_code, country, isDefault:is_default')
@@ -97,7 +101,7 @@ export async function saveAddressAction(input: AddressInput): Promise<ProfileAct
       throw new Error('All address fields are required.');
     }
 
-    const existingAddresses = await fetchUserAddresses(user.id);
+    const existingAddresses = await fetchUserAddresses(supabase, user.id);
     const shouldBeDefault = safeInput.isDefault || existingAddresses.length === 0 || existingAddresses.every((address) => !address.isDefault || address.id === safeInput.id);
 
     if (shouldBeDefault) {
@@ -140,7 +144,7 @@ export async function saveAddressAction(input: AddressInput): Promise<ProfileAct
       }
     }
 
-    const addresses = await fetchUserAddresses(user.id);
+    const addresses = await fetchUserAddresses(supabase, user.id);
     revalidatePath('/profile');
 
     return {
@@ -174,7 +178,7 @@ export async function deleteAddressAction(addressId: string): Promise<ProfileAct
       throw error;
     }
 
-    const addresses = await fetchUserAddresses(user.id);
+    const addresses = await fetchUserAddresses(supabase, user.id);
 
     if (addresses.length > 0 && !addresses.some((address) => address.isDefault)) {
       const fallbackId = addresses[0].id;
@@ -189,7 +193,7 @@ export async function deleteAddressAction(addressId: string): Promise<ProfileAct
       }
     }
 
-    const nextAddresses = await fetchUserAddresses(user.id);
+    const nextAddresses = await fetchUserAddresses(supabase, user.id);
     revalidatePath('/profile');
 
     return {
@@ -232,7 +236,7 @@ export async function setDefaultAddressAction(addressId: string): Promise<Profil
       throw error;
     }
 
-    const addresses = await fetchUserAddresses(user.id);
+    const addresses = await fetchUserAddresses(supabase, user.id);
     revalidatePath('/profile');
 
     return {

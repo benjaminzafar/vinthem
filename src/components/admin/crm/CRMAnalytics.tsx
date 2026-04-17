@@ -32,6 +32,7 @@ import { toast } from 'sonner';
 
 import { getIntegrationsAction, saveIntegrationAction } from '@/app/actions/integrations';
 import type { CRMCustomer, RefundRecord, SupportTicket } from './types';
+import { StableChartContainer } from '../charts/StableChartContainer';
 
 type TrafficPoint = {
   name: string;
@@ -392,9 +393,9 @@ export function CRMAnalytics({ tickets, customers, refunds }: CRMAnalyticsProps)
             </div>
           </div>
 
-          <div className="h-[350px] w-full" style={{ minWidth: 0 }}>
+          <StableChartContainer className="h-[350px] w-full">
             {safeTrafficData.pulse.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={100}>
                 <AreaChart data={safeTrafficData.pulse} margin={{ top: 10, right: -5, bottom: 0, left: -15 }}>
                   <defs>
                     <linearGradient id="colorTraffic" x1="0" y1="0" x2="0" y2="1">
@@ -464,7 +465,7 @@ export function CRMAnalytics({ tickets, customers, refunds }: CRMAnalyticsProps)
             ) : (
               <EmptyPanel message={loading ? 'Loading PostHog traffic data' : 'No traffic pulse available yet'} />
             )}
-          </div>
+          </StableChartContainer>
         </div>
 
         <div className="rounded border border-slate-300 bg-white p-6 sm:p-8">
@@ -476,9 +477,9 @@ export function CRMAnalytics({ tickets, customers, refunds }: CRMAnalyticsProps)
             <p className="mt-1 text-xs text-slate-500">Top acquisition channels</p>
           </div>
 
-          <div className="h-[350px] w-full">
+          <StableChartContainer className="h-[350px] w-full">
             {safeTrafficData.sources.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={100}>
                 <BarChart data={safeTrafficData.sources} layout="vertical" margin={{ left: -20, right: 30 }}>
                   <XAxis type="number" hide />
                   <YAxis
@@ -513,7 +514,7 @@ export function CRMAnalytics({ tickets, customers, refunds }: CRMAnalyticsProps)
             ) : (
               <EmptyPanel message={loading ? 'Loading traffic sources' : 'No source breakdown available yet'} />
             )}
-          </div>
+          </StableChartContainer>
 
           {safeTrafficData.sources.length > 0 && (
             <div className="mt-8 space-y-4">

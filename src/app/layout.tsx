@@ -30,6 +30,14 @@ export default async function RootLayout({
   // Fetch settings on the server for hydration (cached)
   const settings = await getSettings() || {};
   const integrations = await getIntegrations() || {};
+  const cookieBannerCopy = {
+    eyebrow: settings.consentBannerEyebrowText?.[lang] || "Privacy Controls",
+    description: settings.consentBannerDescriptionText?.[lang] || "Essential cookies keep checkout and login secure. Optional analytics helps us improve the store.",
+    privacyLabel: settings.consentPrivacyLinkText?.[lang] || "Privacy Policy",
+    cookieLabel: settings.consentCookieLinkText?.[lang] || "Cookie Policy",
+    acceptAllLabel: settings.consentAcceptAllText?.[lang] || "Accept all",
+    essentialOnlyLabel: settings.consentEssentialOnlyText?.[lang] || "Essential only",
+  };
 
   // Default Clarity ID from user request
   const clarityId = integrations.CLARITY_ID || "wcb4auvfrs";
@@ -44,7 +52,7 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col font-sans" suppressHydrationWarning>
         <PostHogProvider apiKey={integrations.POSTHOG_PROJECT_KEY} host={integrations.POSTHOG_HOST}>
           <StoreHydrator settings={settings} />
-          <CookieBannerMount lang={lang} />
+          <CookieBannerMount copy={cookieBannerCopy} />
           <AuthProvider>
             <ConfirmationProvider>
               <LazyMotion features={domAnimation}>

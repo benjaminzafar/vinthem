@@ -43,7 +43,7 @@ export default function AdminNavHeader({ onToggle }: { onToggle: () => void }) {
           
           <div className="h-6 w-[1px] bg-slate-200 hidden md:block" />
           
-          <NotificationCenter onNavigate={() => {}} />
+          <NotificationCenter />
           
         </div>
       </div>

@@ -5,6 +5,7 @@ import { RefreshCcw, CheckCircle, XCircle, Clock, DollarSign } from 'lucide-reac
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { updateRefundStatusAction } from '@/app/actions/support';
 import { createClient } from '@/utils/supabase/client';
+import { StableChartContainer } from './admin/charts/StableChartContainer';
 
 const COLORS = ['#18181b', '#3f3f46', '#71717a', '#a1a1aa', '#d4d4d8'];
 
@@ -122,8 +123,8 @@ export function RefundManager() {
       {reasonData.length > 0 && (
         <div className="py-8 border-b border-gray-200/60 last:border-0">
           <h3 className="text-sm font-bold text-zinc-900 uppercase tracking-wider mb-6">Refund Reasons Breakdown</h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
+          <StableChartContainer className="h-64 w-full" minHeight={256}>
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={100}>
               <PieChart>
                 <Pie
                   data={reasonData}
@@ -144,7 +145,7 @@ export function RefundManager() {
                 <Legend verticalAlign="bottom" height={36} />
               </PieChart>
             </ResponsiveContainer>
-          </div>
+          </StableChartContainer>
         </div>
       )}
 
