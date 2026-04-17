@@ -99,6 +99,7 @@
 
 Date       | What was done                              | Mistake that was fixed
 -----------|--------------------------------------------|------------------------
+2026-04-17 | **Featured Products Background Adjustment** | **FIXED MISTAKE**: Changed the Featured Products section background to white on the home page after the user expressed dissatisfaction with the grey background.
 2026-04-17 | **Global Build, Lint & Git Push** | **FIXED MISTAKE**: Consolidated the admin notification improvements, policy page premium redesign, and profile/product save hardening into a verified production-ready state with zero build/lint failures.
 2026-04-17 | **Admin Notifications CRM Refresh** | **FIXED MISTAKE**: Rebuilt the admin notification center so it routes correctly, listens to order and CRM activity (tickets, refunds, customer signups, reviews), and persists a real “clear old data” cutoff instead of repopulating stale alerts on every mount.
 2026-04-17 | **Policy Layout Simplification Pass** | **FIXED MISTAKE**: Removed the semi-dashboard feel from policy pages and reduced the layout to a cleaner single-document border design after over-styling the pages beyond the user's preference for simple policy screens.

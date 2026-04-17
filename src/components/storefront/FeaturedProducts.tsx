@@ -23,7 +23,7 @@ export function FeaturedProducts({ products, lang, settings }: FeaturedProductsP
   if (featuredProducts.length === 0) return null;
 
   return (
-    <section id="featured" className="py-32 bg-[#E6E6E4]">
+    <section id="featured" className="py-32 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row justify-between items-center mb-20">
           <div className="text-center mx-auto">
