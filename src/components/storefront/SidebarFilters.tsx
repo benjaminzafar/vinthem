@@ -61,7 +61,7 @@ export function SidebarFilters({
   };
 
   return (
-    <div className="flex flex-col bg-white border border-slate-200 rounded-sm shadow-sm">
+    <div className="flex flex-col h-[calc(100vh-140px)] min-h-[600px] bg-white border border-slate-200 rounded-sm shadow-sm overflow-hidden">
       {/* Dynamic Header */}
       <div className="h-14 px-5 border-b border-slate-100 flex items-center shrink-0 bg-white">
         <AnimatePresence mode="wait">
