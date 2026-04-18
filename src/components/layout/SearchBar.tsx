@@ -162,8 +162,8 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                   transition={{ type: 'spring', damping: 25, stiffness: 300, mass: 0.5 }}
                   className="w-full max-w-[850px] bg-white border-0 lg:border border-slate-200 pointer-events-auto lg:shadow-[0_0_80px_rgba(0,0,0,0.1)] flex flex-col h-full lg:h-auto lg:max-h-[70vh] overflow-hidden rounded-none lg:rounded-2xl"
                 >
-                {/* Search Header: Precise & Sharp */}
-                <div className="flex items-center gap-6 px-10 border-b border-slate-100 bg-white sticky top-0 z-20 shrink-0">
+                {/* Search Header: Aligned h-16 to match main Navigation */}
+                <div className="flex items-center gap-6 px-10 border-b border-slate-100 bg-white sticky top-0 z-20 shrink-0 h-16">
                   <Search className="w-5 h-5 text-slate-600" strokeWidth={1.5} />
                   <div className="flex-1 relative">
                     <form onSubmit={handleSearch}>
@@ -173,7 +173,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder={placeholder || settings?.searchPlaceholder?.[lang] || 'Search products...'}
-                        className="w-full py-8 text-xl font-light tracking-tight outline-none bg-transparent placeholder:text-slate-500 text-slate-900"
+                        className="w-full h-full py-0 text-lg font-light tracking-tight outline-none bg-transparent placeholder:text-slate-500 text-slate-900"
                       />
                     </form>
                   </div>
