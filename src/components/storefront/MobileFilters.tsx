@@ -65,17 +65,6 @@ export function MobileFilters({
     setViewStack(prev => prev.slice(0, -1));
   };
 
-  const isSearching = searchInput.trim().length > 0;
-  
-  const liveResults = React.useMemo(() => {
-    if (!isSearching || !allProducts) return [];
-    const query = searchInput.toLowerCase().trim();
-    return allProducts.filter(p => 
-      p.title.toLowerCase().includes(query) || 
-      p.description?.toLowerCase().includes(query) ||
-      p.translations?.[lang]?.title.toLowerCase().includes(query)
-    ).slice(0, 6);
-  }, [searchInput, allProducts, lang, isSearching]);
   return (
     <AnimatePresence>
       {isOpen && (
@@ -143,106 +132,119 @@ export function MobileFilters({
                  initial="enter"
                  animate="center"
                  exit="exit"
-                 transition={{ type: 'tween', ease: "easeInOut", duration: 0.25 }}
-                 className="absolute inset-0 p-6 overflow-y-auto custom-scrollbar space-y-10 pb-32"
-               >
-                 {/* Root View */}
-                   <>
-                    {/* Collections */}
-                    <div className="space-y-6">
-                      <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Collections</h3>
-                      <div className="space-y-1">
-                        <button
-                          onClick={() => updateParams({ category: 'All' })}
-                          className={`w-full flex items-center justify-between p-4 border rounded-sm ${activeCategory === 'All' ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-100 text-slate-600'}`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <LayoutGrid className="w-4 h-4" strokeWidth={1.5} />
-                            <span className="text-[11px] font-black uppercase tracking-widest">All Categories</span>
-                          </div>
-                          {activeCategory === 'All' && <Check className="w-4 h-4" strokeWidth={1.5} />}
-                        </button>
-                        {currentCategories.map(cat => {
-                          const hasChildren = categories.some(c => c.parentId === cat.id);
-                          return (
-                            <button 
-                              key={cat.id} 
-                              onClick={() => {
-                                if (hasChildren && cat.id) goForward(cat.id);
-                                else { updateParams({ category: cat.slug }); onClose(); }
-                              }}
-                              className={`w-full flex items-center justify-between p-4 border rounded-sm ${activeCategory === cat.slug ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-100 text-slate-600'}`}
-                            >
-                              <div className="flex items-center gap-3">
-                                <LayoutGrid className="w-4 h-4" strokeWidth={1.5} />
-                                <span className="text-[11px] font-black uppercase tracking-widest">{cat.name}</span>
-                              </div>
-                              {hasChildren ? (
-                                <ChevronRight className="w-4 h-4 text-slate-300" strokeWidth={1.5} />
-                              ) : (
-                                activeCategory === cat.slug && <Check className="w-4 h-4" strokeWidth={1.5} />
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Sort By */}
-                    <div className="space-y-6">
-                      <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Sort By</h3>
-                      <div className="space-y-1">
-                        {[
-                          { id: 'newest', label: settings.sortNewestText?.[lang] || 'Newest Arrivals' },
-                          { id: 'price-asc', label: settings.sortPriceAscText?.[lang] || 'Price: Low to High' },
-                          { id: 'price-desc', label: settings.sortPriceDescText?.[lang] || 'Price: High to Low' }
-                        ].map(option => (
+               <AnimatePresence initial={false} custom={direction}>
+                 <motion.div
+                   key={viewStack.length}
+                   custom={direction}
+                   variants={{
+                     enter: (direction: number) => ({ x: direction > 0 ? '100%' : '-100%', opacity: 0 }),
+                     center: { x: 0, opacity: 1 },
+                     exit: (direction: number) => ({ x: direction < 0 ? '100%' : '-100%', opacity: 0 })
+                   }}
+                   initial="enter"
+                   animate="center"
+                   exit="exit"
+                   transition={{ type: 'tween', ease: "easeInOut", duration: 0.25 }}
+                   className="absolute inset-0 p-6 overflow-y-auto custom-scrollbar space-y-10 pb-32"
+                 >
+                  {viewStack.length === 0 ? (
+                    /* Root View */
+                    <>
+                      {/* Collections */}
+                      <div className="space-y-6">
+                        <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Collections</h3>
+                        <div className="space-y-1">
                           <button
-                            key={option.id}
-                            onClick={() => updateParams({ sort: option.id })}
-                            className={`w-full text-left p-4 border rounded-sm ${sortBy === option.id ? 'bg-slate-900 border-slate-900 text-white font-bold' : 'bg-white border-slate-100 text-slate-600'}`}
+                            onClick={() => updateParams({ category: 'All' })}
+                            className={`w-full flex items-center justify-between p-4 border rounded-sm ${activeCategory === 'All' ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-100 text-slate-600'}`}
                           >
-                            <span className="text-[11px] font-black uppercase tracking-widest">{option.label}</span>
+                            <div className="flex items-center gap-3">
+                              <LayoutGrid className="w-4 h-4" strokeWidth={1.5} />
+                              <span className="text-[11px] font-black uppercase tracking-widest">All Categories</span>
+                            </div>
+                            {activeCategory === 'All' && <Check className="w-4 h-4" strokeWidth={1.5} />}
                           </button>
-                        ))}
+                          {currentCategories.map(cat => {
+                            const hasChildren = categories.some(c => c.parentId === cat.id);
+                            return (
+                              <button 
+                                key={cat.id} 
+                                onClick={() => {
+                                  if (hasChildren && cat.id) goForward(cat.id);
+                                  else { updateParams({ category: cat.slug }); onClose(); }
+                                }}
+                                className={`w-full flex items-center justify-between p-4 border rounded-sm ${activeCategory === cat.slug ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-100 text-slate-600'}`}
+                              >
+                                <div className="flex items-center gap-3">
+                                  <LayoutGrid className="w-4 h-4" strokeWidth={1.5} />
+                                  <span className="text-[11px] font-black uppercase tracking-widest">{cat.name}</span>
+                                </div>
+                                {hasChildren ? (
+                                  <ChevronRight className="w-4 h-4 text-slate-300" strokeWidth={1.5} />
+                                ) : (
+                                  activeCategory === cat.slug && <Check className="w-4 h-4" strokeWidth={1.5} />
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
-                   </>
-                 ) : (
-                   /* Sub Folder View */
-                   <div className="space-y-8 pt-2">
-                      <button
-                        onClick={() => { updateParams({ category: activeCategoryData?.slug || 'All' }); onClose(); }}
-                        className={`w-full flex items-center justify-between p-5 rounded-sm transition-all ${activeCategory === activeCategoryData?.slug ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-900 border border-slate-100'}`}
-                      >
-                        <span className="text-xs font-bold uppercase tracking-widest">View All {activeCategoryData?.name}</span>
-                        {activeCategory === activeCategoryData?.slug ? <Check className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
-                      </button>
 
-                      <div className="grid gap-2">
-                        {currentCategories.map((sub) => {
-                          const hasChildren = categories.some(c => c.parentId === sub.id);
-                          return (
+                      {/* Sort By */}
+                      <div className="space-y-6">
+                        <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Sort By</h3>
+                        <div className="space-y-1">
+                          {[
+                            { id: 'newest', label: settings.sortNewestText?.[lang] || 'Newest Arrivals' },
+                            { id: 'price-asc', label: settings.sortPriceAscText?.[lang] || 'Price: Low to High' },
+                            { id: 'price-desc', label: settings.sortPriceDescText?.[lang] || 'Price: High to Low' }
+                          ].map(option => (
                             <button
-                              key={sub.id}
-                              onClick={() => {
-                                if (hasChildren && sub.id) goForward(sub.id);
-                                else { updateParams({ category: sub.slug }); onClose(); }
-                              }}
-                              className={`flex items-center justify-between p-4 border rounded-sm transition-colors ${activeCategory === sub.slug ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-100 text-slate-600'}`}
+                              key={option.id}
+                              onClick={() => updateParams({ sort: option.id })}
+                              className={`w-full text-left p-4 border rounded-sm ${sortBy === option.id ? 'bg-slate-900 border-slate-900 text-white font-bold' : 'bg-white border-slate-100 text-slate-600'}`}
                             >
-                              <span className="text-[11px] font-black uppercase tracking-widest">{sub.name}</span>
-                              {hasChildren ? (
-                                <ChevronRight className="w-4 h-4 text-slate-300" />
-                              ) : (
-                                activeCategory === sub.slug && <Check className="w-4 h-4" />
-                              )}
+                              <span className="text-[11px] font-black uppercase tracking-widest">{option.label}</span>
                             </button>
-                          );
-                        })}
+                          ))}
+                        </div>
                       </div>
-                   </div>
-                 )}
+                    </>
+                  ) : (
+                    /* Sub Folder View */
+                    <div className="space-y-8 pt-2">
+                       <button
+                         onClick={() => { updateParams({ category: activeCategoryData?.slug || 'All' }); onClose(); }}
+                         className={`w-full flex items-center justify-between p-5 rounded-sm transition-all ${activeCategory === activeCategoryData?.slug ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-900 border border-slate-100'}`}
+                       >
+                         <span className="text-xs font-bold uppercase tracking-widest">View All {activeCategoryData?.name}</span>
+                         {activeCategory === activeCategoryData?.slug ? <Check className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
+                       </button>
+
+                       <div className="grid gap-2">
+                         {currentCategories.map((sub) => {
+                           const hasChildren = categories.some(c => c.parentId === sub.id);
+                           return (
+                             <button
+                               key={sub.id}
+                               onClick={() => {
+                                 if (hasChildren && sub.id) goForward(sub.id);
+                                 else { updateParams({ category: sub.slug }); onClose(); }
+                               }}
+                               className={`flex items-center justify-between p-4 border rounded-sm transition-colors ${activeCategory === sub.slug ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-100 text-slate-600'}`}
+                             >
+                               <span className="text-[11px] font-black uppercase tracking-widest">{sub.name}</span>
+                               {hasChildren ? (
+                                 <ChevronRight className="w-4 h-4 text-slate-300" />
+                               ) : (
+                                 activeCategory === sub.slug && <Check className="w-4 h-4" />
+                               )}
+                             </button>
+                           );
+                         })}
+                       </div>
+                    </div>
+                  )}
                </motion.div>
              </AnimatePresence>
             </div>
