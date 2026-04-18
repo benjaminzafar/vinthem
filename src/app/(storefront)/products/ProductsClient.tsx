@@ -98,8 +98,8 @@ export default function ProductsClient({ initialProducts, initialCategories }: P
   return (
     <div className="min-h-screen bg-[#fcfcfc] pb-24 font-sans">
       <div className="mx-auto max-w-7xl px-4 pb-12 pt-10 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-6 lg:flex-row lg:gap-8">
-          <aside className="hidden w-[360px] shrink-0 lg:block sticky top-28 self-start">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[360px_1fr] items-start">
+          <aside className="hidden shrink-0 lg:block sticky top-32">
             <SidebarFilters
               categories={categoriesData}
               settings={settings}
