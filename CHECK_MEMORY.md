@@ -1,5 +1,4 @@
-# 🧠 ANTIGRAVITY PROJECT MEMORY: Mavren Shop Recovery
-
+# 🧠 nenory file 
 > [!IMPORTANT]
 > This file is a **Permanent Context Mind Map**. It tracks the project's evolution, prevents repeating past mistakes, and enforces the latest architectural standards. **Read it before every task.**
 
