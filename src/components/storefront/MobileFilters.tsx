@@ -145,13 +145,13 @@ export function MobileFilters({
                         <div className="space-y-1">
                           <button
                             onClick={() => updateParams({ category: 'All' })}
-                            className={`w-full flex items-center justify-between h-[48px] px-4 border rounded-sm transition-all ${activeCategory === 'All' ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-100 text-slate-600'}`}
+                            className={`w-full flex items-center justify-between h-[48px] px-4 border transition-all rounded-sm ${activeCategory === 'All' ? 'bg-slate-50 border-slate-900 border-2 text-slate-900 font-bold' : 'bg-white border-slate-100 text-slate-600'}`}
                           >
                             <div className="flex items-center gap-3">
                               <LayoutGrid className="w-4 h-4" strokeWidth={1.5} />
                               <span className="text-[11px] font-black uppercase tracking-widest">All Categories</span>
                             </div>
-                            {activeCategory === 'All' && <Check className="w-4 h-4" strokeWidth={1.5} />}
+                            {activeCategory === 'All' && <Check className="w-4 h-4 text-slate-900" strokeWidth={2.5} />}
                           </button>
                           {currentCategories.map(cat => {
                             const hasChildren = categories.some(c => c.parentId === cat.id);
@@ -165,7 +165,7 @@ export function MobileFilters({
                                   if (hasChildren && cat.id) goForward(cat.id);
                                   else { updateParams({ category: cat.slug }); onClose(); }
                                 }}
-                                className={`w-full flex items-center justify-between h-[48px] px-4 border rounded-sm transition-all ${activeCategory === cat.slug ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-100 text-slate-600'}`}
+                                className={`w-full flex items-center justify-between h-[48px] px-4 border transition-all rounded-sm ${activeCategory === cat.slug ? 'bg-slate-50 border-slate-900 border-2 text-slate-900 font-bold' : 'bg-white border-slate-100 text-slate-600'}`}
                               >
                                 <div className="flex items-center gap-3">
                                   {iconToUse ? (
@@ -184,7 +184,7 @@ export function MobileFilters({
                                 {hasChildren ? (
                                   <ChevronRight className="w-4 h-4 text-slate-300" strokeWidth={1.5} />
                                 ) : (
-                                  activeCategory === cat.slug && <Check className="w-4 h-4" strokeWidth={1.5} />
+                                  activeCategory === cat.slug && <Check className="w-4 h-4 text-slate-900" strokeWidth={2.5} />
                                 )}
                               </button>
                             );
@@ -204,7 +204,7 @@ export function MobileFilters({
                             <button
                               key={option.id}
                               onClick={() => updateParams({ sort: option.id })}
-                              className={`w-full flex items-center h-[48px] px-4 border rounded-sm transition-all ${sortBy === option.id ? 'bg-slate-900 border-slate-900 text-white font-bold' : 'bg-white border-slate-100 text-slate-600'}`}
+                              className={`w-full flex items-center h-[48px] px-4 border transition-all rounded-sm ${sortBy === option.id ? 'bg-slate-50 border-slate-900 border-2 text-slate-900 font-black' : 'bg-white border-slate-100 text-slate-600'}`}
                             >
                               <span className="text-[11px] font-black uppercase tracking-widest">{option.label}</span>
                             </button>
@@ -217,11 +217,10 @@ export function MobileFilters({
                     <div className="space-y-8 pt-2">
                        <button
                          onClick={() => { updateParams({ category: activeCategoryData?.slug || 'All' }); onClose(); }}
-                         className={`w-full flex items-center justify-between h-[48px] px-4 rounded-sm transition-all ${activeCategory === activeCategoryData?.slug ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-900 border border-slate-100'}`}
-                       >
-                         <span className="text-xs font-bold uppercase tracking-widest">View All {activeCategoryData?.name}</span>
-                         {activeCategory === activeCategoryData?.slug ? <Check className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
-                       </button>
+                         className={`w-full flex items-center justify-between h-[48px] px-4 border transition-all rounded-sm ${activeCategory === activeCategoryData?.slug ? 'bg-slate-50 border-slate-900 border-2 text-slate-900 font-bold' : 'bg-slate-50 border-slate-100 text-slate-400 font-medium'}`}>
+                          <span className="text-[11px] font-black uppercase tracking-widest">View All {activeCategoryData?.name}</span>
+                          {activeCategory === activeCategoryData?.slug ? <Check className="w-4 h-4 text-slate-900" strokeWidth={2.5} /> : <ArrowRight className="w-4 h-4" />}
+                        </button>
 
                        <div className="grid gap-2">
                          {currentCategories.map((sub) => {
@@ -236,7 +235,7 @@ export function MobileFilters({
                                  if (hasChildren && sub.id) goForward(sub.id);
                                  else { updateParams({ category: sub.slug }); onClose(); }
                                }}
-                               className={`flex items-center justify-between h-[48px] px-4 border rounded-sm transition-colors ${activeCategory === sub.slug ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-100 text-slate-600'}`}
+                               className={`flex items-center justify-between h-[48px] px-4 border transition-colors rounded-sm ${activeCategory === sub.slug ? 'bg-slate-50 border-slate-900 border-2 text-slate-900 font-bold' : 'bg-white border-slate-100 text-slate-600'}`}
                              >
                                <div className="flex items-center gap-3">
                                  {iconToUse ? (
@@ -255,7 +254,7 @@ export function MobileFilters({
                                {hasChildren ? (
                                  <ChevronRight className="w-4 h-4 text-slate-300" />
                                ) : (
-                                 activeCategory === sub.slug && <Check className="w-4 h-4" />
+                                 activeCategory === sub.slug && <Check className="w-4 h-4 text-slate-900" strokeWidth={2.5} />
                                )}
                              </button>
                            );
@@ -267,24 +266,24 @@ export function MobileFilters({
              </AnimatePresence>
             </div>
 
-            <div className="p-4 border-t border-slate-100 flex items-center gap-3 shrink-0 mb-safe">
-              <button
-                onClick={() => {
-                  setSearchInput('');
-                  updateParams({ search: null, category: 'All', sort: 'newest' });
-                  onClose();
-                }}
-                className="flex-1 bg-white border border-slate-200 text-slate-400 py-3.5 text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:text-slate-900 rounded-sm"
-              >
-                Clear
-              </button>
-              <button
-                onClick={onClose}
-                className="flex-1 bg-slate-900 text-white py-3.5 text-[11px] font-black uppercase tracking-[0.22em] transition-all hover:bg-slate-800 rounded-sm active:scale-[0.98]"
-              >
-                Apply ({productCount})
-              </button>
-            </div>
+            <div className="p-4 border-t border-slate-100 flex items-center gap-3 shrink-0 mb-safe bg-white z-20">
+               <button
+                 onClick={() => {
+                   setSearchInput('');
+                   updateParams({ search: null, category: 'All', sort: 'newest' });
+                   onClose();
+                 }}
+                 className="flex-1 bg-white border border-slate-200 text-slate-400 py-3.5 text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:text-slate-900 rounded-sm"
+               >
+                 Clear
+               </button>
+               <button
+                 onClick={onClose}
+                 className="flex-1 bg-white border-2 border-slate-900 text-slate-900 py-3 text-[11px] font-black uppercase tracking-[0.22em] transition-all hover:bg-slate-50 rounded-sm active:scale-[0.98] shadow-sm"
+               >
+                 Apply ({productCount})
+               </button>
+             </div>
           </motion.div>
         </>
       )}
