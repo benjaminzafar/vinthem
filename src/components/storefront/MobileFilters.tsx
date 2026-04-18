@@ -279,10 +279,9 @@ export function MobileFilters({
                </button>
                <button
                  onClick={onClose}
-                 className="flex-1 bg-white border-2 border-slate-900 text-slate-900 py-3 text-[11px] font-black uppercase tracking-[0.22em] transition-all hover:bg-slate-50 rounded-sm active:scale-[0.98] shadow-sm"
-               >
-                 Apply ({productCount})
-               </button>
+                 className="flex-1 bg-slate-900 text-white py-3.5 text-[11px] font-black uppercase tracking-[0.22em] transition-all hover:bg-slate-800 rounded-sm active:scale-[0.98]">
+                  Apply ({productCount})
+                </button>
              </div>
           </motion.div>
         </>
