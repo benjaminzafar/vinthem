@@ -93,13 +93,13 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
   }, [searchQuery, allProducts, allCategories, lang]);
   
   const discoveryCategories = useMemo(() => {
-    const pinned = allCategories.filter(c => c.pinnedInSearch).slice(0, 4);
-    const heroCollections = allCategories.filter(c => !c.pinnedInSearch && c.show_in_hero).slice(0, 4 - pinned.length);
-    const remainingSlots = Math.max(0, 4 - pinned.length - heroCollections.length);
+    const pinned = allCategories.filter(c => c.pinnedInSearch).slice(0, 9);
+    const heroCollections = allCategories.filter(c => !c.pinnedInSearch && c.show_in_hero).slice(0, 9 - pinned.length);
+    const remainingSlots = Math.max(0, 9 - pinned.length - heroCollections.length);
     const others = allCategories
       .filter(c => !c.pinnedInSearch && !c.show_in_hero)
       .slice(0, remainingSlots);
-    return [...pinned, ...heroCollections, ...others];
+    return [...pinned, ...heroCollections, ...others].slice(0, 9);
   }, [allCategories]);
 
   const handleToggle = () => {
@@ -202,11 +202,11 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                         {/* 4 Featured Elements Logic */}
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
                           <div className="lg:col-span-12">
-                            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-slate-400 mb-8 px-1">
-                              {settings?.searchDiscoverCollectionsText?.[lang] || 'Discover Collections'}
+                            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-slate-400 mb-8 px-1 text-center lg:text-left">
+                              {settings?.searchDiscoverText?.[lang] || 'Discover'}
                             </p>
                             {discoveryCategories.length > 0 ? (
-                              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                              <div className="grid grid-cols-3 lg:grid-cols-4 gap-4">
                                 {discoveryCategories.map((cat) => (
                                   <Link
                                     key={cat.id}

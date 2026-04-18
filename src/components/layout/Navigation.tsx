@@ -32,7 +32,7 @@ export default async function Navigation() {
     .from('categories')
     .select('id, name, slug, image_url, pinned_in_search, show_in_hero')
     .is('parent_id', null)
-    .limit(8);
+    .limit(16);
 
   const categories = (categoriesData || []).map(cat => ({
     id: cat.id,
