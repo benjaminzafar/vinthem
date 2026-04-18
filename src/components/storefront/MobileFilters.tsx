@@ -120,18 +120,6 @@ export function MobileFilters({
             </div>
 
             <div className="flex-1 relative overflow-hidden">
-             <AnimatePresence initial={false} custom={direction}>
-               <motion.div
-                 key={isSearching ? 'search-view' : viewStack.length}
-                 custom={direction}
-                 variants={{
-                   enter: (direction: number) => ({ x: direction > 0 ? '100%' : '-100%', opacity: 0 }),
-                   center: { x: 0, opacity: 1 },
-                   exit: (direction: number) => ({ x: direction < 0 ? '100%' : '-100%', opacity: 0 })
-                 }}
-                 initial="enter"
-                 animate="center"
-                 exit="exit"
                <AnimatePresence initial={false} custom={direction}>
                  <motion.div
                    key={viewStack.length}
