@@ -103,15 +103,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
   }, [allCategories]);
 
   const handleToggle = () => {
-    if (window.innerWidth < 1024) {
-      if (pathname === '/products') {
-        setIsFilterDrawerOpen(true);
-      } else {
-        navigate.push('/products?openSearch=true');
-      }
-    } else {
-      setIsOverlayOpen(!isOverlayOpen);
-    }
+    setIsOverlayOpen(!isOverlayOpen);
   };
 
   const handleSearch = (e: React.FormEvent) => {
@@ -162,13 +154,13 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
             />
 
             {/* Signature Popup Modal */}
-            <div className="fixed inset-0 flex items-start justify-center pt-[10vh] sm:pt-[15vh] z-[501] pointer-events-none px-4 sm:px-6">
+            <div className={`fixed inset-0 flex items-start justify-center pt-0 lg:pt-[10vh] sm:pt-[15vh] z-[501] pointer-events-none px-0 sm:px-6`}>
                 <motion.div
                   initial={{ opacity: 0, scale: 0.98, y: 10 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.98, y: 10 }}
-                  transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                  className="w-full max-w-[850px] bg-white border border-slate-200 pointer-events-auto shadow-[0_0_80px_rgba(0,0,0,0.1)] flex flex-col max-h-[70vh] overflow-hidden rounded-2xl"
+                  transition={{ type: 'spring', damping: 25, stiffness: 300, mass: 0.5 }}
+                  className="w-full max-w-[850px] bg-white border-0 lg:border border-slate-200 pointer-events-auto lg:shadow-[0_0_80px_rgba(0,0,0,0.1)] flex flex-col h-full lg:h-auto lg:max-h-[70vh] overflow-hidden rounded-none lg:rounded-2xl"
                 >
                 {/* Search Header: Precise & Sharp */}
                 <div className="flex items-center gap-6 px-10 border-b border-slate-100 bg-white sticky top-0 z-20 shrink-0">

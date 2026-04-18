@@ -94,16 +94,6 @@ export default function ProductsClient({ initialProducts, initialCategories }: P
     return () => window.removeEventListener('scroll', handleScroll);
   }, [products.length]);
 
-  // Handle global triggers and deep links for search
-  useEffect(() => {
-    if (searchParams.get('openSearch') === 'true') {
-      setIsFilterDrawerOpen(true);
-      // Clean up the URL
-      const params = new URLSearchParams(searchParams.toString());
-      params.delete('openSearch');
-      router.replace(`${pathname}${params.toString() ? `?${params.toString()}` : ''}`, { scroll: false });
-    }
-  }, [searchParams, pathname, router, setIsFilterDrawerOpen]);
 
   return (
     <div className="min-h-screen bg-[#fcfcfc] pb-24 font-sans">

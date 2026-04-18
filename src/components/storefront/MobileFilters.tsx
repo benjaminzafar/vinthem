@@ -85,14 +85,14 @@ export function MobileFilters({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] lg:hidden"
+            className="fixed inset-0 bg-slate-900/40 z-[200] lg:hidden"
           />
           <motion.div 
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed inset-y-0 right-0 z-[210] w-full bg-white shadow-2xl lg:hidden flex flex-col"
+            transition={{ type: 'tween', ease: "easeOut", duration: 0.3 }}
+            className="fixed inset-y-0 right-0 z-[210] w-full bg-white lg:hidden flex flex-col"
           >
             {/* Header with Title and Dynamic Back Button */}
             <div className="flex items-center h-16 px-6 border-b border-slate-100 shrink-0">
@@ -143,7 +143,7 @@ export function MobileFilters({
                  initial="enter"
                  animate="center"
                  exit="exit"
-                 transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+                 transition={{ type: 'tween', ease: "easeInOut", duration: 0.25 }}
                  className="absolute inset-0 p-6 overflow-y-auto custom-scrollbar space-y-10 pb-32"
                >
                  {/* Search Bar stays visible in all views for quick access */}
