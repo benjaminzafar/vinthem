@@ -3,7 +3,8 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { X, Search, LayoutGrid, Check, ChevronRight, ChevronLeft, ArrowRight } from 'lucide-react';
+import { Search, ChevronRight, Check, LayoutGrid, ArrowRight, ChevronLeft, X } from 'lucide-react';
+import { IconRenderer } from '../IconRenderer';
 import { motion, AnimatePresence } from 'motion/react';
 import { Category } from '@/types';
 import { Product } from '@/store/useCartStore';
@@ -155,6 +156,7 @@ export function MobileFilters({
                           {currentCategories.map(cat => {
                             const hasChildren = categories.some(c => c.parentId === cat.id);
                             const iconToUse = cat.iconUrl || cat.imageUrl;
+                            const isRemoteIcon = iconToUse && (iconToUse.startsWith('http') || iconToUse.startsWith('/') || iconToUse.startsWith('blob:'));
 
                             return (
                               <button 
@@ -167,8 +169,12 @@ export function MobileFilters({
                               >
                                 <div className="flex items-center gap-3">
                                   {iconToUse ? (
-                                    <div className="relative w-5 h-5 overflow-hidden rounded-[2px] shrink-0">
-                                      <Image src={iconToUse} alt={cat.name} fill className="object-cover" />
+                                    <div className="relative w-5 h-5 flex items-center justify-center shrink-0">
+                                      {isRemoteIcon ? (
+                                        <Image src={iconToUse} alt={cat.name} fill className="object-cover rounded-[2px]" />
+                                      ) : (
+                                        <IconRenderer iconName={iconToUse} className="w-5 h-5" />
+                                      )}
                                     </div>
                                   ) : (
                                     <LayoutGrid className="w-4 h-4 opacity-40 shrink-0" strokeWidth={1.5} />
@@ -221,6 +227,7 @@ export function MobileFilters({
                          {currentCategories.map((sub) => {
                            const hasChildren = categories.some(c => c.parentId === sub.id);
                            const iconToUse = sub.iconUrl || sub.imageUrl;
+                           const isRemoteIcon = iconToUse && (iconToUse.startsWith('http') || iconToUse.startsWith('/') || iconToUse.startsWith('blob:'));
 
                            return (
                              <button
@@ -233,8 +240,12 @@ export function MobileFilters({
                              >
                                <div className="flex items-center gap-3">
                                  {iconToUse ? (
-                                   <div className="relative w-5 h-5 overflow-hidden rounded-[2px] shrink-0">
-                                     <Image src={iconToUse} alt={sub.name} fill className="object-cover" />
+                                   <div className="relative w-5 h-5 flex items-center justify-center shrink-0">
+                                     {isRemoteIcon ? (
+                                       <Image src={iconToUse} alt={sub.name} fill className="object-cover rounded-[2px]" />
+                                     ) : (
+                                       <IconRenderer iconName={iconToUse} className="w-5 h-5" />
+                                     )}
                                    </div>
                                  ) : (
                                    <LayoutGrid className="w-4 h-4 opacity-40 shrink-0" strokeWidth={1.5} />

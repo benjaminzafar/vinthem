@@ -103,6 +103,8 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
     return [...pinned, ...heroCollections, ...others].slice(0, 9);
   }, [allCategories]);
 
+  const isRemoteImage = (url?: string) => url && (url.startsWith('http') || url.startsWith('/') || url.startsWith('blob:'));
+
   const handleToggle = () => {
     setIsOverlayOpen(!isOverlayOpen);
   };
@@ -216,7 +218,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                                     className="group block relative aspect-square overflow-hidden bg-slate-50 border border-slate-100 rounded-xl"
                                   >
                                     <Image
-                                      src={cat.imageUrl || `https://images.unsplash.com/photo-1618220179428-22790b46a015?q=80&w=400`}
+                                      src={isRemoteImage(cat.imageUrl) ? cat.imageUrl! : `https://images.unsplash.com/photo-1618220179428-22790b46a015?q=80&w=400`}
                                       alt={cat.name}
                                       fill
                                       className="object-cover transition-transform duration-700 group-hover:scale-110"
