@@ -10,7 +10,20 @@ export async function GET(request: NextRequest) {
 
   try {
     const supabase = await createClient();
-  
+    const searchParams = request.nextUrl.searchParams;
+    const clear = searchParams.get('clear') === 'true';
+
+    if (clear) {
+      // Delete test products (using the SKUs we generated)
+      const { error: delProdError } = await supabase
+        .from('products')
+        .delete()
+        .or('sku.ilike.LIV-CHAIR-%,sku.ilike.BED-NIGHT-%,sku.ilike.KIT-PLATE-%');
+      
+      if (delProdError) throw delProdError;
+
+      return NextResponse.json({ success: true, message: 'Test data cleared successfully' });
+    }
     // 1. Define Beautiful Categories
     const categories = [
       {
