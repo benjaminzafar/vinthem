@@ -145,7 +145,7 @@ export function MobileFilters({
                         <div className="space-y-1">
                           <button
                             onClick={() => updateParams({ category: 'All' })}
-                            className={`w-full flex items-center justify-between h-[56px] px-4 border rounded-sm transition-all ${activeCategory === 'All' ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-100 text-slate-600'}`}
+                            className={`w-full flex items-center justify-between h-[48px] px-4 border rounded-sm transition-all ${activeCategory === 'All' ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-100 text-slate-600'}`}
                           >
                             <div className="flex items-center gap-3">
                               <LayoutGrid className="w-4 h-4" strokeWidth={1.5} />
@@ -165,7 +165,7 @@ export function MobileFilters({
                                   if (hasChildren && cat.id) goForward(cat.id);
                                   else { updateParams({ category: cat.slug }); onClose(); }
                                 }}
-                                className={`w-full flex items-center justify-between h-[56px] px-4 border rounded-sm transition-all ${activeCategory === cat.slug ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-100 text-slate-600'}`}
+                                className={`w-full flex items-center justify-between h-[48px] px-4 border rounded-sm transition-all ${activeCategory === cat.slug ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-100 text-slate-600'}`}
                               >
                                 <div className="flex items-center gap-3">
                                   {iconToUse ? (
@@ -204,7 +204,7 @@ export function MobileFilters({
                             <button
                               key={option.id}
                               onClick={() => updateParams({ sort: option.id })}
-                              className={`w-full flex items-center h-[56px] px-4 border rounded-sm transition-all ${sortBy === option.id ? 'bg-slate-900 border-slate-900 text-white font-bold' : 'bg-white border-slate-100 text-slate-600'}`}
+                              className={`w-full flex items-center h-[48px] px-4 border rounded-sm transition-all ${sortBy === option.id ? 'bg-slate-900 border-slate-900 text-white font-bold' : 'bg-white border-slate-100 text-slate-600'}`}
                             >
                               <span className="text-[11px] font-black uppercase tracking-widest">{option.label}</span>
                             </button>
@@ -217,7 +217,7 @@ export function MobileFilters({
                     <div className="space-y-8 pt-2">
                        <button
                          onClick={() => { updateParams({ category: activeCategoryData?.slug || 'All' }); onClose(); }}
-                         className={`w-full flex items-center justify-between p-5 rounded-sm transition-all ${activeCategory === activeCategoryData?.slug ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-900 border border-slate-100'}`}
+                         className={`w-full flex items-center justify-between h-[48px] px-4 rounded-sm transition-all ${activeCategory === activeCategoryData?.slug ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-900 border border-slate-100'}`}
                        >
                          <span className="text-xs font-bold uppercase tracking-widest">View All {activeCategoryData?.name}</span>
                          {activeCategory === activeCategoryData?.slug ? <Check className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
@@ -236,7 +236,7 @@ export function MobileFilters({
                                  if (hasChildren && sub.id) goForward(sub.id);
                                  else { updateParams({ category: sub.slug }); onClose(); }
                                }}
-                               className={`flex items-center justify-between h-[56px] px-4 border rounded-sm transition-colors ${activeCategory === sub.slug ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-100 text-slate-600'}`}
+                               className={`flex items-center justify-between h-[48px] px-4 border rounded-sm transition-colors ${activeCategory === sub.slug ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-100 text-slate-600'}`}
                              >
                                <div className="flex items-center gap-3">
                                  {iconToUse ? (
