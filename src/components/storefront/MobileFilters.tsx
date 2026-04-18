@@ -144,7 +144,7 @@ export function MobileFilters({
                         <div className="space-y-1">
                           <button
                             onClick={() => updateParams({ category: 'All' })}
-                            className={`w-full flex items-center justify-between p-4 border rounded-sm ${activeCategory === 'All' ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-100 text-slate-600'}`}
+                            className={`w-full flex items-center justify-between h-[56px] px-4 border rounded-sm transition-all ${activeCategory === 'All' ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-100 text-slate-600'}`}
                           >
                             <div className="flex items-center gap-3">
                               <LayoutGrid className="w-4 h-4" strokeWidth={1.5} />
@@ -154,6 +154,8 @@ export function MobileFilters({
                           </button>
                           {currentCategories.map(cat => {
                             const hasChildren = categories.some(c => c.parentId === cat.id);
+                            const iconToUse = cat.iconUrl || cat.imageUrl;
+
                             return (
                               <button 
                                 key={cat.id} 
@@ -161,11 +163,17 @@ export function MobileFilters({
                                   if (hasChildren && cat.id) goForward(cat.id);
                                   else { updateParams({ category: cat.slug }); onClose(); }
                                 }}
-                                className={`w-full flex items-center justify-between p-4 border rounded-sm ${activeCategory === cat.slug ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-100 text-slate-600'}`}
+                                className={`w-full flex items-center justify-between h-[56px] px-4 border rounded-sm transition-all ${activeCategory === cat.slug ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-100 text-slate-600'}`}
                               >
                                 <div className="flex items-center gap-3">
-                                  <LayoutGrid className="w-4 h-4" strokeWidth={1.5} />
-                                  <span className="text-[11px] font-black uppercase tracking-widest">{cat.name}</span>
+                                  {iconToUse ? (
+                                    <div className="relative w-5 h-5 overflow-hidden rounded-[2px] shrink-0">
+                                      <Image src={iconToUse} alt={cat.name} fill className="object-cover" />
+                                    </div>
+                                  ) : (
+                                    <LayoutGrid className="w-4 h-4 opacity-40 shrink-0" strokeWidth={1.5} />
+                                  )}
+                                  <span className="text-[11px] font-black uppercase tracking-widest truncate max-w-[180px]">{cat.name}</span>
                                 </div>
                                 {hasChildren ? (
                                   <ChevronRight className="w-4 h-4 text-slate-300" strokeWidth={1.5} />
@@ -190,7 +198,7 @@ export function MobileFilters({
                             <button
                               key={option.id}
                               onClick={() => updateParams({ sort: option.id })}
-                              className={`w-full text-left p-4 border rounded-sm ${sortBy === option.id ? 'bg-slate-900 border-slate-900 text-white font-bold' : 'bg-white border-slate-100 text-slate-600'}`}
+                              className={`w-full flex items-center h-[56px] px-4 border rounded-sm transition-all ${sortBy === option.id ? 'bg-slate-900 border-slate-900 text-white font-bold' : 'bg-white border-slate-100 text-slate-600'}`}
                             >
                               <span className="text-[11px] font-black uppercase tracking-widest">{option.label}</span>
                             </button>
@@ -212,6 +220,8 @@ export function MobileFilters({
                        <div className="grid gap-2">
                          {currentCategories.map((sub) => {
                            const hasChildren = categories.some(c => c.parentId === sub.id);
+                           const iconToUse = sub.iconUrl || sub.imageUrl;
+
                            return (
                              <button
                                key={sub.id}
@@ -219,9 +229,18 @@ export function MobileFilters({
                                  if (hasChildren && sub.id) goForward(sub.id);
                                  else { updateParams({ category: sub.slug }); onClose(); }
                                }}
-                               className={`flex items-center justify-between p-4 border rounded-sm transition-colors ${activeCategory === sub.slug ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-100 text-slate-600'}`}
+                               className={`flex items-center justify-between h-[56px] px-4 border rounded-sm transition-colors ${activeCategory === sub.slug ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-100 text-slate-600'}`}
                              >
-                               <span className="text-[11px] font-black uppercase tracking-widest">{sub.name}</span>
+                               <div className="flex items-center gap-3">
+                                 {iconToUse ? (
+                                   <div className="relative w-5 h-5 overflow-hidden rounded-[2px] shrink-0">
+                                     <Image src={iconToUse} alt={sub.name} fill className="object-cover" />
+                                   </div>
+                                 ) : (
+                                   <LayoutGrid className="w-4 h-4 opacity-40 shrink-0" strokeWidth={1.5} />
+                                 )}
+                                 <span className="text-[11px] font-black uppercase tracking-widest truncate max-w-[180px]">{sub.name}</span>
+                               </div>
                                {hasChildren ? (
                                  <ChevronRight className="w-4 h-4 text-slate-300" />
                                ) : (

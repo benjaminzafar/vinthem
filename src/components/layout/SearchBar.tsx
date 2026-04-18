@@ -53,6 +53,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
         setAllCategories(categoriesResponse.data.map((c) => ({
           ...c,
           imageUrl: c.image_url || c.imageUrl,
+          iconUrl: c.icon_url || c.iconUrl,
           pinnedInSearch: c.pinned_in_search,
           showInHero: c.show_in_hero
         })));

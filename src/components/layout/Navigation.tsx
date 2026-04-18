@@ -30,7 +30,7 @@ export default async function Navigation() {
   // Fetch categories for the premium 4x4 grid
   const { data: categoriesData } = await supabase
     .from('categories')
-    .select('id, name, slug, image_url, pinned_in_search, show_in_hero')
+    .select('id, name, slug, image_url, icon_url, pinned_in_search, show_in_hero')
     .is('parent_id', null)
     .limit(16);
 
@@ -39,6 +39,7 @@ export default async function Navigation() {
     name: cat.name,
     slug: cat.slug,
     imageUrl: cat.image_url,
+    iconUrl: cat.icon_url,
     pinnedInSearch: cat.pinned_in_search,
     showInHero: cat.show_in_hero
   }));
