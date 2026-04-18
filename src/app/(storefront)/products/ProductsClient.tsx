@@ -91,11 +91,8 @@ export default function ProductsClient({ initialProducts, initialCategories }: P
     };
 
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
   }, [products.length]);
 
-
-  return (
   const [sidebarLeft, setSidebarLeft] = useState<number | null>(null);
   const sidebarRef = React.useRef<HTMLElement>(null);
 
