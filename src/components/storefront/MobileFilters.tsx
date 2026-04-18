@@ -46,6 +46,12 @@ export function MobileFilters({
   React.useEffect(() => {
     if (!isOpen) {
       setTimeout(() => setViewStack([]), 300);
+    } else {
+      // Lock body scroll when drawer is open
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = '';
+      };
     }
   }, [isOpen]);
 
@@ -82,7 +88,7 @@ export function MobileFilters({
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'tween', ease: "easeOut", duration: 0.3 }}
-            className="fixed inset-y-0 right-0 z-[210] w-full bg-white lg:hidden flex flex-col"
+            className="fixed inset-y-0 right-0 z-[210] w-full bg-white lg:hidden flex flex-col h-dvh"
           >
             {/* Header with Title and Dynamic Back Button */}
             <div className="flex items-center h-16 px-6 border-b border-slate-100 shrink-0">
