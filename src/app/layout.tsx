@@ -10,6 +10,7 @@ import { LazyMotion, domAnimation } from "motion/react";
 import { PostHogProvider } from "@/components/PostHogProvider";
 import { cookies } from "next/headers";
 import { CookieBannerMount } from "@/components/CookieBannerMount";
+import { CartDrawer } from "@/components/layout/CartDrawer";
 
 export const metadata: Metadata = {
   title: {
@@ -57,8 +58,9 @@ export default async function RootLayout({
             <ConfirmationProvider>
               <LazyMotion features={domAnimation}>
                 {children}
+                <CartDrawer />
               </LazyMotion>
-              <Analytics />
+              {process.env.NODE_ENV === 'production' ? <Analytics /> : null}
             </ConfirmationProvider>
           </AuthProvider>
         </PostHogProvider>

@@ -100,7 +100,7 @@ export function AdminHeader({
                     initial={{ opacity: 0, scale: 0.95, y: 10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                    className="absolute right-0 mt-2 w-48 bg-white rounded shadow-lg border border-slate-300 z-20 py-1 overflow-hidden"
+                    className="absolute right-0 mt-2 w-48 bg-white rounded border border-slate-300 z-20 py-1 overflow-hidden"
                   >
                     {statsLabel && (
                       <div className="px-4 py-2 text-[11px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-100 bg-slate-50/50">

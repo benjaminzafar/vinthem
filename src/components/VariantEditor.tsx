@@ -169,7 +169,7 @@ export function VariantEditor({ formData, setFormData }: VariantEditorProps) {
                         )}
                         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center gap-2 cursor-default transition-all duration-200 scale-95 group-hover:scale-100">
                           <div className="flex gap-2">
-                            <label className="p-2 bg-white rounded-full text-zinc-900 hover:bg-emerald-50 hover:text-emerald-600 transition-colors cursor-pointer shadow-lg" title="Upload New">
+                            <label className="p-2 bg-white rounded-full text-zinc-900 hover:bg-emerald-50 hover:text-emerald-600 transition-colors cursor-pointer" title="Upload New">
                               <Upload className="w-4 h-4" />
                               <input
                                 type="file"
@@ -197,7 +197,7 @@ export function VariantEditor({ formData, setFormData }: VariantEditorProps) {
                             <button
                               type="button"
                               onClick={() => setPickingForColor(colorVal)}
-                              className="p-2 bg-white rounded-full text-zinc-900 hover:bg-indigo-50 hover:text-indigo-600 transition-colors shadow-lg"
+                              className="p-2 bg-white rounded-full text-zinc-900 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
                               title="Select from Library"
                             >
                               <ImageIcon className="w-4 h-4" />

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ShoppingBag, Check } from 'lucide-react';
 import { useCartStore, Product } from '@/store/useCartStore';
+import { useUIStore } from '@/store/useUIStore';
 import { formatPrice } from '@/lib/currency';
 import { toast } from 'sonner';
 import { motion } from 'motion/react';
@@ -35,6 +36,7 @@ const Highlight = ({ text, query }: { text: string; query: string }) => {
 
 export function ProductCard({ product, lang, settings, priority }: ProductCardProps) {
   const { addItem } = useCartStore();
+  const { setCartOpen } = useUIStore();
   const href = product.id ? `/product/${product.id}` : '/products';
   
   const isVideo = (url: string) => {
@@ -48,12 +50,12 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="group flex flex-col h-full"
+      className="group flex flex-col h-full bg-white"
     >
-      <Link href={href} className="block relative aspect-[4/5] mb-4 overflow-hidden bg-gray-50 rounded-2xl shadow-sm border border-gray-100">
+      <Link href={href} className="block relative aspect-[4/5] mb-5 overflow-hidden bg-slate-50 border border-slate-200 rounded transition-all duration-500">
         {product.isFeatured && (
-          <div className="absolute top-3 left-3 md:top-4 md:left-4 z-20">
-            <span className="bg-white/95 backdrop-blur-sm text-brand-ink text-[10px] md:text-xs font-bold px-3 py-1 md:px-4 md:py-1.5 rounded-2xl uppercase tracking-wider shadow-sm">
+          <div className="absolute top-3 left-3 md:top-5 md:left-5 z-20">
+            <span className="bg-white/95 border border-slate-200 text-slate-900 text-[10px] font-black px-3 py-1.5 uppercase tracking-[0.18em] rounded">
               {settings.featuredBadgeText?.[lang] || 'Featured'}
             </span>
           </div>
@@ -66,7 +68,7 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
               loop
               muted
               playsInline
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
             />
           )
         ) : (
@@ -77,7 +79,7 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
                 alt={product.title}
                 fill
                 sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                className="object-cover transition-transform duration-700 group-hover:scale-105"
+                className="object-cover transition-transform duration-700 group-hover:scale-110"
                 priority={priority}
               />
             </div>
@@ -85,38 +87,47 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
         )}
         
         {/* Quick Add Overlay */}
-        <div className="absolute bottom-3 right-3 md:bottom-4 md:right-4 z-20 md:opacity-0 group-hover:opacity-100 transition-all duration-300 md:translate-y-2 group-hover:translate-y-0">
-          <button 
-            onClick={(e) => {
-              e.preventDefault();
-              addItem(product);
-              toast.success(`${product.title} added to cart!`, {
-                className: 'bg-black text-white text-xs rounded-full h-9 px-4 flex items-center gap-2',
-                duration: 1500,
-                icon: <Check className="w-3 h-3" />
-              });
-            }}
-            className="bg-white/95 backdrop-blur-sm text-brand-ink hover:bg-brand-ink hover:text-white p-3 md:px-5 md:py-3 rounded-full shadow-xl transition-all duration-300 flex items-center justify-center gap-2 border border-black/5"
-          >
-            <ShoppingBag className="w-4 h-4 md:w-4 md:h-4" />
-            <span className="hidden md:block text-xs font-bold uppercase tracking-wider">
+        <div className="absolute inset-0 z-20 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none">
+          <div className="absolute inset-0 bg-slate-900/10 pointer-events-none" />
+          <div className="absolute bottom-5 left-5 right-5 pointer-events-auto">
+            <button 
+              onClick={(e) => {
+                e.preventDefault();
+                addItem(product);
+                setCartOpen(true);
+                toast.success(`${product.title} added to cart!`, {
+                  className: 'rounded bg-slate-900 text-white text-[11px] font-black uppercase tracking-[0.18em] border-none',
+                  duration: 2000,
+                  icon: <Check className="w-3.5 h-3.5" strokeWidth={1.5} />
+                });
+              }}
+              className="w-full bg-white text-slate-900 border border-slate-200 px-5 py-3.5 text-[11px] font-black uppercase tracking-[0.22em] transition-all duration-300 hover:bg-slate-900 hover:text-white hover:border-slate-900 flex items-center justify-center gap-3 active:scale-[0.98] rounded"
+            >
+              <ShoppingBag className="w-3.5 h-3.5" strokeWidth={1.5} />
               {settings.quickAddText?.[lang] || 'Quick Add'}
-            </span>
-          </button>
+            </button>
+          </div>
         </div>
       </Link>
       
-      <div className="flex flex-col flex-1">
-        <div className="flex items-center justify-between text-[10px] md:text-xs uppercase tracking-wider font-medium mb-1.5">
-          <span className="text-brand-muted truncate pr-2">{product.categoryName}</span>
+      <div className="flex flex-col flex-1 px-1">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
+            {product.categoryName}
+          </span>
+          {product.status === 'draft' && (
+             <span className="text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 bg-slate-100 text-slate-400 border border-slate-200 rounded">Draft</span>
+          )}
         </div>
-        <h3 className="text-sm md:text-base font-sans font-medium text-brand-ink group-hover:text-brand-muted transition-colors line-clamp-2 mb-2">
+        <h3 className="text-base font-medium tracking-tight text-slate-900 group-hover:text-slate-600 transition-colors line-clamp-2 mb-3">
           <Link href={href}>
             {product.title}
           </Link>
         </h3>
-        <div className="mt-auto pt-2">
-          <span className="text-sm md:text-base font-medium text-brand-ink">{formatPrice(product.price || 0, lang, product.prices)}</span>
+        <div className="mt-auto">
+          <p className="text-base font-medium text-slate-900">
+            {formatPrice(product.price || 0, lang, product.prices)}
+          </p>
         </div>
       </div>
     </motion.div>

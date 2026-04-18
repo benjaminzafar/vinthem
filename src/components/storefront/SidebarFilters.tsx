@@ -1,10 +1,10 @@
 "use client";
 
-import React from 'react';
-import { Search, ChevronRight, ChevronDown, Check } from 'lucide-react';
-import Image from 'next/image';
+import React, { useState } from 'react';
+import { Search, ChevronRight, ChevronLeft, Check } from 'lucide-react';
 import { Category } from '@/types';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface SidebarFiltersProps {
   categories: Category[];
@@ -12,10 +12,6 @@ interface SidebarFiltersProps {
   lang: string;
   searchInput: string;
   setSearchInput: (val: string) => void;
-  selectedColors: string[];
-  setSelectedColors: React.Dispatch<React.SetStateAction<string[]>>;
-  selectedSizes: string[];
-  setSelectedSizes: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 export function SidebarFilters({
@@ -24,14 +20,13 @@ export function SidebarFilters({
   lang,
   searchInput,
   setSearchInput,
-  selectedColors,
-  setSelectedColors,
-  selectedSizes,
-  setSelectedSizes,
 }: SidebarFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
+
+  const [viewStack, setViewStack] = useState<string[]>([]);
+  const [direction, setDirection] = useState(1);
 
   const activeCategory = searchParams.get('category') || 'All';
   const sortBy = searchParams.get('sort') || 'newest';
@@ -48,171 +43,176 @@ export function SidebarFilters({
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
-  const rootCategories = categories.filter(c => !c.parentId);
-  const categoryTree = rootCategories.map(root => ({
-    ...root,
-    children: categories.filter(c => c.parentId === root.id)
-  }));
+  const activeCategoryId = viewStack[viewStack.length - 1];
+  const activeCategoryData = categories.find(c => c.id === activeCategoryId);
+  
+  const currentCategories = activeCategoryId 
+    ? categories.filter(c => c.parentId === activeCategoryId)
+    : categories.filter(c => !c.parentId);
+
+  const goForward = (categoryId: string) => {
+    setDirection(1);
+    setViewStack(prev => [...prev, categoryId]);
+  };
+
+  const goBack = () => {
+    setDirection(-1);
+    setViewStack(prev => prev.slice(0, -1));
+  };
 
   return (
-    <div className="sticky top-32 space-y-10">
-      {/* Search */}
-      <section>
-        <div className="relative">
-          <input
-            type="text"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            placeholder={settings.searchPlaceholder?.[lang] || "Search products..."}
-            className="w-full bg-gray-50 border border-gray-100 rounded-xl py-3 pl-10 pr-4 text-sm focus:border-brand-ink focus:ring-1 focus:ring-brand-ink outline-none transition-all"
-          />
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted" />
-        </div>
-      </section>
+    <div className="sticky top-32 flex flex-col h-[calc(100vh-160px)] overflow-hidden bg-white border border-slate-200">
+      {/* Dynamic Header */}
+      <div className="h-14 px-5 border-b border-slate-100 flex items-center shrink-0 bg-white">
+        <AnimatePresence mode="wait">
+          {viewStack.length > 0 ? (
+            <motion.button
+              key="back-btn"
+              initial={{ opacity: 0, x: -5 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -5 }}
+              onClick={goBack}
+              className="flex items-center space-x-3 text-slate-400 hover:text-slate-900 transition-colors group"
+            >
+              <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" strokeWidth={1.5} />
+              <span className="text-[12px] font-black uppercase tracking-[0.2em]">{activeCategoryData?.name}</span>
+            </motion.button>
+          ) : (
+            <motion.h3 
+              key="root-title"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-[12px] font-black uppercase tracking-[0.22em] text-slate-900"
+            >
+              Collections
+            </motion.h3>
+          )}
+        </AnimatePresence>
+      </div>
 
-      {/* Categories */}
-      <section>
-        <h3 className="text-xs font-bold uppercase tracking-widest text-brand-ink mb-5">{settings.categoriesText?.[lang] || 'Categories'}</h3>
-        <div className="flex flex-col space-y-2">
-          <button
-            onClick={() => updateParams({ category: 'All' })}
-            className={`text-left text-sm py-1.5 transition-all flex items-center justify-between group ${activeCategory === 'All' ? 'text-brand-ink font-medium' : 'text-brand-muted hover:text-brand-ink'}`}
+      <div className="flex-1 relative overflow-hidden">
+        <AnimatePresence initial={false} custom={direction} mode="popLayout">
+          <motion.div
+            key={viewStack.length}
+            custom={direction}
+            variants={{
+              enter: (direction: number) => ({ x: direction > 0 ? '100%' : '-100%', opacity: 0 }),
+              center: { x: 0, opacity: 1 },
+              exit: (direction: number) => ({ x: direction < 0 ? '100%' : '-100%', opacity: 0 })
+            }}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ type: 'spring', damping: 25, stiffness: 150 }}
+            className="absolute inset-0 p-5 overflow-y-auto custom-scrollbar space-y-8"
           >
-            <span>{settings.allCategoriesText?.[lang] || 'All Collections'}</span>
-            {activeCategory === 'All' && <ChevronRight className="w-4 h-4" />}
-          </button>
-          {categoryTree.map((cat) => {
-            const hasChildren = cat.children.length > 0;
-            const isExpanded = activeCategory === cat.slug || cat.children.some(c => c.slug === activeCategory);
-            return (
-              <div key={cat.id} className="flex flex-col">
-                <button
-                  onClick={() => updateParams({ category: cat.slug })}
-                  className={`text-left text-sm py-1.5 transition-all flex items-center justify-between group ${activeCategory === cat.slug ? 'text-brand-ink font-medium' : 'text-brand-muted hover:text-brand-ink'}`}
-                >
-                  <div className="flex items-center gap-3">
-                    {(() => {
-                      const iconOrImage = cat.iconUrl || cat.imageUrl;
-                      if (iconOrImage && iconOrImage !== '') {
-                        return iconOrImage.startsWith('lucide:') || iconOrImage.startsWith('icon:') ? (
-                          <div className="w-4 h-4 text-zinc-600 flex items-center justify-center">
-                             {/* Simple icon fallback since IconRenderer is complex */}
-                             <Check className="w-3 h-3" />
-                          </div>
-                        ) : (
-                          <div className="relative w-4 h-4 rounded-full overflow-hidden shrink-0">
-                            <Image src={iconOrImage} alt={cat.name} fill className="object-cover" />
-                          </div>
-                        );
-                      }
-                      return null;
-                    })()}
-                    <span>{cat.name}</span>
-                  </div>
-                  {hasChildren ? (
-                    isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />
-                  ) : (
-                    activeCategory === cat.slug && <ChevronRight className="w-4 h-4" />
-                  )}
-                </button>
-                {hasChildren && isExpanded && (
-                  <div className="pl-4 flex flex-col space-y-1 mt-1 border-l-2 border-gray-50 ml-1">
-                    {cat.children.map((child) => (
-                      <button
-                        key={child.id}
-                        onClick={() => updateParams({ category: child.slug })}
-                        className={`text-left text-sm py-1 transition-all ${activeCategory === child.slug ? 'text-brand-ink font-medium' : 'text-brand-muted hover:text-brand-ink'}`}
-                      >
-                        {child.name}
-                      </button>
-                    ))}
-                  </div>
-                )}
+            {/* Search Section */}
+            <div className="space-y-4">
+              <div className="relative group">
+                <input
+                  type="text"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  placeholder="Filter collections..."
+                  className="w-full bg-slate-50 border border-slate-100 rounded-sm py-3 px-11 pr-4 text-[13px] focus:bg-white focus:border-slate-900 outline-none transition-all placeholder:text-slate-300"
+                />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-slate-900 transition-colors" strokeWidth={1.5} />
               </div>
-            )
-          })}
-        </div>
-      </section>
+            </div>
 
-      {/* Sort By */}
-      <section>
-        <h3 className="text-xs font-bold uppercase tracking-widest text-brand-ink mb-5">{settings.sortByText?.[lang] || 'Sort By'}</h3>
-        <div className="flex flex-col space-y-2">
-          {[
-            { id: 'newest', label: settings.sortNewestText?.[lang] || 'Newest Arrivals' },
-            { id: 'price-asc', label: settings.sortPriceAscText?.[lang] || 'Price: Low to High' },
-            { id: 'price-desc', label: settings.sortPriceDescText?.[lang] || 'Price: High to Low' }
-          ].map((option) => (
-            <button
-              key={option.id}
-              onClick={() => updateParams({ sort: option.id })}
-              className={`text-left text-sm py-1.5 transition-all flex items-center justify-between group ${sortBy === option.id ? 'text-brand-ink font-medium' : 'text-brand-muted hover:text-brand-ink'}`}
-            >
-              <span>{option.label}</span>
-              {sortBy === option.id && <Check className="w-4 h-4" />}
-            </button>
-          ))}
-        </div>
-      </section>
+            {viewStack.length === 0 ? (
+              /* Root Level View - Strictly Text-Only */
+              <div className="space-y-8">
+                <div className="space-y-1">
+                  <button
+                    onClick={() => updateParams({ category: 'All' })}
+                    className={`w-full flex items-center justify-between py-3 px-4 rounded-sm transition-all border ${activeCategory === 'All' ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-transparent hover:bg-slate-50 text-slate-500 hover:text-slate-900'}`}
+                  >
+                    <span className="text-[12px] font-black uppercase tracking-[0.15em]">All Products</span>
+                    {activeCategory === 'All' && <Check className="w-5 h-5" strokeWidth={1.5} />}
+                  </button>
 
-      {/* Colors */}
-      <details className="group">
-        <summary className="flex items-center justify-between cursor-pointer list-none outline-none mb-5">
-          <h3 className="text-xs font-bold uppercase tracking-widest text-brand-ink">{settings.colorsText?.[lang] || 'Colors'}</h3>
-          <ChevronRight className="w-4 h-4 text-brand-muted group-open:rotate-90 transition-transform" />
-        </summary>
-        <div className="flex flex-wrap gap-3">
-          {[
-            { id: 'Black', hex: '#000000' },
-            { id: 'White', hex: '#FFFFFF' },
-            { id: 'Beige', hex: '#F5F5DC' },
-            { id: 'Navy', hex: '#000080' },
-            { id: 'Grey', hex: '#808080' }
-          ].map((colorObj) => (
-            <button
-              key={colorObj.id}
-              onClick={() => {
-                setSelectedColors(prev => 
-                  prev.includes(colorObj.id) ? prev.filter(c => c !== colorObj.id) : [...prev, colorObj.id]
-                );
-              }}
-              className="group/color relative"
-            >
-              <div 
-                className={`w-8 h-8 rounded-full border transition-all ${selectedColors.includes(colorObj.id) ? 'border-brand-ink ring-2 ring-brand-ink ring-offset-2' : 'border-gray-200 group-hover/color:border-gray-400 shadow-sm'}`}
-                style={{ backgroundColor: colorObj.hex }}
-              />
-            </button>
-          ))}
-        </div>
-      </details>
+                  <div className="pt-2 space-y-1">
+                    {currentCategories.map((cat) => {
+                      const hasChildren = categories.some(c => c.parentId === cat.id);
+                      return (
+                        <button
+                          key={cat.id}
+                          onClick={() => {
+                            if (hasChildren && cat.id) goForward(cat.id);
+                            else updateParams({ category: cat.slug });
+                          }}
+                          className={`w-full flex items-center justify-between py-3 px-4 rounded-sm transition-all border group ${activeCategory === cat.slug ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-transparent hover:bg-slate-50 text-slate-500 hover:text-slate-900'}`}
+                        >
+                          <span className="text-[12px] font-black uppercase tracking-[0.15em]">{cat.name}</span>
+                          {hasChildren ? (
+                            <ChevronRight className="w-5 h-5 opacity-30 group-hover:opacity-100 group-hover:translate-x-1 transition-all" strokeWidth={1.5} />
+                          ) : (
+                            activeCategory === cat.slug && <Check className="w-5 h-5" strokeWidth={1.5} />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
 
-      {/* Sizes */}
-      <details className="group mt-8">
-        <summary className="flex items-center justify-between cursor-pointer list-none outline-none mb-5">
-          <h3 className="text-xs font-bold uppercase tracking-widest text-brand-ink">{settings.sizesText?.[lang] || 'Sizes'}</h3>
-          <ChevronRight className="w-4 h-4 text-brand-muted group-open:rotate-90 transition-transform" />
-        </summary>
-        <div className="flex flex-wrap gap-2">
-          {['XS', 'S', 'M', 'L', 'XL'].map((size) => (
-            <button
-              key={size}
-              onClick={() => {
-                setSelectedSizes(prev => 
-                  prev.includes(size) ? prev.filter(s => s !== size) : [...prev, size]
-                );
-              }}
-              className={`w-10 h-10 rounded-2xl text-xs font-medium transition-all flex items-center justify-center border ${
-                selectedSizes.includes(size) 
-                  ? 'bg-brand-ink text-white border-brand-ink' 
-                  : 'bg-white text-brand-ink border-gray-200 hover:border-brand-ink'
-              }`}
-            >
-              {size}
-            </button>
-          ))}
-        </div>
-      </details>
+                {/* Integrated Sort Section */}
+                <div className="pt-8 border-t border-slate-100 space-y-5">
+                   <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Sort By</p>
+                   <div className="space-y-1">
+                     {[
+                       { id: 'newest', label: settings.sortNewestText?.[lang] || 'Newest Arrivals' },
+                       { id: 'price-asc', label: settings.sortPriceAscText?.[lang] || 'Price: Low to High' },
+                       { id: 'price-desc', label: settings.sortPriceDescText?.[lang] || 'Price: High to Low' }
+                     ].map((option) => (
+                       <button
+                         key={option.id}
+                         onClick={() => updateParams({ sort: option.id })}
+                         className={`w-full text-left py-3 px-4 rounded-sm transition-all text-[11px] uppercase font-black tracking-[0.12em] ${sortBy === option.id ? 'text-slate-900 font-bold' : 'text-slate-400 hover:text-slate-900'}`}
+                       >
+                         {option.label}
+                       </button>
+                     ))}
+                   </div>
+                </div>
+              </div>
+            ) : (
+              /* Sub-level View - Strictly Text-Only */
+              <div className="space-y-4">
+                <button
+                  onClick={() => updateParams({ category: activeCategoryData?.slug || 'All' })}
+                  className={`w-full text-center py-3 px-4 rounded-sm transition-all ${activeCategory === activeCategoryData?.slug ? 'bg-slate-900 text-white' : 'bg-slate-900/5 text-slate-900 hover:bg-slate-900/10'}`}
+                >
+                  <span className="text-[12px] font-black uppercase tracking-[0.15em]">View All {activeCategoryData?.name}</span>
+                </button>
+
+                <div className="grid gap-1 pt-4">
+                  {currentCategories.map((sub) => {
+                    const hasChildren = categories.some(c => c.parentId === sub.id);
+                    return (
+                      <button
+                        key={sub.id}
+                        onClick={() => {
+                          if (hasChildren && sub.id) goForward(sub.id);
+                          else updateParams({ category: sub.slug });
+                        }}
+                        className={`flex items-center justify-between py-3 px-4 rounded-sm transition-all border ${activeCategory === sub.slug ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-50 text-slate-500 hover:text-slate-900 hover:border-slate-200'}`}
+                      >
+                        <span className="text-[12px] font-black uppercase tracking-[0.15em]">{sub.name}</span>
+                        {hasChildren ? (
+                          <ChevronRight className="w-5 h-5 opacity-30 group-hover:opacity-100 group-hover:translate-x-1 transition-all" strokeWidth={1.5} />
+                        ) : (
+                          activeCategory === sub.slug && <Check className="w-5 h-5" strokeWidth={1.5} />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </div>
     </div>
   );
 }

@@ -44,7 +44,7 @@ export function IntegrationCard({
           <div>
             <h3 className="text-sm font-bold text-zinc-900 leading-none tracking-tight">{title}</h3>
             <div className="mt-1.5 flex items-center gap-1.5">
-               <div className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.3)]' : 'bg-zinc-300'}`} />
+               <div className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-emerald-500' : 'bg-zinc-300'}`} />
                <span className={`text-[10px] font-bold uppercase tracking-wider ${isConnected ? 'text-emerald-600' : 'text-zinc-400'}`}>
                 {isConnected ? 'Active & Encrypted' : 'Requires Setup'}
                </span>
@@ -88,7 +88,7 @@ export function IntegrationCard({
                <button
                 onClick={(e) => { e.stopPropagation(); onSave(); }}
                 disabled={isSaving}
-                className="flex items-center gap-2 px-6 py-2 bg-zinc-900 text-white rounded-md hover:bg-zinc-800 transition-all font-bold text-[13px] tracking-tight disabled:opacity-50 shadow-sm"
+                className="flex items-center gap-2 px-6 py-2 bg-zinc-900 text-white rounded-md hover:bg-zinc-800 transition-all font-bold text-[13px] tracking-tight disabled:opacity-50"
               >
                 {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                 {isSaving ? 'Syncing...' : 'Update Settings'}

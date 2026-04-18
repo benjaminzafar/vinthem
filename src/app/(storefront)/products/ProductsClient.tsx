@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { ListFilter, Search } from 'lucide-react';
+import { SlidersHorizontal, Search } from 'lucide-react';
 
 import { useDebounce } from '@/hooks/useDebounce';
 import { Product } from '@/store/useCartStore';
@@ -12,6 +12,7 @@ import { SidebarFilters } from '@/components/storefront/SidebarFilters';
 import { ProductCard } from '@/components/product/ProductCard';
 import { getClientLocale } from '@/lib/locale';
 import { useSettingsStore } from '@/store/useSettingsStore';
+import { useUIStore } from '@/store/useUIStore';
 
 interface ProductsClientProps {
   initialProducts: Product[];
@@ -25,7 +26,7 @@ export default function ProductsClient({ initialProducts, initialCategories }: P
 
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [categoriesData, setCategoriesData] = useState<Category[]>(initialCategories);
-  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+  const { isFilterDrawerOpen, setIsFilterDrawerOpen } = useUIStore();
   const [visibleCount, setVisibleCount] = useState(18);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
@@ -70,6 +71,18 @@ export default function ProductsClient({ initialProducts, initialCategories }: P
 
   const displayedProducts = useMemo(() => products.slice(0, visibleCount), [products, visibleCount]);
 
+  const openFilters = () => {
+    if (window.innerWidth < 1024) {
+      setIsFilterDrawerOpen(true);
+      return;
+    }
+
+    const sidebar = document.querySelector('aside');
+    if (sidebar instanceof HTMLElement) {
+      sidebar.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   useEffect(() => {
     const handleScroll = () => {
       if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 600) {
@@ -81,21 +94,28 @@ export default function ProductsClient({ initialProducts, initialCategories }: P
     return () => window.removeEventListener('scroll', handleScroll);
   }, [products.length]);
 
+  // Handle global triggers and deep links for search
+  useEffect(() => {
+    if (searchParams.get('openSearch') === 'true') {
+      setIsFilterDrawerOpen(true);
+      // Clean up the URL
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete('openSearch');
+      router.replace(`${pathname}${params.toString() ? `?${params.toString()}` : ''}`, { scroll: false });
+    }
+  }, [searchParams, pathname, router, setIsFilterDrawerOpen]);
+
   return (
     <div className="min-h-screen bg-[#fcfcfc] pb-24 font-sans">
       <div className="mx-auto max-w-7xl px-4 pb-12 pt-10 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-12 lg:flex-row lg:gap-16">
-          <aside className="hidden w-64 shrink-0 lg:block">
+        <div className="flex flex-col gap-6 lg:flex-row lg:gap-8">
+          <aside className="hidden w-[360px] shrink-0 lg:block">
             <SidebarFilters
               categories={categoriesData}
               settings={settings}
               lang={lang}
               searchInput={searchInput}
               setSearchInput={setSearchInput}
-              selectedColors={selectedColors}
-              setSelectedColors={setSelectedColors}
-              selectedSizes={selectedSizes}
-              setSelectedSizes={setSelectedSizes}
             />
           </aside>
 
@@ -122,7 +142,7 @@ export default function ProductsClient({ initialProducts, initialCategories }: P
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 md:gap-x-8 md:gap-y-14">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 md:gap-x-6 md:gap-y-10">
                 {displayedProducts.map((product, index) => (
                   <ProductCard
                     key={product.id}
@@ -149,20 +169,19 @@ export default function ProductsClient({ initialProducts, initialCategories }: P
         </div>
       </div>
 
-      <div className="pointer-events-none fixed inset-x-0 bottom-6 z-40 flex justify-center lg:hidden">
+      <div className="pointer-events-none fixed bottom-6 right-6 z-40 flex flex-col gap-3">
         <button
-          onClick={() => setIsMobileFiltersOpen(true)}
-          className="pointer-events-auto flex items-center gap-2 rounded-full bg-slate-900 px-6 py-3.5 text-sm font-medium text-white shadow-lg transition-transform hover:scale-[1.02] active:scale-[0.98]"
+          onClick={openFilters}
+          className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full bg-slate-900 text-white transition-all hover:-translate-y-0.5 active:scale-95 border border-slate-800"
+          aria-label={settings.filterAndSortText?.[lang] || 'Filter and Sort'}
         >
-          <Search className="h-4 w-4" />
-          <ListFilter className="h-4 w-4" />
-          <span>{settings.filterAndSortText?.[lang] || 'Search & Filter'}</span>
+          <SlidersHorizontal className="h-6 w-6" strokeWidth={1.5} />
         </button>
       </div>
 
       <MobileFilters
-        isOpen={isMobileFiltersOpen}
-        onClose={() => setIsMobileFiltersOpen(false)}
+        isOpen={isFilterDrawerOpen}
+        onClose={() => setIsFilterDrawerOpen(false)}
         categories={categoriesData}
         settings={settings}
         lang={lang}
@@ -172,6 +191,7 @@ export default function ProductsClient({ initialProducts, initialCategories }: P
         sortBy={sortBy}
         updateParams={updateParams}
         productCount={products.length}
+        allProducts={initialProducts}
       />
     </div>
   );

@@ -240,7 +240,7 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
             />
          </div>
 
-         <label className={`flex items-center justify-center gap-2 h-11 px-8 bg-slate-900 text-white rounded text-[11px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all cursor-pointer shadow-lg shadow-slate-200/50 ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
+         <label className={`flex items-center justify-center gap-2 h-11 px-8 bg-slate-900 text-white rounded text-[11px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all cursor-pointer ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
             <FilePlus className="w-4 h-4" />
             <span>{uploading ? 'Processing...' : 'Upload Asset'}</span>
             <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} disabled={uploading} />
@@ -318,7 +318,7 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
                 </button>
                 <button 
                   onClick={handleDelete}
-                  className="flex-1 h-12 bg-rose-600 rounded text-[11px] font-black uppercase tracking-widest text-white hover:bg-rose-700 transition-all shadow-lg shadow-rose-100"
+                  className="flex-1 h-12 bg-rose-600 rounded text-[11px] font-black uppercase tracking-widest text-white hover:bg-rose-700 transition-all"
                 >
                   Delete
                 </button>

@@ -119,14 +119,14 @@ export function AssetGrid({
                   <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                      <button 
                        onClick={(e) => onCopyUrl(obj.url, obj.key, e)}
-                       className="w-10 h-10 bg-white rounded shadow-lg flex items-center justify-center text-slate-900 hover:bg-slate-900 hover:text-white transition-all"
+                       className="w-10 h-10 bg-white rounded flex items-center justify-center text-slate-900 hover:bg-slate-900 hover:text-white transition-all"
                        title="Copy Link"
                      >
                        {copyingKeys.has(obj.key) ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                      </button>
                      <button 
                        onClick={(e) => { e.stopPropagation(); onDelete(obj); }}
-                       className="w-10 h-10 bg-white rounded shadow-lg flex items-center justify-center text-rose-600 hover:bg-rose-600 hover:text-white transition-all"
+                       className="w-10 h-10 bg-white rounded flex items-center justify-center text-rose-600 hover:bg-rose-600 hover:text-white transition-all"
                        title="Delete"
                      >
                        <Trash2 className="w-4 h-4" />
@@ -142,7 +142,7 @@ export function AssetGrid({
 
                 {selectionMode && (
                   <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all">
-                     <div className="bg-slate-900 text-white p-1.5 rounded shadow-lg">
+                     <div className="bg-slate-900 text-white p-1.5 rounded">
                        <Check className="w-4 h-4" />
                      </div>
                   </div>

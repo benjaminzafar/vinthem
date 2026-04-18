@@ -25,6 +25,7 @@ export default async function EditCollectionPage({ params }: PageProps) {
     ...category,
     isFeatured: category.is_featured,
     showInHero: category.show_in_hero,
+    pinnedInSearch: category.pinned_in_search,
     parentId: category.parent_id,
     imageUrl: category.image_url,
     iconUrl: category.icon_url,

@@ -31,7 +31,7 @@ export default function Error({
           <div className="flex flex-col sm:flex-row gap-4 w-full">
             <button
               onClick={() => reset()}
-              className="flex-1 bg-brand-ink text-white px-8 py-4 rounded-2xl text-sm font-medium hover:bg-gray-800 transition-colors shadow-lg shadow-black/5"
+              className="flex-1 bg-brand-ink text-white px-8 py-4 rounded-2xl text-sm font-medium hover:bg-gray-800 transition-colors"
             >
               Try again
             </button>

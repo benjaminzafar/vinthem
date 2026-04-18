@@ -165,7 +165,7 @@ export default function Reviews({ productId }: ReviewsProps) {
             <button
               type="submit"
               disabled={submitting}
-              className="bg-brand-ink text-white px-10 py-4 rounded-full font-black text-[10px] uppercase tracking-[0.2em] hover:opacity-90 transition-all active:scale-[0.98] shadow-lg shadow-brand-ink/10 disabled:cursor-not-allowed disabled:opacity-60"
+              className="bg-brand-ink text-white px-10 py-4 rounded-full font-black text-[10px] uppercase tracking-[0.2em] hover:opacity-90 transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submitting ? 'Submitting...' : (settings.submitReviewButtonText?.[lang] || 'Submit Review')}
             </button>

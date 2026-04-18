@@ -36,6 +36,7 @@ function buildScriptSrc(nonce: string) {
     `'nonce-${nonce}'`,
     'https://www.clarity.ms',
     'https://js.stripe.com',
+    'https://va.vercel-scripts.com',
   ];
 
   if (process.env.NODE_ENV !== 'production') {
@@ -63,8 +64,18 @@ function buildConnectSrc(request: NextRequest) {
     'https://*.i.posthog.com',
     'wss://*.posthog.com',
     'wss://*.i.posthog.com',
-    process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
   ]);
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  if (supabaseUrl) {
+    sources.add(supabaseUrl);
+
+    if (supabaseUrl.startsWith('https://')) {
+      sources.add(`wss://${supabaseUrl.slice('https://'.length)}`);
+    } else if (supabaseUrl.startsWith('http://')) {
+      sources.add(`ws://${supabaseUrl.slice('http://'.length)}`);
+    }
+  }
 
   return Array.from(sources).filter(Boolean).join(' ');
 }

@@ -8,7 +8,7 @@ import {
   X, Sparkles, Image as ImageIcon, Layout, Settings, 
   Globe, Trash2, Wand2, Star, Check, Plus, Loader2,
   ChevronRight, ArrowLeft, Save, Languages, Search,
-  Layers, ChevronDown
+  Layers, ChevronDown, Pin
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSettingsStore } from '@/store/useSettingsStore';
@@ -38,6 +38,7 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
     description: initialCollection?.description || '',
     isFeatured: initialCollection?.isFeatured ?? false,
     showInHero: initialCollection?.showInHero ?? false,
+    pinnedInSearch: initialCollection?.pinnedInSearch ?? false,
     parentId: initialCollection?.parentId || '',
     imageUrl: initialCollection?.imageUrl || '',
     iconUrl: initialCollection?.iconUrl || '',
@@ -217,6 +218,7 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
         description: formData.description, 
         isFeatured: formData.isFeatured, 
         showInHero: formData.showInHero ?? false, 
+        pinnedInSearch: formData.pinnedInSearch ?? false,
         parentId: formData.parentId || null, 
         imageUrl: formData.imageUrl || null, 
         iconUrl: formData.iconUrl || null, 
@@ -229,7 +231,10 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
         router.refresh();
       } else throw new Error(result.error);
     } catch (error: any) {
-      toast.error('Save failed: ' + error.message, { id: toastId });
+      toast.error('Save failed: ' + error.message, { 
+        id: toastId,
+        duration: 8000
+      });
     } finally {
       setSaving(false);
     }
@@ -327,7 +332,7 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
             <button 
               onClick={handleAIChatAutoFill}
               disabled={generating || !aiChatInput.trim()}
-              className="bg-indigo-600 text-white px-8 rounded-[4px] text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all flex items-center gap-2 shadow-indigo-100 shadow-lg disabled:opacity-50"
+              className="bg-indigo-600 text-white px-8 rounded-[4px] text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all flex items-center gap-2 disabled:opacity-50"
             >
               {generating ? 'Drafting...' : 'AI Draft'}
               {!generating && <Wand2 className="w-4 h-4" />}
@@ -489,6 +494,13 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
                     >
                       <span className="text-[10px] font-black uppercase tracking-widest">Display in Hero Section</span>
                       <Layout className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => setFormData({...formData, pinnedInSearch: !formData.pinnedInSearch})}
+                      className={`h-14 px-6 border rounded-[4px] flex items-center justify-between transition-all ${formData.pinnedInSearch ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-900'}`}
+                    >
+                      <span className="text-[10px] font-black uppercase tracking-widest">Pin to Search Popup</span>
+                      <Pin className={`w-4 h-4 ${formData.pinnedInSearch ? 'fill-current' : ''}`} />
                     </button>
                   </div>
                 )}

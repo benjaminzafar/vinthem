@@ -74,13 +74,13 @@ export const CategoryDeleteModal: React.FC<CategoryDeleteModalProps> = ({
           <div className="space-y-2">
             <button 
               onClick={() => setAction('reassign')}
-              className={`w-full text-left p-3 rounded-md border text-xs font-semibold transition-all ${action === 'reassign' ? 'border-zinc-900 bg-zinc-50 text-zinc-900 shadow-sm' : 'border-zinc-100 text-zinc-500 hover:border-zinc-200 bg-white'}`}
+              className={`w-full text-left p-3 rounded-md border text-xs font-semibold transition-all ${action === 'reassign' ? 'border-zinc-900 bg-zinc-50 text-zinc-900' : 'border-zinc-100 text-zinc-500 hover:border-zinc-200 bg-white'}`}
             >
               Reassign items to another collection
             </button>
             <button 
               onClick={() => setAction('delete')}
-              className={`w-full text-left p-3 rounded-md border text-xs font-semibold transition-all ${action === 'delete' ? 'border-red-600 bg-red-50/50 text-red-600 shadow-sm' : 'border-zinc-100 text-zinc-500 hover:border-zinc-200 bg-white'}`}
+              className={`w-full text-left p-3 rounded-md border text-xs font-semibold transition-all ${action === 'delete' ? 'border-red-600 bg-red-50/50 text-red-600' : 'border-zinc-100 text-zinc-500 hover:border-zinc-200 bg-white'}`}
             >
               Delete items permanently
             </button>

@@ -896,7 +896,7 @@ export function ProfileClient({ initialOrders, initialAddresses, profile, settin
                               <button 
                                 onClick={handleSupportSubmit}
                                 disabled={isSubmittingSupport}
-                                className="absolute bottom-6 right-6 bg-slate-900 text-white p-3 hover:bg-slate-800 transition-all disabled:opacity-50 shadow-xl"
+                                className="absolute bottom-6 right-6 bg-slate-900 text-white p-3 hover:bg-slate-800 transition-all disabled:opacity-50"
                               >
                                 {isSubmittingSupport ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
                               </button>
@@ -910,7 +910,7 @@ export function ProfileClient({ initialOrders, initialAddresses, profile, settin
                                 value={supportMessage}
                                 onChange={(e) => setSupportMessage(e.target.value)}
                                 placeholder="Detail your requirement..."
-                                className="w-full bg-white border-2 border-slate-300 p-10 text-sm font-bold text-slate-900 focus:outline-none focus:border-slate-950 h-64 resize-none shadow-sm"
+                                className="w-full bg-white border-2 border-slate-300 p-10 text-sm font-bold text-slate-900 focus:outline-none focus:border-slate-950 h-64 resize-none"
                              />
                            </div>
                            <button 

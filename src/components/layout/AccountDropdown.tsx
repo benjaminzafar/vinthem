@@ -70,7 +70,7 @@ export function AccountDropdown({ user, isAdmin, labels }: AccountDropdownProps)
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
-            className="absolute right-0 mt-4 w-60 bg-white rounded-lg border border-gray-100 z-50 py-2 shadow-xl"
+            className="absolute right-0 mt-4 w-60 bg-white rounded-lg border border-gray-100 z-50 py-2"
           >
             <div className="px-6 py-3 border-b border-gray-50 mb-2">
               <p className="text-sm font-medium text-brand-ink truncate">{user.user_metadata?.full_name || 'User'}</p>

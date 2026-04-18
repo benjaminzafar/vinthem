@@ -9,12 +9,8 @@ export function formatPrice(
   overrideCurrency?: string,
 ) {
   const market = resolveMarket(lang);
-  const targetCurrency = (overrideCurrency?.toUpperCase() || market.currency) as string;
-  const localizedPrice = prices?.[targetCurrency];
-  const amount = typeof localizedPrice === 'number' ? localizedPrice : price;
-  const formatterCurrency = typeof localizedPrice === 'number' || overrideCurrency
-    ? targetCurrency
-    : BASE_STORE_CURRENCY;
+  const formatterCurrency = overrideCurrency?.toUpperCase() || BASE_STORE_CURRENCY;
+  const amount = price;
 
   return new Intl.NumberFormat(market.locale, {
     style: 'currency',

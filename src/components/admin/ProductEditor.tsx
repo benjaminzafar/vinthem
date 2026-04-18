@@ -49,10 +49,9 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
     isSale: false,
     discountPrice: 0,
     weight: 0,
-    shippingClass: '',
-    additionalImages: [],
-    prices: {},
-    stripeTaxCode: ''
+      shippingClass: '',
+      additionalImages: [],
+      stripeTaxCode: ''
   });
 
   const [loading, setLoading] = useState(false);
@@ -75,7 +74,6 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
       discountPrice: p.sale_price ?? p.discountPrice ?? 0,
       weight: p.weight ?? 0,
       shippingClass: p.shipping_class || p.shippingClass || '',
-      prices: p.prices || {},
       stripeTaxCode: p.stripe_tax_code || p.stripeTaxCode || ''
     };
   };
@@ -122,7 +120,6 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
         additionalImages: formData.additionalImages,
         weight: Number(formData.weight),
         shippingClass: formData.shippingClass,
-        prices: formData.prices,
         stripeTaxCode: formData.stripeTaxCode
       });
 
@@ -279,7 +276,7 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
                 {initialProduct ? `Edit: ${formData.title || 'Product'}` : 'Create New Product'}
               </h1>
               <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${formData.status === 'published' ? 'bg-emerald-500' : 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]'}`} />
+                <div className={`w-2 h-2 rounded-full ${formData.status === 'published' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
                   {formData.status || 'Draft'} Mode
                 </span>
@@ -371,7 +368,7 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
                  <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Tags</label>
                     <input 
-                      type="text"
+                      type="text" 
                       value={formData.tags?.join(', ')}
                       onChange={(e) => setFormData({...formData, tags: e.target.value.split(',').map(t => t.trim()).filter(Boolean)})}
                       placeholder="Minimal, Wood, Premium"
@@ -453,7 +450,7 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
           <section className="bg-white border border-slate-200 rounded-[4px]">
             <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
               <Truck className="w-4 h-4 text-slate-400" />
-              <h3 className="text-xs font-black uppercase tracking-widest text-slate-900">Tax & Local Prices</h3>
+              <h3 className="text-xs font-black uppercase tracking-widest text-slate-900">Tax Configuration</h3>
             </div>
             <div className="p-6 space-y-6">
               <div className="space-y-2">
@@ -473,36 +470,8 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
                   Leave it on auto if you want checkout to infer the tax code from category and shipping class.
                 </p>
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {[
-                  { currency: 'EUR', label: 'Euro price' },
-                  { currency: 'DKK', label: 'Danish krone price' },
-                  { currency: 'NOK', label: 'Norwegian krone price' },
-                  { currency: 'ISK', label: 'Icelandic krona price' },
-                ].map((entry) => (
-                  <div key={entry.currency} className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">
-                      {entry.label} ({entry.currency})
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.prices?.[entry.currency] || ''}
-                      onChange={(e) => setFormData({
-                        ...formData,
-                        prices: {
-                          ...(formData.prices || {}),
-                          [entry.currency]: parseFloat(e.target.value) || 0,
-                        },
-                      })}
-                      className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm font-medium"
-                    />
-                  </div>
-                ))}
-              </div>
-
               <p className="text-[11px] leading-relaxed text-slate-500">
-                These prices improve storefront localization before checkout. Stripe Checkout can still present local payment currency and calculate tax independently.
+                Product prices stay in SEK inside the admin. Stripe Checkout handles currency presentation and tax automatically for supported markets during payment.
               </p>
             </div>
           </section>
@@ -532,7 +501,7 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
                     <button 
                       key={lang}
                       onClick={() => setSelectedLang(lang)}
-                      className={`px-6 py-1.5 rounded-[2px] text-[10px] font-black uppercase tracking-widest transition-all ${selectedLang === lang ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-400 hover:bg-slate-100'}`}
+                      className={`px-6 py-1.5 rounded-[2px] text-[10px] font-black uppercase tracking-widest transition-all ${selectedLang === lang ? 'bg-slate-900 text-white' : 'text-slate-400 hover:bg-slate-100'}`}
                     >
                       {lang}
                     </button>

@@ -551,7 +551,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, c
                         <button 
                           type="button"
                           onClick={() => setIconUrl('')}
-                          className="absolute -top-1 -right-1 bg-white border border-zinc-200 text-zinc-400 hover:text-rose-500 rounded p-1 opacity-0 group-hover:opacity-100 transition-all shadow-sm"
+                          className="absolute -top-1 -right-1 bg-white border border-zinc-200 text-zinc-400 hover:text-rose-500 rounded p-1 opacity-0 group-hover:opacity-100 transition-all font-bold"
                         >
                           <X className="w-3 h-3" />
                         </button>

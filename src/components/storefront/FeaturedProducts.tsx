@@ -61,7 +61,7 @@ export function FeaturedProducts({ products, lang, settings }: FeaturedProductsP
                       <Package className="w-8 h-8" />
                     </div>
                   )}
-                  <div className="absolute bottom-3 right-3 bg-brand-ink/90 backdrop-blur-md border border-white/10 w-12 h-12 rounded-full shadow-lg opacity-100 md:opacity-0 group-hover:opacity-100 transition-all duration-300 z-20 flex items-center justify-center hover:scale-110">
+                  <div className="absolute bottom-3 right-3 bg-brand-ink/90 backdrop-blur-md border border-white/10 w-12 h-12 rounded-full opacity-100 md:opacity-0 group-hover:opacity-100 transition-all duration-300 z-20 flex items-center justify-center hover:scale-110">
                     <ArrowRight className="w-5 h-5 text-white" />
                   </div>
                 </div>

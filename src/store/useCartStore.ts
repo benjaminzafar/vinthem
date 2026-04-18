@@ -1,6 +1,5 @@
 "use client";
 import { create } from 'zustand';
-import { resolveMarket } from '@/lib/markets';
 
 export interface ProductOption {
   name: string;
@@ -99,15 +98,5 @@ export const useCartStore = create<CartStore>((set, get) => ({
     })
   })),
   clearCart: () => set({ items: [] }),
-  total: (lang = 'sv') => {
-    const market = resolveMarket(lang);
-    return get().items.reduce((sum, item) => {
-      let price = item.price || 0;
-      const localizedPrice = item.prices?.[market.currency];
-      if (typeof localizedPrice === 'number') {
-        price = localizedPrice;
-      }
-      return sum + price * item.quantity;
-    }, 0);
-  }
+  total: () => get().items.reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0)
 }));

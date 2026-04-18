@@ -1,11 +1,11 @@
 "use client";
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { deleteCategoriesAction } from '@/app/actions/categories';
+import { deleteCategoriesAction, toggleCategorySearchPinAction } from '@/app/actions/categories';
 import { createClient } from '@/utils/supabase/client';
 import { Product } from '@/store/useCartStore';
 import { Category } from '@/types';
-import { Plus, Package, Edit, Layers, Search } from 'lucide-react';
+import { Plus, Package, Edit, Layers, Search, Pin } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useCustomConfirm } from '@/components/ConfirmationContext';
@@ -13,13 +13,14 @@ import { motion, AnimatePresence } from 'motion/react';
 import { InfiniteScrollSentinel } from '@/components/admin/InfiniteScrollSentinel';
 
 export function CollectionManager({ 
+  initialCategories = [],
   initialProducts = [] 
 }: { 
   initialCategories?: Category[],
   initialProducts?: Product[]
 }) {
   const router = useRouter();
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<Category[]>(initialCategories);
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery, 400);
@@ -64,6 +65,7 @@ export function CollectionManager({
 
       let batchCategories = (rootData || []).map((c: any) => ({
         ...c, isFeatured: c.is_featured, showInHero: c.show_in_hero, 
+        pinnedInSearch: c.pinned_in_search,
         parentId: c.parent_id, imageUrl: c.image_url, iconUrl: c.icon_url
       })) as unknown as Category[];
 
@@ -77,6 +79,7 @@ export function CollectionManager({
         if (childrenData) {
           const mappedChildren = childrenData.map((c: any) => ({
             ...c, isFeatured: c.is_featured, showInHero: c.show_in_hero, 
+            pinnedInSearch: c.pinned_in_search,
             parentId: c.parent_id, imageUrl: c.image_url, iconUrl: c.icon_url
           })) as unknown as Category[];
           batchCategories = [...batchCategories, ...mappedChildren];
@@ -110,6 +113,10 @@ export function CollectionManager({
   }, [supabase, debouncedSearchQuery]);
 
   useEffect(() => {
+    setCategories(initialCategories);
+  }, [initialCategories]);
+
+  useEffect(() => {
     fetchCategories(true);
   }, [debouncedSearchQuery, fetchCategories]);
 
@@ -134,6 +141,37 @@ export function CollectionManager({
       refreshCategories();
     } catch (error: any) {
       toast.error('Deletion failed: ' + error.message);
+    }
+  };
+
+  const toggleSearchPin = async (category: Category) => {
+    if (!category.id) return;
+
+    const nextPinnedState = !category.pinnedInSearch;
+    setCategories((prev) =>
+      prev.map((entry) =>
+        entry.id === category.id ? { ...entry, pinnedInSearch: nextPinnedState } : entry,
+      ),
+    );
+
+    try {
+      const result = await toggleCategorySearchPinAction({
+        categoryId: category.id,
+        pinnedInSearch: nextPinnedState,
+      });
+
+      if (!result.success) {
+        throw new Error(result.error || result.message);
+      }
+
+      toast.success(result.message);
+    } catch (error: any) {
+      setCategories((prev) =>
+        prev.map((entry) =>
+          entry.id === category.id ? { ...entry, pinnedInSearch: !nextPinnedState } : entry,
+        ),
+      );
+      toast.error('Search pin update failed: ' + error.message, { duration: 6000 });
     }
   };
 
@@ -234,14 +272,15 @@ export function CollectionManager({
                 <th className="px-6 py-4">Name</th>
                 <th className="px-6 py-4">Structure</th>
                 <th className="px-6 py-4 text-center">Stats</th>
+                <th className="px-6 py-4 text-center">Search</th>
                 <th className="px-6 py-4 text-right">Settings</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
               {loading && categories.length === 0 ? (
-                <tr><td colSpan={5} className="py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-[10px]">Retrieving Catalog Hierarchy...</td></tr>
+                <tr><td colSpan={6} className="py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-[10px]">Retrieving Catalog Hierarchy...</td></tr>
               ) : sortedData.length === 0 ? (
-                <tr><td colSpan={5} className="py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-[10px]">No collection entries found</td></tr>
+                <tr><td colSpan={6} className="py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-[10px]">No collection entries found</td></tr>
               ) : sortedData.map(({ category: parent, level }) => (
                 <tr 
                   key={parent.id} 
@@ -274,6 +313,20 @@ export function CollectionManager({
                   </td>
                   <td className="px-6 py-4 text-[10px] font-black text-slate-500 text-center">
                     {products.filter(p => p.categoryId === parent.id).length} PDTS
+                  </td>
+                  <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      type="button"
+                      onClick={() => toggleSearchPin(parent)}
+                      className={`inline-flex h-9 items-center gap-2 border px-3 text-[9px] font-black uppercase tracking-[0.18em] transition-all ${
+                        parent.pinnedInSearch
+                          ? 'border-indigo-600 bg-indigo-600 text-white'
+                          : 'border-slate-200 bg-white text-slate-600 hover:border-slate-900 hover:text-slate-900'
+                      }`}
+                    >
+                      <Pin className={`h-3.5 w-3.5 ${parent.pinnedInSearch ? 'fill-current' : ''}`} />
+                      {parent.pinnedInSearch ? 'Pinned' : 'Pin to Search'}
+                    </button>
                   </td>
                   <td className="px-6 py-4 text-right">
                      <button className="p-2 text-slate-300 group-hover:text-slate-900 transition-all">

@@ -9,14 +9,13 @@ import { SearchBar } from './SearchBar';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { AccountDropdown } from './AccountDropdown';
 import { MobileMenu } from './MobileMenu';
-import { CartBadge } from './CartBadge';
+import { CartToggle } from './CartToggle';
 import { cookies } from 'next/headers';
 
 export default async function Navigation() {
   const supabase = await createClient();
   const settings = await getSettings();
   const { data: { user } } = await supabase.auth.getUser();
-
   // Check if admin
   let isAdmin = false;
   if (user) {
@@ -27,6 +26,22 @@ export default async function Navigation() {
       .single();
     isAdmin = profile?.role === 'admin';
   }
+
+  // Fetch categories for the premium 4x4 grid
+  const { data: categoriesData } = await supabase
+    .from('categories')
+    .select('id, name, slug, image_url, pinned_in_search, show_in_hero')
+    .is('parent_id', null)
+    .limit(8);
+
+  const categories = (categoriesData || []).map(cat => ({
+    id: cat.id,
+    name: cat.name,
+    slug: cat.slug,
+    imageUrl: cat.image_url,
+    pinnedInSearch: cat.pinned_in_search,
+    showInHero: cat.show_in_hero
+  }));
 
   // Resolve language from cookie
   const cookieStore = await cookies();
@@ -43,11 +58,11 @@ export default async function Navigation() {
             <Link href="/" className="flex items-center space-x-3 group">
               {settings?.logoImage && settings.logoImage.trim() !== "" ? (
                 <div className="relative h-8 w-32">
-                  <Image 
-                    src={settings.logoImage} 
-                    alt={settings.storeName?.[lang] || 'Mavren'} 
+                  <Image
+                    src={settings.logoImage}
+                    alt={settings.storeName?.[lang] || 'Mavren'}
                     fill
-                    className="object-contain transition-transform group-hover:scale-105" 
+                    className="object-contain transition-transform group-hover:scale-105"
                     sizes="(max-width: 768px) 100px, 128px"
                     priority
                   />
@@ -63,9 +78,9 @@ export default async function Navigation() {
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">
             {(settings?.navbarLinks || []).map((link: any, index: number) => (
-              <Link 
-                key={index} 
-                href={link.href} 
+              <Link
+                key={index}
+                href={link.href}
                 className="text-sm font-medium text-slate-600 hover:text-brand-ink transition-colors"
               >
                 {link.label[lang] || link.label['en']}
@@ -75,26 +90,24 @@ export default async function Navigation() {
 
           {/* Actions */}
           <div className="flex-1 flex items-center justify-end space-x-4">
-            <SearchBar placeholder={settings?.searchPlaceholder?.[lang]} />
-            
+            <SearchBar
+              placeholder={settings?.searchPlaceholder?.[lang]}
+              categories={categories}
+              lang={lang}
+              settings={settings}
+            />
+
             <div className="hidden md:block">
               <LanguageSwitcher availableLanguages={availableLanguages} />
             </div>
 
-            <Link 
-              href="/cart" 
-              className="relative p-2 text-gray-600 hover:text-black hover:bg-gray-50 rounded-lg transition-colors"
-              aria-label="View Shopping Cart"
-            >
-              <ShoppingBag className="w-5 h-5" strokeWidth={1.5} />
-              <CartBadge />
-            </Link>
+            <CartToggle />
 
             <div className="hidden md:block">
               {user ? (
-                <AccountDropdown 
-                  user={user} 
-                  isAdmin={isAdmin} 
+                <AccountDropdown
+                  user={user}
+                  isAdmin={isAdmin}
                   labels={{
                     profile: settings?.myProfileText?.[lang] || 'My Profile',
                     adminPanel: settings?.adminPanelText?.[lang] || 'Admin Panel',
@@ -103,7 +116,7 @@ export default async function Navigation() {
                   }}
                 />
               ) : (
-                <Link 
+                <Link
                   href="/auth"
                   className="px-5 py-2.5 text-sm font-medium text-white bg-brand-ink rounded-none hover:bg-gray-800 transition-colors"
                 >
@@ -111,13 +124,13 @@ export default async function Navigation() {
                 </Link>
               )}
             </div>
-            
+
             <div className="lg:hidden">
-              <MobileMenu 
-                user={user} 
-                isAdmin={isAdmin} 
-                settings={settings} 
-                lang={lang} 
+              <MobileMenu
+                user={user}
+                isAdmin={isAdmin}
+                settings={settings}
+                lang={lang}
                 availableLanguages={availableLanguages}
                 labels={{
                   menu: settings?.menuText?.[lang] || 'Menu',

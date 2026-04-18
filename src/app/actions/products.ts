@@ -37,7 +37,6 @@ export type SaveProductInput = {
   additionalImages?: string[];
   weight?: number;
   shippingClass?: string;
-  prices?: Record<string, number>;
   stripeTaxCode?: string;
   translations?: Record<string, unknown>;
 };
@@ -58,23 +57,6 @@ function sanitizeTags(tags: string[] | undefined): string[] {
   return tags
     .map((tag) => sanitizeText(tag, 60))
     .filter((tag): tag is string => Boolean(tag));
-}
-
-function sanitizePrices(prices: Record<string, number> | undefined): Record<string, number> {
-  if (!prices || typeof prices !== 'object') {
-    return {};
-  }
-
-  return Object.entries(prices).reduce<Record<string, number>>((accumulator, [currency, value]) => {
-    const normalizedCurrency = sanitizeText(currency, 8)?.toUpperCase();
-    const normalizedValue = Number(value);
-
-    if (normalizedCurrency && Number.isFinite(normalizedValue) && normalizedValue > 0) {
-      accumulator[normalizedCurrency] = normalizedValue;
-    }
-
-    return accumulator;
-  }, {});
 }
 
 export async function saveProductAction(input: SaveProductInput) {
@@ -104,7 +86,7 @@ export async function saveProductAction(input: SaveProductInput) {
     additional_images: (input.additionalImages || []).map((image) => sanitizeText(image, 1000)).filter(Boolean),
     weight: Number(input.weight) || 0,
     shipping_class: sanitizeText(input.shippingClass, 80) || '',
-    prices: sanitizePrices(input.prices),
+    prices: {},
     stripe_tax_code: sanitizeText(input.stripeTaxCode, 40) || null,
     translations: input.translations || {}
   };

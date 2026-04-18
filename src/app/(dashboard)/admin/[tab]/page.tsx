@@ -99,6 +99,7 @@ export default async function AdminTabPage({ params, searchParams }: TabPageProp
       ...c,
       isFeatured: c.is_featured,
       showInHero: c.show_in_hero,
+      pinnedInSearch: c.pinned_in_search,
       parentId: c.parent_id,
       imageUrl: c.image_url,
       iconUrl: c.icon_url

@@ -3,10 +3,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu, X, ChevronRight, User, Settings, LogOut, Languages } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
+import { Menu, X, ChevronRight, User, Settings, LogOut, Languages } from 'lucide-react';
+import { useUIStore } from '@/store/useUIStore';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { Portal } from './Portal';
 
@@ -27,13 +28,13 @@ interface MobileMenuProps {
 }
 
 export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, labels }: MobileMenuProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const { isMobileMenuOpen, setMobileMenuOpen } = useUIStore();
   const menuRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
   const navigate = useRouter();
 
   useEffect(() => {
-    if (isOpen) {
+    if (isMobileMenuOpen) {
       // Lock scroll without snapping to top
       document.body.style.overflow = 'hidden';
       document.documentElement.style.overflow = 'hidden';
@@ -52,44 +53,46 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
       document.body.style.touchAction = '';
       document.documentElement.style.touchAction = '';
     };
-  }, [isOpen]);
+  }, [isMobileMenuOpen]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
+        setMobileMenuOpen(false);
       }
     };
-    if (isOpen) {
+    if (isMobileMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isOpen]);
+  }, [isMobileMenuOpen]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate.refresh();
-    setIsOpen(false);
+    setMobileMenuOpen(false);
   };
 
   return (
     <>
-      <button 
-        className="lg:hidden p-2 text-slate-600 hover:text-black hover:bg-gray-50 rounded-none transition-colors"
-        onClick={() => setIsOpen(!isOpen)}
+      <button
+        className="lg:hidden p-2 text-slate-600 hover:text-brand-ink transition-colors"
+        onClick={() => {
+          setMobileMenuOpen(!isMobileMenuOpen);
+        }}
         aria-label="Open mobile menu"
       >
         <Menu className="w-6 h-6" strokeWidth={1.5} />
       </button>
 
       <AnimatePresence>
-        {isOpen && (
+        {isMobileMenuOpen && (
           <Portal>
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setIsOpen(false)}
+              onClick={() => setMobileMenuOpen(false)}
               className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200]"
             />
             <motion.div
@@ -101,10 +104,10 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
               className="fixed top-0 right-0 h-[100dvh] w-full sm:w-[85vw] sm:max-w-sm bg-white border-l border-gray-100 z-[201] flex flex-col"
             >
               <div className="flex items-center justify-between h-16 px-6 border-b border-gray-100">
-                <span className="text-xl font-sans font-medium tracking-tight">{labels.menu}</span>
-                <button 
-                  onClick={() => setIsOpen(false)}
-                  className="p-2 -mr-2 text-gray-400 hover:text-brand-ink hover:bg-gray-50 rounded-none transition-colors"
+                <span className="text-xl font-sans font-medium tracking-tight uppercase tracking-[0.1em]">{labels.menu}</span>
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="p-2 -mr-2 text-gray-400 hover:text-brand-ink transition-colors"
                   aria-label="Close menu"
                 >
                   <X className="w-5 h-5" />
@@ -114,10 +117,10 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
               <div className="flex-1 overflow-y-auto px-6 py-8 custom-scrollbar">
                 <nav className="flex flex-col space-y-6 mb-12">
                   {(settings.navbarLinks || []).map((link: any, index: number) => (
-                    <Link 
+                    <Link
                       key={index}
-                      href={link.href} 
-                      onClick={() => setIsOpen(false)} 
+                      href={link.href}
+                      onClick={() => setMobileMenuOpen(false)}
                       className="group flex items-center justify-between"
                     >
                       <span className="text-2xl font-sans font-normal tracking-tight text-brand-ink group-hover:text-brand-ink transition-all duration-300">
@@ -140,11 +143,11 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
                       <div className="flex items-center justify-between bg-gray-50 p-4 rounded-none">
                         <div className="flex items-center space-x-3">
                           <div className="w-10 h-10 rounded-none relative overflow-hidden border border-gray-200">
-                            <Image 
-                              src={(user.user_metadata?.avatar_url || user.user_metadata?.picture) ? (user.user_metadata?.avatar_url || user.user_metadata?.picture) : `https://ui-avatars.com/api/?name=${user.user_metadata?.full_name || 'U'}&background=random`} 
-                              alt="Profile" 
+                            <Image
+                              src={(user.user_metadata?.avatar_url || user.user_metadata?.picture) ? (user.user_metadata?.avatar_url || user.user_metadata?.picture) : `https://ui-avatars.com/api/?name=${user.user_metadata?.full_name || 'U'}&background=random`}
+                              alt="Profile"
                               fill
-                              className="object-cover" 
+                              className="object-cover"
                               referrerPolicy="no-referrer"
                               sizes="40px"
                             />
@@ -154,25 +157,25 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
                             <p className="text-xs text-gray-500 truncate max-w-[120px]">{user.email}</p>
                           </div>
                         </div>
-                        <Link 
-                          href="/profile" 
-                          onClick={() => setIsOpen(false)}
+                        <Link
+                          href="/profile"
+                          onClick={() => setMobileMenuOpen(false)}
                           className="p-2 bg-white rounded-none border border-gray-100 text-brand-ink hover:bg-gray-100 transition-colors"
                         >
                           <User className="w-4 h-4" />
                         </Link>
                       </div>
                       {isAdmin && (
-                        <Link 
-                          href="/admin" 
-                          onClick={() => setIsOpen(false)}
+                        <Link
+                          href="/admin"
+                          onClick={() => setMobileMenuOpen(false)}
                           className="w-full flex items-center justify-center space-x-2 py-3 bg-indigo-50 text-indigo-700 rounded-none font-medium hover:bg-indigo-100 transition-colors"
                         >
                           <Settings className="w-4 h-4" />
                           <span>{labels.adminDashboard}</span>
                         </Link>
                       )}
-                      <button 
+                      <button
                         onClick={handleLogout}
                         className="w-full flex items-center justify-center space-x-2 py-3 text-red-600 bg-red-50 rounded-none font-medium hover:bg-red-100 transition-colors"
                       >
@@ -181,9 +184,9 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
                       </button>
                     </div>
                   ) : (
-                    <Link 
+                    <Link
                       href="/auth"
-                      onClick={() => setIsOpen(false)}
+                      onClick={() => setMobileMenuOpen(false)}
                       className="w-full py-4 text-sm font-medium text-white bg-brand-ink rounded-none hover:bg-gray-800 transition-all active:scale-95 text-center block"
                     >
                       {labels.login}

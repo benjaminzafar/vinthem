@@ -133,7 +133,7 @@ export function NotificationCenter() {
       const [ordersRes, ticketsRes, refundsRes, customersRes, reviewsRes] = await Promise.all([
         supabase
           .from('orders')
-          .select('id, order_id, created_at, shipping_details')
+          .select('id, order_id, created_at')
           .order('created_at', { ascending: false })
           .limit(6),
         supabase
@@ -171,16 +171,11 @@ export function NotificationCenter() {
 
       const nextItems: NotificationItem[] = [
         ...(ordersRes.data ?? []).map((order) => {
-          const shippingDetails = typeof order.shipping_details === 'object' && order.shipping_details !== null
-            ? order.shipping_details as Record<string, unknown>
-            : {};
-          const email = typeof shippingDetails.email === 'string' ? shippingDetails.email : 'a customer';
-
           return {
             id: `order-${order.id}`,
             type: 'order' as const,
             title: 'New order received',
-            message: `Order #${order.order_id || String(order.id).slice(0, 8)} placed by ${email}.`,
+            message: `Order #${order.order_id || String(order.id).slice(0, 8)} was placed and is ready for review.`,
             timestamp: new Date(order.created_at),
             link: '/admin/orders',
           };

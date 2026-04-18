@@ -68,6 +68,7 @@ export async function updateSettingsAction(settings: StorefrontSettingsType): Pr
 
     // Purge cache to reflect changes immediately across the site
     revalidatePath('/', 'layout');
+    revalidatePath('/products');
     revalidatePath('/admin');
     revalidatePath('/p/privacy-policy');
     revalidatePath('/p/cookie-policy');

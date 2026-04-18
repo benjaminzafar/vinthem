@@ -63,7 +63,7 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
                     
                     {/* Button Overlay */}
                     <div className="absolute inset-x-0 bottom-0 p-4 md:p-6 flex justify-center opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 bg-gradient-to-t from-black/60 to-transparent">
-                      <span className="bg-white text-brand-ink w-full py-3 md:py-4 rounded-full text-xs md:text-sm font-bold uppercase tracking-widest shadow-lg flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors">
+                      <span className="bg-white text-brand-ink w-full py-3 md:py-4 rounded-full text-xs md:text-sm font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors">
                         {settings.shopNowText?.[lang] || 'Shop Now'} <ArrowRight className="w-4 h-4" />
                       </span>
                     </div>

@@ -25,7 +25,7 @@ export function CredentialInput({
   const [showPassword, setShowPassword] = useState(false);
   const isPassword = type === 'password';
 
-  const baseClasses = "w-full bg-white border border-zinc-200 px-3 py-2 text-[13px] font-medium text-zinc-900 transition-all focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900 placeholder:text-zinc-400 rounded-sm shadow-sm";
+  const baseClasses = "w-full bg-white border border-zinc-200 px-3 py-2 text-[13px] font-medium text-zinc-900 transition-all focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900 placeholder:text-zinc-400 rounded-sm";
 
   return (
     <div className="space-y-1.5 group">
@@ -57,7 +57,7 @@ export function CredentialInput({
             onClick={() => onChange(value === 'true' ? 'false' : 'true')}
             className={`flex items-center gap-2 px-3 py-1.5 transition-all text-[11px] font-black uppercase tracking-widest border rounded ${
               value === 'true' 
-                ? 'bg-emerald-50 border-emerald-200 text-emerald-700 shadow-[inset_0_1px_2px_rgba(0,0,0,0.05)]' 
+                ? 'bg-emerald-50 border-emerald-200 text-emerald-700' 
                 : 'bg-zinc-50 border-zinc-200 text-zinc-400'
             }`}
           >

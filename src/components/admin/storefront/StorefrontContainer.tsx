@@ -137,7 +137,7 @@ export function StorefrontContainer() {
           <button
             key={cat.id}
             onClick={() => setActiveCategory(cat.id)}
-            className={`flex items-center gap-2 px-4 py-2 text-[12px] font-black transition-all whitespace-nowrap rounded-md uppercase tracking-widest ${activeCategory === cat.id ? `${cat.bg} text-zinc-900 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.1)]` : 'text-zinc-500 hover:bg-zinc-100'}`}
+            className={`flex items-center gap-2 px-4 py-2 text-[12px] font-black transition-all whitespace-nowrap rounded-md uppercase tracking-widest ${activeCategory === cat.id ? `${cat.bg} text-zinc-900 border border-zinc-200/50` : 'text-zinc-500 hover:bg-zinc-100'}`}
           >
             <cat.icon className="w-3.5 h-3.5" />
             {cat.name}
@@ -367,6 +367,18 @@ export function StorefrontContainer() {
                       <LocalizedSettingInput label="Add To Cart Button" value={settings.addToCartButtonText} onChange={v => handleUpdate('addToCartButtonText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('addToCartButtonText', 'Add To Cart Button')} onAIAutoComplete={() => handleAIAutoComplete('addToCartButtonText', 'Add To Cart Button')} isGenerating={generating} />
                       <LocalizedSettingInput label="In Stock Indicator" value={settings.inStockText} onChange={v => handleUpdate('inStockText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('inStockText', 'In Stock Indicator')} onAIAutoComplete={() => handleAIAutoComplete('inStockText', 'In Stock Indicator')} isGenerating={generating} />
                       <LocalizedSettingInput label="Out of Stock Indicator" value={settings.outOfStockText} onChange={v => handleUpdate('outOfStockText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('outOfStockText', 'Out of Stock Indicator')} onAIAutoComplete={() => handleAIAutoComplete('outOfStockText', 'Out of Stock Indicator')} isGenerating={generating} />
+                   </div>
+                </SettingCard>
+                <SettingCard id="LabelsSearch" title="Search Experience Labels" icon={Globe}>
+                   <div className="grid grid-cols-1 gap-8">
+                      <LocalizedSettingInput label="Search Placeholder" value={settings.searchPlaceholder} onChange={v => handleUpdate('searchPlaceholder', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('searchPlaceholder', 'Search Placeholder')} onAIAutoComplete={() => handleAIAutoComplete('searchPlaceholder', 'Search Placeholder')} isGenerating={generating} />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <LocalizedSettingInput label="Discover Collections Heading" value={settings.searchDiscoverCollectionsText} onChange={v => handleUpdate('searchDiscoverCollectionsText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('searchDiscoverCollectionsText', 'Discover Collections Heading')} onAIAutoComplete={() => handleAIAutoComplete('searchDiscoverCollectionsText', 'Discover Collections Heading')} isGenerating={generating} />
+                        <LocalizedSettingInput label="Collections Results Heading" value={settings.searchCollectionsResultsText} onChange={v => handleUpdate('searchCollectionsResultsText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('searchCollectionsResultsText', 'Collections Results Heading')} onAIAutoComplete={() => handleAIAutoComplete('searchCollectionsResultsText', 'Collections Results Heading')} isGenerating={generating} />
+                        <LocalizedSettingInput label="Products Results Heading" value={settings.searchProductsResultsText} onChange={v => handleUpdate('searchProductsResultsText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('searchProductsResultsText', 'Products Results Heading')} onAIAutoComplete={() => handleAIAutoComplete('searchProductsResultsText', 'Products Results Heading')} isGenerating={generating} />
+                        <LocalizedSettingInput label="View All Results Label" value={settings.viewAllResultsText} onChange={v => handleUpdate('viewAllResultsText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('viewAllResultsText', 'View All Results Label')} onAIAutoComplete={() => handleAIAutoComplete('viewAllResultsText', 'View All Results Label')} isGenerating={generating} />
+                      </div>
+                      <LocalizedSettingInput label="No Search Results Message" value={settings.searchNoProductsResultsText} onChange={v => handleUpdate('searchNoProductsResultsText', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('searchNoProductsResultsText', 'No Search Results Message')} onAIAutoComplete={() => handleAIAutoComplete('searchNoProductsResultsText', 'No Search Results Message')} isGenerating={generating} />
                    </div>
                 </SettingCard>
                 <SettingCard id="LabelsCheckout" title="Checkout & Cart UX" icon={ShoppingCart}>

@@ -63,7 +63,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             <button 
               type="button"
               onClick={() => { onConfirm(); onClose(); }} 
-              className={`flex-1 h-11 text-[11px] font-black uppercase tracking-widest rounded-[4px] transition-all shadow-lg shadow-zinc-200 ${getVariantClasses()}`}
+              className={`flex-1 h-11 text-[11px] font-black uppercase tracking-widest rounded-[4px] transition-all ${getVariantClasses()}`}
             >
               {confirmLabel}
             </button>

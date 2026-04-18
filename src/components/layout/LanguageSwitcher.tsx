@@ -67,13 +67,14 @@ export function LanguageSwitcher({ availableLanguages, variant = 'dropdown' }: L
         <ChevronDown className="w-3 h-3" strokeWidth={1.5} />
       </button>
 
+
       <AnimatePresence>
         {isOpen && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
-            className="absolute right-0 mt-4 w-32 bg-white rounded-none border border-slate-300 z-50 py-2 shadow-xl"
+            className="absolute right-0 mt-4 w-32 bg-white rounded-none border border-slate-300 z-50 py-2"
           >
             {availableLanguages.map((lng) => (
               <button
