@@ -159,7 +159,7 @@ export default function ProductsClient({ initialProducts, initialCategories }: P
         </div>
       </div>
 
-      <div className="pointer-events-none fixed bottom-6 right-6 z-40 flex flex-col gap-3">
+      <div className="pointer-events-none fixed bottom-6 right-6 z-40 flex flex-col gap-3 md:hidden">
         <button
           onClick={openFilters}
           className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full bg-slate-900 text-white transition-all hover:-translate-y-0.5 active:scale-95 border border-slate-800"
