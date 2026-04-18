@@ -96,17 +96,58 @@ export default function ProductsClient({ initialProducts, initialCategories }: P
 
 
   return (
+  const [sidebarLeft, setSidebarLeft] = useState<number | null>(null);
+  const sidebarRef = React.useRef<HTMLElement>(null);
+
+  React.useLayoutEffect(() => {
+    const updatePosition = () => {
+      if (sidebarRef.current) {
+        const rect = sidebarRef.current.getBoundingClientRect();
+        setSidebarLeft(rect.left);
+      }
+    };
+
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+    window.addEventListener('scroll', updatePosition);
+    return () => {
+      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener('scroll', updatePosition);
+    };
+  }, []);
+
+  return (
     <div className="min-h-screen bg-[#fcfcfc] pb-24 font-sans">
       <div className="mx-auto max-w-7xl px-4 pb-12 pt-10 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[360px_1fr] items-start relative">
-          <aside className="hidden lg:block sticky top-32 z-20 h-fit">
-            <SidebarFilters
-              categories={categoriesData}
-              settings={settings}
-              lang={lang}
-              searchInput={searchInput}
-              setSearchInput={setSearchInput}
-            />
+          <aside ref={sidebarRef} className="hidden lg:block w-[360px] shrink-0">
+            {sidebarLeft !== null && (
+              <div 
+                className="fixed z-20 w-[360px] h-[calc(100vh-140px)] overflow-y-auto pr-2 custom-sidebar"
+                style={{ 
+                  left: `${sidebarLeft}px`, 
+                  top: '128px'
+                }}
+              >
+                <SidebarFilters
+                  categories={categoriesData}
+                  settings={settings}
+                  lang={lang}
+                  searchInput={searchInput}
+                  setSearchInput={setSearchInput}
+                />
+              </div>
+            )}
+            {/* Fallback/Hydration placeholder */}
+            {sidebarLeft === null && (
+              <SidebarFilters
+                categories={categoriesData}
+                settings={settings}
+                lang={lang}
+                searchInput={searchInput}
+                setSearchInput={setSearchInput}
+              />
+            )}
           </aside>
 
           <main className="min-w-0 flex-1">
