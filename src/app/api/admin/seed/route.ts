@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     const catMap = Object.fromEntries(insertedCats.map(c => [c.name, c.id]));
 
     // 3. Define 21 Beautiful Products (7 per category)
-    const products = [];
+    const products: any[] = [];
     
     // Living Room Products
     for (let i = 1; i <= 7; i++) {
