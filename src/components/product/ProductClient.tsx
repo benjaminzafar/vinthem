@@ -14,6 +14,8 @@ import { BackButton } from '@/components/BackButton';
 import Reviews from '@/components/Reviews';
 import { formatPrice } from '@/lib/currency';
 import { getClientLocale } from '@/lib/locale';
+import { Category } from '@/types';
+import { MobileFilters } from '../storefront/MobileFilters';
 import { Product, useCartStore } from '@/store/useCartStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { useUIStore } from '@/store/useUIStore';
@@ -21,10 +23,12 @@ import { useUIStore } from '@/store/useUIStore';
 interface ProductClientProps {
   initialProduct: Product;
   relatedProducts: Product[];
+  categories: Category[];
 }
 
-export function ProductClient({ initialProduct, relatedProducts }: ProductClientProps) {
+export function ProductClient({ initialProduct, relatedProducts, categories }: ProductClientProps) {
   const [product] = useState<Product>(initialProduct);
+  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [activeImage, setActiveImage] = useState<string>(() => initialProduct.imageUrl || initialProduct.additionalImages?.[0] || '');
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
@@ -121,7 +125,16 @@ export function ProductClient({ initialProduct, relatedProducts }: ProductClient
   };
 
   const handleOpenProductFilters = () => {
-    setSearchFocused(true);
+    setIsFilterDrawerOpen(true);
+  };
+
+  const updateParams = (newParams: Record<string, string | null>) => {
+    const params = new URLSearchParams();
+    Object.entries(newParams).forEach(([key, value]) => {
+      if (value) params.set(key, value);
+    });
+    router.push(`/products?${params.toString()}`);
+    setIsFilterDrawerOpen(false);
   };
 
   return (
@@ -351,6 +364,20 @@ export function ProductClient({ initialProduct, relatedProducts }: ProductClient
           </motion.div>
         )}
       </AnimatePresence>
+      <MobileFilters
+        isOpen={isFilterDrawerOpen}
+        onClose={() => setIsFilterDrawerOpen(false)}
+        categories={categories}
+        settings={settings}
+        lang={lang}
+        searchInput=""
+        setSearchInput={() => {}}
+        activeCategory=""
+        sortBy="newest"
+        updateParams={updateParams}
+        productCount={0}
+        allProducts={[]}
+      />
     </div>
   );
 }
