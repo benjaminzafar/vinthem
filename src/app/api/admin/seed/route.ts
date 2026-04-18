@@ -14,102 +14,51 @@ export async function GET(request: NextRequest) {
     const clear = searchParams.get('clear') === 'true';
 
     if (clear) {
-      // Delete test products (using the SKUs we generated)
+      // Delete test products (using all known seed prefixes)
       const { error: delProdError } = await supabase
         .from('products')
         .delete()
-        .or('sku.ilike.LIV-CHAIR-%,sku.ilike.BED-NIGHT-%,sku.ilike.KIT-PLATE-%');
+        .or('sku.ilike.LIV-CHAIR-%,sku.ilike.BED-NIGHT-%,sku.ilike.KIT-PLATE-%,sku.ilike.SEED-%');
       
       if (delProdError) throw delProdError;
 
       return NextResponse.json({ success: true, message: 'Test data cleared successfully' });
     }
-    // 1. Define Beautiful Categories
-    const categories = [
-      {
-        name: 'Living Room',
-        slug: 'living-room',
-        description: 'Serene and minimal designs for your gathering space.',
-        is_featured: true,
-        show_in_hero: true,
-        image_url: 'https://images.unsplash.com/photo-1618220179428-22790b46a015?auto=format&fit=crop&w=800'
-      },
-      {
-        name: 'Bedroom',
-        slug: 'bedroom',
-        description: 'Restful textures and calming tones for your sanctuary.',
-        is_featured: true,
-        show_in_hero: true,
-        image_url: 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=800'
-      },
-      {
-        name: 'Kitchen',
-        slug: 'kitchen',
-        description: 'Functional elegance for the heart of your home.',
-        is_featured: true,
-        show_in_hero: false,
-        image_url: 'https://images.unsplash.com/photo-1556911220-e15224bbaf40?auto=format&fit=crop&w=800'
-      }
-    ];
 
-    // Upsert categories to avoid duplicates
-    const { data: insertedCats, error: catError } = await supabase
+    // 1. Fetch ALL existing categories to ensure we seed into the user's actual structure
+    const { data: existingCats, error: catError } = await supabase
       .from('categories')
-      .upsert(categories, { onConflict: 'slug' })
-      .select();
+      .select('id, name, slug');
 
     if (catError) throw catError;
 
-    const catMap = Object.fromEntries(insertedCats.map(c => [c.name, c.id]));
+    if (!existingCats || existingCats.length === 0) {
+        return NextResponse.json({ 
+            success: false, 
+            error: 'No categories found. Please create at least one collection in the admin dashboard before seeding products.' 
+        }, { status: 400 });
+    }
 
-    // 3. Define 21 Beautiful Products (7 per category)
+    // 2. Generate Products for EVERY existing category (5 per category)
     const products: any[] = [];
     
-    // Living Room Products
-    for (let i = 1; i <= 7; i++) {
-        products.push({
-            title: `Scandinavian Living Chair ${i}`,
-            description: `A master-standard piece for your living space, edition ${i}.`,
-            price: 4500 + (i * 100),
-            stock: 10,
-            category: 'Living Room',
-            category_id: catMap['Living Room'],
-            image_url: `https://images.unsplash.com/photo-1592078615290-033ee584e267?auto=format&fit=crop&w=800&q=80`,
-            is_featured: i % 2 === 0,
-            sku: `LIV-CHAIR-${i}`
-        });
-    }
+    existingCats.forEach((cat) => {
+        for (let i = 1; i <= 5; i++) {
+            products.push({
+                title: `${cat.name} Premium Piece ${i}`,
+                description: `A master-standard selection for the ${cat.name} collection, piece #${i}.`,
+                price: 1500 + (Math.random() * 5000),
+                stock: 20,
+                category: cat.name,
+                category_id: cat.id,
+                image_url: `https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=800&q=80`,
+                is_featured: i === 1,
+                sku: `SEED-${cat.slug.toUpperCase()}-${i}`
+            });
+        }
+    });
 
-    // Bedroom Products
-    for (let i = 1; i <= 7; i++) {
-        products.push({
-            title: `Nordic Nightstand ${i}`,
-            description: `Minimalist storage for your bedroom sanctuary, model ${i}.`,
-            price: 1200 + (i * 50),
-            stock: 15,
-            category: 'Bedroom',
-            category_id: catMap['Bedroom'],
-            image_url: `https://images.unsplash.com/photo-1532372320572-cda25653a26d?auto=format&fit=crop&w=800&q=80`,
-            is_featured: i % 2 === 0,
-            sku: `BED-NIGHT-${i}`
-        });
-    }
-
-    // Kitchen Products
-    for (let i = 1; i <= 7; i++) {
-        products.push({
-            title: `Artisanal Ceramic Plate ${i}`,
-            description: `Hand-finished kitchenware for the modern home, set ${i}.`,
-            price: 85 + (i * 5),
-            stock: 30,
-            category: 'Kitchen',
-            category_id: catMap['Kitchen'],
-            image_url: `https://images.unsplash.com/photo-1594913785162-e6785b42fbb1?auto=format&fit=crop&w=800&q=80`,
-            is_featured: i % 2 === 0,
-            sku: `KIT-PLATE-${i}`
-        });
-    }
-
+    // 3. Upsert products to avoid duplicates
     const { error: prodError } = await supabase
       .from('products')
       .upsert(products, { onConflict: 'sku' });
@@ -118,8 +67,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ 
         success: true, 
-        message: 'Seeded 21 beautiful products successfully',
-        categoriesFound: insertedCats.length,
+        message: `Successfully seeded ${products.length} products across ${existingCats.length} categories.`,
+        categoriesPopulated: existingCats.length,
         productsCreated: products.length
     });
   } catch (error: unknown) {
