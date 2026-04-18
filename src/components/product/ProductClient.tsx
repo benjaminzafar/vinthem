@@ -4,7 +4,7 @@ import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { AnimatePresence, motion } from 'motion/react';
-import { Check, Copy, CheckCircle2, ChevronRight, Share2, ShieldCheck, ShoppingBag, SlidersHorizontal, Star, X } from 'lucide-react';
+import { Check, Copy, CheckCircle2, ChevronRight, Search, Share2, ShieldCheck, ShoppingBag, SlidersHorizontal, Star, X } from 'lucide-react';
 import { FaThreads } from 'react-icons/fa6';
 import { FaFacebook, FaTelegramPlane, FaWhatsapp } from 'react-icons/fa';
 import { toast } from 'sonner';
@@ -40,7 +40,7 @@ export function ProductClient({ initialProduct, relatedProducts }: ProductClient
 
   const { addItem } = useCartStore();
   const { settings } = useSettingsStore();
-  const { setCartOpen } = useUIStore();
+  const { setCartOpen, setSearchFocused } = useUIStore();
   const lang = getClientLocale();
   const router = useRouter();
 
@@ -121,8 +121,7 @@ export function ProductClient({ initialProduct, relatedProducts }: ProductClient
   };
 
   const handleOpenProductFilters = () => {
-    const categoryParam = product.categoryName ? `&category=${encodeURIComponent(product.categoryName)}` : '';
-    router.push(`/products?openSearch=true${categoryParam}`);
+    setSearchFocused(true);
   };
 
   return (
@@ -303,10 +302,10 @@ export function ProductClient({ initialProduct, relatedProducts }: ProductClient
         <button
           type="button"
           onClick={handleOpenProductFilters}
-          className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full border border-slate-800 bg-slate-900 text-white transition-all hover:-translate-y-0.5 active:scale-95"
-          aria-label={settings.filterAndSortText?.[lang] || 'Filter and Sort'}
+          className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full border border-slate-800 bg-slate-900 text-white transition-all hover:-translate-y-0.5 active:scale-95 shadow-lg"
+          aria-label={settings.searchPlaceholderText?.[lang] || 'Search'}
         >
-          <SlidersHorizontal className="h-6 w-6" strokeWidth={1.5} />
+          <Search className="h-6 w-6" strokeWidth={1.5} />
         </button>
       </div>
 
