@@ -146,74 +146,7 @@ export function MobileFilters({
                  transition={{ type: 'tween', ease: "easeInOut", duration: 0.25 }}
                  className="absolute inset-0 p-6 overflow-y-auto custom-scrollbar space-y-10 pb-32"
                >
-                 {/* Search Bar stays visible in all views for quick access */}
-                 <div className="space-y-4 pt-2">
-                    <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Search</p>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        value={searchInput}
-                        onChange={(e) => setSearchInput(e.target.value)}
-                        placeholder={settings.searchPlaceholder?.[lang] || "Search products..."}
-                        className="w-full bg-slate-50 border border-slate-100 rounded-sm py-4 pl-12 pr-4 text-sm focus:border-slate-900 outline-none transition-all placeholder:text-slate-300"
-                      />
-                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" strokeWidth={1.5} />
-                    </div>
-                  </div>
-
-                 {isSearching ? (
-                   /* Search Results View */
-                   <div className="space-y-6">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Live Results</h3>
-                        <span className="text-[10px] font-medium text-slate-400 italic">Showing top results</span>
-                      </div>
-
-                      {liveResults.length > 0 ? (
-                        <div className="grid gap-4">
-                          {liveResults.map((product) => (
-                            <Link
-                              key={product.id}
-                              href={`/product/${product.id}`}
-                              onClick={onClose}
-                              className="group flex items-center gap-4 bg-slate-50 p-3 rounded-sm border border-slate-100 transition-all hover:bg-white hover:border-slate-200"
-                            >
-                              <div className="relative h-16 w-16 overflow-hidden rounded-sm bg-white shrink-0">
-                                {product.imageUrl ? (
-                                  <Image
-                                    src={product.imageUrl}
-                                    alt={product.title}
-                                    fill
-                                    sizes="64px"
-                                    className="object-cover transition-transform group-hover:scale-110"
-                                  />
-                                ) : (
-                                  <div className="flex h-full items-center justify-center text-[8px] uppercase tracking-tighter text-slate-300">
-                                    Mavren
-                                  </div>
-                                )}
-                              </div>
-                              <div className="flex flex-col min-w-0">
-                                <h4 className="text-[12px] font-bold text-slate-900 truncate">
-                                  {product.translations?.[lang]?.title || product.title}
-                                </h4>
-                                <p className="mt-1 text-[11px] font-medium text-slate-500">
-                                  {formatPrice(product.price || 0, lang, product.prices)}
-                                </p>
-                              </div>
-                              <ArrowRight className="ml-auto w-4 h-4 text-slate-300 group-hover:text-slate-900 transition-colors" strokeWidth={1.5} />
-                            </Link>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="py-12 text-center">
-                          <Search className="mx-auto w-8 h-8 text-slate-200 mb-4" strokeWidth={1.5} />
-                          <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">No products match your search</p>
-                        </div>
-                      )}
-                    </div>
-                 ) : viewStack.length === 0 ? (
-                   /* Root View */
+                 {/* Root View */}
                    <>
                     {/* Collections */}
                     <div className="space-y-6">
