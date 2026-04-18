@@ -303,9 +303,9 @@ export function ProductClient({ initialProduct, relatedProducts }: ProductClient
           type="button"
           onClick={handleOpenProductFilters}
           className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full border border-slate-800 bg-slate-900 text-white transition-all hover:-translate-y-0.5 active:scale-95 shadow-lg"
-          aria-label={settings.searchText?.[lang] || 'Search'}
+          aria-label={settings.filterAndSortText?.[lang] || 'Filter and Sort'}
         >
-          <Search className="h-6 w-6" strokeWidth={1.5} />
+          <SlidersHorizontal className="h-6 w-6" strokeWidth={1.5} />
         </button>
       </div>
 
