@@ -35,6 +35,7 @@ const Highlight = ({ text, query }: { text: string; query: string }) => {
 
 export function ProductCard({ product, lang, settings, priority }: ProductCardProps) {
   const { addItem } = useCartStore();
+  const href = product.id ? `/product/${product.id}` : '/products';
   
   const isVideo = (url: string) => {
     if (!url) return false;
@@ -49,7 +50,7 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
       transition={{ duration: 0.5 }}
       className="group flex flex-col h-full"
     >
-      <Link href={`/product/${product.id}`} className="block relative aspect-[4/5] mb-4 overflow-hidden bg-gray-50 rounded-2xl shadow-sm border border-gray-100">
+      <Link href={href} className="block relative aspect-[4/5] mb-4 overflow-hidden bg-gray-50 rounded-2xl shadow-sm border border-gray-100">
         {product.isFeatured && (
           <div className="absolute top-3 left-3 md:top-4 md:left-4 z-20">
             <span className="bg-white/95 backdrop-blur-sm text-brand-ink text-[10px] md:text-xs font-bold px-3 py-1 md:px-4 md:py-1.5 rounded-2xl uppercase tracking-wider shadow-sm">
@@ -110,7 +111,7 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
           <span className="text-brand-muted truncate pr-2">{product.categoryName}</span>
         </div>
         <h3 className="text-sm md:text-base font-sans font-medium text-brand-ink group-hover:text-brand-muted transition-colors line-clamp-2 mb-2">
-          <Link href={`/product/${product.id}`}>
+          <Link href={href}>
             {product.title}
           </Link>
         </h3>

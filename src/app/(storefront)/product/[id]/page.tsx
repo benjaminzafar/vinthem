@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation';
 import { ProductClient } from '@/components/product/ProductClient';
 import { Product } from '@/store/useCartStore';
 
+const PUBLIC_PRODUCT_STATUS_FILTER = 'status.eq.published,status.eq.active,status.is.null';
+
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
@@ -27,8 +29,9 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   // Fetch product with cleaned up naming for frontend
   const { data: productData, error } = await supabase
     .from('products')
-    .select('*, imageUrl:image_url, isFeatured:is_featured, categoryId:category_id, createdAt:created_at, categories(name)')
+    .select('*, imageUrl:image_url, isFeatured:is_featured, categoryId:category_id, createdAt:created_at, prices, stripe_tax_code, categories(name)')
     .eq('id', id)
+    .or(PUBLIC_PRODUCT_STATUS_FILTER)
     .single();
 
   if (error || !productData) {
@@ -43,9 +46,10 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   // Fetch related products
   const { data: relatedData } = await supabase
     .from('products')
-    .select('*, imageUrl:image_url, isFeatured:is_featured, categoryId:category_id, createdAt:created_at, categories(name)')
+    .select('*, imageUrl:image_url, isFeatured:is_featured, categoryId:category_id, createdAt:created_at, prices, stripe_tax_code, categories(name)')
     .eq('category_id', product.categoryId)
     .neq('id', product.id)
+    .or(PUBLIC_PRODUCT_STATUS_FILTER)
     .limit(4);
 
   let relatedProducts = (relatedData || []).map((p: any) => ({
@@ -56,8 +60,9 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   if (relatedProducts.length === 0) {
     const { data: fallbackData } = await supabase
       .from('products')
-      .select('*, imageUrl:image_url, isFeatured:is_featured, categoryId:category_id, createdAt:created_at, categories(name)')
+      .select('*, imageUrl:image_url, isFeatured:is_featured, categoryId:category_id, createdAt:created_at, prices, stripe_tax_code, categories(name)')
       .neq('id', product.id)
+      .or(PUBLIC_PRODUCT_STATUS_FILTER)
       .limit(4);
     relatedProducts = (fallbackData || []).map((p: any) => ({
       ...p,

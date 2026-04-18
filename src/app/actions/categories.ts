@@ -1,16 +1,14 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createClient } from '@/utils/supabase/server';
+import { createAdminClient, createClient } from '@/utils/supabase/server';
 import { requireAdminUser } from '@/lib/admin';
 
 /**
  * SECURITY NOTE:
- * We strictly use createClient() (which uses the user's session cookies) instead of createAdminClient().
- * This ensures that RLS (Row Level Security) is respected and that we don't accidentally
- * perform actions on behalf of the service role without a valid user session.
- * 
- * SUPABASE_SERVICE_ROLE_KEY is NOT required for this file.
+ * We use a hybrid approach. createClient() is used for reads to respect RLS
+ * where appropriate, but administrative writes use createAdminClient() to
+ * bypass RLS blocks. requireAdminUser() ensures all actions are authorized.
  */
 
 type CategoryTranslation = {
@@ -24,7 +22,6 @@ export type SaveCategoryInput = {
   slug?: string;
   description?: string;
   isFeatured: boolean;
-  show_in_hero?: boolean; // Keep for legacy if needed, but we use showInHero in the editor
   showInHero: boolean;
   parentId?: string | null;
   imageUrl?: string | null;
@@ -88,7 +85,8 @@ export async function saveCategoryAction(input: SaveCategoryInput): Promise<Cate
     await requireAdmin();
     const baseSlug = input.slug || slugifyCategoryName(input.name);
     const slug = await ensureUniqueSlug(baseSlug, input.id);
-    const supabase = await createClient();
+    const supabase = createAdminClient();
+
 
     const payload = {
       name: input.name.trim(),
@@ -133,7 +131,8 @@ export async function saveCategoryAction(input: SaveCategoryInput): Promise<Cate
 export async function deleteCategoryAction(input: DeleteCategoryInput): Promise<CategoryActionResponse> {
   try {
     await requireAdmin();
-    const supabase = await createClient();
+    const supabase = createAdminClient();
+
 
     if (input.action === 'delete' && input.productIds.length > 0) {
       const { error } = await supabase.from('products').delete().in('id', input.productIds);
@@ -201,7 +200,8 @@ export async function deleteCategoriesAction(input: DeleteCategoriesInput): Prom
       throw new Error('Select at least one collection to delete.');
     }
 
-    const supabase = await createClient();
+    const supabase = createAdminClient();
+
     const { error } = await supabase.from('categories').delete().in('id', categoryIds);
 
     if (error) {

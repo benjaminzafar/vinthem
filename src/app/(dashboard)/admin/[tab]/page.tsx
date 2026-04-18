@@ -90,6 +90,8 @@ export default async function AdminTabPage({ params, searchParams }: TabPageProp
       isNewArrival: p.is_new_arrival,
       isSale: p.is_sale,
       discountPrice: p.sale_price,
+      prices: p.prices,
+      stripeTaxCode: p.stripe_tax_code,
       createdAt: p.created_at
     }));
 

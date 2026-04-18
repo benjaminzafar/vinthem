@@ -1,11 +1,24 @@
-export const formatPrice = (price: number, lang: string = 'sv', prices?: Record<string, number>, overrideCurrency?: string) => {
-  const currency = overrideCurrency?.toUpperCase() || (lang === 'en' ? 'USD' : (lang === 'fi' ? 'EUR' : (lang === 'da' ? 'DKK' : 'SEK')));
-  
-  const displayPrice = (prices && prices[currency]) ? prices[currency] : price;
+import { resolveMarket } from '@/lib/markets';
 
-  if (currency === 'USD') return `$${displayPrice}`;
-  if (currency === 'EUR') return `€${displayPrice}`;
-  
-  // High-end storefront standard: Suffix for Nordic currencies
-  return `${displayPrice} ${currency === 'DKK' ? 'DKK' : 'kr'}`;
-};
+const BASE_STORE_CURRENCY = 'SEK';
+
+export function formatPrice(
+  price: number,
+  lang: string = 'sv',
+  prices?: Record<string, number>,
+  overrideCurrency?: string,
+) {
+  const market = resolveMarket(lang);
+  const targetCurrency = (overrideCurrency?.toUpperCase() || market.currency) as string;
+  const localizedPrice = prices?.[targetCurrency];
+  const amount = typeof localizedPrice === 'number' ? localizedPrice : price;
+  const formatterCurrency = typeof localizedPrice === 'number' || overrideCurrency
+    ? targetCurrency
+    : BASE_STORE_CURRENCY;
+
+  return new Intl.NumberFormat(market.locale, {
+    style: 'currency',
+    currency: formatterCurrency,
+    maximumFractionDigits: 2,
+  }).format(amount);
+}

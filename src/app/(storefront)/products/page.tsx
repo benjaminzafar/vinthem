@@ -4,6 +4,8 @@ import ProductsClient from './ProductsClient';
 import { Product } from '@/store/useCartStore';
 import { Category } from '@/types';
 
+const PUBLIC_PRODUCT_STATUS_FILTER = 'status.eq.published,status.eq.active,status.is.null';
+
 interface ProductsPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
@@ -37,7 +39,8 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   // 3. Build the product query
   let productQuery = supabase
     .from('products')
-    .select('*, imageUrl:image_url, isFeatured:is_featured, categoryId:category_id, createdAt:created_at');
+    .select('*, imageUrl:image_url, isFeatured:is_featured, categoryId:category_id, createdAt:created_at, prices, stripe_tax_code')
+    .or(PUBLIC_PRODUCT_STATUS_FILTER);
 
   if (activeCategoryId) {
     productQuery = productQuery.eq('category_id', activeCategoryId);
@@ -56,7 +59,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   }
 
   const { data: productsData } = await productQuery;
-  const products = (productsData || []).map((p: any) => ({
+  const products = (productsData || []).filter((p: any) => Boolean(p?.id)).map((p: any) => ({
     ...p,
     categoryName: categories.find(c => c.id === p.category_id)?.name
   })) as Product[];

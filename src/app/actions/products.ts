@@ -1,6 +1,7 @@
 "use server";
 
-import { createClient } from '@/utils/supabase/server';
+import { createAdminClient, createClient } from '@/utils/supabase/server';
+
 import { revalidatePath } from 'next/cache';
 import { requireAdminUser } from '@/lib/admin';
 
@@ -36,6 +37,8 @@ export type SaveProductInput = {
   additionalImages?: string[];
   weight?: number;
   shippingClass?: string;
+  prices?: Record<string, number>;
+  stripeTaxCode?: string;
   translations?: Record<string, unknown>;
 };
 
@@ -57,9 +60,30 @@ function sanitizeTags(tags: string[] | undefined): string[] {
     .filter((tag): tag is string => Boolean(tag));
 }
 
+function sanitizePrices(prices: Record<string, number> | undefined): Record<string, number> {
+  if (!prices || typeof prices !== 'object') {
+    return {};
+  }
+
+  return Object.entries(prices).reduce<Record<string, number>>((accumulator, [currency, value]) => {
+    const normalizedCurrency = sanitizeText(currency, 8)?.toUpperCase();
+    const normalizedValue = Number(value);
+
+    if (normalizedCurrency && Number.isFinite(normalizedValue) && normalizedValue > 0) {
+      accumulator[normalizedCurrency] = normalizedValue;
+    }
+
+    return accumulator;
+  }, {});
+}
+
 export async function saveProductAction(input: SaveProductInput) {
   await requireAdminUser();
-  const supabase = await createClient();
+  // We use createAdminClient() to bypass RLS for administrative writes.
+  const supabase = createAdminClient();
+
+
+
 
   const productData = {
     title: sanitizeText(input.title, 200),
@@ -80,6 +104,8 @@ export async function saveProductAction(input: SaveProductInput) {
     additional_images: (input.additionalImages || []).map((image) => sanitizeText(image, 1000)).filter(Boolean),
     weight: Number(input.weight) || 0,
     shipping_class: sanitizeText(input.shippingClass, 80) || '',
+    prices: sanitizePrices(input.prices),
+    stripe_tax_code: sanitizeText(input.stripeTaxCode, 40) || null,
     translations: input.translations || {}
   };
 
@@ -117,8 +143,12 @@ export async function saveProductAction(input: SaveProductInput) {
       revalidatePath('/admin/products');
       return { success: true, data };
     }
-  } catch (error: unknown) {
+  } catch (error: any) {
     console.error('Error in saveProductAction:', error);
-    return { success: false, error: error instanceof Error ? error.message : 'Failed to save product.' };
+    return { 
+      success: false, 
+      error: error?.message || (typeof error === 'string' ? error : 'Failed to save product.') 
+    };
   }
+
 }

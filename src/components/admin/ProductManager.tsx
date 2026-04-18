@@ -31,6 +31,8 @@ type ProductRecord = {
   is_new_arrival?: boolean;
   is_sale?: boolean;
   sale_price?: number;
+  prices?: Record<string, number>;
+  stripe_tax_code?: string;
   created_at?: string;
   status?: 'draft' | 'published';
 };
@@ -114,6 +116,8 @@ export function ProductManager({
         isNewArrival: p.is_new_arrival,
         isSale: p.is_sale,
         discountPrice: p.sale_price,
+        prices: p.prices,
+        stripeTaxCode: p.stripe_tax_code,
         createdAt: p.created_at
       }));
 

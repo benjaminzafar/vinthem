@@ -16,6 +16,13 @@ import { extractFirstJsonObject } from '@/lib/json';
 import { parseCatalogPrompt } from '@/lib/product-import';
 import { saveProductAction } from '@/app/actions/products';
 
+const STRIPE_TAX_CODE_OPTIONS = [
+  { value: '', label: 'Auto from category' },
+  { value: 'txcd_99999999', label: 'General tangible goods' },
+  { value: 'txcd_10000000', label: 'Digital services' },
+  { value: 'txcd_92010001', label: 'Shipping / delivery' },
+];
+
 interface ProductEditorProps {
   initialProduct?: Product | null;
   categories: Category[];
@@ -43,7 +50,9 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
     discountPrice: 0,
     weight: 0,
     shippingClass: '',
-    additionalImages: []
+    additionalImages: [],
+    prices: {},
+    stripeTaxCode: ''
   });
 
   const [loading, setLoading] = useState(false);
@@ -65,7 +74,9 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
       isSale: p.is_sale ?? p.isSale ?? false,
       discountPrice: p.sale_price ?? p.discountPrice ?? 0,
       weight: p.weight ?? 0,
-      shippingClass: p.shipping_class || p.shippingClass || ''
+      shippingClass: p.shipping_class || p.shippingClass || '',
+      prices: p.prices || {},
+      stripeTaxCode: p.stripe_tax_code || p.stripeTaxCode || ''
     };
   };
 
@@ -110,7 +121,9 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
         discountPrice: Number(formData.discountPrice),
         additionalImages: formData.additionalImages,
         weight: Number(formData.weight),
-        shippingClass: formData.shippingClass
+        shippingClass: formData.shippingClass,
+        prices: formData.prices,
+        stripeTaxCode: formData.stripeTaxCode
       });
 
       if (!result.success) {
@@ -434,9 +447,66 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
                      <option value="oversized">Oversized</option>
                    </select>
                 </div>
+              </div>
+            </section>
+
+          <section className="bg-white border border-slate-200 rounded-[4px]">
+            <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
+              <Truck className="w-4 h-4 text-slate-400" />
+              <h3 className="text-xs font-black uppercase tracking-widest text-slate-900">Tax & Local Prices</h3>
+            </div>
+            <div className="p-6 space-y-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Stripe Tax Code</label>
+                <select
+                  value={formData.stripeTaxCode || ''}
+                  onChange={(e) => setFormData({ ...formData, stripeTaxCode: e.target.value })}
+                  className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm"
+                >
+                  {STRIPE_TAX_CODE_OPTIONS.map((option) => (
+                    <option key={option.value || 'auto'} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-[11px] text-slate-500">
+                  Leave it on auto if you want checkout to infer the tax code from category and shipping class.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {[
+                  { currency: 'EUR', label: 'Euro price' },
+                  { currency: 'DKK', label: 'Danish krone price' },
+                  { currency: 'NOK', label: 'Norwegian krone price' },
+                  { currency: 'ISK', label: 'Icelandic krona price' },
+                ].map((entry) => (
+                  <div key={entry.currency} className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                      {entry.label} ({entry.currency})
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.prices?.[entry.currency] || ''}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        prices: {
+                          ...(formData.prices || {}),
+                          [entry.currency]: parseFloat(e.target.value) || 0,
+                        },
+                      })}
+                      className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm font-medium"
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <p className="text-[11px] leading-relaxed text-slate-500">
+                These prices improve storefront localization before checkout. Stripe Checkout can still present local payment currency and calculate tax independently.
+              </p>
             </div>
           </section>
-
+  
           {/* Variants Management */}
           <section className="bg-white border border-slate-200 rounded-[4px] overflow-hidden shadow-sm">
              <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
@@ -519,7 +589,8 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
                 <h3 className="text-xs font-black uppercase tracking-widest text-slate-900">Main Product Image</h3>
               </div>
               <div className="p-6 pt-2">
-                <div className="relative aspect-square bg-slate-50 border-2 border-dashed border-slate-200 rounded-[4px] flex items-center justify-center overflow-hidden hover:border-slate-900 transition-all cursor-pointer group mb-4">
+                <label className="relative aspect-square bg-slate-50 border-2 border-dashed border-slate-200 rounded-[4px] flex items-center justify-center overflow-hidden hover:border-slate-900 transition-all cursor-pointer group mb-4">
+
                    {formData.imageUrl ? (
                      <Image src={formData.imageUrl} alt="" fill sizes="(max-width: 768px) 100vw, 600px" className="object-cover" />
                    ) : (
@@ -532,7 +603,8 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
                       <span className="text-[10px] font-black uppercase tracking-widest text-white border-white border px-4 py-2">Quick Change</span>
                    </div>
-                </div>
+                </label>
+
                 <div className="flex gap-2">
                    <input 
                      type="text" 

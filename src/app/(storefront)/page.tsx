@@ -6,6 +6,7 @@ import { getSettings } from '@/lib/data';
 import { HeroSlider } from '@/components/HeroSlider';
 import { FeaturedProducts } from '@/components/storefront/FeaturedProducts';
 import dynamic from 'next/dynamic';
+import { cookies } from 'next/headers';
 
 const FutureSections = dynamic(() => import('@/components/storefront/FutureSections').then(mod => mod.FutureSections), { ssr: true });
 const CollectionList = dynamic(() => import('@/components/storefront/CollectionList').then(mod => mod.CollectionList), { ssr: true });
@@ -18,6 +19,8 @@ const SectionSkeleton = () => (
   </div>
 );
 
+const PUBLIC_PRODUCT_STATUS_FILTER = 'status.eq.published,status.eq.active,status.is.null';
+
 async function ProductsList({ lang, settings }: { lang: string, settings: any }) {
   const supabase = await createClient();
   // Optimization: Only fetch the 4 featured products that we actually show
@@ -25,10 +28,11 @@ async function ProductsList({ lang, settings }: { lang: string, settings: any })
     .from('products')
     .select('*')
     .eq('is_featured', true)
+    .or(PUBLIC_PRODUCT_STATUS_FILTER)
     .limit(4)
     .order('created_at', { ascending: false });
   
-  const products = (productsData || []).map(p => ({
+  const products = (productsData || []).filter((p: any) => Boolean(p?.id)).map(p => ({
     ...p,
     imageUrl: p.image_url,
     isFeatured: p.is_featured,
@@ -49,6 +53,7 @@ async function CollectionsWrapper({ lang, settings, categories }: { lang: string
 export default async function StorefrontPage() {
   const supabase = await createClient();
   const settings = await getSettings();
+  const lang = (await cookies()).get('NEXT_LOCALE')?.value || 'en';
 
   // Fetch only what's needed for the Hero LCP immediately
   const categoriesRes = await supabase.from('categories').select('*').order('name');
@@ -59,8 +64,6 @@ export default async function StorefrontPage() {
     isFeatured: c.is_featured,
     showInHero: c.show_in_hero
   })) as Category[];
-
-  const lang = 'en'; 
 
   return (
     <div className="w-full bg-white">
