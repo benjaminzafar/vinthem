@@ -25,13 +25,18 @@ export function StableChartContainer({
 
     const updateReadiness = () => {
       const { width, height } = element.getBoundingClientRect();
-      setIsReady(width > 0 && height > 0);
+      // Recharts throws error if width/height is -1. Ensure they are comfortably positive.
+      const ready = width > 1 && height > 1;
+      setIsReady(ready);
     };
 
     updateReadiness();
 
     const observer = new ResizeObserver(() => {
-      updateReadiness();
+      // Use requestAnimationFrame to ensure layout has settled
+      window.requestAnimationFrame(() => {
+        updateReadiness();
+      });
     });
 
     observer.observe(element);
@@ -45,9 +50,17 @@ export function StableChartContainer({
     <div
       ref={containerRef}
       className={className}
-      style={{ minWidth: 0, minHeight }}
+      style={{ minWidth: 0, minHeight, position: 'relative' }}
     >
-      {isReady ? children : null}
+      {isReady ? (
+        <div className="absolute inset-0 w-full h-full">
+           {children}
+        </div>
+      ) : (
+        <div className="absolute inset-0 flex items-center justify-center bg-slate-50/50 animate-pulse rounded">
+           <div className="w-8 h-8 rounded-full border-2 border-slate-200 border-t-slate-900 animate-spin" />
+        </div>
+      )}
     </div>
   );
 }

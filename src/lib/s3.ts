@@ -38,28 +38,42 @@ export async function getR2Credentials(): Promise<R2Credentials> {
   const { maybeDecryptStoredValue } = await import('@/lib/integrations');
 
   // Enforce Rule 11: Priority to Supabase encrypted keys, fallback to env for migration but ideally env should be purged
-  return {
+  const credentials = {
     accountId: accountIdRaw ? maybeDecryptStoredValue(accountIdRaw) : (process.env.R2_ACCOUNT_ID || ''),
     accessKeyId: encryptedAccessKey ? maybeDecryptStoredValue(encryptedAccessKey) : (process.env.R2_ACCESS_KEY_ID || ''),
     secretAccessKey: encryptedSecretKey ? maybeDecryptStoredValue(encryptedSecretKey) : (process.env.R2_SECRET_ACCESS_KEY || ''),
     bucketName: bucketNameRaw ? maybeDecryptStoredValue(bucketNameRaw) : (process.env.R2_BUCKET_NAME || ''),
     publicUrl: publicUrlRaw ? maybeDecryptStoredValue(publicUrlRaw) : (process.env.R2_PUBLIC_URL || ''),
   };
+
+  // Robustness check: Ensure publicUrl is a valid absolute URL and doesn't have protocol mangling
+  if (credentials.publicUrl && credentials.publicUrl.includes('https:/') && !credentials.publicUrl.includes('https://')) {
+    credentials.publicUrl = credentials.publicUrl.replace('https:/', 'https://');
+  }
+
+  return credentials;
 }
 
 export async function getS3Client(): Promise<S3Client> {
   const { accountId, accessKeyId, secretAccessKey } = await getR2Credentials();
 
   if (!accountId || !accessKeyId || !secretAccessKey) {
-    throw new Error("R2 credentials missing. Please configure them in Admin -> Integrations.");
+    const missing: string[] = [];
+    if (!accountId) missing.push('Account ID');
+    if (!accessKeyId) missing.push('Access Key ID');
+    if (!secretAccessKey) missing.push('Secret Access Key');
+    throw new Error(`R2 configuration incomplete. Missing: ${missing.join(', ')}. Please update in Admin -> Integrations.`);
   }
+
+  // Ensure accountId doesn't have spaces or protocol
+  const cleanAccountId = accountId.trim().replace(/^https?:\/\//, '').replace(/\/$/, '');
 
   return new S3Client({
     region: "auto",
-    endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+    endpoint: `https://${cleanAccountId}.r2.cloudflarestorage.com`,
     credentials: {
-      accessKeyId: accessKeyId,
-      secretAccessKey: secretAccessKey,
+      accessKeyId: accessKeyId.trim(),
+      secretAccessKey: secretAccessKey.trim(),
     },
     forcePathStyle: true,
   });

@@ -19,23 +19,41 @@ export async function GET(req: NextRequest) {
       Prefix: prefix,
       Delimiter: '/',
       ContinuationToken: continuationToken,
-      MaxKeys: 50 // Faster batch for infinite scroll
+      MaxKeys: 50
     });
 
-    const data = await s3Client.send(command);
+    const data = await s3Client.send(command).catch(err => {
+      console.error('R2 List Error:', err);
+      throw err;
+    });
     
     // Folders come from CommonPrefixes
     const folders = data.CommonPrefixes?.map(cp => cp.Prefix?.slice(prefix.length).replace(/\/$/, '')).filter(Boolean) || [];
     
     // Files come from Contents
     const files = (data.Contents || [])
-      .filter(obj => obj.Key !== prefix) // Don't include the folder itself
-      .map(obj => ({
-        key: obj.Key,
-        size: obj.Size,
-        lastModified: obj.LastModified,
-        url: publicUrl ? `${publicUrl.replace(/\/$/, '')}/${obj.Key}` : `${process.env.R2_PUBLIC_URL}/${obj.Key}`
-      }));
+      .filter(obj => obj.Key && obj.Key !== prefix)
+      .map(obj => {
+        const key = obj.Key as string;
+        let url = '';
+        
+        if (publicUrl) {
+           const baseUrl = publicUrl.replace(/\/$/, '');
+           url = `${baseUrl}/${key}`;
+        } else {
+           // Fallback to env or construct
+           const envUrl = process.env.R2_PUBLIC_URL?.replace(/\/$/, '');
+           url = envUrl ? `${envUrl}/${key}` : '';
+        }
+
+        return {
+          key: key,
+          size: obj.Size,
+          lastModified: obj.LastModified,
+          url: url
+        };
+      })
+      .filter(f => f.url);
 
     const statsResult = {
       totalSize: files.reduce((acc, f) => acc + (f.size || 0), 0),
@@ -56,7 +74,7 @@ export async function GET(req: NextRequest) {
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to load media';
-    // Removed console.error for production hardening (Rule 5/8)
+    console.error('[Media API Error]:', message);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
