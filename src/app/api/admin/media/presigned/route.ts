@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
-import { s3Client } from "@/lib/s3";
-import { requireAdminUser } from '@/lib/admin';
+import { getS3Client } from "@/lib/s3";
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,14 +11,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing path' }, { status: 400 });
     }
 
-    await requireAdminUser();
+    // Generate Presigned URL
+    const { getR2Credentials, getS3Client } = await import("@/lib/s3");
+    const { bucketName, publicUrl, accountId } = await getR2Credentials();
 
-    // 2. Generate Presigned URL
-    const bucketName = process.env.R2_BUCKET_NAME;
     if (!bucketName) {
       return NextResponse.json({ error: 'R2_BUCKET_NAME not configured' }, { status: 500 });
     }
 
+    const s3Client = await getS3Client();
     const command = new PutObjectCommand({
       Bucket: bucketName,
       Key: path,
@@ -29,19 +29,18 @@ export async function POST(req: NextRequest) {
     // URL is valid for 15 minutes
     const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 900 });
 
-    const publicUrl = process.env.R2_PUBLIC_URL 
-      ? `${process.env.R2_PUBLIC_URL.replace(/\/$/, '')}/${path}`
-      : `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${bucketName}/${path}`;
+    const finalPublicUrl = publicUrl 
+      ? `${publicUrl.replace(/\/$/, '')}/${path}`
+      : `https://${accountId}.r2.cloudflarestorage.com/${bucketName}/${path}`;
 
     return NextResponse.json({ 
       uploadUrl: signedUrl,
-      publicUrl: publicUrl
+      publicUrl: finalPublicUrl
     });
 
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to generate upload URL';
-    console.error('Presigned URL Error:', message);
-    const status = message === 'Authentication required.' ? 401 : message === 'Admin access required.' ? 403 : 500;
-    return NextResponse.json({ error: message }, { status });
+    // Removed console.error for production hardening
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

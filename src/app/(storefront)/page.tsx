@@ -12,6 +12,22 @@ const FutureSections = dynamic(() => import('@/components/storefront/FutureSecti
 const CollectionList = dynamic(() => import('@/components/storefront/CollectionList').then(mod => mod.CollectionList), { ssr: true });
 const NewsletterSection = dynamic(() => import('@/components/storefront/NewsletterSection').then(mod => mod.NewsletterSection), { ssr: true });
 
+export async function generateMetadata() {
+  const settings = await getSettings();
+  const lang = (await cookies()).get('NEXT_LOCALE')?.value || 'en';
+  
+  return {
+    title: settings.storeName?.[lang] || 'Mavren Shop | Modern Scandinavian Design',
+    description: settings.seoDescription?.[lang] || 'Premium furniture and home accessories with a minimalist Scandinavian aesthetic.',
+    openGraph: {
+      title: settings.storeName?.[lang] || 'Mavren Shop',
+      description: settings.seoDescription?.[lang],
+      images: ['/og-image.jpg'],
+    },
+  };
+}
+
+
 // high-performance skeletons
 const SectionSkeleton = () => (
   <div className="w-full h-[400px] bg-zinc-50 animate-pulse flex items-center justify-center">
@@ -21,7 +37,7 @@ const SectionSkeleton = () => (
 
 const PUBLIC_PRODUCT_STATUS_FILTER = 'status.eq.published,status.eq.active,status.is.null';
 
-async function ProductsList({ lang, settings }: { lang: string, settings: any }) {
+async function ProductsList({ lang, settings }: { lang: string, settings: Record<string, any> }) {
   const supabase = await createClient();
   // Optimization: Only fetch the 4 featured products that we actually show
   const { data: productsData } = await supabase
@@ -45,7 +61,7 @@ async function ProductsList({ lang, settings }: { lang: string, settings: any })
   return <FeaturedProducts products={products} lang={lang} settings={settings} />;
 }
 
-async function CollectionsWrapper({ lang, settings, categories }: { lang: string, settings: any, categories: Category[] }) {
+async function CollectionsWrapper({ lang, settings, categories }: { lang: string, settings: Record<string, any>, categories: Category[] }) {
   if (categories.length === 0) return null;
   return <CollectionList categories={categories} lang={lang} settings={settings} />;
 }

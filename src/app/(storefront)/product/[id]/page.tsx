@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server';
 import { notFound } from 'next/navigation';
 import { ProductClient } from '@/components/product/ProductClient';
 import { Product } from '@/store/useCartStore';
+import { Category } from '@/types';
 
 const PUBLIC_PRODUCT_STATUS_FILTER = 'status.eq.published,status.eq.active,status.is.null';
 
@@ -39,9 +40,9 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   }
 
   const product = {
-    ...(productData as any),
-    categoryName: (productData as any).categories?.name
-  } as Product;
+    ...productData,
+    categoryName: productData.categories?.name
+  } as unknown as Product;
 
   // Fetch related products
   const { data: relatedData } = await supabase
@@ -52,10 +53,10 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     .or(PUBLIC_PRODUCT_STATUS_FILTER)
     .limit(4);
 
-  let relatedProducts = (relatedData || []).map((p: any) => ({
+  let relatedProducts = (relatedData || []).map((p) => ({
     ...p,
     categoryName: p.categories?.name
-  })) as Product[];
+  })) as unknown as Product[];
 
   if (relatedProducts.length === 0) {
     const { data: fallbackData } = await supabase
@@ -64,10 +65,10 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
       .neq('id', product.id)
       .or(PUBLIC_PRODUCT_STATUS_FILTER)
       .limit(4);
-    relatedProducts = (fallbackData || []).map((p: any) => ({
+    relatedProducts = (fallbackData || []).map((p) => ({
       ...p,
       categoryName: p.categories?.name
-    })) as Product[];
+    })) as unknown as Product[];
   }
 
   // Fetch all categories for the universal filter drawer
@@ -89,7 +90,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
       <ProductClient 
         initialProduct={product} 
         relatedProducts={relatedProducts} 
-        categories={categories as any}
+        categories={categories as unknown as Category[]}
       />
     </div>
   );

@@ -1,34 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { s3Client } from '@/lib/s3';
+import { getS3Client } from '@/lib/s3';
 import { ListObjectsV2Command, DeleteObjectCommand } from '@aws-sdk/client-s3';
-import { requireAdminUser } from '@/lib/admin';
-
-// Helper to verify admin status
-async function verifyAdmin() {
-  try {
-    const { user } = await requireAdminUser();
-    return { user };
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unauthorized';
-    return {
-      error: message === 'Admin access required.' ? 'Forbidden' : 'Unauthorized',
-      status: message === 'Admin access required.' ? 403 : 401,
-    };
-  }
-}
 
 export async function GET(req: NextRequest) {
-  const adminCheck = await verifyAdmin();
-  if (adminCheck.error) return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status });
-
   const { searchParams } = new URL(req.url);
   const prefix = searchParams.get('prefix') || '';
   const continuationToken = searchParams.get('token') || undefined;
 
-  const bucketName = process.env.R2_BUCKET_NAME;
-  if (!bucketName) return NextResponse.json({ error: 'R2_BUCKET_NAME not configured' }, { status: 500 });
+  const { getR2Credentials, getS3Client } = await import("@/lib/s3");
+  const { bucketName, publicUrl } = await getR2Credentials();
 
+  if (!bucketName) return NextResponse.json({ error: 'R2_BUCKET_NAME not configured' }, { status: 500 });
+  
   try {
+    const s3Client = await getS3Client();
     const command = new ListObjectsV2Command({
       Bucket: bucketName,
       Prefix: prefix,
@@ -49,12 +34,9 @@ export async function GET(req: NextRequest) {
         key: obj.Key,
         size: obj.Size,
         lastModified: obj.LastModified,
-        url: `${process.env.R2_PUBLIC_URL}/${obj.Key}`
+        url: publicUrl ? `${publicUrl.replace(/\/$/, '')}/${obj.Key}` : `${process.env.R2_PUBLIC_URL}/${obj.Key}`
       }));
 
-    // For overall stats, we still might want totals, 
-    // but usually, a specific folder fetch doesn't need global stats.
-    // However, to keep compatibility with existing UI for now:
     const statsResult = {
       totalSize: files.reduce((acc, f) => acc + (f.size || 0), 0),
       fileCount: files.length,
@@ -74,23 +56,21 @@ export async function GET(req: NextRequest) {
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to load media';
-    console.error('[Media API GET Error]:', message);
+    // Removed console.error for production hardening (Rule 5/8)
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
 export async function DELETE(req: NextRequest) {
-  const adminCheck = await verifyAdmin();
-  if (adminCheck.error) return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status });
-
   try {
     const body = await req.json();
-    // Use decodeURIComponent to handle special characters in keys (spaces, ampersands, etc.)
     const key = body.key ? decodeURIComponent(body.key) : null;
     
     if (!key) return NextResponse.json({ error: 'Missing object key' }, { status: 400 });
 
-    const bucketName = process.env.R2_BUCKET_NAME;
+    const { getR2Credentials, getS3Client } = await import("@/lib/s3");
+    const { bucketName } = await getR2Credentials();
+    const s3Client = await getS3Client();
 
     // Recursive delete for prefixes (folders)
     if (key.endsWith('/')) {
@@ -120,7 +100,6 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to delete media';
-    console.error('[Media API DELETE Error]:', message);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

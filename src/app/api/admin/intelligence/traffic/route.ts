@@ -242,46 +242,67 @@ export async function GET() {
   }
 
   try {
-    const queryResponse = await fetch(`${host}/api/projects/${projectId}/query/`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        query: {
-          kind: 'InsightVizNode',
-          source: {
-            kind: 'TrendsQuery',
-            series: [
-              { kind: 'EventsNode', event: '$pageview', name: 'Pageviews', math: 'total' },
-              { kind: 'EventsNode', event: '$pageview', name: 'Unique Users', math: 'dau' },
-            ],
-            dateRange: { date_from: '-24h' },
-            interval: 'hour',
-            breakdownFilter: { breakdown: '$initial_referrer', breakdown_type: 'event' },
+    // We perform TWO queries in parallel:
+    // 1. Total traffic baseline (to ensure Pulse charts always have data)
+    // 2. Referrer breakdown (for the Sources pie chart)
+    const [totalRes, breakdownRes] = await Promise.all([
+      fetch(`${host}/api/projects/${projectId}/query/`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: {
+            kind: 'InsightVizNode',
+            source: {
+              kind: 'TrendsQuery',
+              series: [
+                { kind: 'EventsNode', event: '$pageview', name: 'Pageviews', math: 'total' },
+                { kind: 'EventsNode', event: '$pageview', name: 'Unique Users', math: 'dau' },
+              ],
+              dateRange: { date_from: '-24h' },
+              interval: 'hour',
+            },
           },
-        },
+        }),
+        cache: 'no-store',
       }),
-      cache: 'no-store',
-    });
+      fetch(`${host}/api/projects/${projectId}/query/`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: {
+            kind: 'InsightVizNode',
+            source: {
+              kind: 'TrendsQuery',
+              series: [{ kind: 'EventsNode', event: '$pageview', name: 'Pageviews', math: 'total' }],
+              dateRange: { date_from: '-24h' },
+              interval: 'hour',
+              breakdownFilter: { breakdown: '$initial_referrer', breakdown_type: 'event' },
+            },
+          },
+        }),
+        cache: 'no-store',
+      }),
+    ]);
 
-    if (!queryResponse.ok) {
-      const errorText = await queryResponse.text();
-      return NextResponse.json(
-        buildEmptyRealPayload(`PostHog query failed (${queryResponse.status}). ${errorText.slice(0, 160)}`)
-      );
+    if (!totalRes.ok) {
+      const errorText = await totalRes.text();
+      return NextResponse.json(buildEmptyRealPayload(`PostHog query failed (${totalRes.status}). ${errorText.slice(0, 160)}`));
     }
 
-    const payload = await queryResponse.json();
-    const results = extractSeries(payload);
+    const [totalPayload, breakdownPayload] = await Promise.all([
+      totalRes.json(),
+      breakdownRes.ok ? breakdownRes.json() : Promise.resolve({ results: [] })
+    ]);
 
-    if (results.length === 0) {
+    const totalResults = extractSeries(totalPayload);
+    const breakdownResults = extractSeries(breakdownPayload);
+
+    if (totalResults.length === 0 && breakdownResults.length === 0) {
       return NextResponse.json(buildEmptyRealPayload('PostHog returned no usable chart series.'));
     }
 
-    const pulse = buildPulse(results);
-    const sources = buildSources(results);
+    const pulse = buildPulse(totalResults);
+    const sources = buildSources(breakdownResults);
 
     return NextResponse.json({
       pulse,

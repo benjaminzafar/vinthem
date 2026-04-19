@@ -18,7 +18,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { setUser, setIsAdmin, setIsAuthLoading } = useAuthStore();
   const initialized = useRef(false);
 
-  const identifyUser = (user: any) => {
+  const identifyUser = (user: { id: string; email?: string; user_metadata?: Record<string, any> } | null) => {
     if (user && typeof window !== 'undefined' && hasAnalyticsConsent()) {
       // 1. Identify in PostHog
       posthog.identify(user.id, {
@@ -29,13 +29,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // 2. Identify in Clarity
       if (window.clarity) {
         window.clarity("set", "user_id", user.id);
-        window.clarity("set", "email", user.email);
+        window.clarity("set", "email", user.email || "");
       }
     } else if (typeof window !== 'undefined') {
       posthog.reset();
     }
   };
-
   useEffect(() => {
     if (initialized.current) return;
     initialized.current = true;

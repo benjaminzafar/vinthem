@@ -15,6 +15,7 @@ import { CredentialInput } from '../integrations/CredentialInput';
 import { StorefrontSettings as StorefrontSettingsType, LocalizedString, useSettingsStore } from '@/store/useSettingsStore';
 import { updateSettingsAction } from '@/app/actions/storefront';
 import { genAI } from '@/lib/ai';
+import Image from 'next/image';
 
 const CATEGORIES = [
   { id: 'branding', name: 'Identity & Brand', icon: Sparkles, color: 'text-zinc-900', bg: 'bg-zinc-50' },
@@ -154,7 +155,7 @@ export function StorefrontContainer() {
                   <div className="flex flex-col md:flex-row gap-8">
                     <div className="w-32 h-32 rounded border border-zinc-100 bg-zinc-50 flex items-center justify-center overflow-hidden relative group cursor-pointer hover:bg-zinc-100/50 transition-colors">
                       {settings.logoImage ? (
-                        <img src={settings.logoImage} alt="Logo" className="w-full h-full object-contain p-2" />
+                        <Image src={settings.logoImage} alt="Logo" fill sizes="128px" className="object-contain p-2" />
                       ) : (
                         <ImageIcon className="w-8 h-8 text-zinc-200" />
                       )}
@@ -334,7 +335,7 @@ export function StorefrontContainer() {
                      <div className="space-y-4">
                         <div className="aspect-[4/5] bg-zinc-50 border border-zinc-100 rounded-md relative group overflow-hidden">
                            {settings.futureImage1 ? (
-                              <img src={settings.futureImage1} alt="Future product preview 1" className="w-full h-full object-cover" />
+                              <Image src={settings.futureImage1} alt="Future product preview 1" fill sizes="(max-width: 768px) 100vw, 400px" className="object-cover" />
                            ) : <ImageIcon className="w-8 h-8 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-zinc-200" />}
                            <input type="file" onChange={e => handleImageUpload(e, 'futureImage1')} className="absolute inset-0 opacity-0 cursor-pointer" />
                         </div>
@@ -344,7 +345,7 @@ export function StorefrontContainer() {
                      <div className="space-y-4">
                         <div className="aspect-[4/5] bg-zinc-50 border border-zinc-100 rounded-md relative group overflow-hidden">
                            {settings.futureImage2 ? (
-                              <img src={settings.futureImage2} alt="Future product preview 2" className="w-full h-full object-cover" />
+                              <Image src={settings.futureImage2} alt="Future product preview 2" fill sizes="(max-width: 768px) 100vw, 400px" className="object-cover" />
                            ) : <ImageIcon className="w-8 h-8 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-zinc-200" />}
                            <input type="file" onChange={e => handleImageUpload(e, 'futureImage2')} className="absolute inset-0 opacity-0 cursor-pointer" />
                         </div>

@@ -61,7 +61,7 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
   const [selectedLang, setSelectedLang] = useState('sv');
   const [aiChatInput, setAiChatInput] = useState('');
 
-  const mapDbToForm = (p: any): Partial<Product> => {
+  const mapDbToForm = (p: Record<string, any>): Partial<Product> => {
     if (!p) return {};
     return {
       ...p,
@@ -130,9 +130,10 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
       toast.success(initialProduct ? 'Product updated' : 'Product created', { id: toastId });
       router.push('/admin/products');
       router.refresh();
-    } catch (error: any) {
-      console.error('Save error:', error);
-      toast.error(error.message || 'Failed to save', { id: toastId });
+    } catch (error: unknown) {
+      const err = error as Error;
+      console.error('Save error:', err);
+      toast.error(err.message || 'Failed to save', { id: toastId });
     } finally {
       setLoading(false);
     }
@@ -204,12 +205,13 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
       }));
       setAiChatInput('');
       toast.success('AI Draft Generated!', { id: toastId });
-    } catch (error: any) {
-      console.error('AI Processing Error:', error);
+    } catch (error: unknown) {
+      const err = error as any; // Temporary as status is custom on AI errors
+      console.error('AI Processing Error:', err);
       
       const timestamp = new Date().toLocaleTimeString('sv-SE', { hour12: false });
-      const errorMessage = error?.message || '';
-      const status = error?.status;
+      const errorMessage = err?.message || '';
+      const status = err?.status;
 
       if (status === 401 || status === 403) {
         toast.error('Action Required: Please set your Groq API Key in the Integrations Manager.', { 
@@ -247,7 +249,7 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
       const url = await uploadImageWithTimeout(file, `products/${Date.now()}_${file.name}`);
       setFormData({ ...formData, imageUrl: url });
       toast.success('Uploaded', { id: toastId });
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast.error('Upload failed', { id: toastId });
     } finally {
       setUploading(false);
@@ -257,7 +259,7 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
   // Respect global languages from storefront settings
   const languages = settings.languages || ['sv', 'en'];
 
-  const getLabel = (localized: any, fallback: string) => {
+  const getLabel = (localized: Record<string, string> | undefined, fallback: string) => {
     if (!localized) return fallback;
     return localized[selectedLang] || localized.en || fallback;
   };

@@ -6,6 +6,7 @@ import { AuthProvider } from "@/components/AuthProvider";
 import { StoreHydrator } from "@/components/StoreHydrator";
 import { Analytics } from "@vercel/analytics/next";
 import { getSettings, getIntegrations } from "@/lib/data";
+import { normalizePostHogIngestionHost } from "@/lib/integrations";
 import { LazyMotion, domAnimation } from "motion/react";
 import { PostHogProvider } from "@/components/PostHogProvider";
 import { cookies } from "next/headers";
@@ -51,7 +52,10 @@ export default async function RootLayout({
         <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="" />
       </head>
       <body className="min-h-full flex flex-col font-sans" suppressHydrationWarning>
-        <PostHogProvider apiKey={integrations.POSTHOG_PROJECT_KEY} host={integrations.POSTHOG_HOST}>
+        <PostHogProvider 
+          apiKey={integrations.POSTHOG_PROJECT_KEY} 
+          host={normalizePostHogIngestionHost(integrations.POSTHOG_HOST)}
+        >
           <StoreHydrator settings={settings} />
           <CookieBannerMount copy={cookieBannerCopy} />
           <AuthProvider>

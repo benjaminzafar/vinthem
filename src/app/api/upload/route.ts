@@ -22,11 +22,10 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
+    const { getR2Credentials, getS3Client } = await import("@/lib/s3");
+    const { bucketName, publicUrl, accountId } = await getR2Credentials();
+    const s3Client = await getS3Client();
     const { PutObjectCommand } = await import("@aws-sdk/client-s3");
-    const { s3Client } = await import("@/lib/s3");
-
-    const bucketName = process.env.R2_BUCKET_NAME;
-    const publicUrl = process.env.R2_PUBLIC_URL;
 
     if (!bucketName) {
       return NextResponse.json({ error: 'R2_BUCKET_NAME is not configured' }, { status: 500 });
@@ -44,7 +43,7 @@ export async function POST(req: NextRequest) {
 
       const finalUrl = publicUrl 
         ? `${publicUrl.replace(/\/$/, '')}/${path}`
-        : `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${bucketName}/${path}`;
+        : `https://${accountId}.r2.cloudflarestorage.com/${bucketName}/${path}`;
 
       return NextResponse.json({ url: finalUrl });
     } catch (uploadError: unknown) {

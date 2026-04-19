@@ -98,11 +98,11 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, c
       setName(result.name || name);
       setDescription(result.description || description);
       toast.success('Generated successfully', { id: toastId });
-    } catch (error: any) {
-      console.error('AI Analysis error:', error);
+    } catch (err: any) {
+      console.error('AI Analysis error:', err);
       const timestamp = new Date().toLocaleTimeString('sv-SE', { hour12: false });
-      const errorMessage = error?.message || '';
-      const status = error?.status;
+      const errorMessage = err?.message || '';
+      const status = err?.status;
 
       if (status === 401 || status === 403) {
         toast.error('Action Required: Please set your Groq API Key in the Integrations Manager.', { 
@@ -150,11 +150,12 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, c
 
       setAiChatInput('');
       toast.success('Collection draft generated!', { id: toastId });
-    } catch (error: any) {
-      console.error('AI error:', error);
+    } catch (error: unknown) {
+      const err = error as Error;
+      console.error('AI Drafting error:', err);
       const timestamp = new Date().toLocaleTimeString('sv-SE', { hour12: false });
-      const errorMessage = error?.message || '';
-      const status = error?.status;
+      const errorMessage = err.message || '';
+      const status = (error as any)?.status;
 
       if (status === 401 || status === 403) {
         toast.error('Action Required: Please set your Groq API Key in the Integrations Manager.', { 
@@ -193,7 +194,12 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, c
         }
       });
 
-      const aiResponse = await genModel.generateContent(prompt);
+      const translationPrompt = `Translate the following category details into multiple languages based on the site settings.
+      Name: "${name}"
+      Description: "${description}"
+      Return ONLY a JSON object where keys are language codes (e.g., "sv", "de") and values are: { "name": "...", "description": "..." }`;
+
+      const aiResponse = await genModel.generateContent(translationPrompt);
       const translatedData = JSON.parse(aiResponse.response.text());
       setTranslations(prev => ({ ...prev, ...translatedData }));
       toast.success('Translations synced', { id: toastId });

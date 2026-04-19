@@ -35,7 +35,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, message: 'Settings encrypted and saved securely.' });
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Internal Server Error';
-    console.error('Integrations encrypt error:', msg);
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

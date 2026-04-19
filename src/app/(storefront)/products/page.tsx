@@ -10,6 +10,23 @@ interface ProductsPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
+export async function generateMetadata({ searchParams }: ProductsPageProps) {
+  const params = await searchParams;
+  const category = (params.category as string) || 'All';
+  const search = (params.search as string) || '';
+
+  const title = search 
+    ? `Search: ${search} | Mavren Shop`
+    : category !== 'All' 
+      ? `${category} | Mavren Shop` 
+      : 'All Products | Mavren Shop';
+
+  return {
+    title,
+    description: `Explore our ${category !== 'All' ? category.toLowerCase() : 'full'} collection of premium Scandinavian interior decor and furniture.`,
+  };
+}
+
 export default async function ProductsPage({ searchParams }: ProductsPageProps) {
   const params = await searchParams;
   const activeCategory = (params.category as string) || 'All';

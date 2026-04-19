@@ -16,6 +16,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { downloadXLSX } from '@/utils/export';
 import { InfiniteScrollSentinel } from '@/components/admin/InfiniteScrollSentinel';
 import { updateOrderAction } from '@/app/actions/admin-orders';
+import Image from 'next/image';
 
 export function OrderManager({ 
   onSeedClick,
@@ -213,8 +214,8 @@ export function OrderManager({
                             {order.items?.map((item: any, index: number) => (
                               <div key={index} className="flex items-center justify-between py-2">
                                 <div className="flex items-center space-x-4">
-                                  <div className="w-12 h-12 bg-white border border-slate-200 rounded flex items-center justify-center overflow-hidden shrink-0">
-                                    {item.image ? <img src={item.image} alt="" className="w-full h-full object-cover" /> : <Package className="w-5 h-5 text-slate-300" />}
+                                  <div className="w-12 h-12 bg-white border border-slate-200 rounded flex items-center justify-center overflow-hidden shrink-0 relative">
+                                    {item.image ? <Image src={item.image} alt="" fill sizes="48px" className="object-cover" /> : <Package className="w-5 h-5 text-slate-300" />}
                                   </div>
                                   <div>
                                     <p className="font-bold text-slate-900 text-sm">{item.name}</p>

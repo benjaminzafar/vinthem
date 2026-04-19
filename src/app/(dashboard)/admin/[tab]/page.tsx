@@ -13,6 +13,8 @@ import { StorefrontSettings } from '@/components/admin/StorefrontSettings';
 import { MediaManager } from '@/components/admin/MediaManager';
 import { getIntegrationsAction } from '@/app/actions/integrations';
 import { mapBlogRow, mapPageRow } from '@/lib/admin-content';
+import { Category } from '@/types';
+import { Product } from '@/store/useCartStore';
 
 interface TabPageProps {
   params: Promise<{ tab: string }>;
@@ -23,6 +25,22 @@ export default async function AdminTabPage({ params, searchParams }: TabPageProp
   const { tab } = await params;
   const sParams = await searchParams;
   const supabase = await createClient();
+
+  // Defense-in-depth: check role server-side even if middleware is active
+  const { data: { user } } = await supabase.auth.getUser();
+  const { data: profile } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', user?.id || '')
+    .single();
+
+  if (profile?.role !== 'admin') {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-zinc-500">Access Denied. Admin privileges required.</p>
+      </div>
+    );
+  }
 
   // Valid tabs check
   const validTabs = [
@@ -57,12 +75,15 @@ export default async function AdminTabPage({ params, searchParams }: TabPageProp
       .select('*')
       .order('created_at', { ascending: false });
     
-    const initialOrders = (data || []).map((o: any) => ({
-      ...o,
-      createdAt: o.created_at,
-      orderId: o.order_id,
-      customerEmail: o.shipping_details?.email
-    }));
+    const initialOrders = (data || []).map((o) => {
+      const order = o as Record<string, any>;
+      return {
+        ...order,
+        createdAt: order.created_at,
+        orderId: order.order_id,
+        customerEmail: order.shipping_details?.email
+      };
+    });
 
     return <OrderManager initialOrders={initialOrders} />;
   }
@@ -82,28 +103,34 @@ export default async function AdminTabPage({ params, searchParams }: TabPageProp
       supabase.from('categories').select('*').order('name')
     ]);
     
-    const initialProducts = (productsRes.data || []).map((p: any) => ({
-      ...p,
-      imageUrl: p.image_url,
-      categoryId: p.category_id,
-      isFeatured: p.is_featured,
-      isNewArrival: p.is_new_arrival,
-      isSale: p.is_sale,
-      discountPrice: p.sale_price,
-      prices: p.prices,
-      stripeTaxCode: p.stripe_tax_code,
-      createdAt: p.created_at
-    }));
+    const initialProducts = (productsRes.data || []).map((p) => {
+      const product = p as any;
+      return {
+        ...product,
+        imageUrl: product.image_url,
+        categoryId: product.category_id,
+        isFeatured: product.is_featured,
+        isNewArrival: product.is_new_arrival,
+        isSale: product.is_sale,
+        discountPrice: product.sale_price,
+        prices: product.prices,
+        stripeTaxCode: product.stripe_tax_code,
+        createdAt: product.created_at
+      } as unknown as Product;
+    });
 
-    const initialCategories = (categoriesRes.data || []).map((c: any) => ({
-      ...c,
-      isFeatured: c.is_featured,
-      showInHero: c.show_in_hero,
-      pinnedInSearch: c.pinned_in_search,
-      parentId: c.parent_id,
-      imageUrl: c.image_url,
-      iconUrl: c.icon_url
-    }));
+    const initialCategories = (categoriesRes.data || []).map((c) => {
+      const cat = c as any;
+      return {
+        ...cat,
+        isFeatured: cat.is_featured,
+        showInHero: cat.show_in_hero,
+        pinnedInSearch: cat.pinned_in_search,
+        parentId: cat.parent_id,
+        imageUrl: cat.image_url,
+        iconUrl: cat.icon_url
+      } as unknown as Category;
+    });
 
     return (
       <ProductManager 
@@ -120,19 +147,25 @@ export default async function AdminTabPage({ params, searchParams }: TabPageProp
       supabase.from('products').select('id, category_id')
     ]);
 
-    const initialCategories = (categoriesRes.data || []).map((c: any) => ({
-      ...c,
-      isFeatured: c.is_featured,
-      showInHero: c.show_in_hero,
-      parentId: c.parent_id,
-      imageUrl: c.image_url,
-      iconUrl: c.icon_url
-    }));
+    const initialCategories = (categoriesRes.data || []).map((c) => {
+      const cat = c as any;
+      return {
+        ...cat,
+        isFeatured: cat.is_featured,
+        showInHero: cat.show_in_hero,
+        parentId: cat.parent_id,
+        imageUrl: cat.image_url,
+        iconUrl: cat.icon_url
+      } as unknown as Category;
+    });
 
-    const initialProductsShort = (productsRes.data || []).map((p: any) => ({
-      id: p.id,
-      categoryId: p.category_id
-    }));
+    const initialProductsShort = (productsRes.data || []).map((p) => {
+      const prod = p as Record<string, any>;
+      return {
+        id: prod.id,
+        categoryId: prod.category_id
+      };
+    });
 
     return (
       <CollectionManager 

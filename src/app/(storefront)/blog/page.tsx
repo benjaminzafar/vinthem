@@ -5,10 +5,22 @@ import { ArrowRight, Calendar } from 'lucide-react';
 import { BlogPost } from '@/types';
 import Image from 'next/image';
 
-export const metadata = {
-  title: 'Journal | Mavren Shop',
-  description: 'Read the latest stories and updates from Mavren Shop.',
-};
+export async function generateMetadata() {
+  const supabase = await createClient();
+  const { data: settingsData } = await supabase
+    .from('settings')
+    .select('data')
+    .eq('id', 'primary')
+    .single();
+
+  const settings = settingsData?.data || {};
+  const lang = 'en'; // Default or handle via cookie logic if possible here
+
+  return {
+    title: `${settings.journalTitleText?.[lang] || 'Journal'} | Mavren Shop`,
+    description: settings.journalSubtitleText?.[lang] || 'Read the latest stories and updates from Mavren Shop.',
+  };
+}
 
 export default async function BlogList() {
   const supabase = await createClient();

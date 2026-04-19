@@ -88,7 +88,7 @@ export function IntegrationsContainer({ initialConfig }: { initialConfig: Record
       case 'ai': return ['Groq'];
       case 'marketing': return ['PostHog', 'Clarity', 'Instagram', 'TikTok', 'Reddit', 'Facebook'];
       case 'shipping': return ['PostNord', 'DHL', 'Bring', 'DBSchenker', 'UPS'];
-      case 'system': return ['Stripe', 'Zoho', 'GoogleShopping'];
+      case 'system': return ['Stripe', 'Zoho', 'R2', 'GoogleShopping'];
       default: return [];
     }
   };
@@ -143,11 +143,17 @@ export function IntegrationsContainer({ initialConfig }: { initialConfig: Record
                     isConnected={config['POSTHOG_API_KEY_CONNECTED'] === 'true'}
                     isSaving={savingId === 'PostHog'}
                     onSave={() => handleSave('PostHog', ['POSTHOG_PROJECT_ID', 'POSTHOG_PROJECT_KEY', 'POSTHOG_API_KEY', 'POSTHOG_HOST'])}
+                    tutorial={
+                      <div className="space-y-1">
+                        <p>1. Ensure your **Personal API Key** starts with <code className="bg-zinc-100 px-1 rounded text-zinc-900">phx_</code> (not the project token).</p>
+                        <p>2. If your project is in the US region, change the Host URL to <code className="bg-zinc-100 px-1 rounded text-zinc-900">https://app.posthog.com</code>.</p>
+                      </div>
+                    }
                   >
                     <CredentialInput label="Project ID" value={config['POSTHOG_PROJECT_ID']} onChange={v => handleUpdate('POSTHOG_PROJECT_ID', v)} />
                     <CredentialInput label="Project Token (Public)" value={config['POSTHOG_PROJECT_KEY']} onChange={v => handleUpdate('POSTHOG_PROJECT_KEY', v)} />
                     <CredentialInput label="Personal API Key (Private)" value={config['POSTHOG_API_KEY']} onChange={v => handleUpdate('POSTHOG_API_KEY', v)} type="password" />
-                    <CredentialInput label="Host URL" value={config['POSTHOG_HOST']} onChange={v => handleUpdate('POSTHOG_HOST', v)} placeholder="https://eu.i.posthog.com" />
+                    <CredentialInput label="Host URL" value={config['POSTHOG_HOST']} onChange={v => handleUpdate('POSTHOG_HOST', v)} placeholder="https://eu.posthog.com" />
                   </IntegrationCard>
                )}
                {id === 'Clarity' && (
@@ -342,6 +348,23 @@ export function IntegrationsContainer({ initialConfig }: { initialConfig: Record
                     <button onClick={handleTestEmail} className="text-[11px] font-bold text-zinc-600 hover:text-zinc-900 flex items-center gap-1 mt-2 transition-colors focus:outline-none">
                        <Search className="w-3.5 h-3.5" /> Send Test Handshake
                     </button>
+                  </IntegrationCard>
+               )}
+               {id === 'R2' && (
+                 <IntegrationCard
+                    id="R2"
+                    title="Cloudflare R2 Storage"
+                    logo={<div className="bg-white w-full h-full flex items-center justify-center font-bold text-orange-500 leading-none text-[10px]">R2</div>}
+                    isConnected={config['R2_SECRET_ACCESS_KEY_CONNECTED'] === 'true'}
+                    isSaving={savingId === 'R2'}
+                    onSave={() => handleSave('R2', ['R2_ACCOUNT_ID', 'R2_ACCESS_KEY_ID', 'R2_SECRET_ACCESS_KEY', 'R2_BUCKET_NAME', 'R2_PUBLIC_URL'])}
+                    tutorial={<p>Credentials can be found in your Cloudflare dashboard under R2 &rarr; Manage R2 API Tokens.</p>}
+                  >
+                    <CredentialInput label="Account ID" value={config['R2_ACCOUNT_ID']} onChange={v => handleUpdate('R2_ACCOUNT_ID', v)} />
+                    <CredentialInput label="Access Key ID" value={config['R2_ACCESS_KEY_ID']} onChange={v => handleUpdate('R2_ACCESS_KEY_ID', v)} />
+                    <CredentialInput label="Secret Access Key" value={config['R2_SECRET_ACCESS_KEY']} onChange={v => handleUpdate('R2_SECRET_ACCESS_KEY', v)} type="password" />
+                    <CredentialInput label="Bucket Name" value={config['R2_BUCKET_NAME']} onChange={v => handleUpdate('R2_BUCKET_NAME', v)} placeholder="e.g. my-shop-assets" />
+                    <CredentialInput label="Public URL (Custom Domain or R2.dev)" value={config['R2_PUBLIC_URL']} onChange={v => handleUpdate('R2_PUBLIC_URL', v)} placeholder="https://pub-xyz.r2.dev" />
                   </IntegrationCard>
                )}
                {id === 'GoogleShopping' && (

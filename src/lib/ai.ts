@@ -5,22 +5,23 @@ import { generateAIContentAction } from "@/app/actions/ai";
  * Standardizes AI requests across the application.
  * Currently uses Groq via Server Actions.
  */
+type AIContentPart = { text: string } | { inlineData: { mimeType: string; data: string } };
+type AIContent = { role: 'user' | 'model'; parts: AIContentPart[] };
+
 export const genAI = {
-  getGenerativeModel: (config: { model?: string, generationConfig?: any }) => {
+  getGenerativeModel: (config: { model?: string, generationConfig?: Record<string, unknown> }) => {
     return {
-      generateContent: async (prompt: any) => {
+      generateContent: async (prompt: string | AIContentPart[] | AIContent[]) => {
         // Adapt contents: check if it's already a Content array or if it needs wrapping
-        let contents;
+        let contents: AIContent[];
+        
         if (Array.isArray(prompt)) {
-          // If the first element is a Content object (has 'parts'), use as is
-          if (prompt.length > 0 && (prompt[0] as any).parts) {
-            contents = prompt;
+          if (prompt.length > 0 && 'parts' in prompt[0]) {
+            contents = prompt as AIContent[];
           } else {
-            // Otherwise treat as an array of Parts for a single turn
-            contents = [{ role: 'user', parts: prompt }];
+            contents = [{ role: 'user', parts: prompt as AIContentPart[] }];
           }
         } else {
-          // If it's just a string, wrap it as a single part in a single turn
           contents = [{ role: 'user', parts: [{ text: prompt }] }];
         }
         
@@ -33,7 +34,8 @@ export const genAI = {
 
         if (result.error) {
           const err = new Error(result.error);
-          (err as any).status = result.status;
+          // @ts-expect-error - Adding status to standard Error object
+          err.status = result.status;
           throw err;
         }
 

@@ -29,7 +29,7 @@ export function maybeDecryptStoredValue(value: string | null | undefined): strin
 }
 
 export function isSensitiveIntegrationKey(key: string): boolean {
-  return ['API_KEY', 'SECRET', 'PASS', 'TOKEN'].some((segment) => key.includes(segment));
+  return ['API_KEY', 'SECRET', 'PASS', 'TOKEN', 'ACCOUNT_ID', 'KEY_ID'].some((segment) => key.includes(segment));
 }
 
 export function normalizePostHogAppHost(host: string | null | undefined): string {

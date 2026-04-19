@@ -2,7 +2,7 @@
 
 import posthog from 'posthog-js';
 import { PostHogProvider as PHProvider } from 'posthog-js/react';
-import React from 'react';
+import React, { useEffect } from 'react';
 
 export function PostHogProvider({ 
   children, 
@@ -13,8 +13,18 @@ export function PostHogProvider({
   apiKey?: string,
   host?: string
 }) {
-  void apiKey;
-  void host;
+  useEffect(() => {
+    if (apiKey) {
+      posthog.init(apiKey, {
+        api_host: host || 'https://eu.i.posthog.com',
+        person_profiles: 'always',
+        capture_pageview: true,
+        loaded: (ph) => {
+          if (process.env.NODE_ENV === 'development') ph.debug();
+        },
+      });
+    }
+  }, [apiKey, host]);
 
   return <PHProvider client={posthog}>{children}</PHProvider>;
 }

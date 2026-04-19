@@ -36,7 +36,7 @@ export async function handleSupabaseError(
           : String(error)),
     authInfo: {
       userId: user?.id,
-      email: user?.email ?? null,
+      email: user?.email ? `${user.email.slice(0, 3)}***@${user.email.split('@')[1]}` : null,
     },
     operationType,
     path,

@@ -38,8 +38,8 @@ interface OverviewOrder {
   createdAt: string;
   order_id: string;
   customerEmail?: string;
-  items?: any[];
-  shipping_details?: any;
+  items?: Record<string, unknown>[];
+  shipping_details?: Record<string, unknown>;
 }
 
 interface RefundRequest {
@@ -49,18 +49,18 @@ interface RefundRequest {
   createdAt: string;
 }
 
-export function Overview({ initialStats, onProductClick, onSeedClick }: { initialStats?: any, onProductClick?: (product: Product) => void, onSeedClick?: () => void }) {
+export function Overview({ initialStats, onProductClick, onSeedClick }: { initialStats?: Record<string, any>, onProductClick?: (product: Product) => void, onSeedClick?: () => void }) {
   const router = useRouter();
   const [timeRange, setTimeRange] = useState('6months');
   const [metric, setMetric] = useState('revenue');
-  const [orders, setOrders] = useState<OverviewOrder[]>(initialStats?.orders?.map((o: any) => ({
+  const [orders, setOrders] = useState<OverviewOrder[]>(initialStats?.orders?.map((o: Record<string, any>) => ({
     ...o,
     createdAt: o.created_at,
     orderId: o.order_id,
-    customerEmail: o.shipping_details?.email
+    customerEmail: (o.shipping_details as Record<string, any>)?.email
   })) || []);
   const [products, setProducts] = useState<Product[]>(initialStats?.products || []);
-  const [refundRequests, setRefundRequests] = useState<RefundRequest[]>(initialStats?.refunds?.map((r: any) => ({
+  const [refundRequests, setRefundRequests] = useState<RefundRequest[]>(initialStats?.refunds?.map((r: Record<string, any>) => ({
     ...r,
     createdAt: r.created_at
   })) || []);
@@ -80,28 +80,36 @@ export function Overview({ initialStats, onProductClick, onSeedClick }: { initia
         supabase.from('products').select('*').order('created_at', { ascending: false }),
         supabase.from('refund_requests').select('*').order('created_at', { ascending: false }),
       ]);
-      // ... (rest of the logic stays the same)
+      
       if (ordersRes.data) {
-        setOrders((ordersRes.data as any[]).map(o => ({
+        setOrders((ordersRes.data as Record<string, any>[]).map(o => ({
           ...o,
+          id: o.id,
+          total: o.total,
+          status: o.status,
+          created_at: o.created_at,
+          order_id: o.order_id,
           createdAt: o.created_at,
           orderId: o.order_id,
-          customerEmail: o.shipping_details?.email
-        })));
+          customerEmail: (o.shipping_details as Record<string, any>)?.email
+        } as OverviewOrder)));
       }
-      if (productsRes.data) setProducts(productsRes.data as any[]);
+      if (productsRes.data) setProducts(productsRes.data as unknown as Product[]);
       if (refundsRes.data) {
-        setRefundRequests((refundsRes.data as any[]).map(r => ({
+        setRefundRequests((refundsRes.data as Record<string, any>[]).map(r => ({
           ...r,
+          id: r.id,
+          status: r.status,
+          created_at: r.created_at,
           createdAt: r.created_at
-        })));
+        } as RefundRequest)));
       }
     } catch (error) {
       console.error('Error fetching admin data:', error);
     } finally {
       setLoading(false);
     }
-  }, [supabase]);
+  }, [supabase, initialStats, loading]);
 
   useEffect(() => {
     fetchAdminData();
@@ -217,7 +225,7 @@ export function Overview({ initialStats, onProductClick, onSeedClick }: { initia
     
     orders.forEach(order => {
       if (order.status !== 'Cancelled' && order.items) {
-        order.items.forEach((item: any) => {
+        order.items.forEach((item: Record<string, any>) => {
           if (!productSales[item.id]) {
             productSales[item.id] = { sales: 0, revenue: 0 };
           }

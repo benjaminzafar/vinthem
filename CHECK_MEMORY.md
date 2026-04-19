@@ -186,7 +186,9 @@ Date       | What was done                              | Mistake that was fixed
 2026-04-14 | Optimized Featured Products Query          | **FIXED MISTAKE**: Reduced home page query lag from 10s to <200ms using `.limit(4)` and backend filters.
 2026-04-14 | Cloudflare Image Loader Integration        | **FIXED MISTAKE**: Offloaded AVIF conversion and resizing to Cloudflare to reduce Vercel compute costs.
 2026-04-16 | **Global Build, Lint & Git Push**           | **FIXED MISTAKE**: Consolidated all uncommitted security hardening, CRM repairs, and admin optimizations into a single verified state, ensuring the remote repository matches the local production-ready build with zero build/lint failures.
-2026-04-18 | **CSP Realtime & Notification Query Cleanup** | **FIXED MISTAKE**: Allowed Supabase Realtime websockets and Vercel analytics script in CSP, disabled dev-only analytics injection, and removed a brittle `shipping_details` select from admin notifications that caused 400s on schemas not yet fully synced.
+2026-04-18 | **CSP Realtime & Notification Query Cleanup** | **FIXED MISTAKE**: Allowed Supabase Realtime websockets and Vercel analytics script in CSP, disabled dev-only analytics injection, and removed a brittle shipping_details select from admin notifications that caused 400s on schemas not yet fully synced.
+2026-04-19 | **Pre-launch Hardening & PostHog Resiliency** | **FIXED MISTAKE**: Fixed the brittle PostHog analytics query that was failing when referrer data was missing; eliminated 50+ instances of 'any' type in core admin and auth components; and added missing SEO metadata layouts for Auth/Profile pages to satisfy production-grade standards.
+2026-04-19 | **PostHog URL & Auth Hint Implementation** | **FIXED MISTAKE**: Added a visual tutorial to the PostHog integration card to prevent the 403 "Authentication Failed" error caused by using Project Tokens instead of Personal API Keys (starts with `phx_`) or region mismatches (US vs EU).
 
 ---
 

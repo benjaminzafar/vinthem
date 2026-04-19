@@ -68,13 +68,18 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
   }, [initialCategories]);
 
   useEffect(() => {
+    let focusTimeout: NodeJS.Timeout;
     if (isOverlayOpen) {
       document.body.style.overflow = 'hidden';
       void fetchData();
-      setTimeout(() => searchInputRef.current?.focus(), 100);
+      focusTimeout = setTimeout(() => searchInputRef.current?.focus(), 100);
     } else {
       document.body.style.overflow = '';
     }
+    return () => {
+      document.body.style.overflow = '';
+      if (focusTimeout) clearTimeout(focusTimeout);
+    };
   }, [isOverlayOpen]);
 
   const filteredResults = useMemo(() => {
