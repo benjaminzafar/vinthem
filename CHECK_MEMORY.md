@@ -190,6 +190,7 @@ Date       | What was done                              | Mistake that was fixed
 2026-04-19 | **Pre-launch Hardening & PostHog Resiliency** | **FIXED MISTAKE**: Fixed the brittle PostHog analytics query that was failing when referrer data was missing; eliminated 50+ instances of 'any' type in core admin and auth components; and added missing SEO metadata layouts for Auth/Profile pages to satisfy production-grade standards.
 2026-04-19 | **PostHog URL & Auth Hint Implementation** | **FIXED MISTAKE**: Added a visual tutorial to the PostHog integration card to prevent the 403 "Authentication Failed" error caused by using Project Tokens instead of Personal API Keys (starts with `phx_`) or region mismatches (US vs EU).
 2026-04-19 | **Hardened Media API, R2 URLs, and Charts** | **FIXED MISTAKE**: Eliminated malformed `https:/` protocols in R2 URLs by implementing a protocol-aware sanitization layer in `s3.ts`, while resolving Recharts sizing warnings (`width -1`) by ensuring `StableChartContainer` only mounts when valid, positive dimensions are detected via ResizeObserver and requestAnimationFrame.
+2026-04-19 | **Implemented Media API Diagnostics** | **FIXED MISTAKE**: Replaced the generic "Empty Directory" UI state with meaningful error reporting and a `?debug=true` route; implemented automatic Account ID sanitization to fix R2 connection failures caused by users pasting full URLs instead of raw IDs.
 
 ---
 

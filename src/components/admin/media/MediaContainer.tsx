@@ -60,12 +60,15 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
     try {
       const res = await fetch(url, { cache: 'no-store' });
       const data = await res.json();
-      if (data.error) throw new Error(data.error);
+      
+      if (data.error) {
+        const fullMessage = data.suggestion ? `${data.error}. ${data.suggestion}` : data.error;
+        throw new Error(fullMessage);
+      }
       
       if (isInitial) {
         setFolders(data.folders || []);
         setAssets(data.objects || []);
-        // Update stats if available
         if (data.stats) {
           setStats(data.stats);
         }
@@ -75,7 +78,9 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
       
       setNextToken(data.stats?.nextContinuationToken || null);
     } catch (error: any) {
-      toast.error('Failed to load media: ' + error.message);
+      toast.error('Media Cloud Error: ' + error.message, {
+        duration: 8000
+      });
     } finally {
       if (isInitial) setLoading(false);
       else setLoadingMore(false);

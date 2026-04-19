@@ -1,18 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getS3Client } from '@/lib/s3';
 import { ListObjectsV2Command, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { requireAdminUser } from '@/lib/auth';
 
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const prefix = searchParams.get('prefix') || '';
-  const continuationToken = searchParams.get('token') || undefined;
-
-  const { getR2Credentials, getS3Client } = await import("@/lib/s3");
-  const { bucketName, publicUrl } = await getR2Credentials();
-
-  if (!bucketName) return NextResponse.json({ error: 'R2_BUCKET_NAME not configured' }, { status: 500 });
-  
   try {
+    await requireAdminUser();
+    
+    const { searchParams } = new URL(req.url);
+    const prefix = searchParams.get('prefix') || '';
+    const continuationToken = searchParams.get('token') || undefined;
+    const isDebug = searchParams.get('debug') === 'true';
+
+    const { getR2Credentials, getS3Client } = await import("@/lib/s3");
+    const { bucketName, publicUrl, accountId } = await getR2Credentials();
+
+    if (!bucketName) return NextResponse.json({ error: 'R2_BUCKET_NAME not configured' }, { status: 500 });
+  
     const s3Client = await getS3Client();
     const command = new ListObjectsV2Command({
       Bucket: bucketName,
@@ -64,7 +68,22 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       folders: folders.sort(),
       objects: files,
-      stats: statsResult
+      stats: statsResult,
+      ...(isDebug ? { 
+        debug: {
+            bucketName,
+            prefix,
+            accountId: accountId?.slice(0, 4) + '...',
+            publicUrl: publicUrl?.slice(0, 10) + '...',
+            rawResponse: {
+                isTruncated: data.IsTruncated,
+                keyCount: data.KeyCount,
+                maxKeys: data.MaxKeys,
+                commonPrefixesCount: data.CommonPrefixes?.length || 0,
+                contentsCount: data.Contents?.length || 0
+            }
+        }
+      } : {})
     }, {
       headers: {
         'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
@@ -75,7 +94,15 @@ export async function GET(req: NextRequest) {
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to load media';
     console.error('[Media API Error]:', message);
-    return NextResponse.json({ error: message }, { status: 500 });
+    
+    // Return structured error
+    return NextResponse.json({ 
+        error: message,
+        code: (error as any)?.name || 'UNKNOWN_ERROR',
+        suggestion: message.includes('AccessKeyId') ? 'Verify your Access Key ID and Secret in Integrations.' : 
+                   message.includes('Bucket') ? 'Verify that the bucket name "onlineshop" exists in your Cloudflare dashboard.' : 
+                   undefined
+    }, { status: 500 });
   }
 }
 

@@ -39,11 +39,11 @@ export async function getR2Credentials(): Promise<R2Credentials> {
 
   // Enforce Rule 11: Priority to Supabase encrypted keys, fallback to env for migration but ideally env should be purged
   const credentials = {
-    accountId: accountIdRaw ? maybeDecryptStoredValue(accountIdRaw) : (process.env.R2_ACCOUNT_ID || ''),
-    accessKeyId: encryptedAccessKey ? maybeDecryptStoredValue(encryptedAccessKey) : (process.env.R2_ACCESS_KEY_ID || ''),
-    secretAccessKey: encryptedSecretKey ? maybeDecryptStoredValue(encryptedSecretKey) : (process.env.R2_SECRET_ACCESS_KEY || ''),
-    bucketName: bucketNameRaw ? maybeDecryptStoredValue(bucketNameRaw) : (process.env.R2_BUCKET_NAME || ''),
-    publicUrl: publicUrlRaw ? maybeDecryptStoredValue(publicUrlRaw) : (process.env.R2_PUBLIC_URL || ''),
+    accountId: (accountIdRaw ? maybeDecryptStoredValue(accountIdRaw) : (process.env.R2_ACCOUNT_ID || '')).trim(),
+    accessKeyId: (encryptedAccessKey ? maybeDecryptStoredValue(encryptedAccessKey) : (process.env.R2_ACCESS_KEY_ID || '')).trim(),
+    secretAccessKey: (encryptedSecretKey ? maybeDecryptStoredValue(encryptedSecretKey) : (process.env.R2_SECRET_ACCESS_KEY || '')).trim(),
+    bucketName: (bucketNameRaw ? maybeDecryptStoredValue(bucketNameRaw) : (process.env.R2_BUCKET_NAME || '')).trim(),
+    publicUrl: (publicUrlRaw ? maybeDecryptStoredValue(publicUrlRaw) : (process.env.R2_PUBLIC_URL || '')).trim(),
   };
 
   // Robustness check: Ensure publicUrl is a valid absolute URL and doesn't have protocol mangling
@@ -65,8 +65,11 @@ export async function getS3Client(): Promise<S3Client> {
     throw new Error(`R2 configuration incomplete. Missing: ${missing.join(', ')}. Please update in Admin -> Integrations.`);
   }
 
-  // Ensure accountId doesn't have spaces or protocol
-  const cleanAccountId = accountId.trim().replace(/^https?:\/\//, '').replace(/\/$/, '');
+  // Ensure accountId doesn't have spaces, protocol, or trailing slashes
+  const cleanAccountId = accountId.trim()
+    .replace(/^https?:\/\//, '')
+    .replace(/\.r2\.cloudflarestorage\.com$/, '') // Remove suffix if user accidentally included it
+    .replace(/\/$/, '');
 
   return new S3Client({
     region: "auto",
