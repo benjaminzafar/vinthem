@@ -81,8 +81,12 @@ export function OrderManager({
         });
       }
 
+      const hasNoResults = mappedOrders.length === 0;
       const fetchedSoFar = from + mappedOrders.length;
-      setHasMore(count ? fetchedSoFar < count : false);
+      const reachedCount = count ? fetchedSoFar >= count : false;
+      const partialPage = mappedOrders.length < ITEMS_PER_PAGE;
+      
+      setHasMore(!hasNoResults && !reachedCount && !partialPage);
       
       if (mappedOrders.length > 0) {
         pageRef.current += 1;
@@ -91,6 +95,7 @@ export function OrderManager({
     } catch (error: any) {
       console.error('[OrderManager] Fetch error:', error);
       toast.error('Failed to load orders: ' + error.message);
+      setHasMore(false);
     } finally {
       setLoading(false);
       setLoadingMore(false);

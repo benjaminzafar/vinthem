@@ -131,8 +131,16 @@ export function ProductManager({
         });
       }
 
+      // Definitive hasMore logic: 
+      // 1. If we got 0 items, there is definitely no more.
+      // 2. If we have a count, check if we've fetched everything.
+      // 3. If we didn't fill a whole page, there is likely no more.
+      const hasNoResults = mappedProducts.length === 0;
       const fetchedSoFar = from + mappedProducts.length;
-      setHasMore(count ? fetchedSoFar < count : false);
+      const reachedCount = count ? fetchedSoFar >= count : false;
+      const partialPage = mappedProducts.length < ITEMS_PER_PAGE;
+      
+      setHasMore(!hasNoResults && !reachedCount && !partialPage);
       
       if (mappedProducts.length > 0) {
         pageRef.current += 1;
@@ -141,6 +149,7 @@ export function ProductManager({
     } catch (error: any) {
       console.error('[ProductManager] Fetch error:', error);
       toast.error('Failed to load products: ' + error.message);
+      setHasMore(false); // Stop loop on error
     } finally {
       setLoading(false);
       setLoadingMore(false);

@@ -18,17 +18,25 @@ export function InfiniteScrollSentinel({
   className = ""
 }: InfiniteScrollSentinelProps) {
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const cooldownRef = useRef(false);
 
   useEffect(() => {
     if (!hasMore || isLoading) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting) {
+        if (entries[0].isIntersecting && !isLoading && hasMore) {
+          if (cooldownRef.current) return;
+          
           onIntersect();
+          cooldownRef.current = true;
+          
+          setTimeout(() => {
+            cooldownRef.current = false;
+          }, 300); // 300ms cooldown
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1, rootMargin: '100px' }
     );
 
     const currentSentinel = sentinelRef.current;

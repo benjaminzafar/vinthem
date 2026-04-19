@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getS3Client } from '@/lib/s3';
 import { ListObjectsV2Command, DeleteObjectCommand } from '@aws-sdk/client-s3';
-import { requireAdminUser } from '@/lib/auth';
+import { requireAdminUser } from '@/lib/admin';
 
 export async function GET(req: NextRequest) {
   try {

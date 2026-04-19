@@ -96,8 +96,12 @@ export function CollectionManager({
         });
       }
 
+      const hasNoResults = rootData?.length === 0;
       const fetchedRootsSoFar = from + (rootData?.length || 0);
-      setHasMore(count ? fetchedRootsSoFar < count : false);
+      const reachedCount = count ? fetchedRootsSoFar >= count : false;
+      const partialPage = (rootData?.length || 0) < ITEMS_PER_PAGE;
+      
+      setHasMore(!hasNoResults && !reachedCount && !partialPage);
       
       if (rootData && rootData.length > 0) {
         pageRef.current += 1;
@@ -106,6 +110,7 @@ export function CollectionManager({
     } catch (error: any) {
       console.error('[CollectionManager] Fetch error:', error);
       toast.error('Load failed: ' + error.message);
+      setHasMore(false);
     } finally {
       setLoading(false);
       setLoadingMore(false);

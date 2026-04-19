@@ -87,6 +87,7 @@ function syncAnalyticsTools(consent: ConsentState, apiKey?: string, host?: strin
         person_profiles: "identified_only",
         capture_pageview: true,
         opt_out_capturing_by_default: true,
+        disable_surveys: true, // Prevent loading of secondary survey script which often fails
       });
       window.__mavren_posthog_initialized = true;
     }
