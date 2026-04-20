@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { createClient } from '@/utils/supabase/server';
 import { getSettings } from '@/lib/data';
 import Image from 'next/image';
-import { ShoppingBag } from 'lucide-react';
+import { ShoppingBag, User } from 'lucide-react';
 import { SearchBar } from './SearchBar';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { AccountDropdown } from './AccountDropdown';
@@ -121,9 +121,10 @@ export default async function Navigation() {
               ) : (
                 <Link
                   href={localizeHref(lang, '/auth')}
-                  className="px-5 py-2.5 text-sm font-medium text-white bg-brand-ink rounded-md hover:bg-gray-800 transition-colors"
+                  className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-lg"
+                  aria-label={settings?.loginText?.[lang] || 'Login'}
                 >
-                  {settings?.loginText?.[lang] || 'Login'}
+                  <User className="w-5 h-5" strokeWidth={1.5} />
                 </Link>
               )}
             </div>
