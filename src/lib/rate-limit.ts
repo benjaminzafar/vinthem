@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 type RateLimitRule = {
   limit: number;
   windowMs: number;
@@ -121,7 +122,7 @@ export async function checkRateLimit(key: string, rule: RateLimitRule): Promise<
     try {
       return await checkUpstashRateLimit(key, rule, now);
     } catch (error) {
-      console.error('[RateLimit] Upstash fallback triggered:', error);
+      logger.error('[RateLimit] Upstash fallback triggered:', error);
     }
   }
 
@@ -129,3 +130,4 @@ export async function checkRateLimit(key: string, rule: RateLimitRule): Promise<
 }
 
 export type { RateLimitRule, RateLimitResult };
+

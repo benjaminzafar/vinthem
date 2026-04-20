@@ -1,4 +1,5 @@
-"use client";
+﻿"use client";
+import { logger } from '@/lib/logger';
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { RefreshCcw, CheckCircle, XCircle, Clock, DollarSign } from 'lucide-react';
@@ -35,7 +36,7 @@ export function RefundManager() {
       .order('created_at', { ascending: false });
     
     if (error) {
-      console.error('Error fetching refund requests:', error);
+      logger.error('Error fetching refund requests:', error);
       toast.error('Failed to load refund requests');
     } else {
       setRequests((data ?? []).map((r) => ({
@@ -77,7 +78,7 @@ export function RefundManager() {
       toast.success(result.message, { id: toastId });
       fetchRequests();
     } catch (error) {
-      console.error('Error updating status:', error);
+      logger.error('Error updating status:', error);
       const message = error instanceof Error ? error.message : 'Failed to update status';
       toast.error(message, { id: toastId });
     }
@@ -233,3 +234,4 @@ export function RefundManager() {
     </div>
   );
 }
+

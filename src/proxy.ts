@@ -1,6 +1,13 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { checkRateLimit, type RateLimitRule } from '@/lib/rate-limit';
+import {
+  DEFAULT_LANGUAGE,
+  extractLanguageFromPathname,
+  isSearchEngineBot,
+  normalizeLocalizedPath,
+  resolvePreferredLanguage,
+  stripLanguageFromPathname,
+} from '@/lib/i18n-routing';
 import { updateSession } from '@/utils/supabase/middleware';
 
 const DEFAULT_RATE_LIMIT_WINDOW_MS = 60 * 1000;
@@ -16,6 +23,23 @@ const RATE_LIMIT_RULES: Array<{ matcher: RegExp; rule: RateLimitRule }> = [
   { matcher: /^\/api\/admin(?:\/|$)/, rule: { limit: 45, windowMs: 60 * 1000 } },
   { matcher: /^\/api(?:\/|$)/, rule: DEFAULT_RATE_LIMIT_RULE },
 ];
+
+const LOCALE_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
+
+function isStaticAssetPath(pathname: string) {
+  return /\.[a-z0-9]+$/i.test(pathname);
+}
+
+function shouldBypassLocaleRouting(pathname: string) {
+  return (
+    pathname.startsWith('/api')
+    || pathname.startsWith('/admin')
+    || pathname.startsWith('/_next')
+    || pathname === '/favicon.ico'
+    || pathname.startsWith('/auth/callback')
+    || isStaticAssetPath(pathname)
+  );
+}
 
 function getAllowedOrigins(request: NextRequest) {
   const configuredOrigins = process.env.ALLOWED_ORIGINS
@@ -144,10 +168,51 @@ function getRequestKey(request: NextRequest) {
   return `${method}:${request.nextUrl.pathname}:${ip}:${userAgent}`;
 }
 
-export default async function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+  const userAgent = request.headers.get('user-agent');
+  const geoCountry = request.headers.get('x-vercel-ip-country');
+  const isBotRequest = isSearchEngineBot(userAgent);
+  const detectedLocale = resolvePreferredLanguage(
+    pathname,
+    request.cookies.get('NEXT_LOCALE')?.value,
+    geoCountry,
+    request.headers.get('accept-language'),
+  );
+  const pathnameLocale = extractLanguageFromPathname(pathname);
+  const normalizedPathname = pathnameLocale ? stripLanguageFromPathname(pathname) : pathname;
+
+  if (!shouldBypassLocaleRouting(pathname)) {
+    if (!pathnameLocale && !isBotRequest) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = normalizeLocalizedPath(pathname, detectedLocale);
+      const redirectResponse = NextResponse.redirect(redirectUrl);
+      redirectResponse.cookies.set('NEXT_LOCALE', detectedLocale, {
+        path: '/',
+        maxAge: LOCALE_COOKIE_MAX_AGE_SECONDS,
+        sameSite: 'lax',
+      });
+      return redirectResponse;
+    }
+
+    if (normalizedPathname.startsWith('/api') || normalizedPathname.startsWith('/admin') || normalizedPathname.startsWith('/auth/callback')) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = normalizedPathname;
+      const redirectResponse = NextResponse.redirect(redirectUrl);
+      redirectResponse.cookies.set('NEXT_LOCALE', pathnameLocale ?? detectedLocale, {
+        path: '/',
+        maxAge: LOCALE_COOKIE_MAX_AGE_SECONDS,
+        sameSite: 'lax',
+      });
+      return redirectResponse;
+    }
+  }
+
   const requestHeaders = new Headers(request.headers);
   const nonce = crypto.randomUUID().replace(/-/g, '');
   requestHeaders.set('x-csp-nonce', nonce);
+  requestHeaders.set('x-active-locale', pathnameLocale ?? detectedLocale ?? DEFAULT_LANGUAGE);
+  requestHeaders.set('x-pathname-no-locale', normalizedPathname);
 
   const response = NextResponse.next({
     request: {
@@ -156,74 +221,58 @@ export default async function proxy(request: NextRequest) {
   });
   const originAllowed = applyCorsHeaders(request, response);
   applySecurityHeaders(request, response, nonce);
+  response.cookies.set('NEXT_LOCALE', pathnameLocale ?? detectedLocale, {
+    path: '/',
+    maxAge: LOCALE_COOKIE_MAX_AGE_SECONDS,
+    sameSite: 'lax',
+  });
 
-  if (request.nextUrl.pathname.startsWith('/api') && !originAllowed) {
-    return NextResponse.json({ error: 'CORS origin not allowed.' }, { status: 403 });
+  if (!originAllowed && request.method === 'OPTIONS') {
+    return new NextResponse(null, { status: 403, headers: response.headers });
   }
 
   if (request.method === 'OPTIONS') {
-    if (request.nextUrl.pathname.startsWith('/api') && !originAllowed) {
-      return NextResponse.json({ error: 'CORS origin not allowed.' }, { status: 403 });
-    }
-
-    return new NextResponse(null, { status: 200, headers: response.headers });
+    return new NextResponse(null, { status: 204, headers: response.headers });
   }
 
-  if (request.nextUrl.pathname.startsWith('/api')) {
-    const key = getRequestKey(request);
-    const rule = getRateLimitRule(request.nextUrl.pathname);
-    const rateLimit = await checkRateLimit(key, rule);
+  const rateLimitRule = getRateLimitRule(normalizedPathname);
+  const rateLimitResult = await checkRateLimit(getRequestKey(request), rateLimitRule);
+  response.headers.set('X-RateLimit-Limit', String(rateLimitRule.limit));
+  response.headers.set('X-RateLimit-Remaining', String(rateLimitResult.remaining));
+  response.headers.set('X-RateLimit-Reset', String(rateLimitResult.resetTime));
 
-    response.headers.set('X-RateLimit-Limit', String(rateLimit.limit));
-    response.headers.set('X-RateLimit-Remaining', String(rateLimit.remaining));
-    response.headers.set('X-RateLimit-Reset', String(Math.ceil(rateLimit.resetTime / 1000)));
-    response.headers.set('X-RateLimit-Mode', rateLimit.mode);
-
-    if (!rateLimit.allowed) {
-      response.headers.set('Retry-After', String(Math.max(Math.ceil((rateLimit.resetTime - Date.now()) / 1000), 1)));
-      return NextResponse.json(
-        { error: 'Rate limit exceeded. Please try again later.' },
-        { status: 429, headers: response.headers }
-      );
-    }
+  if (!rateLimitResult.allowed) {
+    return new NextResponse('Too Many Requests', { status: 429, headers: response.headers });
   }
 
-  const { supabaseResponse, user, role } = await updateSession(request);
+  const { supabaseResponse, user, role } = await updateSession(
+    new NextRequest(request.url, {
+      method: request.method,
+      headers: requestHeaders,
+      body: request.body,
+    })
+  );
 
-  const isAdminPage = request.nextUrl.pathname.startsWith('/admin');
-  const isAdminApi = request.nextUrl.pathname.startsWith('/api/admin');
-  if (isAdminPage || isAdminApi) {
-    if (!user) {
-      if (isAdminApi) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: response.headers });
-      }
-
-      const url = request.nextUrl.clone();
-      url.pathname = '/auth';
-      url.searchParams.set('redirect', request.nextUrl.pathname);
-      return NextResponse.redirect(url);
-    }
-
-    if (role !== 'admin') {
-      if (isAdminApi) {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403, headers: response.headers });
-      }
-
-      const url = request.nextUrl.clone();
-      url.pathname = '/';
-      return NextResponse.redirect(url);
-    }
-  }
-
-  response.headers.forEach((value, key) => {
-    supabaseResponse.headers.set(key, value);
+  supabaseResponse.headers.forEach((value, key) => {
+    response.headers.set(key, value);
   });
 
-  return supabaseResponse;
+  supabaseResponse.cookies.getAll().forEach((cookie) => {
+    response.cookies.set(cookie);
+  });
+
+  const adminPath = normalizedPathname.startsWith('/admin') || normalizedPathname.startsWith('/api/admin');
+  if (adminPath && (!user || role !== 'admin')) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = pathnameLocale ? `/${pathnameLocale}/auth` : '/auth';
+    redirectUrl.searchParams.set('redirect', pathname);
+    return NextResponse.redirect(redirectUrl, { headers: response.headers });
+  }
+
+  return response;
 }
 
 export const config = {
-  matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
-  ],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|avif|css|js|map|txt|xml|woff2?)).*)'],
 };
+export default proxy;

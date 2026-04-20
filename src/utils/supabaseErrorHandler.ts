@@ -1,4 +1,4 @@
-// Supabase error handler — replaced legacy error handler utility
+import { logger } from '@/lib/logger';
 import { createClient } from '@/utils/supabase/client';
 
 export enum OperationType {
@@ -29,11 +29,12 @@ export async function handleSupabaseError(
   const { data: { user } } = await supabase.auth.getUser();
 
   const errInfo: SupabaseErrorInfo = {
-    error: error instanceof Error 
-      ? error.message 
-      : (typeof error === 'object' && error !== null 
-          ? JSON.stringify(error) 
-          : String(error)),
+    error:
+      error instanceof Error
+        ? error.message
+        : (typeof error === 'object' && error !== null
+            ? JSON.stringify(error)
+            : String(error)),
     authInfo: {
       userId: user?.id,
       email: user?.email ? `${user.email.slice(0, 3)}***@${user.email.split('@')[1]}` : null,
@@ -41,9 +42,9 @@ export async function handleSupabaseError(
     operationType,
     path,
   };
-  console.error('Supabase Error: ', JSON.stringify(errInfo));
+
+  logger.error('Supabase Error:', errInfo);
   throw new Error(JSON.stringify(errInfo));
 }
 
-// Keep backward-compatible export name
 export const handleFirestoreError = handleSupabaseError;

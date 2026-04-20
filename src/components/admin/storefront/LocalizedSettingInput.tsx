@@ -12,7 +12,8 @@ interface LocalizedSettingInputProps {
   type?: 'text' | 'textarea';
   onAITranslate?: () => Promise<void>;
   onAIAutoComplete?: () => Promise<void>;
-  isGenerating?: boolean;
+  isGenerating?: boolean; // Represents "Auto-Fill" action
+  isTranslating?: boolean; // Represents "Translate" action
   description?: string;
 }
 
@@ -25,6 +26,7 @@ export function LocalizedSettingInput({
   onAITranslate,
   onAIAutoComplete,
   isGenerating,
+  isTranslating,
   description
 }: LocalizedSettingInputProps) {
   const baseInputClasses = "w-full bg-white border border-zinc-200 px-3 py-2 text-[13px] font-medium text-zinc-900 transition-all focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900 placeholder:text-zinc-400 rounded-sm";
@@ -44,8 +46,9 @@ export function LocalizedSettingInput({
         <div className="flex items-center gap-2">
           {onAIAutoComplete && (
             <button
-              onClick={onAIAutoComplete}
-              disabled={isGenerating}
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onAIAutoComplete(); }}
+              disabled={isGenerating || isTranslating}
               className="flex items-center gap-1.5 px-2 py-1 text-[9px] font-black uppercase tracking-tighter text-indigo-600 bg-indigo-50 border border-indigo-100 rounded hover:bg-indigo-100 transition-all disabled:opacity-50"
               title="AI Magic Fill"
             >
@@ -55,12 +58,13 @@ export function LocalizedSettingInput({
           )}
           {onAITranslate && (
             <button
-              onClick={onAITranslate}
-              disabled={isGenerating || !value['en']}
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onAITranslate(); }}
+              disabled={isGenerating || isTranslating || !value['en']}
               className="flex items-center gap-1.5 px-2 py-1 text-[9px] font-black uppercase tracking-tighter text-zinc-600 bg-white border border-zinc-200 rounded hover:bg-zinc-50 transition-all disabled:opacity-50"
               title="Translate English to All"
             >
-              {isGenerating ? <Loader2 className="w-2.5 h-2.5 animate-spin" /> : <Languages className="w-2.5 h-2.5" />}
+              {isTranslating ? <Loader2 className="w-2.5 h-2.5 animate-spin" /> : <Languages className="w-2.5 h-2.5" />}
               Translate
             </button>
           )}

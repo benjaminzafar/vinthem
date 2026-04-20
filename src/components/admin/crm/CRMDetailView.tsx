@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { motion } from 'motion/react';
 import { 
   ArrowLeft, Mail, Calendar, Package, 
@@ -160,7 +161,11 @@ export function CRMDetailView({ customer, orders, tickets, refunds, reviews, onB
                                   <div key={index} className="flex items-center justify-between p-4 bg-white border border-slate-200 rounded">
                                     <div className="flex items-center space-x-4">
                                       <div className="w-10 h-10 bg-slate-50 border border-slate-200 rounded flex items-center justify-center overflow-hidden shrink-0">
-                                        {item.image ? <img src={item.image} alt="" className="w-full h-full object-cover grayscale" /> : <Package className="w-5 h-5 text-slate-300" />}
+                                        {item.image ? (
+                                          <div className="relative h-full w-full">
+                                            <Image src={item.image} alt="" fill className="object-cover grayscale" sizes="40px" />
+                                          </div>
+                                        ) : <Package className="w-5 h-5 text-slate-300" />}
                                       </div>
                                       <div>
                                         <p className="font-bold text-slate-900 text-sm">{item.name || item.title || 'Untitled item'}</p>

@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { cache } from 'react';
 import { StorefrontSettings } from '@/store/useSettingsStore';
+import { logger } from '@/lib/logger';
 import {
   maybeDecryptStoredValue,
   normalizePostHogIngestionHost,
@@ -17,7 +18,7 @@ export const getIntegrations = cache(async () => {
     .in('key', ['CLARITY_ID', 'POSTHOG_PROJECT_KEY', 'POSTHOG_HOST']);
 
   if (error) {
-    console.error('Error fetching integrations:', error);
+    logger.error('Error fetching integrations:', error);
     return {};
   }
 
@@ -43,7 +44,7 @@ export const getSettings = cache(async () => {
     .single();
 
   if (error || !settingsData) {
-    if (error) console.error('Error fetching settings:', error);
+    if (error) logger.error('Error fetching settings:', error);
     // Return minimal defaults so the UI doesn't crash
     return ({
       storeName: { en: 'Mavren Shop', sv: 'Mavren Shop' },

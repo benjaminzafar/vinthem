@@ -1,4 +1,5 @@
-"use client";
+﻿"use client";
+import { logger } from '@/lib/logger';
 import React, { useState, useEffect } from 'react';
 import { Trash2, Image as ImageIcon, Loader2, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
@@ -64,7 +65,7 @@ export function MediaCenter() {
       setStorageUsage(totalSize);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error('Error fetching files:', error);
+      logger.error('Error fetching files:', error);
       toast.error('Failed to load media files: ' + message);
     } finally {
       setLoading(false);
@@ -89,7 +90,7 @@ export function MediaCenter() {
       fetchFiles();
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Unknown delete error';
-      console.error('Error deleting file:', error);
+      logger.error('Error deleting file:', error);
       toast.error('Failed to delete file: ' + message, { id: toastId });
     }
   };
@@ -144,3 +145,4 @@ export function MediaCenter() {
     </div>
   );
 }
+

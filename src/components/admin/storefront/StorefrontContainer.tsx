@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, useTransition } from 'react';
+import React, { useState, useEffect, useTransition, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Globe, Layout, ImageIcon, AlignLeft, Info, Save, 
   Loader2, Sparkles, Upload, Mail, FileCode, Users, 
-  ShoppingBag, ShoppingCart, Languages, LinkIcon, Plus, Trash2, Package 
+  ShoppingBag, ShoppingCart, Languages, LinkIcon, Plus, Trash2, Package, Layers, Clock, Lock
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AdminHeader } from '../AdminHeader';
@@ -15,7 +15,12 @@ import { CredentialInput } from '../integrations/CredentialInput';
 import { StorefrontSettings as StorefrontSettingsType, LocalizedString, useSettingsStore } from '@/store/useSettingsStore';
 import { updateSettingsAction } from '@/app/actions/storefront';
 import { genAI } from '@/lib/ai';
+import { extractFirstJsonObject } from '@/lib/json';
 import Image from 'next/image';
+import { isValidUrl } from '@/lib/utils';
+import { SearchableSelect } from '@/components/SearchableSelect';
+import { createClient } from '@/utils/supabase/client';
+import { Category } from '@/types';
 
 const CATEGORIES = [
   { id: 'branding', name: 'Identity & Brand', icon: Sparkles, color: 'text-zinc-900', bg: 'bg-zinc-50' },
@@ -26,26 +31,55 @@ const CATEGORIES = [
 ];
 
 export function StorefrontContainer() {
-  const { settings: initialSettings } = useSettingsStore();
+  const initialSettings = useSettingsStore((state) => state.settings);
+  const setStoreSettings = useSettingsStore((state) => state.setSettings);
+  const settingsLoaded = useSettingsStore((state) => state.settingsLoaded);
+  const setSettingsLoaded = useSettingsStore((state) => state.setSettingsLoaded);
   const [settings, setSettings] = useState<StorefrontSettingsType>(initialSettings);
   const [activeCategory, setActiveCategory] = useState('branding');
   const [isPending, startTransition] = useTransition();
-  const [generating, setGenerating] = useState(false);
+  const [generatingId, setGeneratingId] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState<string | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [supabase] = useState(() => createClient());
 
   useEffect(() => {
-    if (initialSettings && Object.keys(initialSettings).length > 0) {
-      setSettings(initialSettings);
+    async function fetchCategories() {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .order('name');
+      
+      if (data && !error) {
+        setCategories(data.map(c => ({
+          ...c,
+          parentId: c.parent_id,
+          imageUrl: c.image_url,
+          iconUrl: c.icon_url,
+          isFeatured: c.is_featured,
+          showInHero: c.show_in_hero,
+          pinnedInSearch: c.pinned_in_search
+        })));
+      }
     }
-  }, [initialSettings]);
+    fetchCategories();
+  }, [supabase]);
 
-  const handleUpdate = (path: string, value: any) => {
+  // Hydrate local state from props (Once only to avoid overwriting during async AI operations)
+  useEffect(() => {
+    if (initialSettings && Object.keys(initialSettings).length > 0 && !settingsLoaded) {
+      setSettings(initialSettings);
+      setSettingsLoaded(true);
+    }
+  }, [initialSettings, settingsLoaded]);
+
+  const handleUpdate = (path: string, value: string | string[] | LocalizedString | boolean | Record<string, unknown> | unknown[]) => {
     setSettings(prev => {
       const newSettings = { ...prev };
       const keys = path.split('.');
-      let current = newSettings as any;
+      let current = newSettings as Record<string, unknown>;
       for (let i = 0; i < keys.length - 1; i++) {
-        current = current[keys[i]];
+        current = current[keys[i]] as Record<string, unknown>;
       }
       current[keys[keys.length - 1]] = value;
       return newSettings;
@@ -61,50 +95,208 @@ export function StorefrontContainer() {
       const url = await uploadImageWithTimeout(file, `storefront/${Date.now()}_${file.name}`);
       handleUpdate(field as string, url);
       toast.success('Asset synchronized', { id: toastId });
-    } catch (error: any) {
-      toast.error('Sync failed', { id: toastId });
+    } catch (error: unknown) {
+      const err = error as Error;
+      toast.error('Sync failed: ' + err.message, { id: toastId });
     }
   };
 
-  const handleAIAutoComplete = async (field: keyof StorefrontSettingsType, label: string) => {
-    setGenerating(true);
-    const toastId = toast.loading(`Neuromorphic generation in progress for ${label}...`);
+  /**
+   * Core AI translation for any LocalizedString value.
+   * Returns the merged LocalizedString or null on failure.
+   */
+  const translateLocalizedString = useCallback(async (
+    sourceValue: LocalizedString,
+    label: string,
+    toastId: string | number
+  ): Promise<LocalizedString | null> => {
+    const targetLangs = settings.languages.filter(l => l !== 'en');
+    if (targetLangs.length === 0) {
+      toast.info('No extra languages configured.', { id: toastId });
+      return null;
+    }
+    const sourceText = sourceValue.en;
+    if (!sourceText) {
+      toast.error('Source text (EN) required for translation.', { id: toastId });
+      return null;
+    }
+
+    // Capture the current state of the field before AI call to ensure we don't lose user edits made during the wait
+    const currentFieldState = { ...sourceValue };
+
+    // Standardize language codes for AI (e.g. CH -> zh)
+    const LANGUAGE_ALIASES: Record<string, string> = {
+      'ch': 'zh',
+      'cn': 'zh',
+      'jp': 'ja',
+      'kr': 'ko',
+      'de': 'de', // Standard
+    };
+
+    const aiTargetLangs = targetLangs.map(l => {
+      const normalized = l.toLowerCase();
+      return LANGUAGE_ALIASES[normalized] || normalized;
+    });
+
+    const prompt = `Translate the following text into these languages: ${aiTargetLangs.join(', ')}.
+Text Purpose: ${label} for a premium e-commerce store.
+Return ONLY a valid raw JSON object. No conversational text, no markdown backticks.
+Schema: Each key should be the exact ISO 639-1 code from the list above.
+
+Example: { "de": "German text", "zh": "Chinese text" }
+
+Text to translate: "${sourceText}"`;
+
     try {
-      const prompt = `Generate a creative and professional ${label} for a premium minimalist e-commerce store named "${settings.storeName.en}". Return ONLY the text content.`;
+      const model = genAI.getGenerativeModel({
+        model: "llama-3.3-70b-versatile",
+        generationConfig: { temperature: 0.1 }
+      });
+
+      const aiResponse = await model.generateContent(prompt);
+      let rawText = aiResponse.response.text() || '{}';
+      
+      // Robust Cleaning: Remove markdown blocks if AI ignored "raw" instruction
+      if (rawText.includes('```')) {
+        rawText = rawText.split('```')[1]?.replace(/^[a-z]+/, '') || rawText.replace(/```/g, '');
+      }
+
+      // Robust JSON extraction & Repair
+      let parsed: Record<string, string> = {};
+      try {
+        const jsonStr = extractFirstJsonObject(rawText.trim()) || rawText.trim();
+        parsed = JSON.parse(jsonStr);
+      } catch (e) {
+        console.warn('[AI] JSON Parse failed, attempting fallback regex extraction:', e);
+        // Fallback: Manually extract any "key": "value" pairs that look like languages
+        targetLangs.forEach(lang => {
+          const aiCode = LANGUAGE_ALIASES[lang.toLowerCase()] || lang.toLowerCase();
+          const regex = new RegExp(`"${aiCode}"\\s*:\\s*"([^"]+)"`, 'i');
+          const match = rawText.match(regex);
+          if (match && match[1]) parsed[lang] = match[1];
+        });
+      }
+
+      // Fuzzy Mapping & Validation
+      const validated: Record<string, string> = { en: sourceText };
+      targetLangs.forEach(originalCode => {
+        const aiCode = LANGUAGE_ALIASES[originalCode.toLowerCase()] || originalCode.toLowerCase();
+        
+        // 1. Precise match on AI code
+        if (parsed[aiCode]) {
+          validated[originalCode] = parsed[aiCode];
+        } 
+        // 2. Precise match on original code
+        else if (parsed[originalCode]) {
+          validated[originalCode] = parsed[originalCode];
+        }
+        // 3. Case-insensitive fuzzy match
+        else {
+          const foundKey = Object.keys(parsed).find(k => 
+            k.toLowerCase() === originalCode.toLowerCase() || 
+            k.toLowerCase() === aiCode.toLowerCase()
+          );
+          if (foundKey) validated[originalCode] = parsed[foundKey];
+        }
+      });
+
+      return { ...currentFieldState, ...validated };
+    } catch (error) {
+      console.error('[AI] translateLocalizedString failed:', error);
+      throw error;
+    }
+  }, [settings.languages, genAI, settingsLoaded]);
+
+  const handleAIAutoComplete = async (field: keyof StorefrontSettingsType, label: string) => {
+    const actionId = `${field}-fill`;
+    // handleAIAutoComplete logic
+    setGeneratingId(actionId);
+    const toastId = toast.loading(`Generating ${label}...`);
+    try {
+      const prompt = `Generate a creative and professional ${label} for a premium minimalist e-commerce store named "${settings.storeName?.en || 'Nordic'}". Return ONLY the text content, no quotes or formatting.`;
       const model = genAI.getGenerativeModel({ model: "llama-3.3-70b-versatile" });
       const aiResponse = await model.generateContent(prompt);
       const text = aiResponse.response.text()?.trim() || '';
-      handleUpdate(`${field as string}.en`, text);
-      toast.success('Content generated', { id: toastId });
+      
+      if (!text) {
+        toast.error('AI returned empty content.', { id: toastId });
+        return;
+      }
+      
+      // Write English value only for Auto-Fill (isolation)
+      const currentValue = (settings[field] as LocalizedString) || {};
+      const updatedValue: LocalizedString = { ...currentValue, en: text };
+      handleUpdate(field as string, updatedValue);
+      
+      toast.success(`${label} generated (English)`, { id: toastId });
     } catch (error) {
-      toast.error('AI Logic Timeout', { id: toastId });
+      console.error('[AI] Auto-Fill failed:', error);
+      const err = error as Error;
+      toast.error(err.message || 'AI generation failed', { id: toastId });
     } finally {
-      setGenerating(false);
+      setGeneratingId(null);
     }
   };
 
   const handleAITranslate = async (field: keyof StorefrontSettingsType, label: string) => {
-    const value = settings[field] as LocalizedString;
+    const actionId = `${field}-translate`;
+    // handleAITranslate logic
+    const value = (settings[field] as LocalizedString) || {};
+    
     if (!value.en) {
-      toast.error('Source text (EN) required for translation orchestration.');
+      toast.error('Explicit source text (EN) required before translation.');
       return;
     }
-    setGenerating(true);
-    const toastId = toast.loading(`Orchestrating translations for ${label}...`);
+
+    setGeneratingId(actionId);
+    const toastId = toast.loading(`Translating ${label} to all active languages...`);
     try {
-      const prompt = `Translate to: ${settings.languages.filter(l => l !== 'en').join(', ')}. Text: "${value.en}". Return ONLY a JSON object of translations.`;
-      const model = genAI.getGenerativeModel({ 
-        model: "llama-3.3-70b-versatile",
-        generationConfig: { responseMimeType: "application/json" }
-      });
-      const aiResponse = await model.generateContent(prompt);
-      const translations = JSON.parse(aiResponse.response.text() || '{}');
-      handleUpdate(field as string, { ...value, ...translations });
-      toast.success('Translations synchronized', { id: toastId });
+      const translated = await translateLocalizedString(value, label, toastId);
+      if (translated) {
+        handleUpdate(field as string, translated);
+        toast.success(`${label} localized for all configured markets`, { id: toastId });
+      } else {
+        toast.dismiss(toastId);
+      }
     } catch (error) {
-       toast.error('Translation logic failed', { id: toastId });
+      console.error('[AI] Translation failed:', error);
+      const err = error as Error;
+      toast.error(err.message || 'Localization failed', { id: toastId });
     } finally {
-      setGenerating(false);
+      setGeneratingId(null);
+    }
+  };
+
+  /**
+   * Item-level translation for navbarLinks and footerSections.
+   * Translates a specific LocalizedString value and writes it back via callback.
+   */
+  const handleItemTranslate = async (
+    value: LocalizedString,
+    label: string,
+    onTranslated: (result: LocalizedString) => void,
+    fieldId?: string
+  ) => {
+    const actionId = fieldId ? `${fieldId}-translate` : `${label}-translate`;
+    if (!value.en) {
+      toast.error('Source text (EN) required for translation.');
+      return;
+    }
+    setGeneratingId(actionId);
+    const toastId = toast.loading(`Translating ${label}...`);
+    try {
+      const translated = await translateLocalizedString(value, label, toastId);
+      if (translated) {
+        onTranslated(translated);
+        toast.success(`${label} translations synchronized`, { id: toastId });
+      } else {
+        toast.dismiss(toastId);
+      }
+    } catch (error) {
+      const err = error as Error;
+      toast.error(err.message || 'Translation failed', { id: toastId });
+    } finally {
+      setGeneratingId(null);
     }
   };
 
@@ -112,8 +304,15 @@ export function StorefrontContainer() {
     startTransition(async () => {
       const toastId = toast.loading('Synchronizing store configuration...');
       const result = await updateSettingsAction(settings);
-      if (result.success) toast.success(result.message, { id: toastId });
-      else toast.error(result.message, { id: toastId });
+
+      if (result.success) {
+        setStoreSettings(settings);
+        setSettingsLoaded(true);
+        toast.success(result.message, { id: toastId });
+        return;
+      }
+
+      toast.error(result.message, { id: toastId });
     });
   };
 
@@ -154,7 +353,7 @@ export function StorefrontContainer() {
                 <SettingCard id="Identity" title="Brand Identity" icon={Sparkles} defaultExpanded>
                   <div className="flex flex-col md:flex-row gap-8">
                     <div className="w-32 h-32 rounded border border-zinc-100 bg-zinc-50 flex items-center justify-center overflow-hidden relative group cursor-pointer hover:bg-zinc-100/50 transition-colors">
-                      {settings.logoImage ? (
+                      {isValidUrl(settings.logoImage) ? (
                         <Image src={settings.logoImage} alt="Logo" fill sizes="128px" className="object-contain p-2" />
                       ) : (
                         <ImageIcon className="w-8 h-8 text-zinc-200" />
@@ -172,7 +371,8 @@ export function StorefrontContainer() {
                         languages={settings.languages}
                         onAITranslate={() => handleAITranslate('storeName', 'Store Name')}
                         onAIAutoComplete={() => handleAIAutoComplete('storeName', 'Store Name')}
-                        isGenerating={generating}
+                        isGenerating={generatingId === 'storeName-fill'}
+                        isTranslating={generatingId === 'storeName-translate'}
                       />
                       <CredentialInput 
                         label="Logo Asset URL" 
@@ -192,7 +392,8 @@ export function StorefrontContainer() {
                       languages={settings.languages}
                       onAIAutoComplete={() => handleAIAutoComplete('seoTitle', 'SEO Title')}
                       onAITranslate={() => handleAITranslate('seoTitle', 'SEO Title')}
-                      isGenerating={generating}
+                      isGenerating={generatingId === 'seoTitle-fill'}
+                      isTranslating={generatingId === 'seoTitle-translate'}
                     />
                   <LocalizedSettingInput 
                     label="Search Description" 
@@ -202,7 +403,8 @@ export function StorefrontContainer() {
                     type="textarea"
                     onAIAutoComplete={() => handleAIAutoComplete('seoDescription', 'SEO Description')}
                     onAITranslate={() => handleAITranslate('seoDescription', 'SEO Description')}
-                    isGenerating={generating}
+                    isGenerating={generatingId === 'seoDescription-fill'}
+                    isTranslating={generatingId === 'seoDescription-translate'}
                   />
                 </SettingCard>
 
@@ -237,9 +439,17 @@ export function StorefrontContainer() {
                             handleUpdate('navbarLinks', newLinks);
                           }}
                           languages={settings.languages}
-                          onAITranslate={() => handleAITranslate(`navbarLinks.${idx}.label` as any, 'Link Label')}
-                          onAIAutoComplete={() => handleAIAutoComplete(`navbarLinks.${idx}.label` as any, 'Link Label')}
-                          isGenerating={generating}
+                          onAITranslate={() => handleItemTranslate(
+                            link.label,
+                            `Navbar Link #${idx + 1}`,
+                            (result) => {
+                              const newLinks = [...settings.navbarLinks];
+                              newLinks[idx].label = result;
+                              handleUpdate('navbarLinks', newLinks);
+                            }
+                          )}
+                          isGenerating={generatingId === `Navbar Link #${idx + 1}-fill`}
+                          isTranslating={generatingId === `Navbar Link #${idx + 1}-translate`}
                         />
                         <CredentialInput label="Destination URL" value={link.href} onChange={v => {
                              const newLinks = [...settings.navbarLinks];
@@ -270,9 +480,17 @@ export function StorefrontContainer() {
                                handleUpdate('footerSections', newSections);
                              }}
                              languages={settings.languages}
-                             onAITranslate={() => handleAITranslate(`footerSections.${sIdx}.title` as any, 'Section Title')}
-                             onAIAutoComplete={() => handleAIAutoComplete(`footerSections.${sIdx}.title` as any, 'Section Title')}
-                             isGenerating={generating}
+                             onAITranslate={() => handleItemTranslate(
+                               section.title,
+                               `Footer Section ${sIdx + 1} Title`,
+                               (result) => {
+                                 const newSections = [...settings.footerSections];
+                                 newSections[sIdx].title = result;
+                                 handleUpdate('footerSections', newSections);
+                               }
+                             )}
+                             isGenerating={generatingId === `Footer Section ${sIdx + 1} Title-fill`}
+                             isTranslating={generatingId === `Footer Section ${sIdx + 1} Title-translate`}
                            />
                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               {section.links.map((link, lIdx) => (
@@ -291,9 +509,17 @@ export function StorefrontContainer() {
                                         handleUpdate('footerSections', newSections);
                                       }}
                                       languages={settings.languages}
-                                      onAITranslate={() => handleAITranslate(`footerSections.${sIdx}.links.${lIdx}.label` as any, 'Link Label')}
-                                      onAIAutoComplete={() => handleAIAutoComplete(`footerSections.${sIdx}.links.${lIdx}.label` as any, 'Link Label')}
-                                      isGenerating={generating}
+                                      onAITranslate={() => handleItemTranslate(
+                                        link.label,
+                                        `Footer Link Label`,
+                                        (result) => {
+                                          const newSections = [...settings.footerSections];
+                                          newSections[sIdx].links[lIdx].label = result;
+                                          handleUpdate('footerSections', newSections);
+                                        }
+                                      )}
+                                      isGenerating={generatingId === 'Footer Link Label-fill'}
+                                      isTranslating={generatingId === 'Footer Link Label-translate'}
                                    />
                                    <input type="text" value={link.href} onChange={e => {
                                       const newSections = [...settings.footerSections];
@@ -324,34 +550,169 @@ export function StorefrontContainer() {
           {activeCategory === 'homepage' && (
             <motion.div key="homepage" initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }}>
               <div className="grid grid-cols-1 gap-4">
-                <SettingCard id="Featured" title="Featured Collection UI" icon={Sparkles}>
-                   <LocalizedSettingInput label="Hero Title" value={settings.featuredTitle} onChange={v => handleUpdate('featuredTitle', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('featuredTitle', 'Hero Title')} onAIAutoComplete={() => handleAIAutoComplete('featuredTitle', 'Hero Title')} isGenerating={generating} />
-                   <LocalizedSettingInput label="Top Subtitle" value={settings.featuredTopSubtitle} onChange={v => handleUpdate('featuredTopSubtitle', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('featuredTopSubtitle', 'Top Subtitle')} onAIAutoComplete={() => handleAIAutoComplete('featuredTopSubtitle', 'Top Subtitle')} isGenerating={generating} />
-                   <LocalizedSettingInput label="Hero Description" value={settings.featuredSubtitle} onChange={v => handleUpdate('featuredSubtitle', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('featuredSubtitle', 'Hero Description')} onAIAutoComplete={() => handleAIAutoComplete('featuredSubtitle', 'Hero Description')} isGenerating={generating} />
+                <SettingCard id="Hero" title="Hero / Header UI" icon={Sparkles} defaultExpanded>
+                   <div className="space-y-6">
+                    <LocalizedSettingInput 
+                      label="Main Hero Title" 
+                      value={settings.heroTitle} 
+                      onChange={v => handleUpdate('heroTitle', v)} 
+                      languages={settings.languages} 
+                      onAITranslate={() => handleAITranslate('heroTitle', 'Hero Title')} 
+                      onAIAutoComplete={() => handleAIAutoComplete('heroTitle', 'Hero Title')} 
+                      isGenerating={generatingId === 'heroTitle-fill'} 
+                      isTranslating={generatingId === 'heroTitle-translate'} 
+                    />
+                    <LocalizedSettingInput 
+                      label="Hero Description" 
+                      value={settings.heroSubtitle} 
+                      onChange={v => handleUpdate('heroSubtitle', v)} 
+                      languages={settings.languages} 
+                      type="textarea"
+                      onAITranslate={() => handleAITranslate('heroSubtitle', 'Hero Description')} 
+                      onAIAutoComplete={() => handleAIAutoComplete('heroSubtitle', 'Hero Description')} 
+                      isGenerating={generatingId === 'heroSubtitle-fill'} 
+                      isTranslating={generatingId === 'heroSubtitle-translate'} 
+                    />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <LocalizedSettingInput 
+                        label="Hero Button Label" 
+                        value={settings.heroButtonText} 
+                        onChange={v => handleUpdate('heroButtonText', v)} 
+                        languages={settings.languages} 
+                        onAITranslate={() => handleAITranslate('heroButtonText', 'Hero Button Label')} 
+                        isGenerating={generatingId === 'heroButtonText-fill'} 
+                        isTranslating={generatingId === 'heroButtonText-translate'} 
+                      />
+                      <CredentialInput 
+                        label="Hero Button Link" 
+                        value={settings.heroButtonLink} 
+                        onChange={v => handleUpdate('heroButtonLink', v)} 
+                        placeholder="/collections/all"
+                      />
+                    </div>
+                   </div>
                 </SettingCard>
 
-                <SettingCard id="Future" title="Future Product Preview" icon={Users}>
+                <SettingCard id="Collections" title="Top Collections Grid" icon={Layers}>
+                   <div className="space-y-6">
+                    <LocalizedSettingInput 
+                      label="Collections Tagline" 
+                      value={settings.collectionTopSubtitle} 
+                      onChange={v => handleUpdate('collectionTopSubtitle', v)} 
+                      languages={settings.languages} 
+                      onAITranslate={() => handleAITranslate('collectionTopSubtitle', 'Collections Tagline')} 
+                      onAIAutoComplete={() => handleAIAutoComplete('collectionTopSubtitle', 'Collections Tagline')} 
+                      isGenerating={generatingId === 'collectionTopSubtitle-fill'} 
+                      isTranslating={generatingId === 'collectionTopSubtitle-translate'} 
+                    />
+                    <LocalizedSettingInput 
+                      label="Grid Main Heading" 
+                      value={settings.collectionTitle} 
+                      onChange={v => handleUpdate('collectionTitle', v)} 
+                      languages={settings.languages} 
+                      onAITranslate={() => handleAITranslate('collectionTitle', 'Grid Heading')} 
+                      onAIAutoComplete={() => handleAIAutoComplete('collectionTitle', 'Grid Heading')} 
+                      isGenerating={generatingId === 'collectionTitle-fill'} 
+                      isTranslating={generatingId === 'collectionTitle-translate'} 
+                    />
+                    <LocalizedSettingInput 
+                      label="Grid Description" 
+                      value={settings.collectionSubtitle} 
+                      onChange={v => handleUpdate('collectionSubtitle', v)} 
+                      languages={settings.languages} 
+                      type="textarea"
+                      onAITranslate={() => handleAITranslate('collectionSubtitle', 'Grid Description')} 
+                      onAIAutoComplete={() => handleAIAutoComplete('collectionSubtitle', 'Grid Description')} 
+                      isGenerating={generatingId === 'collectionSubtitle-fill'} 
+                      isTranslating={generatingId === 'collectionSubtitle-translate'} 
+                    />
+                    <LocalizedSettingInput 
+                      label="View All Button Label" 
+                      value={settings.shopNowText} 
+                      onChange={v => handleUpdate('shopNowText', v)} 
+                      languages={settings.languages} 
+                      onAITranslate={() => handleAITranslate('shopNowText', 'View All Label')} 
+                      isGenerating={generatingId === 'shopNowText-fill'} 
+                      isTranslating={generatingId === 'shopNowText-translate'} 
+                    />
+                   </div>
+                </SettingCard>
+
+                <SettingCard id="Future" title="Future Product Preview" icon={Clock}>
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                      <div className="space-y-4">
                         <div className="aspect-[4/5] bg-zinc-50 border border-zinc-100 rounded-md relative group overflow-hidden">
-                           {settings.futureImage1 ? (
+                           {isValidUrl(settings.futureImage1) ? (
                               <Image src={settings.futureImage1} alt="Future product preview 1" fill sizes="(max-width: 768px) 100vw, 400px" className="object-cover" />
                            ) : <ImageIcon className="w-8 h-8 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-zinc-200" />}
                            <input type="file" onChange={e => handleImageUpload(e, 'futureImage1')} className="absolute inset-0 opacity-0 cursor-pointer" />
                         </div>
-                        <LocalizedSettingInput label="Product 1 Title" value={settings.futureProduct1Title} onChange={v => handleUpdate('futureProduct1Title', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('futureProduct1Title', 'Product 1 Title')} onAIAutoComplete={() => handleAIAutoComplete('futureProduct1Title', 'Product 1 Title')} isGenerating={generating} />
-                        <LocalizedSettingInput label="Availability Date" value={settings.futureProduct1Date} onChange={v => handleUpdate('futureProduct1Date', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('futureProduct1Date', 'Availability Date')} onAIAutoComplete={() => handleAIAutoComplete('futureProduct1Date', 'Availability Date')} isGenerating={generating} />
+                        <LocalizedSettingInput label="Product 1 Title" value={settings.futureProduct1Title} onChange={v => handleUpdate('futureProduct1Title', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('futureProduct1Title', 'Product 1 Title')} onAIAutoComplete={() => handleAIAutoComplete('futureProduct1Title', 'Product 1 Title')} isGenerating={generatingId === 'futureProduct1Title-fill'} isTranslating={generatingId === 'futureProduct1Title-translate'} />
+                        <LocalizedSettingInput label="Availability Date" value={settings.futureProduct1Date} onChange={v => handleUpdate('futureProduct1Date', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('futureProduct1Date', 'Availability Date')} onAIAutoComplete={() => handleAIAutoComplete('futureProduct1Date', 'Availability Date')} isGenerating={generatingId === 'futureProduct1Date-fill'} isTranslating={generatingId === 'futureProduct1Date-translate'} />
                      </div>
                      <div className="space-y-4">
                         <div className="aspect-[4/5] bg-zinc-50 border border-zinc-100 rounded-md relative group overflow-hidden">
-                           {settings.futureImage2 ? (
+                           {isValidUrl(settings.futureImage2) ? (
                               <Image src={settings.futureImage2} alt="Future product preview 2" fill sizes="(max-width: 768px) 100vw, 400px" className="object-cover" />
                            ) : <ImageIcon className="w-8 h-8 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-zinc-200" />}
                            <input type="file" onChange={e => handleImageUpload(e, 'futureImage2')} className="absolute inset-0 opacity-0 cursor-pointer" />
                         </div>
-                        <LocalizedSettingInput label="Product 2 Title" value={settings.futureProduct2Title} onChange={v => handleUpdate('futureProduct2Title', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('futureProduct2Title', 'Product 2 Title')} onAIAutoComplete={() => handleAIAutoComplete('futureProduct2Title', 'Product 2 Title')} isGenerating={generating} />
-                        <LocalizedSettingInput label="Availability Date" value={settings.futureProduct2Date} onChange={v => handleUpdate('futureProduct2Date', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('futureProduct2Date', 'Availability Date')} onAIAutoComplete={() => handleAIAutoComplete('futureProduct2Date', 'Availability Date')} isGenerating={generating} />
+                        <LocalizedSettingInput label="Product 2 Title" value={settings.futureProduct2Title} onChange={v => handleUpdate('futureProduct2Title', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('futureProduct2Title', 'Product 2 Title')} onAIAutoComplete={() => handleAIAutoComplete('futureProduct2Title', 'Product 2 Title')} isGenerating={generatingId === 'futureProduct2Title-fill'} isTranslating={generatingId === 'futureProduct2Title-translate'} />
+                        <LocalizedSettingInput label="Availability Date" value={settings.futureProduct2Date} onChange={v => handleUpdate('futureProduct2Date', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('futureProduct2Date', 'Availability Date')} onAIAutoComplete={() => handleAIAutoComplete('futureProduct2Date', 'Availability Date')} isGenerating={generatingId === 'futureProduct2Date-fill'} isTranslating={generatingId === 'futureProduct2Date-translate'} />
                      </div>
+                   </div>
+                </SettingCard>
+
+                <SettingCard id="Featured" title="Featured Collection Section" icon={Package}>
+                   <div className="space-y-6">
+                    <LocalizedSettingInput 
+                      label="Featured Section Heading" 
+                      value={settings.featuredTitle} 
+                      onChange={v => handleUpdate('featuredTitle', v)} 
+                      languages={settings.languages} 
+                      onAITranslate={() => handleAITranslate('featuredTitle', 'Featured Heading')} 
+                      onAIAutoComplete={() => handleAIAutoComplete('featuredTitle', 'Featured Heading')} 
+                      isGenerating={generatingId === 'featuredTitle-fill'} 
+                      isTranslating={generatingId === 'featuredTitle-translate'} 
+                    />
+                    <LocalizedSettingInput 
+                      label="Featured Subtitle / Tagline" 
+                      value={settings.featuredTopSubtitle} 
+                      onChange={v => handleUpdate('featuredTopSubtitle', v)} 
+                      languages={settings.languages} 
+                      onAITranslate={() => handleAITranslate('featuredTopSubtitle', 'Featured Subtitle')} 
+                      onAIAutoComplete={() => handleAIAutoComplete('featuredTopSubtitle', 'Featured Subtitle')} 
+                      isGenerating={generatingId === 'featuredTopSubtitle-fill'} 
+                      isTranslating={generatingId === 'featuredTopSubtitle-translate'} 
+                    />
+                    <LocalizedSettingInput 
+                      label="Featured Section Description" 
+                      value={settings.featuredSubtitle} 
+                      onChange={v => handleUpdate('featuredSubtitle', v)} 
+                      languages={settings.languages} 
+                      type="textarea" 
+                      onAITranslate={() => handleAITranslate('featuredSubtitle', 'Featured Description')} 
+                      onAIAutoComplete={() => handleAIAutoComplete('featuredSubtitle', 'Featured Description')} 
+                      isGenerating={generatingId === 'featuredSubtitle-fill'} 
+                      isTranslating={generatingId === 'featuredSubtitle-translate'} 
+                    />
+
+                    <div className="space-y-2">
+                      <label className="text-[11px] font-black uppercase tracking-widest text-zinc-400">Curated Category Showcase</label>
+                      <p className="text-[12px] text-zinc-500 mb-4 font-medium italic">Select which category's items to showcase on the homepage. Defaults to all featured products if left unselected.</p>
+                      <SearchableSelect 
+                        options={[
+                          { value: '', label: 'Showcase All Featured Products' },
+                          ...categories.map(c => ({ 
+                            value: (c.id as string), 
+                            label: typeof c.name === 'string' ? c.name : (c.name as any)?.en || 'Untitled Category' 
+                          }))
+                        ]}
+                        value={settings.featuredCategoryId || ''}
+                        onChange={(v) => handleUpdate('featuredCategoryId', v as string)}
+                        placeholder="Select showcase category..."
+                      />
+                    </div>
                    </div>
                 </SettingCard>
               </div>
@@ -363,44 +724,44 @@ export function StorefrontContainer() {
               <div className="grid grid-cols-1 gap-4">
                 <SettingCard id="LabelsCore" title="Core UI Labels" icon={AlignLeft}>
                    <div className="grid grid-cols-1 gap-8">
-                      <LocalizedSettingInput label="Shop Now Button" value={settings.shopNowText} onChange={v => handleUpdate('shopNowText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('shopNowText', 'Shop Now Button')} onAIAutoComplete={() => handleAIAutoComplete('shopNowText', 'Shop Now Button')} isGenerating={generating} />
-                      <LocalizedSettingInput label="View Detail Labels" value={settings.viewDetailsText} onChange={v => handleUpdate('viewDetailsText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('viewDetailsText', 'View Detail Labels')} onAIAutoComplete={() => handleAIAutoComplete('viewDetailsText', 'View Detail Labels')} isGenerating={generating} />
-                      <LocalizedSettingInput label="Add To Cart Button" value={settings.addToCartButtonText} onChange={v => handleUpdate('addToCartButtonText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('addToCartButtonText', 'Add To Cart Button')} onAIAutoComplete={() => handleAIAutoComplete('addToCartButtonText', 'Add To Cart Button')} isGenerating={generating} />
-                      <LocalizedSettingInput label="In Stock Indicator" value={settings.inStockText} onChange={v => handleUpdate('inStockText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('inStockText', 'In Stock Indicator')} onAIAutoComplete={() => handleAIAutoComplete('inStockText', 'In Stock Indicator')} isGenerating={generating} />
-                      <LocalizedSettingInput label="Out of Stock Indicator" value={settings.outOfStockText} onChange={v => handleUpdate('outOfStockText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('outOfStockText', 'Out of Stock Indicator')} onAIAutoComplete={() => handleAIAutoComplete('outOfStockText', 'Out of Stock Indicator')} isGenerating={generating} />
+                      <LocalizedSettingInput label="Shop Now Button" value={settings.shopNowText} onChange={v => handleUpdate('shopNowText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('shopNowText', 'Shop Now Button')} onAIAutoComplete={() => handleAIAutoComplete('shopNowText', 'Shop Now Button')} isGenerating={generatingId === 'shopNowText-fill'} isTranslating={generatingId === 'shopNowText-translate'} />
+                      <LocalizedSettingInput label="View Detail Labels" value={settings.viewDetailsText} onChange={v => handleUpdate('viewDetailsText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('viewDetailsText', 'View Detail Labels')} onAIAutoComplete={() => handleAIAutoComplete('viewDetailsText', 'View Detail Labels')} isGenerating={generatingId === 'viewDetailsText-fill'} isTranslating={generatingId === 'viewDetailsText-translate'} />
+                      <LocalizedSettingInput label="Add To Cart Button" value={settings.addToCartButtonText} onChange={v => handleUpdate('addToCartButtonText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('addToCartButtonText', 'Add To Cart Button')} onAIAutoComplete={() => handleAIAutoComplete('addToCartButtonText', 'Add To Cart Button')} isGenerating={generatingId === 'addToCartButtonText-fill'} isTranslating={generatingId === 'addToCartButtonText-translate'} />
+                      <LocalizedSettingInput label="In Stock Indicator" value={settings.inStockText} onChange={v => handleUpdate('inStockText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('inStockText', 'In Stock Indicator')} onAIAutoComplete={() => handleAIAutoComplete('inStockText', 'In Stock Indicator')} isGenerating={generatingId === 'inStockText-fill'} isTranslating={generatingId === 'inStockText-translate'} />
+                      <LocalizedSettingInput label="Out of Stock Indicator" value={settings.outOfStockText} onChange={v => handleUpdate('outOfStockText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('outOfStockText', 'Out of Stock Indicator')} onAIAutoComplete={() => handleAIAutoComplete('outOfStockText', 'Out of Stock Indicator')} isGenerating={generatingId === 'outOfStockText-fill'} isTranslating={generatingId === 'outOfStockText-translate'} />
                    </div>
                 </SettingCard>
                 <SettingCard id="LabelsSearch" title="Search Experience Labels" icon={Globe}>
                    <div className="grid grid-cols-1 gap-8">
-                      <LocalizedSettingInput label="Search Placeholder" value={settings.searchPlaceholder} onChange={v => handleUpdate('searchPlaceholder', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('searchPlaceholder', 'Search Placeholder')} onAIAutoComplete={() => handleAIAutoComplete('searchPlaceholder', 'Search Placeholder')} isGenerating={generating} />
+                      <LocalizedSettingInput label="Search Placeholder" value={settings.searchPlaceholder} onChange={v => handleUpdate('searchPlaceholder', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('searchPlaceholder', 'Search Placeholder')} onAIAutoComplete={() => handleAIAutoComplete('searchPlaceholder', 'Search Placeholder')} isGenerating={generatingId === 'searchPlaceholder-fill'} isTranslating={generatingId === 'searchPlaceholder-translate'} />
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <LocalizedSettingInput label="Discover Collections Heading" value={settings.searchDiscoverCollectionsText} onChange={v => handleUpdate('searchDiscoverCollectionsText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('searchDiscoverCollectionsText', 'Discover Collections Heading')} onAIAutoComplete={() => handleAIAutoComplete('searchDiscoverCollectionsText', 'Discover Collections Heading')} isGenerating={generating} />
-                        <LocalizedSettingInput label="Collections Results Heading" value={settings.searchCollectionsResultsText} onChange={v => handleUpdate('searchCollectionsResultsText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('searchCollectionsResultsText', 'Collections Results Heading')} onAIAutoComplete={() => handleAIAutoComplete('searchCollectionsResultsText', 'Collections Results Heading')} isGenerating={generating} />
-                        <LocalizedSettingInput label="Products Results Heading" value={settings.searchProductsResultsText} onChange={v => handleUpdate('searchProductsResultsText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('searchProductsResultsText', 'Products Results Heading')} onAIAutoComplete={() => handleAIAutoComplete('searchProductsResultsText', 'Products Results Heading')} isGenerating={generating} />
-                        <LocalizedSettingInput label="View All Results Label" value={settings.viewAllResultsText} onChange={v => handleUpdate('viewAllResultsText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('viewAllResultsText', 'View All Results Label')} onAIAutoComplete={() => handleAIAutoComplete('viewAllResultsText', 'View All Results Label')} isGenerating={generating} />
+                        <LocalizedSettingInput label="Discover Collections Heading" value={settings.searchDiscoverCollectionsText} onChange={v => handleUpdate('searchDiscoverCollectionsText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('searchDiscoverCollectionsText', 'Discover Collections Heading')} onAIAutoComplete={() => handleAIAutoComplete('searchDiscoverCollectionsText', 'Discover Collections Heading')} isGenerating={generatingId === 'searchDiscoverCollectionsText-fill'} isTranslating={generatingId === 'searchDiscoverCollectionsText-translate'} />
+                        <LocalizedSettingInput label="Collections Results Heading" value={settings.searchCollectionsResultsText} onChange={v => handleUpdate('searchCollectionsResultsText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('searchCollectionsResultsText', 'Collections Results Heading')} onAIAutoComplete={() => handleAIAutoComplete('searchCollectionsResultsText', 'Collections Results Heading')} isGenerating={generatingId === 'searchCollectionsResultsText-fill'} isTranslating={generatingId === 'searchCollectionsResultsText-translate'} />
+                        <LocalizedSettingInput label="Products Results Heading" value={settings.searchProductsResultsText} onChange={v => handleUpdate('searchProductsResultsText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('searchProductsResultsText', 'Products Results Heading')} onAIAutoComplete={() => handleAIAutoComplete('searchProductsResultsText', 'Products Results Heading')} isGenerating={generatingId === 'searchProductsResultsText-fill'} isTranslating={generatingId === 'searchProductsResultsText-translate'} />
+                        <LocalizedSettingInput label="View All Results Label" value={settings.viewAllResultsText} onChange={v => handleUpdate('viewAllResultsText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('viewAllResultsText', 'View All Results Label')} onAIAutoComplete={() => handleAIAutoComplete('viewAllResultsText', 'View All Results Label')} isGenerating={generatingId === 'viewAllResultsText-fill'} isTranslating={generatingId === 'viewAllResultsText-translate'} />
                       </div>
-                      <LocalizedSettingInput label="No Search Results Message" value={settings.searchNoProductsResultsText} onChange={v => handleUpdate('searchNoProductsResultsText', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('searchNoProductsResultsText', 'No Search Results Message')} onAIAutoComplete={() => handleAIAutoComplete('searchNoProductsResultsText', 'No Search Results Message')} isGenerating={generating} />
+                      <LocalizedSettingInput label="No Search Results Message" value={settings.searchNoProductsResultsText} onChange={v => handleUpdate('searchNoProductsResultsText', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('searchNoProductsResultsText', 'No Search Results Message')} onAIAutoComplete={() => handleAIAutoComplete('searchNoProductsResultsText', 'No Search Results Message')} isGenerating={generatingId === 'searchNoProductsResultsText-fill'} isTranslating={generatingId === 'searchNoProductsResultsText-translate'} />
                    </div>
                 </SettingCard>
                 <SettingCard id="LabelsCheckout" title="Checkout & Cart UX" icon={ShoppingCart}>
                    <div className="grid grid-cols-1 gap-8">
-                      <LocalizedSettingInput label="Cart Header" value={settings.cartTitle} onChange={v => handleUpdate('cartTitle', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('cartTitle', 'Cart Header')} onAIAutoComplete={() => handleAIAutoComplete('cartTitle', 'Cart Header')} isGenerating={generating} />
-                      <LocalizedSettingInput label="Empty Cart Message" value={settings.cartEmptyMessage} onChange={v => handleUpdate('cartEmptyMessage', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('cartEmptyMessage', 'Empty Cart Message')} onAIAutoComplete={() => handleAIAutoComplete('cartEmptyMessage', 'Empty Cart Message')} isGenerating={generating} />
-                      <LocalizedSettingInput label="Order Summary Title" value={settings.orderSummaryText} onChange={v => handleUpdate('orderSummaryText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('orderSummaryText', 'Order Summary Title')} onAIAutoComplete={() => handleAIAutoComplete('orderSummaryText', 'Order Summary Title')} isGenerating={generating} />
-                      <LocalizedSettingInput label="Checkout Button" value={settings.checkoutButtonText} onChange={v => handleUpdate('checkoutButtonText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('checkoutButtonText', 'Checkout Button')} onAIAutoComplete={() => handleAIAutoComplete('checkoutButtonText', 'Checkout Button')} isGenerating={generating} />
+                      <LocalizedSettingInput label="Cart Header" value={settings.cartTitle} onChange={v => handleUpdate('cartTitle', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('cartTitle', 'Cart Header')} onAIAutoComplete={() => handleAIAutoComplete('cartTitle', 'Cart Header')} isGenerating={generatingId === 'cartTitle-fill'} isTranslating={generatingId === 'cartTitle-translate'} />
+                      <LocalizedSettingInput label="Empty Cart Message" value={settings.cartEmptyMessage} onChange={v => handleUpdate('cartEmptyMessage', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('cartEmptyMessage', 'Empty Cart Message')} onAIAutoComplete={() => handleAIAutoComplete('cartEmptyMessage', 'Empty Cart Message')} isGenerating={generatingId === 'cartEmptyMessage-fill'} isTranslating={generatingId === 'cartEmptyMessage-translate'} />
+                      <LocalizedSettingInput label="Order Summary Title" value={settings.orderSummaryText} onChange={v => handleUpdate('orderSummaryText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('orderSummaryText', 'Order Summary Title')} onAIAutoComplete={() => handleAIAutoComplete('orderSummaryText', 'Order Summary Title')} isGenerating={generatingId === 'orderSummaryText-fill'} isTranslating={generatingId === 'orderSummaryText-translate'} />
+                      <LocalizedSettingInput label="Checkout Button" value={settings.checkoutButtonText} onChange={v => handleUpdate('checkoutButtonText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('checkoutButtonText', 'Checkout Button')} onAIAutoComplete={() => handleAIAutoComplete('checkoutButtonText', 'Checkout Button')} isGenerating={generatingId === 'checkoutButtonText-fill'} isTranslating={generatingId === 'checkoutButtonText-translate'} />
                    </div>
                 </SettingCard>
 
                 <SettingCard id="LabelsInventory" title="Product & Inventory Labels" icon={Package}>
                    <div className="grid grid-cols-1 gap-8">
-                      <LocalizedSettingInput label="Pricing & Inventory Header" value={settings.inventoryTitleText} onChange={v => handleUpdate('inventoryTitleText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('inventoryTitleText', 'Inventory Title')} onAIAutoComplete={() => handleAIAutoComplete('inventoryTitleText', 'Inventory Title')} isGenerating={generating} />
+                      <LocalizedSettingInput label="Pricing & Inventory Header" value={settings.inventoryTitleText} onChange={v => handleUpdate('inventoryTitleText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('inventoryTitleText', 'Inventory Title')} onAIAutoComplete={() => handleAIAutoComplete('inventoryTitleText', 'Inventory Title')} isGenerating={generatingId === 'inventoryTitleText-fill'} isTranslating={generatingId === 'inventoryTitleText-translate'} />
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <LocalizedSettingInput label="Regular Price Label" value={settings.regularPriceText} onChange={v => handleUpdate('regularPriceText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('regularPriceText', 'Regular Price')} onAIAutoComplete={() => handleAIAutoComplete('regularPriceText', 'Regular Price')} isGenerating={generating} />
-                        <LocalizedSettingInput label="Sale Price Label" value={settings.salePriceText} onChange={v => handleUpdate('salePriceText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('salePriceText', 'Sale Price')} onAIAutoComplete={() => handleAIAutoComplete('salePriceText', 'Sale Price')} isGenerating={generating} />
-                        <LocalizedSettingInput label="SKU Code Label" value={settings.skuCodeText} onChange={v => handleUpdate('skuCodeText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('skuCodeText', 'SKU Code')} onAIAutoComplete={() => handleAIAutoComplete('skuCodeText', 'SKU Code')} isGenerating={generating} />
-                        <LocalizedSettingInput label="Initial Stock Label" value={settings.initialStockText} onChange={v => handleUpdate('initialStockText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('initialStockText', 'Initial Stock')} onAIAutoComplete={() => handleAIAutoComplete('initialStockText', 'Initial Stock')} isGenerating={generating} />
-                        <LocalizedSettingInput label="Weight Label" value={settings.weightKgText} onChange={v => handleUpdate('weightKgText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('weightKgText', 'Weight Label')} onAIAutoComplete={() => handleAIAutoComplete('weightKgText', 'Weight Label')} isGenerating={generating} />
-                        <LocalizedSettingInput label="Shipping Class Label" value={settings.shippingClassText} onChange={v => handleUpdate('shippingClassText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('shippingClassText', 'Shipping Class')} onAIAutoComplete={() => handleAIAutoComplete('shippingClassText', 'Shipping Class')} isGenerating={generating} />
+                        <LocalizedSettingInput label="Regular Price Label" value={settings.regularPriceText} onChange={v => handleUpdate('regularPriceText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('regularPriceText', 'Regular Price')} onAIAutoComplete={() => handleAIAutoComplete('regularPriceText', 'Regular Price')} isGenerating={generatingId === 'regularPriceText-fill'} isTranslating={generatingId === 'regularPriceText-translate'} />
+                        <LocalizedSettingInput label="Sale Price Label" value={settings.salePriceText} onChange={v => handleUpdate('salePriceText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('salePriceText', 'Sale Price')} onAIAutoComplete={() => handleAIAutoComplete('salePriceText', 'Sale Price')} isGenerating={generatingId === 'salePriceText-fill'} isTranslating={generatingId === 'salePriceText-translate'} />
+                        <LocalizedSettingInput label="SKU Code Label" value={settings.skuCodeText} onChange={v => handleUpdate('skuCodeText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('skuCodeText', 'SKU Code')} onAIAutoComplete={() => handleAIAutoComplete('skuCodeText', 'SKU Code')} isGenerating={generatingId === 'skuCodeText-fill'} isTranslating={generatingId === 'skuCodeText-translate'} />
+                        <LocalizedSettingInput label="Initial Stock Label" value={settings.initialStockText} onChange={v => handleUpdate('initialStockText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('initialStockText', 'Initial Stock')} onAIAutoComplete={() => handleAIAutoComplete('initialStockText', 'Initial Stock')} isGenerating={generatingId === 'initialStockText-fill'} isTranslating={generatingId === 'initialStockText-translate'} />
+                        <LocalizedSettingInput label="Weight Label" value={settings.weightKgText} onChange={v => handleUpdate('weightKgText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('weightKgText', 'Weight Label')} onAIAutoComplete={() => handleAIAutoComplete('weightKgText', 'Weight Label')} isGenerating={generatingId === 'weightKgText-fill'} isTranslating={generatingId === 'weightKgText-translate'} />
+                        <LocalizedSettingInput label="Shipping Class Label" value={settings.shippingClassText} onChange={v => handleUpdate('shippingClassText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('shippingClassText', 'Shipping Class')} onAIAutoComplete={() => handleAIAutoComplete('shippingClassText', 'Shipping Class')} isGenerating={generatingId === 'shippingClassText-fill'} isTranslating={generatingId === 'shippingClassText-translate'} />
                       </div>
                    </div>
                 </SettingCard>
@@ -424,46 +785,67 @@ export function StorefrontContainer() {
                       </label>
                     </div>
 
-                    <LocalizedSettingInput label="Google Login Unavailable Message" value={settings.googleLoginUnavailableText} onChange={v => handleUpdate('googleLoginUnavailableText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('googleLoginUnavailableText', 'Google Login Unavailable Message')} isGenerating={generating} />
-                    <LocalizedSettingInput label="Cookie Preferences Footer Button" value={settings.cookiePreferencesButtonText} onChange={v => handleUpdate('cookiePreferencesButtonText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('cookiePreferencesButtonText', 'Cookie Preferences Footer Button')} isGenerating={generating} />
-                    <LocalizedSettingInput label="Unsubscribe Footer Link" value={settings.unsubscribeLinkText} onChange={v => handleUpdate('unsubscribeLinkText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('unsubscribeLinkText', 'Unsubscribe Footer Link')} isGenerating={generating} />
-                    <LocalizedSettingInput label="Sign Up Terms Consent Prefix" value={settings.signUpTermsConsentText} onChange={v => handleUpdate('signUpTermsConsentText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('signUpTermsConsentText', 'Sign Up Terms Consent Prefix')} isGenerating={generating} />
-                    <LocalizedSettingInput label="Sign Up Privacy Consent Prefix" value={settings.signUpPrivacyConsentText} onChange={v => handleUpdate('signUpPrivacyConsentText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('signUpPrivacyConsentText', 'Sign Up Privacy Consent Prefix')} isGenerating={generating} />
-                    <LocalizedSettingInput label="Sign Up Marketing Consent Text" value={settings.signUpMarketingConsentText} onChange={v => handleUpdate('signUpMarketingConsentText', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('signUpMarketingConsentText', 'Sign Up Marketing Consent Text')} isGenerating={generating} />
+                    <LocalizedSettingInput label="Google Login Unavailable Message" value={settings.googleLoginUnavailableText} onChange={v => handleUpdate('googleLoginUnavailableText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('googleLoginUnavailableText', 'Google Login Unavailable Message')} isGenerating={generatingId === 'googleLoginUnavailableText-fill'} isTranslating={generatingId === 'googleLoginUnavailableText-translate'} />
+                    <LocalizedSettingInput label="Cookie Preferences Footer Button" value={settings.cookiePreferencesButtonText} onChange={v => handleUpdate('cookiePreferencesButtonText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('cookiePreferencesButtonText', 'Cookie Preferences Footer Button')} isGenerating={generatingId === 'cookiePreferencesButtonText-fill'} isTranslating={generatingId === 'cookiePreferencesButtonText-translate'} />
+                    <LocalizedSettingInput label="Unsubscribe Footer Link" value={settings.unsubscribeLinkText} onChange={v => handleUpdate('unsubscribeLinkText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('unsubscribeLinkText', 'Unsubscribe Footer Link')} isGenerating={generatingId === 'unsubscribeLinkText-fill'} isTranslating={generatingId === 'unsubscribeLinkText-translate'} />
+                    <LocalizedSettingInput label="Sign Up Terms Consent Prefix" value={settings.signUpTermsConsentText} onChange={v => handleUpdate('signUpTermsConsentText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('signUpTermsConsentText', 'Sign Up Terms Consent Prefix')} isGenerating={generatingId === 'signUpTermsConsentText-fill'} isTranslating={generatingId === 'signUpTermsConsentText-translate'} />
+                    <LocalizedSettingInput label="Sign Up Privacy Consent Prefix" value={settings.signUpPrivacyConsentText} onChange={v => handleUpdate('signUpPrivacyConsentText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('signUpPrivacyConsentText', 'Sign Up Privacy Consent Prefix')} isGenerating={generatingId === 'signUpPrivacyConsentText-fill'} isTranslating={generatingId === 'signUpPrivacyConsentText-translate'} />
+                    <LocalizedSettingInput label="Sign Up Marketing Consent Text" value={settings.signUpMarketingConsentText} onChange={v => handleUpdate('signUpMarketingConsentText', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('signUpMarketingConsentText', 'Sign Up Marketing Consent Text')} isGenerating={generatingId === 'signUpMarketingConsentText-fill'} isTranslating={generatingId === 'signUpMarketingConsentText-translate'} />
 
-                    <LocalizedSettingInput label="Consent Banner Eyebrow" value={settings.consentBannerEyebrowText} onChange={v => handleUpdate('consentBannerEyebrowText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentBannerEyebrowText', 'Consent Banner Eyebrow')} isGenerating={generating} />
-                    <LocalizedSettingInput label="Consent Banner Title" value={settings.consentBannerTitleText} onChange={v => handleUpdate('consentBannerTitleText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentBannerTitleText', 'Consent Banner Title')} isGenerating={generating} />
-                    <LocalizedSettingInput label="Consent Banner Description" value={settings.consentBannerDescriptionText} onChange={v => handleUpdate('consentBannerDescriptionText', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('consentBannerDescriptionText', 'Consent Banner Description')} isGenerating={generating} />
+                    <LocalizedSettingInput label="Consent Banner Eyebrow" value={settings.consentBannerEyebrowText} onChange={v => handleUpdate('consentBannerEyebrowText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentBannerEyebrowText', 'Consent Banner Eyebrow')} isGenerating={generatingId === 'consentBannerEyebrowText-fill'} isTranslating={generatingId === 'consentBannerEyebrowText-translate'} />
+                    <LocalizedSettingInput label="Consent Banner Title" value={settings.consentBannerTitleText} onChange={v => handleUpdate('consentBannerTitleText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentBannerTitleText', 'Consent Banner Title')} isGenerating={generatingId === 'consentBannerTitleText-fill'} isTranslating={generatingId === 'consentBannerTitleText-translate'} />
+                    <LocalizedSettingInput label="Consent Banner Description" value={settings.consentBannerDescriptionText} onChange={v => handleUpdate('consentBannerDescriptionText', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('consentBannerDescriptionText', 'Consent Banner Description')} isGenerating={generatingId === 'consentBannerDescriptionText-fill'} isTranslating={generatingId === 'consentBannerDescriptionText-translate'} />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                      <LocalizedSettingInput label="Consent Privacy Link Label" value={settings.consentPrivacyLinkText} onChange={v => handleUpdate('consentPrivacyLinkText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentPrivacyLinkText', 'Consent Privacy Link Label')} isGenerating={generating} />
-                      <LocalizedSettingInput label="Consent Cookie Link Label" value={settings.consentCookieLinkText} onChange={v => handleUpdate('consentCookieLinkText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentCookieLinkText', 'Consent Cookie Link Label')} isGenerating={generating} />
-                      <LocalizedSettingInput label="Consent Choose Settings Label" value={settings.consentChooseSettingsText} onChange={v => handleUpdate('consentChooseSettingsText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentChooseSettingsText', 'Consent Choose Settings Label')} isGenerating={generating} />
-                      <LocalizedSettingInput label="Consent Accept All Label" value={settings.consentAcceptAllText} onChange={v => handleUpdate('consentAcceptAllText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentAcceptAllText', 'Consent Accept All Label')} isGenerating={generating} />
-                      <LocalizedSettingInput label="Consent Essential Only Label" value={settings.consentEssentialOnlyText} onChange={v => handleUpdate('consentEssentialOnlyText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentEssentialOnlyText', 'Consent Essential Only Label')} isGenerating={generating} />
-                      <LocalizedSettingInput label="Consent Modal Eyebrow" value={settings.consentModalEyebrowText} onChange={v => handleUpdate('consentModalEyebrowText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentModalEyebrowText', 'Consent Modal Eyebrow')} isGenerating={generating} />
-                      <LocalizedSettingInput label="Consent Modal Title" value={settings.consentModalTitleText} onChange={v => handleUpdate('consentModalTitleText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentModalTitleText', 'Consent Modal Title')} isGenerating={generating} />
-                      <LocalizedSettingInput label="Consent Close Label" value={settings.consentCloseText} onChange={v => handleUpdate('consentCloseText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentCloseText', 'Consent Close Label')} isGenerating={generating} />
-                      <LocalizedSettingInput label="Consent Essential Title" value={settings.consentEssentialTitleText} onChange={v => handleUpdate('consentEssentialTitleText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentEssentialTitleText', 'Consent Essential Title')} isGenerating={generating} />
-                      <LocalizedSettingInput label="Consent Always On Label" value={settings.consentAlwaysOnText} onChange={v => handleUpdate('consentAlwaysOnText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentAlwaysOnText', 'Consent Always On Label')} isGenerating={generating} />
-                      <LocalizedSettingInput label="Consent Analytics Title" value={settings.consentAnalyticsTitleText} onChange={v => handleUpdate('consentAnalyticsTitleText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentAnalyticsTitleText', 'Consent Analytics Title')} isGenerating={generating} />
-                      <LocalizedSettingInput label="Consent Marketing Title" value={settings.consentMarketingTitleText} onChange={v => handleUpdate('consentMarketingTitleText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentMarketingTitleText', 'Consent Marketing Title')} isGenerating={generating} />
-                      <LocalizedSettingInput label="Consent Save Preferences Label" value={settings.consentSavePreferencesText} onChange={v => handleUpdate('consentSavePreferencesText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentSavePreferencesText', 'Consent Save Preferences Label')} isGenerating={generating} />
-                      <LocalizedSettingInput label="Consent Reject Optional Label" value={settings.consentRejectOptionalText} onChange={v => handleUpdate('consentRejectOptionalText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentRejectOptionalText', 'Consent Reject Optional Label')} isGenerating={generating} />
+                      <LocalizedSettingInput label="Consent Privacy Link Label" value={settings.consentPrivacyLinkText} onChange={v => handleUpdate('consentPrivacyLinkText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentPrivacyLinkText', 'Consent Privacy Link Label')} isGenerating={generatingId === 'consentPrivacyLinkText-fill'} isTranslating={generatingId === 'consentPrivacyLinkText-translate'} />
+                      <LocalizedSettingInput label="Consent Cookie Link Label" value={settings.consentCookieLinkText} onChange={v => handleUpdate('consentCookieLinkText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentCookieLinkText', 'Consent Cookie Link Label')} isGenerating={generatingId === 'consentCookieLinkText-fill'} isTranslating={generatingId === 'consentCookieLinkText-translate'} />
+                      <LocalizedSettingInput label="Consent Choose Settings Label" value={settings.consentChooseSettingsText} onChange={v => handleUpdate('consentChooseSettingsText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentChooseSettingsText', 'Consent Choose Settings Label')} isGenerating={generatingId === 'consentChooseSettingsText-fill'} isTranslating={generatingId === 'consentChooseSettingsText-translate'} />
+                      <LocalizedSettingInput label="Consent Accept All Label" value={settings.consentAcceptAllText} onChange={v => handleUpdate('consentAcceptAllText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentAcceptAllText', 'Consent Accept All Label')} isGenerating={generatingId === 'consentAcceptAllText-fill'} isTranslating={generatingId === 'consentAcceptAllText-translate'} />
+                      <LocalizedSettingInput label="Consent Essential Only Label" value={settings.consentEssentialOnlyText} onChange={v => handleUpdate('consentEssentialOnlyText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentEssentialOnlyText', 'Consent Essential Only Label')} isGenerating={generatingId === 'consentEssentialOnlyText-fill'} isTranslating={generatingId === 'consentEssentialOnlyText-translate'} />
+                      <LocalizedSettingInput label="Consent Modal Eyebrow" value={settings.consentModalEyebrowText} onChange={v => handleUpdate('consentModalEyebrowText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentModalEyebrowText', 'Consent Modal Eyebrow')} isGenerating={generatingId === 'consentModalEyebrowText-fill'} isTranslating={generatingId === 'consentModalEyebrowText-translate'} />
+                      <LocalizedSettingInput label="Consent Modal Title" value={settings.consentModalTitleText} onChange={v => handleUpdate('consentModalTitleText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentModalTitleText', 'Consent Modal Title')} isGenerating={generatingId === 'consentModalTitleText-fill'} isTranslating={generatingId === 'consentModalTitleText-translate'} />
+                      <LocalizedSettingInput label="Consent Close Label" value={settings.consentCloseText} onChange={v => handleUpdate('consentCloseText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentCloseText', 'Consent Close Label')} isGenerating={generatingId === 'consentCloseText-fill'} isTranslating={generatingId === 'consentCloseText-translate'} />
+                      <LocalizedSettingInput label="Consent Essential Title" value={settings.consentEssentialTitleText} onChange={v => handleUpdate('consentEssentialTitleText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentEssentialTitleText', 'Consent Essential Title')} isGenerating={generatingId === 'consentEssentialTitleText-fill'} isTranslating={generatingId === 'consentEssentialTitleText-translate'} />
+                      <LocalizedSettingInput label="Consent Always On Label" value={settings.consentAlwaysOnText} onChange={v => handleUpdate('consentAlwaysOnText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentAlwaysOnText', 'Consent Always On Label')} isGenerating={generatingId === 'consentAlwaysOnText-fill'} isTranslating={generatingId === 'consentAlwaysOnText-translate'} />
+                      <LocalizedSettingInput label="Consent Analytics Title" value={settings.consentAnalyticsTitleText} onChange={v => handleUpdate('consentAnalyticsTitleText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentAnalyticsTitleText', 'Consent Analytics Title')} isGenerating={generatingId === 'consentAnalyticsTitleText-fill'} isTranslating={generatingId === 'consentAnalyticsTitleText-translate'} />
+                      <LocalizedSettingInput label="Consent Marketing Title" value={settings.consentMarketingTitleText} onChange={v => handleUpdate('consentMarketingTitleText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentMarketingTitleText', 'Consent Marketing Title')} isGenerating={generatingId === 'consentMarketingTitleText-fill'} isTranslating={generatingId === 'consentMarketingTitleText-translate'} />
+                      <LocalizedSettingInput label="Consent Save Preferences Label" value={settings.consentSavePreferencesText} onChange={v => handleUpdate('consentSavePreferencesText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentSavePreferencesText', 'Consent Save Preferences Label')} isGenerating={generatingId === 'consentSavePreferencesText-fill'} isTranslating={generatingId === 'consentSavePreferencesText-translate'} />
+                      <LocalizedSettingInput label="Consent Reject Optional Label" value={settings.consentRejectOptionalText} onChange={v => handleUpdate('consentRejectOptionalText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentRejectOptionalText', 'Consent Reject Optional Label')} isGenerating={generatingId === 'consentRejectOptionalText-fill'} isTranslating={generatingId === 'consentRejectOptionalText-translate'} />
                     </div>
-                    <LocalizedSettingInput label="Consent Essential Description" value={settings.consentEssentialDescriptionText} onChange={v => handleUpdate('consentEssentialDescriptionText', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('consentEssentialDescriptionText', 'Consent Essential Description')} isGenerating={generating} />
-                    <LocalizedSettingInput label="Consent Analytics Description" value={settings.consentAnalyticsDescriptionText} onChange={v => handleUpdate('consentAnalyticsDescriptionText', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('consentAnalyticsDescriptionText', 'Consent Analytics Description')} isGenerating={generating} />
-                    <LocalizedSettingInput label="Consent Marketing Description" value={settings.consentMarketingDescriptionText} onChange={v => handleUpdate('consentMarketingDescriptionText', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('consentMarketingDescriptionText', 'Consent Marketing Description')} isGenerating={generating} />
+                    <LocalizedSettingInput label="Consent Essential Description" value={settings.consentEssentialDescriptionText} onChange={v => handleUpdate('consentEssentialDescriptionText', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('consentEssentialDescriptionText', 'Consent Essential Description')} isGenerating={generatingId === 'consentEssentialDescriptionText-fill'} isTranslating={generatingId === 'consentEssentialDescriptionText-translate'} />
+                    <LocalizedSettingInput label="Consent Analytics Description" value={settings.consentAnalyticsDescriptionText} onChange={v => handleUpdate('consentAnalyticsDescriptionText', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('consentAnalyticsDescriptionText', 'Consent Analytics Description')} isGenerating={generatingId === 'consentAnalyticsDescriptionText-fill'} isTranslating={generatingId === 'consentAnalyticsDescriptionText-translate'} />
+                    <LocalizedSettingInput label="Consent Marketing Description" value={settings.consentMarketingDescriptionText} onChange={v => handleUpdate('consentMarketingDescriptionText', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('consentMarketingDescriptionText', 'Consent Marketing Description')} isGenerating={generatingId === 'consentMarketingDescriptionText-fill'} isTranslating={generatingId === 'consentMarketingDescriptionText-translate'} />
+                  </div>
+                </SettingCard>
+
+                <SettingCard id="Authentication" title="Authentication Layout" icon={Lock}>
+                  <div className="space-y-6">
+                    <p className="text-[12px] text-zinc-500 mb-4 font-medium italic">Change the background image for the login and sign-up pages. Use a high-resolution interior or lifestyle photo for best results.</p>
+                    <div className="space-y-4">
+                        <div className="aspect-video bg-zinc-50 border border-zinc-100 rounded-md relative group overflow-hidden">
+                           {isValidUrl(settings.authBackgroundImage) ? (
+                              <Image src={settings.authBackgroundImage} alt="Authentication background" fill className="object-cover" />
+                           ) : <ImageIcon className="w-8 h-8 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-zinc-200" />}
+                           <input type="file" onChange={e => handleImageUpload(e, 'authBackgroundImage')} className="absolute inset-0 opacity-0 cursor-pointer" />
+                           <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <Upload className="w-5 h-5 text-white" />
+                           </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                           <Info className="w-3.5 h-3.5 text-zinc-400" />
+                           <p className="text-[11px] text-zinc-400 font-medium">Click the preview above to upload a new authentication background image.</p>
+                        </div>
+                    </div>
                   </div>
                 </SettingCard>
 
                 <SettingCard id="PolicyPages" title="Policy Pages" icon={Mail}>
                   <div className="space-y-8">
-                    <LocalizedSettingInput label="Privacy Policy Page Title" value={settings.privacyPolicyPageTitle} onChange={v => handleUpdate('privacyPolicyPageTitle', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('privacyPolicyPageTitle', 'Privacy Policy Page Title')} isGenerating={generating} />
-                    <LocalizedSettingInput label="Privacy Policy Page Content (Markdown)" value={settings.privacyPolicyPageContent} onChange={v => handleUpdate('privacyPolicyPageContent', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('privacyPolicyPageContent', 'Privacy Policy Page Content')} isGenerating={generating} />
-                    <LocalizedSettingInput label="Cookie Policy Page Title" value={settings.cookiePolicyPageTitle} onChange={v => handleUpdate('cookiePolicyPageTitle', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('cookiePolicyPageTitle', 'Cookie Policy Page Title')} isGenerating={generating} />
-                    <LocalizedSettingInput label="Cookie Policy Page Content (Markdown)" value={settings.cookiePolicyPageContent} onChange={v => handleUpdate('cookiePolicyPageContent', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('cookiePolicyPageContent', 'Cookie Policy Page Content')} isGenerating={generating} />
-                    <LocalizedSettingInput label="Terms Page Title" value={settings.termsOfServicePageTitle} onChange={v => handleUpdate('termsOfServicePageTitle', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('termsOfServicePageTitle', 'Terms Page Title')} isGenerating={generating} />
-                    <LocalizedSettingInput label="Terms Page Content (Markdown)" value={settings.termsOfServicePageContent} onChange={v => handleUpdate('termsOfServicePageContent', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('termsOfServicePageContent', 'Terms Page Content')} isGenerating={generating} />
+                    <LocalizedSettingInput label="Privacy Policy Page Title" value={settings.privacyPolicyPageTitle} onChange={v => handleUpdate('privacyPolicyPageTitle', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('privacyPolicyPageTitle', 'Privacy Policy Page Title')} isGenerating={generatingId === 'privacyPolicyPageTitle-fill'} isTranslating={generatingId === 'privacyPolicyPageTitle-translate'} />
+                    <LocalizedSettingInput label="Privacy Policy Page Content (Markdown)" value={settings.privacyPolicyPageContent} onChange={v => handleUpdate('privacyPolicyPageContent', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('privacyPolicyPageContent', 'Privacy Policy Page Content')} isGenerating={generatingId === 'privacyPolicyPageContent-fill'} isTranslating={generatingId === 'privacyPolicyPageContent-translate'} />
+                    <LocalizedSettingInput label="Cookie Policy Page Title" value={settings.cookiePolicyPageTitle} onChange={v => handleUpdate('cookiePolicyPageTitle', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('cookiePolicyPageTitle', 'Cookie Policy Page Title')} isGenerating={generatingId === 'cookiePolicyPageTitle-fill'} isTranslating={generatingId === 'cookiePolicyPageTitle-translate'} />
+                    <LocalizedSettingInput label="Cookie Policy Page Content (Markdown)" value={settings.cookiePolicyPageContent} onChange={v => handleUpdate('cookiePolicyPageContent', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('cookiePolicyPageContent', 'Cookie Policy Page Content')} isGenerating={generatingId === 'cookiePolicyPageContent-fill'} isTranslating={generatingId === 'cookiePolicyPageContent-translate'} />
+                    <LocalizedSettingInput label="Terms Page Title" value={settings.termsOfServicePageTitle} onChange={v => handleUpdate('termsOfServicePageTitle', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('termsOfServicePageTitle', 'Terms Page Title')} isGenerating={generatingId === 'termsOfServicePageTitle-fill'} isTranslating={generatingId === 'termsOfServicePageTitle-translate'} />
+                    <LocalizedSettingInput label="Terms Page Content (Markdown)" value={settings.termsOfServicePageContent} onChange={v => handleUpdate('termsOfServicePageContent', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('termsOfServicePageContent', 'Terms Page Content')} isGenerating={generatingId === 'termsOfServicePageContent-fill'} isTranslating={generatingId === 'termsOfServicePageContent-translate'} />
                   </div>
                 </SettingCard>
               </div>
@@ -502,6 +884,56 @@ export function StorefrontContainer() {
                            />
                            <p className="text-[11px] text-zinc-400 font-medium italic">Press Enter to synchronize new locale</p>
                         </div>
+                     </div>
+                  </SettingCard>
+                  
+                  <SettingCard id="Shipping" title="Global Shipping Regions" icon={Globe}>
+                     <div className="space-y-6">
+                        <div className="flex flex-col gap-4">
+                           {settings.shippingCountries?.map((country, idx) => (
+                             <div key={idx} className="p-4 bg-zinc-50 border border-zinc-100 rounded-md relative group space-y-4">
+                               <button onClick={() => handleUpdate('shippingCountries', settings.shippingCountries.filter((_, i) => i !== idx))} className="absolute top-2 right-2 p-1.5 text-zinc-300 hover:text-rose-600 transition-colors">
+                                 <Trash2 className="w-3.5 h-3.5" />
+                               </button>
+                               <div className="space-y-2">
+                                <label className="text-[11px] font-bold text-zinc-900/80 uppercase tracking-widest">Country Code (ISO)</label>
+                                <input 
+                                  type="text" 
+                                  value={country.code} 
+                                  onChange={e => {
+                                    const newCountries = [...settings.shippingCountries];
+                                    newCountries[idx].code = e.target.value.toUpperCase();
+                                    handleUpdate('shippingCountries', newCountries);
+                                  }}
+                                  className="w-full h-11 px-4 bg-white border border-zinc-200 text-sm font-bold focus:outline-none focus:border-zinc-900"
+                                  placeholder="e.g. US, SE, NO"
+                                  maxLength={2}
+                                />
+                               </div>
+                               <LocalizedSettingInput 
+                                 label="Localized Country Name" 
+                                 value={country.name} 
+                                 onChange={v => {
+                                   const newCountries = [...settings.shippingCountries];
+                                   newCountries[idx].name = v;
+                                   handleUpdate('shippingCountries', newCountries);
+                                 }}
+                                 languages={settings.languages}
+                                 onAITranslate={async () => {
+                                   toast.error('AI translation for dynamic array objects requires manual entry for now.');
+                                 }}
+                                 isGenerating={false}
+                               />
+                             </div>
+                           ))}
+                        </div>
+                        <button onClick={() => {
+                          const newCountries = [...(settings.shippingCountries || [])];
+                          newCountries.push({ code: 'US', name: { en: 'United States' } });
+                          handleUpdate('shippingCountries', newCountries);
+                        }} className="w-full py-3 border border-dashed border-zinc-200 rounded-md text-[11px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 hover:bg-zinc-50 transition-all flex items-center justify-center gap-2">
+                           <Plus className="w-3.5 h-3.5" /> Add Shipping Destination
+                        </button>
                      </div>
                   </SettingCard>
                </div>

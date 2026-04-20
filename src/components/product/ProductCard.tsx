@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { ShoppingBag, Check } from 'lucide-react';
 import { useCartStore, Product } from '@/store/useCartStore';
 import { useUIStore } from '@/store/useUIStore';
+import { StorefrontSettingsType } from '@/types';
 import { formatPrice } from '@/lib/currency';
 import { toast } from 'sonner';
 import { motion } from 'motion/react';
@@ -13,7 +14,7 @@ import { motion } from 'motion/react';
 interface ProductCardProps {
   product: Product;
   lang: string;
-  settings: any;
+  settings: StorefrontSettingsType;
   priority?: boolean;
 }
 
@@ -86,8 +87,8 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
           )
         )}
         
-        {/* Quick Add Overlay */}
-        <div className="absolute inset-0 z-20 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none">
+        {/* Quick Add Overlay - Desktop Only */}
+        <div className="absolute inset-0 z-20 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none md:block hidden">
           <div className="absolute inset-0 bg-slate-900/10 pointer-events-none" />
           <div className="absolute bottom-5 left-5 right-5 pointer-events-auto">
             <button 
@@ -109,6 +110,26 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
           </div>
         </div>
       </Link>
+      
+      {/* Mobile Quick Add Button - Below Image */}
+      <div className="md:hidden block mb-4">
+        <button 
+          onClick={(e) => {
+            e.preventDefault();
+            addItem(product);
+            setCartOpen(true);
+            toast.success(`${product.title} added to cart!`, {
+              className: 'rounded bg-slate-900 text-white text-[11px] font-black uppercase tracking-[0.18em] border-none',
+              duration: 2000,
+              icon: <Check className="w-3.5 h-3.5" strokeWidth={1.5} />
+            });
+          }}
+          className="w-full bg-slate-50 text-slate-900 border border-slate-200 px-4 py-3 text-[10px] font-black uppercase tracking-[0.18em] flex items-center justify-center gap-2.5 active:scale-[0.98] rounded"
+        >
+          <ShoppingBag className="w-3 h-3" strokeWidth={1.5} />
+          {settings.quickAddText?.[lang] || 'Quick Add'}
+        </button>
+      </div>
       
       <div className="flex flex-col flex-1 px-1">
         <div className="flex items-center gap-2 mb-3">

@@ -9,8 +9,11 @@ import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
+import { User as UserType } from '@/types';
+import { User as SupabaseUser } from '@supabase/supabase-js';
+
 interface AccountDropdownProps {
-  user: any;
+  user: SupabaseUser;
   isAdmin: boolean;
   labels: {
     profile: string;

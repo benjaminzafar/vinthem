@@ -1,6 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import { ProductEditor } from '@/components/admin/ProductEditor';
-import { getIntegrationsAction } from '@/app/actions/integrations';
+import type { StorefrontSettingsType } from '@/types';
 
 export default async function NewProductPage() {
   const supabase = await createClient();
@@ -12,13 +12,13 @@ export default async function NewProductPage() {
   ]);
 
   const categories = categoriesRes.data || [];
-  const settings = settingsRes.data?.data || { languages: ['sv', 'en'] };
+  const settings = (settingsRes.data?.data || { languages: ['sv', 'en'] }) as StorefrontSettingsType;
 
   return (
     <div className="bg-slate-50 min-h-screen">
       <ProductEditor 
         categories={categories}
-        settings={settings as any}
+        settings={settings}
       />
     </div>
   );

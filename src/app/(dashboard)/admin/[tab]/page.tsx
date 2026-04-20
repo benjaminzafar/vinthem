@@ -8,18 +8,34 @@ import { CollectionManager } from '@/components/admin/CollectionManager';
 import { CustomersAndCRMManager } from '@/components/admin/CustomersAndCRMManager';
 import { BlogManager } from '@/components/admin/BlogManager';
 import { PageManager } from '@/components/admin/PageManager';
-import { DatabaseManager } from '@/components/admin/DatabaseManager';
 import { StorefrontSettings } from '@/components/admin/StorefrontSettings';
 import { MediaManager } from '@/components/admin/MediaManager';
 import { getIntegrationsAction } from '@/app/actions/integrations';
 import { mapBlogRow, mapPageRow } from '@/lib/admin-content';
-import { Category } from '@/types';
+import { Category, type ShippingDetails } from '@/types';
 import { Product } from '@/store/useCartStore';
+import type { AdminOrder, OrderItem } from '@/types';
 
 interface TabPageProps {
   params: Promise<{ tab: string }>;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
+
+type OrderRow = {
+  id: string;
+  user_id?: string | null;
+  items?: OrderItem[];
+  total?: number;
+  subtotal?: number;
+  shipping_cost?: number;
+  tax_amount?: number;
+  status?: AdminOrder['status'];
+  shipping_details?: ShippingDetails;
+  created_at: string;
+  order_id?: string;
+  trackingCarrier?: string;
+  trackingNumber?: string;
+};
 
 export default async function AdminTabPage({ params, searchParams }: TabPageProps) {
   const { tab } = await params;
@@ -44,7 +60,7 @@ export default async function AdminTabPage({ params, searchParams }: TabPageProp
 
   // Valid tabs check
   const validTabs = [
-    'overview', 'database', 'orders', 'products', 
+    'overview', 'orders', 'products', 
     'collections', 'customers', 'blogs', 'pages', 
     'storefront', 'integrations', 'media'
   ];
@@ -57,9 +73,18 @@ export default async function AdminTabPage({ params, searchParams }: TabPageProp
   
   if (tab === 'overview') {
     const [ordersRes, productsRes, refundsRes] = await Promise.all([
-      supabase.from('orders').select('id, total, status, created_at'),
-      supabase.from('products').select('id, stock, title'),
-      supabase.from('refund_requests').select('id, status')
+      supabase
+        .from('orders')
+        .select('id, total, status, created_at, order_id, items, shipping_details')
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('products')
+        .select('id, stock, title, variants, created_at')
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('refund_requests')
+        .select('id, status, created_at')
+        .order('created_at', { ascending: false })
     ]);
     const initialStats = {
       orders: ordersRes.data || [],
@@ -75,13 +100,24 @@ export default async function AdminTabPage({ params, searchParams }: TabPageProp
       .select('*')
       .order('created_at', { ascending: false });
     
-    const initialOrders = (data || []).map((o) => {
-      const order = o as Record<string, any>;
+    const initialOrders: AdminOrder[] = (data || []).map((o) => {
+      const order = o as OrderRow;
       return {
-        ...order,
+        id: order.id,
+        user_id: order.user_id ?? null,
+        items: Array.isArray(order.items) ? order.items : [],
+        total: Number(order.total ?? 0),
+        subtotal: Number(order.subtotal ?? 0),
+        shipping_cost: Number(order.shipping_cost ?? 0),
+        tax_amount: Number(order.tax_amount ?? 0),
+        status: order.status ?? 'Pending',
+        shipping_details: order.shipping_details ?? { email: '' },
+        created_at: order.created_at,
         createdAt: order.created_at,
         orderId: order.order_id,
-        customerEmail: order.shipping_details?.email
+        customerEmail: order.shipping_details?.email,
+        trackingCarrier: order.trackingCarrier,
+        trackingNumber: order.trackingNumber,
       };
     });
 
@@ -104,7 +140,7 @@ export default async function AdminTabPage({ params, searchParams }: TabPageProp
     ]);
     
     const initialProducts = (productsRes.data || []).map((p) => {
-      const product = p as any;
+      const product = p as Record<string, unknown>;
       return {
         ...product,
         imageUrl: product.image_url,
@@ -120,7 +156,7 @@ export default async function AdminTabPage({ params, searchParams }: TabPageProp
     });
 
     const initialCategories = (categoriesRes.data || []).map((c) => {
-      const cat = c as any;
+      const cat = c as Record<string, unknown>;
       return {
         ...cat,
         isFeatured: cat.is_featured,
@@ -148,7 +184,7 @@ export default async function AdminTabPage({ params, searchParams }: TabPageProp
     ]);
 
     const initialCategories = (categoriesRes.data || []).map((c) => {
-      const cat = c as any;
+      const cat = c as Record<string, unknown>;
       return {
         ...cat,
         isFeatured: cat.is_featured,
@@ -160,7 +196,7 @@ export default async function AdminTabPage({ params, searchParams }: TabPageProp
     });
 
     const initialProductsShort = (productsRes.data || []).map((p) => {
-      const prod = p as Record<string, any>;
+      const prod = p as { id: string; category_id: string | null };
       return {
         id: prod.id,
         categoryId: prod.category_id
@@ -170,7 +206,7 @@ export default async function AdminTabPage({ params, searchParams }: TabPageProp
     return (
       <CollectionManager 
         initialCategories={initialCategories}
-        initialProducts={initialProductsShort as any} 
+        initialProducts={initialProductsShort as Array<{id: string, categoryId: string | null}>} 
       />
     );
   }
@@ -187,7 +223,6 @@ export default async function AdminTabPage({ params, searchParams }: TabPageProp
     const initialPages = (data || []).map((page) => mapPageRow(page as Record<string, unknown>));
     return <PageManager initialPages={initialPages} />;
   }
-  if (tab === 'database') return <DatabaseManager />;
   if (tab === 'media') return <MediaManager />;
 
   return (

@@ -1,8 +1,9 @@
 "use client";
+import { logger } from '@/lib/logger';
 import React, { useState, useEffect } from 'react';
 import { Product } from '@/store/useCartStore';
 import { Category, StorefrontSettingsType } from '@/types';
-import { X, Save, ArrowLeft, Sparkles, ImageIcon, Plus, ChevronRight, Layout, Package, Tag, Globe, Truck, MoreHorizontal } from 'lucide-react';
+import { X, Save, ArrowLeft, Sparkles, ImageIcon, Plus, ChevronRight, Layout, Package, Tag, Globe, Truck, MoreHorizontal, Languages, Wand2, Loader2 } from 'lucide-react';
 import { SearchableSelect } from '../SearchableSelect';
 import { VariantEditor } from '../VariantEditor';
 import { toast } from 'sonner';
@@ -11,10 +12,12 @@ import { genAI } from '@/lib/ai';
 import { MediaPickerModal } from './MediaPickerModal';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { isValidUrl } from '@/lib/utils';
 import { normalizeProductOptions, inferOptionsFromLegacyArrays, normalizeGeneratedVariants, buildVariantsFromOptions } from '@/lib/product-variants';
 import { extractFirstJsonObject } from '@/lib/json';
 import { parseCatalogPrompt } from '@/lib/product-import';
 import { saveProductAction } from '@/app/actions/products';
+import type { ProductVariantInput } from '@/app/actions/products';
 
 const STRIPE_TAX_CODE_OPTIONS = [
   { value: '', label: 'Auto from category' },
@@ -28,6 +31,18 @@ interface ProductEditorProps {
   categories: Category[];
   settings: StorefrontSettingsType;
 }
+
+type ProductRecord = Product & {
+  image_url?: string;
+  additional_images?: string[];
+  category_id?: string;
+  is_featured?: boolean;
+  is_new?: boolean;
+  is_sale?: boolean;
+  sale_price?: number;
+  shipping_class?: string;
+  stripe_tax_code?: string;
+};
 
 export function ProductEditor({ initialProduct, categories, settings }: ProductEditorProps) {
   const router = useRouter();
@@ -61,7 +76,7 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
   const [selectedLang, setSelectedLang] = useState('sv');
   const [aiChatInput, setAiChatInput] = useState('');
 
-  const mapDbToForm = (p: Record<string, any>): Partial<Product> => {
+  const mapDbToForm = (p: ProductRecord): Partial<Product> => {
     if (!p) return {};
     return {
       ...p,
@@ -109,7 +124,12 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
         imageUrl: formData.imageUrl,
         categoryId: formData.categoryId,
         options: formData.options,
-        variants: formData.variants as any,
+        variants: (formData.variants || []).map((variant) => ({
+          options: variant.options || {},
+          price: Number(variant.price || 0),
+          stock: Number(variant.stock || 0),
+          sku: variant.sku || '',
+        })) as ProductVariantInput[],
         translations: formData.translations,
         tags: formData.tags,
         isFeatured: formData.isFeatured,
@@ -132,7 +152,7 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
       router.refresh();
     } catch (error: unknown) {
       const err = error as Error;
-      console.error('Save error:', err);
+      logger.error('Save error:', err);
       toast.error(err.message || 'Failed to save', { id: toastId });
     } finally {
       setLoading(false);
@@ -206,8 +226,8 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
       setAiChatInput('');
       toast.success('AI Draft Generated!', { id: toastId });
     } catch (error: unknown) {
-      const err = error as any; // Temporary as status is custom on AI errors
-      console.error('AI Processing Error:', err);
+      const err = error as Error & { status?: number };
+      logger.error('AI Processing Error:', err);
       
       const timestamp = new Date().toLocaleTimeString('sv-SE', { hour12: false });
       const errorMessage = err?.message || '';
@@ -234,6 +254,62 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
         id: toastId,
         duration: 8000
       });
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const handleAITranslateProduct = async () => {
+    if (!formData.title?.trim()) {
+      toast.error('Product title is required for translation.');
+      return;
+    }
+    const targetLangs = languages.filter(l => l !== 'en' && l !== 'sv');
+    // We translate the Swedish title/description into all other languages,
+    // and also the English title/description if present
+    const allTargetLangs = languages.filter(l => l !== 'sv');
+    if (allTargetLangs.length === 0) {
+      toast.info('No extra languages configured.');
+      return;
+    }
+    setGenerating(true);
+    const toastId = toast.loading('AI translating product...');
+    try {
+      const prompt = `Translate the following product information into these languages: ${languages.filter(l => l !== 'sv').join(', ')}.
+Return ONLY a JSON object where each top-level key is an ISO 639-1 language code, and each value is an object with "title" and "description" fields.
+Example: { "en": { "title": "...", "description": "..." }, "fi": { "title": "...", "description": "..." } }
+
+Product Title (Swedish): "${formData.title}"
+Product Description (Swedish): "${formData.description || ''}"`;
+
+      const model = genAI.getGenerativeModel({
+        model: 'llama-3.3-70b-versatile',
+        generationConfig: { responseMimeType: 'application/json' }
+      });
+      const aiResponse = await model.generateContent(prompt);
+      const rawText = aiResponse.response.text() || '{}';
+      const jsonStr = extractFirstJsonObject(rawText) || rawText;
+      const result = JSON.parse(jsonStr) as Record<string, { title?: string; description?: string }>;
+
+      const newTranslations = { ...formData.translations };
+      for (const lang of languages) {
+        if (lang === 'sv') continue; // skip source
+        if (result[lang]) {
+          newTranslations[lang] = {
+            title: result[lang].title?.trim() || newTranslations[lang]?.title || '',
+            description: result[lang].description?.trim() || newTranslations[lang]?.description || ''
+          };
+        }
+      }
+      setFormData(prev => ({ ...prev, translations: newTranslations }));
+      toast.success('Product translated to all languages', { id: toastId });
+    } catch (error: unknown) {
+      const err = error as Error & { status?: number };
+      if (err.status === 401 || err.status === 403) {
+        toast.error('Action Required: Please set your Groq API Key in the Integrations Manager.', { id: toastId, duration: 6000 });
+      } else {
+        toast.error(err.message || 'AI translation failed', { id: toastId, duration: 8000 });
+      }
     } finally {
       setGenerating(false);
     }
@@ -493,10 +569,20 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
 
           {/* Multilingual Content */}
           <section className="bg-white border border-slate-200 rounded-[4px] overflow-hidden shadow-sm">
-            <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
-              <Globe className="w-4 h-4 text-slate-400" />
-              <h3 className="text-xs font-black uppercase tracking-widest text-slate-900">Translations</h3>
-            </div>
+             <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+               <div className="flex items-center gap-2">
+                 <Globe className="w-4 h-4 text-slate-400" />
+                 <h3 className="text-xs font-black uppercase tracking-widest text-slate-900">Translations</h3>
+               </div>
+               <button
+                 onClick={handleAITranslateProduct}
+                 disabled={generating || !formData.title?.trim()}
+                 className="flex items-center gap-1.5 px-4 py-1.5 text-[9px] font-black uppercase tracking-widest bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-all disabled:opacity-50"
+               >
+                 {generating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Languages className="w-3 h-3" />}
+                 AI Translate All
+               </button>
+             </div>
             <div className="p-6 space-y-6">
                <div className="flex gap-2 p-1 bg-slate-50 rounded w-fit">
                   {languages.map(lang => (
@@ -562,7 +648,7 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
               <div className="p-6 pt-2">
                 <label className="relative aspect-square bg-slate-50 border-2 border-dashed border-slate-200 rounded-[4px] flex items-center justify-center overflow-hidden hover:border-slate-900 transition-all cursor-pointer group mb-4">
 
-                   {formData.imageUrl ? (
+                   {isValidUrl(formData.imageUrl) ? (
                      <Image src={formData.imageUrl} alt="" fill sizes="(max-width: 768px) 100vw, 600px" className="object-cover" />
                    ) : (
                      <div className="text-center p-6">
@@ -635,15 +721,17 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
               <div className="p-6">
                 <div className="grid grid-cols-4 gap-2 mb-4">
                    {formData.additionalImages?.map((img, i) => (
-                     <div key={i} className="relative aspect-square border border-slate-100 rounded group">
-                        <Image src={img} alt="" fill sizes="200px" className="object-cover" />
+                     isValidUrl(img) && (
+                       <div key={i} className="relative aspect-square border border-slate-100 rounded group">
+                          <Image src={img} alt="" fill sizes="200px" className="object-cover" />
                         <button 
                           onClick={() => setFormData(prev => ({ ...prev, additionalImages: prev.additionalImages?.filter((_, idx) => idx !== i) }))}
                           className="absolute -top-1 -right-1 bg-white border border-slate-200 text-slate-400 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-all"
                         >
                           <X className="w-3 h-3" />
                         </button>
-                     </div>
+                      </div>
+                    )
                    ))}
                    <label className="aspect-square border-2 border-dashed border-slate-200 rounded flex items-center justify-center hover:border-slate-400 transition-all cursor-pointer">
                       <Plus className="w-4 h-4 text-slate-400" />
@@ -673,3 +761,4 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
     </div>
   );
 }
+

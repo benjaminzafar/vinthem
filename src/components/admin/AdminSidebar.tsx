@@ -14,7 +14,6 @@ import {
   LogOut,
   Menu,
   X,
-  Database,
   Images
 } from 'lucide-react';
 import Link from 'next/link';
@@ -25,7 +24,6 @@ import { useRouter } from 'next/navigation';
 
 const navItems = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard, href: '/admin/overview' },
-  { id: 'database', label: 'Database', icon: Database, href: '/admin/database' },
   { id: 'orders', label: 'Orders', icon: ShoppingCart, href: '/admin/orders' },
   { id: 'products', label: 'Products', icon: Package, href: '/admin/products' },
   { id: 'media', label: 'Media Center', icon: Images, href: '/admin/media' },

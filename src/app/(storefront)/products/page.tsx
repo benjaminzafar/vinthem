@@ -3,12 +3,27 @@ import { createClient } from '@/utils/supabase/server';
 import ProductsClient from './ProductsClient';
 import { Product } from '@/store/useCartStore';
 import { Category } from '@/types';
+import { getSettings } from '@/lib/data';
+import type { StorefrontSettings } from '@/store/useSettingsStore';
 
 const PUBLIC_PRODUCT_STATUS_FILTER = 'status.eq.published,status.eq.active,status.is.null';
 
 interface ProductsPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
+
+type ProductRow = {
+  id: string;
+  title: string;
+  price: number;
+  image_url?: string | null;
+  is_featured?: boolean | null;
+  category_id?: string | null;
+  created_at?: string | null;
+  status?: string | null;
+  prices?: Record<string, number> | null;
+  stripe_tax_code?: string | null;
+};
 
 export async function generateMetadata({ searchParams }: ProductsPageProps) {
   const params = await searchParams;
@@ -34,6 +49,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   const sortBy = (params.sort as string) || 'newest';
 
   const supabase = await createClient();
+  const settings = (await getSettings()) as Partial<StorefrontSettings>;
 
   // 1. Fetch categories first to resolve the active category ID and for the sidebar
   const { data: categoriesData } = await supabase
@@ -76,10 +92,12 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   }
 
   const { data: productsData } = await productQuery;
-  const products = (productsData || []).filter((p: any) => Boolean(p?.id)).map((p: any) => ({
-    ...p,
-    categoryName: categories.find(c => c.id === p.category_id)?.name
-  })) as Product[];
+  const products = ((productsData ?? []) as ProductRow[])
+    .filter((product) => Boolean(product.id))
+    .map((product) => ({
+      ...product,
+      categoryName: categories.find((category) => category.id === product.category_id)?.name,
+    })) as Product[];
 
   return (
     <React.Suspense fallback={
@@ -90,6 +108,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       <ProductsClient 
         initialProducts={products} 
         initialCategories={categories} 
+        initialSettings={settings}
       />
     </React.Suspense>
   );

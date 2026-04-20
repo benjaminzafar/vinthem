@@ -1,9 +1,10 @@
-"use client";
+﻿"use client";
 
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Search, ChevronRight, Check, LayoutGrid, ArrowRight, ChevronLeft, X } from 'lucide-react';
+import { StorefrontSettings } from '@/store/useSettingsStore';
 import { IconRenderer } from '../IconRenderer';
 import { motion, AnimatePresence } from 'motion/react';
 import { Category } from '@/types';
@@ -14,7 +15,7 @@ interface MobileFiltersProps {
   isOpen: boolean;
   onClose: () => void;
   categories: Category[];
-  settings: any;
+  settings: StorefrontSettings;
   lang: string;
   searchInput: string;
   setSearchInput: (val: string) => void;
@@ -112,7 +113,7 @@ export function MobileFilters({
                       animate={{ opacity: 1 }}
                       className="text-[13px] font-black uppercase tracking-[0.22em] text-slate-900 mr-auto"
                     >
-                      Filter & Sort
+                      {settings.filterAndSortText?.[lang] || 'Filter & Sort'}
                     </motion.h2>
                   )}
                 </AnimatePresence>
@@ -147,7 +148,9 @@ export function MobileFilters({
                     <>
                       {/* Collections */}
                       <div className="space-y-6">
-                        <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Collections</h3>
+                        <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
+                          {settings.searchCollectionsResultsText?.[lang] || settings.categoriesText?.[lang] || 'Collections'}
+                        </h3>
                         <div className="space-y-1">
                           <button
                             onClick={() => updateParams({ category: 'All' })}
@@ -155,7 +158,9 @@ export function MobileFilters({
                           >
                             <div className="flex items-center gap-3">
                               <LayoutGrid className="w-4 h-4" strokeWidth={1.5} />
-                              <span className="text-[11px] font-black uppercase tracking-widest">All Categories</span>
+                              <span className="text-[11px] font-black uppercase tracking-widest">
+                                {settings.allCategoriesText?.[lang] || 'All Categories'}
+                              </span>
                             </div>
                             {activeCategory === 'All' && <Check className="w-4 h-4 text-slate-900" strokeWidth={2.5} />}
                           </button>
@@ -200,7 +205,9 @@ export function MobileFilters({
 
                       {/* Sort By */}
                       <div className="space-y-6">
-                        <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Sort By</h3>
+                        <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
+                          {settings.sortByText?.[lang] || 'Sort By'}
+                        </h3>
                         <div className="space-y-1">
                           {[
                             { id: 'newest', label: settings.sortNewestText?.[lang] || 'Newest Arrivals' },
@@ -281,12 +288,12 @@ export function MobileFilters({
                  }}
                  className="flex-1 bg-white border border-slate-200 text-slate-400 py-3.5 text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:text-slate-900 rounded-sm"
                >
-                 Clear
+                 {settings.clearFiltersText?.[lang] || 'Clear'}
                </button>
                <button
                  onClick={onClose}
                  className="flex-1 bg-slate-900 text-white py-3.5 text-[11px] font-black uppercase tracking-[0.22em] transition-all hover:bg-slate-800 rounded-sm active:scale-[0.98]">
-                  Apply ({productCount})
+                  {settings.applyFiltersText?.[lang] || 'Apply'} ({productCount})
                 </button>
              </div>
           </motion.div>
@@ -295,3 +302,4 @@ export function MobileFilters({
     </AnimatePresence>
   );
 }
+

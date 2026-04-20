@@ -3,15 +3,25 @@
 import OpenAI from "openai";
 import { createClient } from "@/utils/supabase/server";
 import { decrypt } from "@/lib/encryption";
-import { revalidatePath } from "next/cache";
 
 interface AIContentParams {
   model: string;
-  contents: any;
+  contents: Array<{
+    role: string;
+    parts: Array<{
+      text?: string;
+      image_url?: string;
+      inlineData?: {
+        mimeType: string;
+        data: string;
+      };
+    }>;
+  }>;
   generationConfig?: {
     responseMimeType?: string;
-    responseSchema?: any;
+    responseSchema?: Record<string, unknown>;
     systemInstruction?: string;
+    temperature?: number;
   };
   nonce?: string; // Cache-busting nonce
 }
@@ -60,15 +70,15 @@ export async function generateAIContentAction(params: AIContentParams) {
     }
     
     // Ensure we use a vision model if images are present
-    const hasImages = Array.isArray(params.contents) && params.contents.some((c: any) => 
-      c.parts?.some((p: any) => p.image_url || p.inlineData)
+    const hasImages = params.contents.some(c => 
+      c.parts?.some(p => p.image_url || p.inlineData)
     );
     if (hasImages && !activeModel.includes('vision')) {
       activeModel = "llama-3.2-11b-vision-preview";
     }
 
     // 5. Convert Gemini Contents structure to OpenAI Messages structure
-    const messages: any[] = [];
+    const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string | any[] }> = [];
     
     // Add system instruction if provided
     if (params.generationConfig?.systemInstruction) {
@@ -77,7 +87,7 @@ export async function generateAIContentAction(params: AIContentParams) {
 
     for (const content of params.contents) {
       const role = content.role === 'model' ? 'assistant' : 'user';
-      const parts = await Promise.all(content.parts.map(async (part: any) => {
+      const parts = await Promise.all(content.parts.map(async (part) => {
         if (part.text) {
           return { type: "text", text: part.text };
         }
@@ -94,15 +104,19 @@ export async function generateAIContentAction(params: AIContentParams) {
               console.warn("[GROQ] Failed to fetch image:", part.image_url);
               return { type: "text", text: "[Image Error]" };
             }
-          } else {
+          } else if (part.inlineData?.data) {
             dataUrl = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
           }
-          return { type: "image_url", image_url: { url: dataUrl } };
+          
+          if (dataUrl) {
+            return { type: "image_url", image_url: { url: dataUrl } };
+          }
+          return null;
         }
         return null;
       }));
       
-      const filteredParts = parts.filter(p => p !== null);
+      const filteredParts = parts.filter(p => p !== null) as any[];
       messages.push({ 
         role, 
         content: filteredParts.length === 1 && filteredParts[0].type === 'text' 
@@ -117,16 +131,19 @@ export async function generateAIContentAction(params: AIContentParams) {
       response_format: params.generationConfig?.responseMimeType === "application/json" 
         ? { type: "json_object" } 
         : undefined,
-      temperature: 0.7,
+      temperature: params.generationConfig?.temperature !== undefined 
+        ? Number(params.generationConfig.temperature) 
+        : 0.7,
     });
 
     return { text: completion?.choices[0]?.message?.content || "" };
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[Groq Action Error]:", error);
     
     const now = new Date().toLocaleTimeString();
-    const status = error.status || 500;
+    const err = error as { status?: number; message?: string };
+    const status = err.status || 500;
 
     if (status === 401 || status === 403) {
       return { 
@@ -150,7 +167,7 @@ export async function generateAIContentAction(params: AIContentParams) {
     }
 
     return { 
-      error: error.message || "An unexpected error occurred during Groq AI generation.",
+      error: err.message || "An unexpected error occurred during Groq AI generation.",
       status: status
     };
   }

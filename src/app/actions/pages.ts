@@ -1,4 +1,5 @@
 'use server';
+﻿import { logger } from '@/lib/logger';
 
 import { revalidatePath } from 'next/cache';
 
@@ -72,7 +73,7 @@ export async function savePageAction(input: StaticPageInput): Promise<PageAction
     return { success: true, message: 'Page created.', id: data.id };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to save page.';
-    console.error('[Action Error] savePageAction:', error);
+    logger.error('[Action Error] savePageAction:', error);
     return { success: false, message, error: message };
   }
 }
@@ -95,7 +96,7 @@ export async function deletePagesAction(ids: string[]): Promise<PageActionResult
     return { success: true, message: 'Pages deleted.' };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to delete pages.';
-    console.error('[Action Error] deletePagesAction:', error);
+    logger.error('[Action Error] deletePagesAction:', error);
     return { success: false, message, error: message };
   }
 }
@@ -135,7 +136,8 @@ export async function seedPagesAction(): Promise<PageActionResult> {
     return { success: true, message: 'Default pages seeded.' };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to seed pages.';
-    console.error('[Action Error] seedPagesAction:', error);
+    logger.error('[Action Error] seedPagesAction:', error);
     return { success: false, message, error: message };
   }
 }
+

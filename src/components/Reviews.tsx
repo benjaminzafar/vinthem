@@ -1,4 +1,5 @@
-"use client";
+﻿"use client";
+import { logger } from '@/lib/logger';
 import React, { useEffect, useState } from 'react';
 import { submitProductReviewAction } from '@/app/actions/reviews';
 import { createClient } from '@/utils/supabase/client';
@@ -6,8 +7,8 @@ import { Review } from '@/types';
 import { Star, CheckCircle2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { useSettingsStore } from '@/store/useSettingsStore';
-import { getClientLocale } from '@/lib/locale';
+import type { StorefrontSettings } from '@/store/useSettingsStore';
+import { useStorefrontSettings } from '@/hooks/useStorefrontSettings';
 
 import { User } from '@supabase/supabase-js';
 
@@ -20,17 +21,18 @@ interface OrderItem {
 
 interface ReviewsProps {
   productId: string;
+  initialSettings: Partial<StorefrontSettings>;
+  lang: string;
 }
 
-export default function Reviews({ productId }: ReviewsProps) {
+export default function Reviews({ productId, initialSettings, lang }: ReviewsProps) {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [hasPurchased, setHasPurchased] = useState<boolean | null>(null);
-  const { settings } = useSettingsStore();
-  const lang = getClientLocale();
+  const settings = useStorefrontSettings(initialSettings);
   const supabase = createClient();
 
   useEffect(() => {
@@ -46,7 +48,7 @@ export default function Reviews({ productId }: ReviewsProps) {
         if (error) throw error;
         setReviews(data as Review[]);
       } catch (error) {
-        console.error("Error fetching reviews:", error);
+        logger.error("Error fetching reviews:", error);
       } finally {
         setLoading(false);
       }
@@ -87,7 +89,7 @@ export default function Reviews({ productId }: ReviewsProps) {
         
         setHasPurchased(purchased);
       } catch (error) {
-        console.error("Error checking purchase status:", error);
+        logger.error("Error checking purchase status:", error);
         setHasPurchased(false);
       }
     };
@@ -119,7 +121,7 @@ export default function Reviews({ productId }: ReviewsProps) {
       setComment('');
       toast.success(settings.reviewSubmittedText?.[lang] || result.message);
     } catch (error) {
-      console.error("Error submitting review:", error);
+      logger.error("Error submitting review:", error);
       toast.error(settings.failedToSubmitReviewText?.[lang] || 'Failed to submit review.');
     } finally {
       setSubmitting(false);
@@ -232,3 +234,4 @@ export default function Reviews({ productId }: ReviewsProps) {
     </div>
   );
 }
+

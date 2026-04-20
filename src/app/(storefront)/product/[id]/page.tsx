@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation';
 import { ProductClient } from '@/components/product/ProductClient';
 import { Product } from '@/store/useCartStore';
 import { Category } from '@/types';
+import { getSettings } from '@/lib/data';
+import type { StorefrontSettings } from '@/store/useSettingsStore';
 
 const PUBLIC_PRODUCT_STATUS_FILTER = 'status.eq.published,status.eq.active,status.is.null';
 
@@ -26,6 +28,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
+  const settings = (await getSettings()) as Partial<StorefrontSettings>;
 
   // Fetch product with cleaned up naming for frontend
   const { data: productData, error } = await supabase
@@ -91,6 +94,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         initialProduct={product} 
         relatedProducts={relatedProducts} 
         categories={categories as unknown as Category[]}
+        initialSettings={settings}
       />
     </div>
   );

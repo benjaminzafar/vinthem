@@ -1,4 +1,5 @@
-"use client";
+﻿"use client";
+import { logger } from '@/lib/logger';
 
 export type ConsentState = {
   analytics: boolean;
@@ -37,7 +38,10 @@ export function parseConsentValue(value: string | null | undefined): ConsentStat
       marketing: parsed.marketing,
       updatedAt: typeof parsed.updatedAt === "string" ? parsed.updatedAt : new Date().toISOString(),
     });
-  } catch {
+  } catch (error) {
+    if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
+      logger.warn("Invalid consent payload was ignored.", error);
+    }
     return null;
   }
 }
@@ -56,12 +60,21 @@ export function readStoredConsent(): ConsentState | null {
   if (localConsent) {
     return localConsent;
   }
+  if (localValue) {
+    window.localStorage.removeItem(CONSENT_STORAGE_KEY);
+  }
 
   const cookieMatch = document.cookie
     .split("; ")
     .find((entry) => entry.startsWith(`${CONSENT_COOKIE_NAME}=`));
 
-  return parseConsentValue(cookieMatch ? decodeURIComponent(cookieMatch.split("=")[1] ?? "") : null);
+  const cookieValue = cookieMatch ? decodeURIComponent(cookieMatch.split("=")[1] ?? "") : null;
+  const cookieConsent = parseConsentValue(cookieValue);
+  if (!cookieConsent && cookieValue) {
+    document.cookie = `${CONSENT_COOKIE_NAME}=; Path=/; Max-Age=0; SameSite=Lax`;
+  }
+
+  return cookieConsent;
 }
 
 export function persistConsent(consent: ConsentState): void {
@@ -94,3 +107,4 @@ export function openConsentPreferences(): void {
 
   window.dispatchEvent(new CustomEvent(OPEN_CONSENT_PREFERENCES_EVENT));
 }
+

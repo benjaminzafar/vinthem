@@ -1,4 +1,5 @@
 'use server';
+﻿import { logger } from '@/lib/logger';
 
 import { revalidatePath } from 'next/cache';
 
@@ -79,7 +80,7 @@ export async function saveBlogPostAction(input: BlogPostInput): Promise<BlogActi
     return { success: true, message: 'Post created.', id: data.id };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to save blog post.';
-    console.error('[Action Error] saveBlogPostAction:', error);
+    logger.error('[Action Error] saveBlogPostAction:', error);
     return { success: false, message, error: message };
   }
 }
@@ -102,7 +103,8 @@ export async function deleteBlogPostsAction(ids: string[]): Promise<BlogActionRe
     return { success: true, message: 'Posts deleted.' };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to delete posts.';
-    console.error('[Action Error] deleteBlogPostsAction:', error);
+    logger.error('[Action Error] deleteBlogPostsAction:', error);
     return { success: false, message, error: message };
   }
 }
+

@@ -1,4 +1,5 @@
 import { createClient } from '@/utils/supabase/client';
+import { logger } from '@/lib/logger';
 
 export async function uploadImageWithTimeout(
   file: File,
@@ -36,7 +37,7 @@ export async function uploadImageWithTimeout(
 
       if (!uploadRes.ok) {
         const errorText = await uploadRes.text();
-        console.error('[Upload] R2 Error Response:', errorText);
+        logger.error('[Upload] R2 Error Response:', errorText);
         throw new Error(`Direct upload to R2 failed: ${uploadRes.status} ${errorText}`);
       }
 
@@ -45,8 +46,9 @@ export async function uploadImageWithTimeout(
 
     } catch (error: unknown) {
       clearTimeout(timeout);
-      console.error('[Upload] Failed to fetch. Possible causes: CORS blocks, invalid credentials, or network timeout.', error);
+      logger.error('[Upload] Failed to fetch. Possible causes: CORS blocks, invalid credentials, or network timeout.', error);
       reject(error);
     }
   });
 }
+

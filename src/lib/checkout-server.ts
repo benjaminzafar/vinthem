@@ -5,6 +5,7 @@ import Stripe from 'stripe';
 import { ALLOWED_SHIPPING_COUNTRIES, resolveMarket, resolveStripeCheckoutLocale } from '@/lib/markets';
 import { getStripeClient } from '@/lib/stripe-server';
 import { createAdminClient, createClient } from '@/utils/supabase/server';
+import { getSettings } from '@/lib/data';
 
 const BASE_CURRENCY = 'sek';
 const SHIPPING_TAX_CODE = 'txcd_92010001';
@@ -213,7 +214,9 @@ export async function estimateCheckout(
   locale?: string,
 ): Promise<CheckoutEstimate> {
   const shippingDetails = sanitizeShippingDetails(shippingInput);
-  if (!ALLOWED_SHIPPING_COUNTRIES.includes(shippingDetails.country as (typeof ALLOWED_SHIPPING_COUNTRIES)[number])) {
+  const settings = await getSettings();
+  const allowedCountries = (settings.shippingCountries || ALLOWED_SHIPPING_COUNTRIES.map(c => ({ code: c }))).map(c => c.code.toUpperCase());
+  if (!allowedCountries.includes(shippingDetails.country)) {
     throw new Error('Shipping country is not supported.');
   }
 
@@ -302,7 +305,7 @@ export async function startCheckout(
       userId: user?.id ?? '',
     },
     shipping_address_collection: {
-      allowed_countries: [...ALLOWED_SHIPPING_COUNTRIES],
+      allowed_countries: (await getSettings()).shippingCountries?.map(c => c.code.toUpperCase() as (typeof ALLOWED_SHIPPING_COUNTRIES)[number]) || [...ALLOWED_SHIPPING_COUNTRIES],
     },
     shipping_options: [
       {

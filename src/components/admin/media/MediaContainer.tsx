@@ -77,8 +77,8 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
       }
       
       setNextToken(data.stats?.nextContinuationToken || null);
-    } catch (error: any) {
-      toast.error('Media Cloud Error: ' + error.message, {
+    } catch (error: unknown) {
+      toast.error('Media Cloud Error: ' + (error instanceof Error ? error.message : String(error)), {
         duration: 8000
       });
     } finally {
@@ -141,8 +141,8 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
 
       toast.success(`Success: ${sanitizedName} uploaded`);
       fetchMedia();
-    } catch (error: any) {
-      toast.error('Upload failed: ' + error.message);
+    } catch (error: unknown) {
+      toast.error('Upload failed: ' + (error instanceof Error ? error.message : String(error)));
     } finally {
       setUploading(false);
       e.target.value = '';
@@ -177,8 +177,8 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
       
       toast.success(isFolder ? 'Folder evacuated' : 'Asset purged');
       fetchMedia();
-    } catch (error: any) {
-      toast.error('Delete failed: ' + error.message);
+    } catch (error: unknown) {
+      toast.error('Delete failed: ' + (error instanceof Error ? error.message : String(error)));
     } finally {
       setDeletingKey(null);
     }
@@ -335,3 +335,4 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
     </div>
   );
 }
+

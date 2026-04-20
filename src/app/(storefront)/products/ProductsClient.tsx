@@ -11,15 +11,21 @@ import { MobileFilters } from '@/components/storefront/MobileFilters';
 import { SidebarFilters } from '@/components/storefront/SidebarFilters';
 import { ProductCard } from '@/components/product/ProductCard';
 import { getClientLocale } from '@/lib/locale';
-import { useSettingsStore } from '@/store/useSettingsStore';
+import type { StorefrontSettings } from '@/store/useSettingsStore';
 import { useUIStore } from '@/store/useUIStore';
+import { useStorefrontSettings } from '@/hooks/useStorefrontSettings';
 
 interface ProductsClientProps {
   initialProducts: Product[];
   initialCategories: Category[];
+  initialSettings: Partial<StorefrontSettings>;
 }
 
-export default function ProductsClient({ initialProducts, initialCategories }: ProductsClientProps) {
+export default function ProductsClient({
+  initialProducts,
+  initialCategories,
+  initialSettings,
+}: ProductsClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -35,8 +41,8 @@ export default function ProductsClient({ initialProducts, initialCategories }: P
   const sortBy = searchParams.get('sort') || 'newest';
   const activeSearch = searchParams.get('search') || '';
 
-  const { settings } = useSettingsStore();
-  const lang = getClientLocale();
+  const settings = useStorefrontSettings(initialSettings);
+  const lang = getClientLocale(pathname);
 
   const [searchInput, setSearchInput] = useState(activeSearch);
   const debouncedSearch = useDebounce(searchInput, 400);

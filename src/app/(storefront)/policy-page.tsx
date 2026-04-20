@@ -1,7 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { cookies } from 'next/headers';
 import ReactMarkdown from 'react-markdown';
 import { Home, ChevronRight, Shield, Cookie, Scale, FileText } from 'lucide-react';
 
@@ -10,6 +9,8 @@ import { getSettings } from '@/lib/data';
 import { defaultPolicyContent } from '@/lib/policy-defaults';
 import { StaticPage } from '@/types';
 import type { StorefrontSettings } from '@/store/useSettingsStore';
+import { getServerLocale } from '@/lib/server-locale';
+import { localizeHref } from '@/lib/i18n-routing';
 
 type StaticPageRecord = StaticPage & {
   updatedAt?: string;
@@ -141,7 +142,7 @@ async function getRenderablePolicyPage(slug: string) {
 }
 
 export async function getPolicyPageMetadata(slug: string) {
-  const lang = (await cookies()).get('NEXT_LOCALE')?.value || 'en';
+  const lang = await getServerLocale();
   const { page } = await getRenderablePolicyPage(slug);
 
   if (!page) {
@@ -154,7 +155,7 @@ export async function getPolicyPageMetadata(slug: string) {
 }
 
 export async function renderPolicyPage(slug: string) {
-  const lang = (await cookies()).get('NEXT_LOCALE')?.value || 'en';
+  const lang = await getServerLocale();
   const { page, settings } = await getRenderablePolicyPage(slug);
 
   if (!page || !settings) {
@@ -173,7 +174,7 @@ export async function renderPolicyPage(slug: string) {
     <div className="min-h-screen bg-slate-50 pb-20">
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
         <nav className="mb-8 flex items-center gap-2 text-sm text-slate-500">
-          <Link href="/" className="inline-flex items-center gap-2 transition-colors hover:text-slate-900">
+          <Link href={localizeHref(lang, '/')} className="inline-flex items-center gap-2 transition-colors hover:text-slate-900">
             <Home className="h-4 w-4" />
             {homeLabel}
           </Link>

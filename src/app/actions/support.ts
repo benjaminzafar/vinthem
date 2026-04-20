@@ -1,4 +1,5 @@
 'use server';
+﻿import { logger } from '@/lib/logger';
 
 import { revalidatePath } from 'next/cache';
 
@@ -41,6 +42,12 @@ type ReplySupportTicketInput = {
 
 function sanitizeMessage(value: string): string {
   return value.replace(/[<>]/g, '').trim();
+}
+
+function revalidateSupportViews() {
+  revalidatePath('/profile');
+  revalidatePath('/[lang]/profile', 'page');
+  revalidatePath('/admin/customers');
 }
 
 export async function submitSupportRequestAction(input: SupportRequestInput): Promise<SupportActionResult> {
@@ -100,8 +107,7 @@ export async function submitSupportRequestAction(input: SupportRequestInput): Pr
       }
     }
 
-    revalidatePath('/profile');
-    revalidatePath('/admin/customers');
+    revalidateSupportViews();
 
     return {
       success: true,
@@ -109,7 +115,7 @@ export async function submitSupportRequestAction(input: SupportRequestInput): Pr
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to send support request.';
-    console.error('[Action Error] submitSupportRequestAction:', error);
+    logger.error('[Action Error] submitSupportRequestAction:', error);
     return {
       success: false,
       message,
@@ -143,8 +149,7 @@ export async function updateRefundStatusAction(input: UpdateRefundStatusInput): 
     }
 
     revalidatePath('/admin');
-    revalidatePath('/admin/customers');
-    revalidatePath('/profile');
+    revalidateSupportViews();
 
     return {
       success: true,
@@ -152,7 +157,7 @@ export async function updateRefundStatusAction(input: UpdateRefundStatusInput): 
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to update refund status.';
-    console.error('[Action Error] updateRefundStatusAction:', error);
+    logger.error('[Action Error] updateRefundStatusAction:', error);
     return {
       success: false,
       message,
@@ -210,8 +215,7 @@ export async function replySupportTicketAction(input: ReplySupportTicketInput): 
     }
 
     revalidatePath('/admin');
-    revalidatePath('/admin/customers');
-    revalidatePath('/profile');
+    revalidateSupportViews();
 
     return {
       success: true,
@@ -219,7 +223,7 @@ export async function replySupportTicketAction(input: ReplySupportTicketInput): 
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to update support ticket.';
-    console.error('[Action Error] replySupportTicketAction:', error);
+    logger.error('[Action Error] replySupportTicketAction:', error);
     return {
       success: false,
       message,
@@ -227,3 +231,4 @@ export async function replySupportTicketAction(input: ReplySupportTicketInput): 
     };
   }
 }
+

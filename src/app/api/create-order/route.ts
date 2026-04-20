@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@/lib/logger';
 
 import { startCheckout } from '@/lib/checkout-server';
 
@@ -14,7 +15,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(result);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to create order.';
-    console.error('Order creation error:', error);
+    logger.error('Order creation error:', error);
     return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }
+

@@ -1,34 +1,31 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
-import { AdminHeader } from '@/components/admin/AdminHeader';
-import { 
-  Database, 
-  Download, 
-  RefreshCw, 
-  DollarSign, 
-  ShoppingCart, 
-  Package, 
-  TrendingDown, 
-  RefreshCcw 
+import { logger } from '@/lib/logger';
+import {
+  Database,
+  DollarSign,
+  Download,
+  Package,
+  RefreshCcw,
+  RefreshCw,
+  ShoppingCart,
+  TrendingDown,
 } from 'lucide-react';
-import { 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer 
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
 } from 'recharts';
-import { useSettingsStore } from '@/store/useSettingsStore';
 import { Product } from '@/store/useCartStore';
 import { downloadXLSX } from '@/utils/export';
 import { StableChartContainer } from '@/components/admin/charts/StableChartContainer';
-
-import { StorefrontSettingsType } from '@/types';
 
 interface OverviewOrder {
   id: string;
@@ -49,88 +46,165 @@ interface RefundRequest {
   createdAt: string;
 }
 
-export function Overview({ initialStats, onProductClick, onSeedClick }: { initialStats?: Record<string, any>, onProductClick?: (product: Product) => void, onSeedClick?: () => void }) {
+interface OverviewProduct extends Omit<Product, 'stock' | 'variants' | 'title'> {
+  title: string;
+  stock?: number | null;
+  variants?: Array<{ stock?: number | null }>;
+}
+
+interface OverviewStats {
+  orders: OverviewOrder[];
+  products: OverviewProduct[];
+  refunds: RefundRequest[];
+}
+
+interface RawOverviewStats {
+  orders: Record<string, unknown>[];
+  products: Record<string, unknown>[];
+  refunds: Record<string, unknown>[];
+}
+
+interface OverviewProps {
+  initialStats?: RawOverviewStats;
+  onProductClick?: (product: Product) => void;
+  onSeedClick?: () => void;
+}
+
+function normalizeOrder(order: Record<string, unknown>): OverviewOrder {
+  const shippingDetails =
+    order.shipping_details && typeof order.shipping_details === 'object'
+      ? (order.shipping_details as Record<string, unknown>)
+      : undefined;
+
+  return {
+    id: String(order.id ?? ''),
+    total: Number(order.total ?? 0),
+    status: String(order.status ?? ''),
+    created_at: String(order.created_at ?? ''),
+    createdAt: String(order.created_at ?? ''),
+    order_id: String(order.order_id ?? ''),
+    customerEmail: typeof shippingDetails?.email === 'string' ? shippingDetails.email : undefined,
+    items: Array.isArray(order.items) ? (order.items as Record<string, unknown>[]) : [],
+    shipping_details: shippingDetails,
+  };
+}
+
+function normalizeRefund(refund: Record<string, unknown>): RefundRequest {
+  const createdAt = String(refund.created_at ?? '');
+
+  return {
+    id: String(refund.id ?? ''),
+    status: String(refund.status ?? ''),
+    created_at: createdAt,
+    createdAt,
+  };
+}
+
+function normalizeProduct(product: Record<string, unknown>): OverviewProduct {
+  return product as unknown as OverviewProduct;
+}
+
+function toProduct(product: OverviewProduct): Product {
+  return {
+    ...product,
+    stock: Number(product.stock ?? 0),
+  } as Product;
+}
+
+export function Overview({ initialStats, onProductClick, onSeedClick }: OverviewProps) {
   const router = useRouter();
+  const [supabase] = useState(() => createClient());
   const [timeRange, setTimeRange] = useState('6months');
   const [metric, setMetric] = useState('revenue');
-  const [orders, setOrders] = useState<OverviewOrder[]>(initialStats?.orders?.map((o: Record<string, any>) => ({
-    ...o,
-    createdAt: o.created_at,
-    orderId: o.order_id,
-    customerEmail: (o.shipping_details as Record<string, any>)?.email
-  })) || []);
-  const [products, setProducts] = useState<Product[]>(initialStats?.products || []);
-  const [refundRequests, setRefundRequests] = useState<RefundRequest[]>(initialStats?.refunds?.map((r: Record<string, any>) => ({
-    ...r,
-    createdAt: r.created_at
-  })) || []);
+  const normalizedInitialStats = useMemo<OverviewStats>(
+    () => ({
+      orders: (initialStats?.orders ?? []).map((order) =>
+        normalizeOrder(order as unknown as Record<string, unknown>),
+      ),
+      products: (initialStats?.products ?? []).map((product) =>
+        normalizeProduct(product as unknown as Record<string, unknown>),
+      ),
+      refunds: (initialStats?.refunds ?? []).map((refund) =>
+        normalizeRefund(refund as unknown as Record<string, unknown>),
+      ),
+    }),
+    [initialStats],
+  );
+  const [orders, setOrders] = useState<OverviewOrder[]>(normalizedInitialStats.orders);
+  const [products, setProducts] = useState<OverviewProduct[]>(normalizedInitialStats.products);
+  const [refundRequests, setRefundRequests] = useState<RefundRequest[]>(normalizedInitialStats.refunds);
   const [loading, setLoading] = useState(!initialStats);
+  const [refreshing, setRefreshing] = useState(false);
   const [visibleInventoryCount, setVisibleInventoryCount] = useState(10);
   const [visibleTopPerformersCount, setVisibleTopPerformersCount] = useState(10);
-  const supabase = createClient();
 
-  const fetchAdminData = useCallback(async () => {
-    // Only fetch if not provided via props (for secondary refreshes)
-    if (initialStats && loading === false) return; 
-    
-    try {
-      setLoading(true);
-      const [ordersRes, productsRes, refundsRes] = await Promise.all([
-        supabase.from('orders').select('*').order('created_at', { ascending: false }),
-        supabase.from('products').select('*').order('created_at', { ascending: false }),
-        supabase.from('refund_requests').select('*').order('created_at', { ascending: false }),
-      ]);
-      
-      if (ordersRes.data) {
-        setOrders((ordersRes.data as Record<string, any>[]).map(o => ({
-          ...o,
-          id: o.id,
-          total: o.total,
-          status: o.status,
-          created_at: o.created_at,
-          order_id: o.order_id,
-          createdAt: o.created_at,
-          orderId: o.order_id,
-          customerEmail: (o.shipping_details as Record<string, any>)?.email
-        } as OverviewOrder)));
+  const fetchAdminData = useCallback(
+    async (showLoader = false) => {
+      try {
+        if (showLoader) {
+          setLoading(true);
+        } else {
+          setRefreshing(true);
+        }
+
+        const [ordersRes, productsRes, refundsRes] = await Promise.all([
+          supabase.from('orders').select('*').order('created_at', { ascending: false }),
+          supabase.from('products').select('*').order('created_at', { ascending: false }),
+          supabase.from('refund_requests').select('*').order('created_at', { ascending: false }),
+        ]);
+
+        if (ordersRes.error) {
+          throw ordersRes.error;
+        }
+
+        if (productsRes.error) {
+          throw productsRes.error;
+        }
+
+        if (refundsRes.error) {
+          throw refundsRes.error;
+        }
+
+        setOrders((ordersRes.data ?? []).map((order) => normalizeOrder(order as Record<string, unknown>)));
+        setProducts((productsRes.data ?? []).map((product) => normalizeProduct(product as Record<string, unknown>)));
+        setRefundRequests((refundsRes.data ?? []).map((refund) => normalizeRefund(refund as Record<string, unknown>)));
+      } catch (error) {
+        logger.error('Error fetching admin overview data', error);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
       }
-      if (productsRes.data) setProducts(productsRes.data as unknown as Product[]);
-      if (refundsRes.data) {
-        setRefundRequests((refundsRes.data as Record<string, any>[]).map(r => ({
-          ...r,
-          id: r.id,
-          status: r.status,
-          created_at: r.created_at,
-          createdAt: r.created_at
-        } as RefundRequest)));
-      }
-    } catch (error) {
-      console.error('Error fetching admin data:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [supabase, initialStats, loading]);
+    },
+    [supabase],
+  );
 
   useEffect(() => {
-    fetchAdminData();
+    if (!initialStats) {
+      void fetchAdminData(true);
+    }
 
-    // Enable Realtime for all core entities to keep dashboard fresh
     const channel = supabase
       .channel('overview-realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => fetchAdminData())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => fetchAdminData())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'refund_requests' }, () => fetchAdminData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
+        void fetchAdminData(false);
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
+        void fetchAdminData(false);
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'refund_requests' }, () => {
+        void fetchAdminData(false);
+      })
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      void supabase.removeChannel(channel);
     };
-  }, [fetchAdminData, supabase]);
+  }, [fetchAdminData, initialStats, supabase]);
 
   const filteredOrders = useMemo(() => {
     const now = new Date();
     const startDate = new Date();
-    
+
     if (timeRange === '1week') {
       startDate.setDate(now.getDate() - 7);
     } else if (timeRange === '1month') {
@@ -142,194 +216,250 @@ export function Overview({ initialStats, onProductClick, onSeedClick }: { initia
     } else if (timeRange === '12months') {
       startDate.setMonth(now.getMonth() - 12);
     }
-    
-    return orders.filter(order => {
-      if (!order.createdAt) return false;
+
+    return orders.filter((order) => {
+      if (!order.createdAt) {
+        return false;
+      }
+
       const orderDate = new Date(order.createdAt);
       return orderDate >= startDate;
     });
   }, [orders, timeRange]);
 
-  const totalRevenue = useMemo(() => {
-    return filteredOrders.reduce((sum, order) => {
-      if (order.status !== 'Cancelled') {
-        return sum + (Number(order.total) || 0);
-      }
-      return sum;
-    }, 0);
-  }, [filteredOrders]);
+  const totalRevenue = useMemo(
+    () =>
+      filteredOrders.reduce((sum, order) => {
+        if (order.status !== 'Cancelled') {
+          return sum + (Number(order.total) || 0);
+        }
 
-  const activeOrders = useMemo(() => {
-    return filteredOrders.filter(order => order.status === 'Processing' || order.status === 'Pending' || !order.status).length;
-  }, [filteredOrders]);
+        return sum;
+      }, 0),
+    [filteredOrders],
+  );
+
+  const activeOrders = useMemo(
+    () =>
+      filteredOrders.filter(
+        (order) => order.status === 'Processing' || order.status === 'Pending' || !order.status,
+      ).length,
+    [filteredOrders],
+  );
 
   const avgOrderValue = useMemo(() => {
-    const validOrders = filteredOrders.filter(order => order.status !== 'Cancelled');
-    if (validOrders.length === 0) return 0;
+    const validOrders = filteredOrders.filter((order) => order.status !== 'Cancelled');
+    if (validOrders.length === 0) {
+      return 0;
+    }
+
     return totalRevenue / validOrders.length;
   }, [filteredOrders, totalRevenue]);
 
   const trendData = useMemo(() => {
     const now = new Date();
-    const data: { name: string, revenue: number, orders: number, date: Date }[] = [];
+    const data: Array<{ name: string; revenue: number; orders: number; date: Date }> = [];
 
     if (timeRange === '1week') {
-      for (let i = 6; i >= 0; i--) {
-        const d = new Date(now);
-        d.setDate(d.getDate() - i);
-        data.push({ name: d.toLocaleDateString('en-US', { weekday: 'short' }), revenue: 0, orders: 0, date: d });
+      for (let i = 6; i >= 0; i -= 1) {
+        const date = new Date(now);
+        date.setDate(date.getDate() - i);
+        data.push({
+          name: date.toLocaleDateString('en-US', { weekday: 'short' }),
+          revenue: 0,
+          orders: 0,
+          date,
+        });
       }
     } else if (timeRange === '1month') {
-      for (let i = 3; i >= 0; i--) {
-        const d = new Date(now);
-        d.setDate(d.getDate() - (i * 7));
-        data.push({ name: `Week ${i + 1}`, revenue: 0, orders: 0, date: d });
+      for (let i = 3; i >= 0; i -= 1) {
+        const date = new Date(now);
+        date.setDate(date.getDate() - i * 7);
+        data.push({
+          name: `Week ${i + 1}`,
+          revenue: 0,
+          orders: 0,
+          date,
+        });
       }
     } else {
-      const monthsToShow = timeRange === '12months' ? 12 : (timeRange === '3months' ? 3 : 6);
-      for (let i = monthsToShow - 1; i >= 0; i--) {
-        const d = new Date(now);
-        d.setMonth(d.getMonth() - i);
-        data.push({ name: d.toLocaleDateString('en-US', { month: 'short' }), revenue: 0, orders: 0, date: d });
+      const monthsToShow = timeRange === '12months' ? 12 : timeRange === '3months' ? 3 : 6;
+      for (let i = monthsToShow - 1; i >= 0; i -= 1) {
+        const date = new Date(now);
+        date.setMonth(date.getMonth() - i);
+        data.push({
+          name: date.toLocaleDateString('en-US', { month: 'short' }),
+          revenue: 0,
+          orders: 0,
+          date,
+        });
       }
     }
 
-    filteredOrders.forEach(order => {
-      if (order.createdAt && order.status !== 'Cancelled') {
-        const orderDate = new Date(order.createdAt);
-        
-        const match = data.find(point => {
-            if (timeRange === '1week') {
-                return orderDate.toDateString() === point.date.toDateString();
-            } else if (timeRange === '1month') {
-                const diffTime = Math.abs(orderDate.getTime() - point.date.getTime());
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                return diffDays <= 7;
-            } else {
-                return orderDate.getMonth() === point.date.getMonth() && orderDate.getFullYear() === point.date.getFullYear();
-            }
-        });
+    filteredOrders.forEach((order) => {
+      if (!order.createdAt || order.status === 'Cancelled') {
+        return;
+      }
 
-        if (match) {
-          match.revenue += (Number(order.total) || 0);
-          match.orders += 1;
+      const orderDate = new Date(order.createdAt);
+      const match = data.find((point) => {
+        if (timeRange === '1week') {
+          return orderDate.toDateString() === point.date.toDateString();
         }
+
+        if (timeRange === '1month') {
+          const diffTime = Math.abs(orderDate.getTime() - point.date.getTime());
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          return diffDays <= 7;
+        }
+
+        return (
+          orderDate.getMonth() === point.date.getMonth() &&
+          orderDate.getFullYear() === point.date.getFullYear()
+        );
+      });
+
+      if (match) {
+        match.revenue += Number(order.total) || 0;
+        match.orders += 1;
       }
     });
 
-    return data.map(({ name, revenue, orders }) => ({ name, revenue, orders }));
+    return data.map(({ name, revenue, orders: totalOrders }) => ({
+      name,
+      revenue,
+      orders: totalOrders,
+    }));
   }, [filteredOrders, timeRange]);
 
   const topProductsList = useMemo(() => {
-    const productSales: Record<string, { sales: number, revenue: number }> = {};
-    
-    orders.forEach(order => {
-      if (order.status !== 'Cancelled' && order.items) {
-        order.items.forEach((item: Record<string, any>) => {
-          if (!productSales[item.id]) {
-            productSales[item.id] = { sales: 0, revenue: 0 };
-          }
-          productSales[item.id].sales += (item.quantity || 1);
-          productSales[item.id].revenue += ((item.price || 0) * (item.quantity || 1));
-        });
+    const productSales: Record<string, { sales: number; revenue: number }> = {};
+
+    orders.forEach((order) => {
+      if (order.status === 'Cancelled' || !order.items) {
+        return;
       }
+
+      order.items.forEach((item) => {
+        const itemId = String(item.id ?? '');
+        const quantity = Number(item.quantity ?? 1);
+        const price = Number(item.price ?? 0);
+
+        if (!itemId) {
+          return;
+        }
+
+        if (!productSales[itemId]) {
+          productSales[itemId] = { sales: 0, revenue: 0 };
+        }
+
+        productSales[itemId].sales += quantity;
+        productSales[itemId].revenue += price * quantity;
+      });
     });
 
     const sortedProducts = Object.entries(productSales)
       .map(([id, data]) => {
-        const product = products.find(p => p.id === id);
+        const product = products.find((productItem) => productItem.id === id);
         return {
           name: product ? product.title : `Product ${id.slice(0, 8)}`,
           sales: data.sales,
           revenue: `${data.revenue.toLocaleString()} SEK`,
-          rawRevenue: data.revenue
+          rawRevenue: data.revenue,
         };
       })
       .sort((a, b) => b.rawRevenue - a.rawRevenue);
 
     return {
       items: sortedProducts.slice(0, visibleTopPerformersCount),
-      hasMore: sortedProducts.length > visibleTopPerformersCount
+      hasMore: sortedProducts.length > visibleTopPerformersCount,
     };
   }, [orders, products, visibleTopPerformersCount]);
 
   const inventoryAnalyst = useMemo(() => {
     const lowStockThreshold = 5;
-    
-    const getProductStock = (p: Product) => {
-      if (p.variants && p.variants.length > 0) {
-        return p.variants.reduce((sum, v) => sum + (Number(v.stock) || 0), 0);
+
+    const getProductStock = (product: OverviewProduct) => {
+      if (Array.isArray(product.variants) && product.variants.length > 0) {
+        return product.variants.reduce((sum, variant) => sum + (Number(variant.stock) || 0), 0);
       }
-      return Number(p.stock) || 0;
+
+      return Number(product.stock) || 0;
     };
 
-    const lowStock = products.filter(p => getProductStock(p) <= lowStockThreshold);
-    const outOfStock = products.filter(p => getProductStock(p) === 0);
-    const totalStock = products.reduce((sum, p) => sum + getProductStock(p), 0);
-    
+    const lowStock = products.filter((product) => getProductStock(product) <= lowStockThreshold);
+    const outOfStock = products.filter((product) => getProductStock(product) === 0);
+    const totalStock = products.reduce((sum, product) => sum + getProductStock(product), 0);
+
     return {
       lowStockCount: lowStock.length,
       outOfStockCount: outOfStock.length,
       totalStock,
       lowStockProducts: lowStock.slice(0, visibleInventoryCount),
-      hasMoreLowStock: lowStock.length > visibleInventoryCount
+      hasMoreLowStock: lowStock.length > visibleInventoryCount,
     };
   }, [products, visibleInventoryCount]);
 
   const stats = [
-    { name: 'Total Revenue', value: `${totalRevenue.toLocaleString()} SEK`, icon: DollarSign, change: '+0%', changeType: 'positive' },
-    { name: 'Active Orders', value: activeOrders.toString(), icon: ShoppingCart, change: '+0%', changeType: 'positive' },
-    { name: 'Avg. Order Value', value: `${Math.round(avgOrderValue).toLocaleString()} SEK`, icon: DollarSign, change: '+0%', changeType: 'positive' },
-    { name: 'All products', value: inventoryAnalyst.totalStock.toString(), icon: Package, change: '+0%', changeType: 'positive' },
-    { name: 'Low Stock Items', value: inventoryAnalyst.lowStockCount.toString(), icon: TrendingDown, change: `${inventoryAnalyst.lowStockCount} items`, changeType: 'negative' },
-    { name: 'Refund Requests', value: refundRequests.length.toString(), icon: RefreshCcw, change: `${refundRequests.filter(r => r.status === 'Pending').length} pending`, changeType: 'negative' },
+    { name: 'Total Revenue', value: `${totalRevenue.toLocaleString()} SEK`, icon: DollarSign, change: '+0%', changeType: 'positive' as const },
+    { name: 'Active Orders', value: activeOrders.toString(), icon: ShoppingCart, change: '+0%', changeType: 'positive' as const },
+    { name: 'Avg. Order Value', value: `${Math.round(avgOrderValue).toLocaleString()} SEK`, icon: DollarSign, change: '+0%', changeType: 'positive' as const },
+    { name: 'All products', value: inventoryAnalyst.totalStock.toString(), icon: Package, change: '+0%', changeType: 'positive' as const },
+    { name: 'Low Stock Items', value: inventoryAnalyst.lowStockCount.toString(), icon: TrendingDown, change: `${inventoryAnalyst.lowStockCount} items`, changeType: 'negative' as const },
+    { name: 'Refund Requests', value: refundRequests.length.toString(), icon: RefreshCcw, change: `${refundRequests.filter((refund) => refund.status === 'Pending').length} pending`, changeType: 'negative' as const },
   ];
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <RefreshCw className="w-8 h-8 text-zinc-900 animate-spin" />
+      <div className="flex h-64 items-center justify-center">
+        <RefreshCw className="h-8 w-8 animate-spin text-zinc-900" />
       </div>
     );
   }
 
   const secondaryActions = [
     ...(onSeedClick ? [{ label: 'Seed Test Data', icon: Database, onClick: onSeedClick }] : []),
-    { label: 'Export Report', icon: Download, onClick: () => downloadXLSX(filteredOrders, 'store_report') }
+    { label: 'Export Report', icon: Download, onClick: () => downloadXLSX(filteredOrders, 'store_report') },
   ];
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+      <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Store Overview</h1>
-          <p className="text-sm text-slate-500 mt-1">Real-time performance metrics and inventory insights</p>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Store Overview</h1>
+          <p className="mt-1 text-sm text-slate-500">Real-time performance metrics and inventory insights</p>
         </div>
         <div className="flex items-center gap-3">
-          {secondaryActions.map((action, i) => (
-            <button 
-              key={i} onClick={action.onClick}
-              className="h-10 px-4 border border-slate-300 rounded text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all flex items-center gap-2"
+          {refreshing && (
+            <div className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-500">
+              <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+              Syncing
+            </div>
+          )}
+          {secondaryActions.map((action, index) => (
+            <button
+              key={index}
+              onClick={action.onClick}
+              className="flex h-10 items-center gap-2 rounded border border-slate-300 px-4 text-sm font-medium text-slate-600 transition-all hover:bg-slate-50 hover:text-slate-900"
             >
-              <action.icon className="w-4 h-4" />
+              <action.icon className="h-4 w-4" />
               {action.label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Primary Analytics */}
-      <div className="bg-white border border-slate-300 rounded p-6 sm:p-8">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-8 gap-6">
+      <div className="rounded border border-slate-300 bg-white p-6 sm:p-8">
+        <div className="mb-8 flex flex-col justify-between gap-6 lg:flex-row lg:items-center">
           <div>
-            <h3 className="text-lg font-bold text-slate-900 tracking-tight">Revenue & Growth</h3>
-            <p className="text-slate-500 text-xs mt-1">Visualizing your store's financial trajectory</p>
+            <h3 className="text-lg font-bold tracking-tight text-slate-900">Revenue & Growth</h3>
+            <p className="mt-1 text-xs text-slate-500">Visualizing your store&apos;s financial trajectory</p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <select 
-              value={timeRange} 
-              onChange={(e) => setTimeRange(e.target.value)} 
-              className="text-xs font-bold uppercase tracking-widest border border-slate-300 rounded px-3 py-2 bg-slate-50 focus:outline-none focus:border-slate-900"
+            <select
+              value={timeRange}
+              onChange={(event) => setTimeRange(event.target.value)}
+              className="rounded border border-slate-300 bg-slate-50 px-3 py-2 text-xs font-bold uppercase tracking-widest focus:border-slate-900 focus:outline-none"
             >
               <option value="1week">Last 7 Days</option>
               <option value="1month">Last Month</option>
@@ -337,64 +467,65 @@ export function Overview({ initialStats, onProductClick, onSeedClick }: { initia
               <option value="6months">Last 6 Months</option>
               <option value="12months">Last Year</option>
             </select>
-            <select 
-              value={metric} 
-              onChange={(e) => setMetric(e.target.value)} 
-              className="text-xs font-bold uppercase tracking-widest border border-slate-300 rounded px-3 py-2 bg-slate-50 focus:outline-none focus:border-slate-900"
+            <select
+              value={metric}
+              onChange={(event) => setMetric(event.target.value)}
+              className="rounded border border-slate-300 bg-slate-50 px-3 py-2 text-xs font-bold uppercase tracking-widest focus:border-slate-900 focus:outline-none"
             >
               <option value="revenue">Revenue (SEK)</option>
               <option value="orders">Order Volume</option>
             </select>
           </div>
         </div>
-        
+
         <StableChartContainer className="h-[350px] w-full min-h-[300px]">
           <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={100}>
             <AreaChart data={trendData} margin={{ top: 10, right: 0, bottom: 0, left: -15 }}>
               <defs>
                 <linearGradient id="colorMetric" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#0f172a" stopOpacity={0.05}/>
-                  <stop offset="95%" stopColor="#0f172a" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="#0f172a" stopOpacity={0.05} />
+                  <stop offset="95%" stopColor="#0f172a" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-              <XAxis 
-                dataKey="name" 
-                axisLine={false} 
-                tickLine={false} 
-                tick={{ fill: '#64748b', fontSize: 11, fontWeight: 700 }} 
-                dy={15} 
+              <XAxis
+                dataKey="name"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: '#64748b', fontSize: 11, fontWeight: 700 }}
+                dy={15}
               />
-              <YAxis 
-                axisLine={false} 
-                tickLine={false} 
-                tick={{ fill: '#64748b', fontSize: 11, fontWeight: 700 }} 
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: '#64748b', fontSize: 11, fontWeight: 700 }}
                 width={45}
               />
-              <Tooltip 
+              <Tooltip
                 content={({ active, payload, label }) => {
-                  if (active && payload && payload.length) {
-                    return (
-                      <div className="bg-white p-4 rounded border border-slate-300 shadow-xl min-w-[160px]">
-                        <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">{label}</p>
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">{metric}</span>
-                          <span className="text-sm font-bold text-slate-900">
-                             {(payload[0]?.value ?? 0).toLocaleString()} {metric === 'revenue' ? 'SEK' : ''}
-                          </span>
-                        </div>
-                      </div>
-                    );
+                  if (!active || !payload || payload.length === 0) {
+                    return null;
                   }
-                  return null;
+
+                  return (
+                    <div className="min-w-[160px] rounded border border-slate-300 bg-white p-4 shadow-xl">
+                      <p className="mb-2 text-[11px] font-bold uppercase tracking-widest text-slate-500">{label}</p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium uppercase tracking-wider text-slate-500">{metric}</span>
+                        <span className="text-sm font-bold text-slate-900">
+                          {(payload[0]?.value ?? 0).toLocaleString()} {metric === 'revenue' ? 'SEK' : ''}
+                        </span>
+                      </div>
+                    </div>
+                  );
                 }}
               />
-              <Area 
-                type="monotone" 
-                dataKey={metric} 
-                stroke="#0f172a" 
-                fill="url(#colorMetric)" 
-                strokeWidth={2} 
+              <Area
+                type="monotone"
+                dataKey={metric}
+                stroke="#0f172a"
+                fill="url(#colorMetric)"
+                strokeWidth={2}
                 dot={{ fill: '#0f172a', strokeWidth: 1, r: 3, stroke: '#fff' }}
                 activeDot={{ r: 5, strokeWidth: 0 }}
               />
@@ -403,39 +534,41 @@ export function Overview({ initialStats, onProductClick, onSeedClick }: { initia
         </StableChartContainer>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         {stats.map((stat, index) => (
-          <div key={index} className="bg-white border border-slate-300 p-6 rounded transition-all hover:bg-slate-50">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 bg-white border border-slate-300 rounded flex items-center justify-center text-slate-900">
-                <stat.icon className="w-4 h-4" />
+          <div key={index} className="rounded border border-slate-300 bg-white p-6 transition-all hover:bg-slate-50">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-slate-900">
+                <stat.icon className="h-4 w-4" />
               </div>
-              <h3 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">{stat.name}</h3>
+              <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-500">{stat.name}</h3>
             </div>
-            <p className="text-2xl font-bold text-slate-900 tracking-tight">{stat.value}</p>
-            <div className={`mt-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${
-              stat.changeType === 'positive' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-rose-50 text-rose-700 border-rose-100'
-            }`}>
+            <p className="text-2xl font-bold tracking-tight text-slate-900">{stat.value}</p>
+            <div
+              className={`mt-2 inline-flex items-center rounded border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                stat.changeType === 'positive'
+                  ? 'border-emerald-100 bg-emerald-50 text-emerald-700'
+                  : 'border-rose-100 bg-rose-50 text-rose-700'
+              }`}
+            >
               {stat.change}
             </div>
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Inventory analyst */}
-        <div className="bg-white border border-slate-300 rounded p-6 sm:p-8">
-          <div className="flex items-center justify-between mb-8 gap-4">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+        <div className="rounded border border-slate-300 bg-white p-6 sm:p-8">
+          <div className="mb-8 flex items-center justify-between gap-4">
             <div>
-              <h3 className="text-lg font-bold text-slate-900 tracking-tight">Inventory Health</h3>
-              <p className="text-slate-500 text-xs mt-1">Stock levels and replenishment alerts</p>
+              <h3 className="text-lg font-bold tracking-tight text-slate-900">Inventory Health</h3>
+              <p className="mt-1 text-xs text-slate-500">Stock levels and replenishment alerts</p>
             </div>
             <div className="flex gap-2">
-              <div className="px-2 py-1 bg-rose-50 text-rose-700 rounded border border-rose-100 text-[10px] font-bold uppercase tracking-widest">
+              <div className="rounded border border-rose-100 bg-rose-50 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-rose-700">
                 {inventoryAnalyst.outOfStockCount} Out
               </div>
-              <div className="px-2 py-1 bg-amber-50 text-amber-700 rounded border border-amber-100 text-[10px] font-bold uppercase tracking-widest">
+              <div className="rounded border border-amber-100 bg-amber-50 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-amber-700">
                 {inventoryAnalyst.lowStockCount} Low
               </div>
             </div>
@@ -443,36 +576,40 @@ export function Overview({ initialStats, onProductClick, onSeedClick }: { initia
 
           <div className="space-y-3">
             {inventoryAnalyst.lowStockProducts.length > 0 ? (
-              inventoryAnalyst.lowStockProducts.map(p => (
-                <button 
-                  key={p.id} 
+              inventoryAnalyst.lowStockProducts.map((product) => (
+                <button
+                  key={product.id}
                   onClick={() => {
-                    if (onProductClick) onProductClick(p);
-                    else router.push(`/admin/products?id=${p.id}`);
+                    if (onProductClick) {
+                      onProductClick(toProduct(product));
+                      return;
+                    }
+
+                    router.push(`/admin/products?id=${product.id}`);
                   }}
-                  className="w-full flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded hover:border-slate-300 transition-all group"
+                  className="group flex w-full items-center justify-between rounded border border-slate-200 bg-slate-50 p-4 transition-all hover:border-slate-300"
                 >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 bg-white border border-slate-300 rounded flex items-center justify-center text-slate-400 group-hover:text-slate-900 transition-colors shrink-0">
-                      <Package className="w-5 h-5" />
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded border border-slate-300 bg-white text-slate-400 transition-colors group-hover:text-slate-900">
+                      <Package className="h-5 w-5" />
                     </div>
-                    <span className="text-sm font-bold text-slate-900 truncate">{p.title}</span>
+                    <span className="truncate text-sm font-bold text-slate-900">{product.title}</span>
                   </div>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-rose-700 bg-rose-50 px-2 py-1 rounded border border-rose-100 shrink-0 ml-2">
-                    {p.stock} Units
+                  <span className="ml-2 shrink-0 rounded border border-rose-100 bg-rose-50 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-rose-700">
+                    {(Number(product.stock) || 0).toString()} Units
                   </span>
                 </button>
               ))
             ) : (
-              <div className="text-center py-12 bg-slate-50 rounded border border-slate-300">
-                <p className="text-slate-400 font-bold text-sm uppercase tracking-widest">Inventory Fully Stocked</p>
+              <div className="rounded border border-slate-300 bg-slate-50 py-12 text-center">
+                <p className="text-sm font-bold uppercase tracking-widest text-slate-400">Inventory Fully Stocked</p>
               </div>
             )}
 
             {inventoryAnalyst.hasMoreLowStock && (
-              <button 
-                onClick={() => setVisibleInventoryCount(prev => prev + 10)}
-                className="w-full py-4 border border-slate-300 rounded text-[11px] font-bold uppercase tracking-widest text-slate-500 hover:border-slate-900 hover:text-slate-900 transition-all"
+              <button
+                onClick={() => setVisibleInventoryCount((previous) => previous + 10)}
+                className="w-full rounded border border-slate-300 py-4 text-[11px] font-bold uppercase tracking-widest text-slate-500 transition-all hover:border-slate-900 hover:text-slate-900"
               >
                 Load More
               </button>
@@ -480,32 +617,35 @@ export function Overview({ initialStats, onProductClick, onSeedClick }: { initia
           </div>
         </div>
 
-        {/* Top Products */}
-        <div className="bg-white border border-slate-300 rounded p-6 sm:p-8">
+        <div className="rounded border border-slate-300 bg-white p-6 sm:p-8">
           <div className="mb-8">
-            <h3 className="text-lg font-bold text-slate-900 tracking-tight">Top Performers</h3>
-            <p className="text-slate-500 text-xs mt-1">Best selling products by revenue</p>
+            <h3 className="text-lg font-bold tracking-tight text-slate-900">Top Performers</h3>
+            <p className="mt-1 text-xs text-slate-500">Best selling products by revenue</p>
           </div>
-          
+
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="border-b border-slate-300 text-[11px] uppercase tracking-widest text-slate-500 font-bold">
+                <tr className="border-b border-slate-300 text-[11px] font-bold uppercase tracking-widest text-slate-500">
                   <th className="px-4 py-4">Product</th>
                   <th className="px-4 py-4 text-center">Sales</th>
                   <th className="px-4 py-4 text-right">Revenue</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {topProductsList.items.length > 0 ? topProductsList.items.map((product, index) => (
-                  <tr key={index} className="group hover:bg-slate-50 transition-colors">
-                    <td className="px-4 py-4 font-bold text-slate-900 text-sm truncate max-w-[200px]">{product.name}</td>
-                    <td className="px-4 py-4 text-slate-500 text-sm font-medium text-center">{product.sales}</td>
-                    <td className="px-4 py-4 text-slate-900 font-bold text-sm text-right">{product.revenue}</td>
-                  </tr>
-                )) : (
+                {topProductsList.items.length > 0 ? (
+                  topProductsList.items.map((product, index) => (
+                    <tr key={index} className="group transition-colors hover:bg-slate-50">
+                      <td className="max-w-[200px] truncate px-4 py-4 text-sm font-bold text-slate-900">{product.name}</td>
+                      <td className="px-4 py-4 text-center text-sm font-medium text-slate-500">{product.sales}</td>
+                      <td className="px-4 py-4 text-right text-sm font-bold text-slate-900">{product.revenue}</td>
+                    </tr>
+                  ))
+                ) : (
                   <tr>
-                    <td colSpan={3} className="px-4 py-12 text-center text-slate-400 font-bold text-xs uppercase tracking-widest">No data available</td>
+                    <td colSpan={3} className="px-4 py-12 text-center text-xs font-bold uppercase tracking-widest text-slate-400">
+                      No data available
+                    </td>
                   </tr>
                 )}
               </tbody>
@@ -514,9 +654,9 @@ export function Overview({ initialStats, onProductClick, onSeedClick }: { initia
 
           {topProductsList.hasMore && (
             <div className="mt-6">
-              <button 
-                onClick={() => setVisibleTopPerformersCount(prev => prev + 10)}
-                className="w-full py-4 border border-slate-300 rounded text-[11px] font-bold uppercase tracking-widest text-slate-500 hover:border-slate-900 hover:text-slate-900 transition-all"
+              <button
+                onClick={() => setVisibleTopPerformersCount((previous) => previous + 10)}
+                className="w-full rounded border border-slate-300 py-4 text-[11px] font-bold uppercase tracking-widest text-slate-500 transition-all hover:border-slate-900 hover:text-slate-900"
               >
                 Load More
               </button>

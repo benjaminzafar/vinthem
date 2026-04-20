@@ -1,4 +1,5 @@
 "use client";
+import { logger } from '@/lib/logger';
 import React, { useState } from 'react';
 import { Wand2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -43,11 +44,11 @@ export function AIPostMaker() {
 
       toast.success('AI post generated and saved!', { id: toastId });
       setTopic('');
-    } catch (error: any) {
-      console.error('Error generating post:', error);
+    } catch (error: unknown) {
+      logger.error('Error generating post:', error);
       const timestamp = new Date().toLocaleTimeString('sv-SE', { hour12: false });
-      const errorMessage = error?.message || '';
-      const status = error?.status;
+      const errorMessage = (error as Record<string, unknown>)?.message || '';
+      const status = (error as Record<string, unknown>)?.status;
 
       if (status === 401 || status === 403) {
         toast.error('Action Required: Please set your Groq API Key in the Integrations Manager.', { 
@@ -87,3 +88,4 @@ export function AIPostMaker() {
     </div>
   );
 }
+

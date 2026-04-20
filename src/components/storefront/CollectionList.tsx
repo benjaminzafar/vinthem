@@ -2,13 +2,13 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Category } from '@/types';
+import { Category, StorefrontSettingsType } from '@/types';
 import { ShoppingBag, ArrowRight } from 'lucide-react';
 
 interface CollectionListProps {
   categories: Category[];
   lang: string;
-  settings: any;
+  settings: StorefrontSettingsType;
 }
 
 export function CollectionList({ categories, lang, settings }: CollectionListProps) {

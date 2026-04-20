@@ -11,19 +11,21 @@ import { useUIStore } from '@/store/useUIStore';
 import { Portal } from './Portal';
 import { createClient } from '@/utils/supabase/client';
 import { formatPrice } from '@/lib/currency';
+import { Product } from '@/store/useCartStore';
+import { Category, StorefrontSettingsType } from '@/types';
 
 interface SearchBarProps {
   placeholder?: string;
-  categories?: any[];
+  categories?: Category[];
   lang?: string;
-  settings?: any;
+  settings?: StorefrontSettingsType;
 }
 
 export function SearchBar({ placeholder, categories: initialCategories = [], lang = 'en', settings }: SearchBarProps) {
   const { setIsFilterDrawerOpen, searchQuery, setSearchQuery } = useUIStore();
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
-  const [allProducts, setAllProducts] = useState<any[]>([]);
-  const [allCategories, setAllCategories] = useState<any[]>(initialCategories);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [allCategories, setAllCategories] = useState<Category[]>(initialCategories);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const navigate = useRouter();
   const pathname = usePathname();
@@ -100,10 +102,10 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
   
   const discoveryCategories = useMemo(() => {
     const pinned = allCategories.filter(c => c.pinnedInSearch).slice(0, 9);
-    const heroCollections = allCategories.filter(c => !c.pinnedInSearch && c.show_in_hero).slice(0, 9 - pinned.length);
+    const heroCollections = allCategories.filter(c => !c.pinnedInSearch && c.showInHero).slice(0, 9 - pinned.length);
     const remainingSlots = Math.max(0, 9 - pinned.length - heroCollections.length);
     const others = allCategories
-      .filter(c => !c.pinnedInSearch && !c.show_in_hero)
+      .filter(c => !c.pinnedInSearch && !c.showInHero)
       .slice(0, remainingSlots);
     return [...pinned, ...heroCollections, ...others].slice(0, 9);
   }, [allCategories]);
@@ -211,7 +213,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
                           <div className="lg:col-span-12">
                             <p className="text-[11px] font-black uppercase tracking-[0.22em] text-slate-400 mb-8 px-1 text-center lg:text-left">
-                              {settings?.searchDiscoverText?.[lang] || 'Discover'}
+                              {settings?.searchDiscoverCollectionsText?.[lang] || 'Discover'}
                             </p>
                             {discoveryCategories.length > 0 ? (
                               <div className="grid grid-cols-3 lg:grid-cols-4 gap-4">

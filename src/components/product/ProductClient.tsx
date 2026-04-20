@@ -8,7 +8,7 @@ import { Check, Copy, CheckCircle2, ChevronRight, Search, Share2, ShieldCheck, S
 import { FaThreads } from 'react-icons/fa6';
 import { FaFacebook, FaTelegramPlane, FaWhatsapp } from 'react-icons/fa';
 import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 import { BackButton } from '@/components/BackButton';
 import Reviews from '@/components/Reviews';
@@ -17,16 +17,23 @@ import { getClientLocale } from '@/lib/locale';
 import { Category } from '@/types';
 import { MobileFilters } from '../storefront/MobileFilters';
 import { Product, useCartStore } from '@/store/useCartStore';
-import { useSettingsStore } from '@/store/useSettingsStore';
+import type { StorefrontSettings } from '@/store/useSettingsStore';
 import { useUIStore } from '@/store/useUIStore';
+import { useStorefrontSettings } from '@/hooks/useStorefrontSettings';
 
 interface ProductClientProps {
   initialProduct: Product;
   relatedProducts: Product[];
   categories: Category[];
+  initialSettings: Partial<StorefrontSettings>;
 }
 
-export function ProductClient({ initialProduct, relatedProducts, categories }: ProductClientProps) {
+export function ProductClient({
+  initialProduct,
+  relatedProducts,
+  categories,
+  initialSettings,
+}: ProductClientProps) {
   const [product] = useState<Product>(initialProduct);
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [activeImage, setActiveImage] = useState<string>(() => initialProduct.imageUrl || initialProduct.additionalImages?.[0] || '');
@@ -43,9 +50,10 @@ export function ProductClient({ initialProduct, relatedProducts, categories }: P
   });
 
   const { addItem } = useCartStore();
-  const { settings } = useSettingsStore();
+  const settings = useStorefrontSettings(initialSettings);
   const { setCartOpen, setSearchFocused } = useUIStore();
-  const lang = getClientLocale();
+  const pathname = usePathname();
+  const lang = getClientLocale(pathname);
   const router = useRouter();
 
   const selectedVariant = useMemo(() => {
@@ -306,7 +314,7 @@ export function ProductClient({ initialProduct, relatedProducts, categories }: P
           </div>
 
           <div className="mt-6 border border-slate-200 bg-white p-6 sm:p-8 rounded">
-            <Reviews productId={product.id!} />
+            <Reviews productId={product.id!} initialSettings={initialSettings} lang={lang} />
           </div>
         </section>
       </div>

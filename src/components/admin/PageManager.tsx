@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Download, Edit, FileCode, Plus, RefreshCw, Search, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -24,6 +24,10 @@ export function PageManager({ initialPages = [] }: PageManagerProps) {
   const [selectedPages, setSelectedPages] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
+
+  useEffect(() => {
+    setPages(initialPages);
+  }, [initialPages]);
 
   const filteredPages = useMemo(() => {
     const query = debouncedSearchQuery.toLowerCase();
@@ -84,6 +88,7 @@ export function PageManager({ initialPages = [] }: PageManagerProps) {
     }
 
     toast.success(result.message, { id: toastId });
+    setSelectedPages([]);
     router.refresh();
   };
 

@@ -121,3 +121,13 @@ h1, h2, h3, h4, h5, h6 {
 .border-gray-300 {
   border-color: var(--color-gray-400);
 }
+
+/* Custom Animations */
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.35; scale: 1; }
+  50% { opacity: 0.45; scale: 1.05; }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 15s ease-in-out infinite;
+}

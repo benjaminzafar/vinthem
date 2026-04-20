@@ -18,8 +18,13 @@ export async function createClient() {
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options)
             );
-          } catch {
-            // setAll called from Server Component — safe to ignore
+          } catch (error) {
+            if (process.env.NODE_ENV === 'development') {
+              console.warn(
+                'Supabase cookie propagation was skipped because cookies cannot be mutated in this server context.',
+                error
+              );
+            }
           }
         },
       },

@@ -1,4 +1,5 @@
 'use server';
+﻿import { logger } from '@/lib/logger';
 
 import { revalidatePath } from 'next/cache';
 
@@ -32,6 +33,11 @@ type ProfileActionResult = {
   addresses?: AddressRecord[];
   error?: string;
 };
+
+function revalidateProfileViews() {
+  revalidatePath('/profile');
+  revalidatePath('/[lang]/profile', 'page');
+}
 
 function sanitizeText(value: string, maxLength = 120): string {
   return value.replace(/[<>]/g, '').trim().slice(0, maxLength);
@@ -145,7 +151,7 @@ export async function saveAddressAction(input: AddressInput): Promise<ProfileAct
     }
 
     const addresses = await fetchUserAddresses(supabase, user.id);
-    revalidatePath('/profile');
+    revalidateProfileViews();
 
     return {
       success: true,
@@ -154,7 +160,7 @@ export async function saveAddressAction(input: AddressInput): Promise<ProfileAct
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to save address.';
-    console.error('[Action Error] saveAddressAction:', error);
+    logger.error('[Action Error] saveAddressAction:', error);
     return { success: false, message, error: message };
   }
 }
@@ -194,7 +200,7 @@ export async function deleteAddressAction(addressId: string): Promise<ProfileAct
     }
 
     const nextAddresses = await fetchUserAddresses(supabase, user.id);
-    revalidatePath('/profile');
+    revalidateProfileViews();
 
     return {
       success: true,
@@ -203,7 +209,7 @@ export async function deleteAddressAction(addressId: string): Promise<ProfileAct
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to delete address.';
-    console.error('[Action Error] deleteAddressAction:', error);
+    logger.error('[Action Error] deleteAddressAction:', error);
     return { success: false, message, error: message };
   }
 }
@@ -237,7 +243,7 @@ export async function setDefaultAddressAction(addressId: string): Promise<Profil
     }
 
     const addresses = await fetchUserAddresses(supabase, user.id);
-    revalidatePath('/profile');
+    revalidateProfileViews();
 
     return {
       success: true,
@@ -246,7 +252,8 @@ export async function setDefaultAddressAction(addressId: string): Promise<Profil
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to update default address.';
-    console.error('[Action Error] setDefaultAddressAction:', error);
+    logger.error('[Action Error] setDefaultAddressAction:', error);
     return { success: false, message, error: message };
   }
 }
+

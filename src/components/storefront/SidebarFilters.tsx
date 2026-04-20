@@ -1,14 +1,15 @@
-"use client";
+﻿"use client";
 
 import React, { useState } from 'react';
 import { Search, ChevronRight, ChevronLeft, Check } from 'lucide-react';
+import { StorefrontSettings } from '@/store/useSettingsStore';
 import { Category } from '@/types';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface SidebarFiltersProps {
   categories: Category[];
-  settings: any;
+  settings: StorefrontSettings;
   lang: string;
   searchInput: string;
   setSearchInput: (val: string) => void;
@@ -92,7 +93,7 @@ export function SidebarFilters({
               animate={{ opacity: 1 }}
               className="text-[11px] font-black uppercase tracking-[0.22em] text-slate-900"
             >
-              Collections
+              {settings.searchCollectionsResultsText?.[lang] || settings.categoriesText?.[lang] || 'Collections'}
             </motion.h3>
           )}
         </AnimatePresence>
@@ -109,7 +110,9 @@ export function SidebarFilters({
                 onClick={() => updateParams({ category: 'All' })}
                 className={`w-full flex items-center justify-between py-3 px-4 rounded-none transition-all border ${activeCategory === 'All' ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-transparent hover:bg-slate-50 text-slate-500 hover:text-slate-900'}`}
               >
-                <span className="text-[12px] font-bold uppercase tracking-[0.15em]">All Products</span>
+                <span className="text-[12px] font-bold uppercase tracking-[0.15em]">
+                  {settings.allCategoriesText?.[lang] || settings.productsText?.[lang] || 'All Products'}
+                </span>
                 {activeCategory === 'All' && <Check className="w-4 h-4" strokeWidth={1.5} />}
               </button>
 
@@ -174,7 +177,9 @@ export function SidebarFilters({
 
         {/* Integrated Sort By Section */}
         <div className="pt-8 border-t border-slate-100 space-y-5">
-           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Sort By</p>
+           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+             {settings.sortByText?.[lang] || 'Sort By'}
+           </p>
            <div className="space-y-1">
              {[
                { id: 'newest', label: settings.sortNewestText?.[lang] || 'Newest Arrivals' },
@@ -199,7 +204,7 @@ export function SidebarFilters({
               type="text"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Filter collections..."
+              placeholder={settings.searchPlaceholder?.[lang] || settings.filterText?.[lang] || 'Filter collections...'}
               className="w-full bg-slate-50 border border-slate-100 rounded-none py-3 px-11 pr-4 text-[13px] focus:bg-white focus:border-slate-900 outline-none transition-all placeholder:text-slate-300"
             />
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-slate-900 transition-colors" strokeWidth={1.5} />
@@ -209,3 +214,4 @@ export function SidebarFilters({
     </div>
   );
 }
+

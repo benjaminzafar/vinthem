@@ -1,26 +1,31 @@
 'use client';
 
-import React, { useTransition } from 'react';
+import React, { useRef, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { subscribeAction } from '@/app/actions/newsletter';
+import type { StorefrontSettings } from '@/store/useSettingsStore';
 
 interface NewsletterSectionProps {
-  settings: any;
+  settings: StorefrontSettings;
   lang: string;
 }
 
 export function NewsletterSection({ settings, lang }: NewsletterSectionProps) {
   const [isPending, startTransition] = useTransition();
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const handleSubscribe = async (formData: FormData) => {
     startTransition(async () => {
       const result = await subscribeAction(formData);
       if (result.success) {
         toast.success(result.message);
-        // Reset form manually if needed
+        setFeedback({ type: 'success', message: result.message });
+        formRef.current?.reset();
       } else {
         toast.error(result.message);
+        setFeedback({ type: 'error', message: result.message });
       }
     });
   };
@@ -39,6 +44,7 @@ export function NewsletterSection({ settings, lang }: NewsletterSectionProps) {
         </p>
         
         <form 
+          ref={formRef}
           action={handleSubscribe}
           className="max-w-md mx-auto space-y-4"
         >
@@ -90,8 +96,21 @@ export function NewsletterSection({ settings, lang }: NewsletterSectionProps) {
             </Link>
             .
           </p>
+
+          {feedback && (
+            <div
+              className={`rounded-3xl border px-4 py-3 text-sm ${
+                feedback.type === 'success'
+                  ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                  : 'border-rose-200 bg-rose-50 text-rose-700'
+              }`}
+            >
+              {feedback.message}
+            </div>
+          )}
         </form>
       </div>
     </section>
   );
 }
+

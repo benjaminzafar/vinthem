@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getS3Client } from '@/lib/s3';
 import { ListObjectsV2Command, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { requireAdminUser } from '@/lib/admin';
+import { logger } from '@/lib/logger';
 
 export async function GET(req: NextRequest) {
   try {
@@ -27,7 +28,7 @@ export async function GET(req: NextRequest) {
     });
 
     const data = await s3Client.send(command).catch(err => {
-      console.error('R2 List Error:', err);
+      logger.error('R2 List Error:', err);
       throw err;
     });
     
@@ -93,7 +94,7 @@ export async function GET(req: NextRequest) {
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to load media';
-    console.error('[Media API Error]:', message);
+    logger.error('[Media API Error]:', message);
     
     // Return structured error
     return NextResponse.json({ 
@@ -108,6 +109,8 @@ export async function GET(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
+    await requireAdminUser();
+    
     const body = await req.json();
     const key = body.key ? decodeURIComponent(body.key) : null;
     
@@ -148,3 +151,4 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+

@@ -8,13 +8,15 @@ import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 import { Menu, X, ChevronRight, User, Settings, LogOut, Languages } from 'lucide-react';
 import { useUIStore } from '@/store/useUIStore';
+import { StorefrontSettings, MenuLink } from '@/store/useSettingsStore';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { Portal } from './Portal';
 
 interface MobileMenuProps {
-  user: any;
+  user: SupabaseUser | null;
   isAdmin: boolean;
-  settings: any;
+  settings: StorefrontSettings;
   lang: string;
   availableLanguages: string[];
   labels: {
@@ -116,7 +118,7 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
 
               <div className="flex-1 overflow-y-auto px-6 py-8 custom-scrollbar">
                 <nav className="flex flex-col space-y-6 mb-12">
-                  {(settings.navbarLinks || []).map((link: any, index: number) => (
+                  {(settings.navbarLinks || []).map((link: MenuLink, index: number) => (
                     <Link
                       key={index}
                       href={link.href}

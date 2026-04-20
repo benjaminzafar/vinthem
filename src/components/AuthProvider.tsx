@@ -1,4 +1,5 @@
-"use client";
+﻿"use client";
+import { logger } from '@/lib/logger';
 import { useEffect, useRef } from 'react';
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 import { createClient } from '@/utils/supabase/client';
@@ -18,7 +19,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { setUser, setIsAdmin, setIsAuthLoading } = useAuthStore();
   const initialized = useRef(false);
 
-  const identifyUser = (user: { id: string; email?: string; user_metadata?: Record<string, any> } | null) => {
+  const identifyUser = (user: { id: string; email?: string; user_metadata?: Record<string, unknown> } | null) => {
     if (user && typeof window !== 'undefined' && hasAnalyticsConsent()) {
       // 1. Identify in PostHog
       posthog.identify(user.id, {
@@ -45,7 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const { data, error } = await supabase.auth.getUser();
         
         if (error) {
-          console.warn("Auth check returned error (normal if guest):", error.message);
+          logger.warn("Auth check returned error (normal if guest):", error.message);
         }
 
         const user = data?.user;
@@ -67,7 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setIsAdmin(false);
         }
       } catch (error) {
-        console.error("Auth initialization failed:", error);
+        logger.error("Auth initialization failed:", error);
       } finally {
         setIsAuthLoading(false);
       }
@@ -112,3 +113,4 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return <>{children}</>;
 }
+

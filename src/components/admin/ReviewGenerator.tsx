@@ -1,4 +1,5 @@
 "use client";
+import { logger } from '@/lib/logger';
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { Product } from '@/store/useCartStore';
@@ -58,11 +59,11 @@ export function ReviewGenerator() {
       if (!result.success) throw new Error(result.message);
 
       toast.success('Fake review generated!', { id: toastId });
-    } catch (error: any) {
-      console.error('Error generating review:', error);
+    } catch (error: unknown) {
+      logger.error('Error generating review:', error);
       const timestamp = new Date().toLocaleTimeString('sv-SE', { hour12: false });
-      const errorMessage = error?.message || '';
-      const status = error?.status;
+      const errorMessage = (error as Record<string, unknown>)?.message || '';
+      const status = (error as Record<string, unknown>)?.status;
 
       if (status === 401 || status === 403) {
         toast.error('Action Required: Please set your Groq API Key in the Integrations Manager.', { 
@@ -104,3 +105,4 @@ export function ReviewGenerator() {
     </div>
   );
 }
+

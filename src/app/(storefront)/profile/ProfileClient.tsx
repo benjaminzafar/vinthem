@@ -36,8 +36,10 @@ import { deleteAddressAction, saveAddressAction, setDefaultAddressAction } from 
 import type { StorefrontSettings } from '@/store/useSettingsStore';
 
 interface ProfileClientProps {
-  initialOrders: any[];
+  initialOrders: ProfileOrder[];
   initialAddresses: AddressRecord[];
+  initialSupportTickets: SupportTicketRecord[];
+  initialRefundRequests: RefundRequestRecord[];
   profile: { full_name: string | null };
   settings: StorefrontSettings;
   lang: string;
@@ -67,16 +69,75 @@ type AddressFormState = {
   isDefault: boolean;
 };
 
-export function ProfileClient({ initialOrders, initialAddresses, profile, settings, lang }: ProfileClientProps) {
+type ProfileOrderItem = {
+  name?: string | null;
+  title?: string | null;
+  price: number;
+  quantity: number;
+};
+
+type ProfileOrder = {
+  id: string;
+  orderId?: string | null;
+  createdAt?: string | null;
+  total: number;
+  status?: string | null;
+  currency?: string | null;
+  items?: ProfileOrderItem[] | null;
+};
+
+type SupportTicketMessage = {
+  sender?: 'admin' | 'customer' | null;
+  text?: string | null;
+  createdAt?: string | null;
+};
+
+type SupportTicketRecord = {
+  id: string;
+  subject?: string | null;
+  message?: string | null;
+  status?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+  messages?: SupportTicketMessage[] | null;
+};
+
+type RefundRequestRecord = {
+  id: string;
+  order_id?: string | null;
+  reason?: string | null;
+  comments?: string | null;
+  status?: string | null;
+  created_at?: string | null;
+};
+
+type InlineFeedback = {
+  type: 'success' | 'error';
+  message: string;
+};
+
+export function ProfileClient({
+  initialOrders,
+  initialAddresses,
+  initialSupportTickets,
+  initialRefundRequests,
+  profile,
+  settings,
+  lang,
+}: ProfileClientProps) {
   const { user, setUser, setIsAdmin } = useAuthStore();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('orders');
   const [orders] = useState(initialOrders);
   const [addresses, setAddresses] = useState(initialAddresses);
+  const [supportTickets, setSupportTickets] = useState(initialSupportTickets);
+  const [refundRequests, setRefundRequests] = useState(initialRefundRequests);
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+  const [addressFeedback, setAddressFeedback] = useState<InlineFeedback | null>(null);
+  const [supportFeedback, setSupportFeedback] = useState<InlineFeedback | null>(null);
   
   // Support UI State
-  const [supportOrder, setSupportOrder] = useState<any | null>(null);
+  const [supportOrder, setSupportOrder] = useState<ProfileOrder | null>(null);
   const [supportType, setSupportType] = useState<SupportType>(null);
   const [supportMessage, setSupportMessage] = useState('');
   const [isSubmittingSupport, setIsSubmittingSupport] = useState(false);
@@ -129,14 +190,20 @@ export function ProfileClient({ initialOrders, initialAddresses, profile, settin
       toast.success('Password updated successfully', { id: toastId });
       setPasswordData({ new: '', confirm: '' });
       setShowPasswordForm(false);
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to update password', { id: toastId });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to update password';
+      toast.error(message, { id: toastId });
     } finally {
       setIsUpdatingPassword(false);
     }
   };
 
   const handleSupportSubmit = async () => {
+    if (!supportOrder || !supportType) {
+      toast.error('Support request is missing order context');
+      return;
+    }
+
     if (!supportMessage.trim() && supportType !== 'refund') {
       toast.error('Please enter a message');
       return;
@@ -153,13 +220,50 @@ export function ProfileClient({ initialOrders, initialAddresses, profile, settin
       });
       if (!result.success) throw new Error(result.message);
 
+      if (supportType === 'refund') {
+        setRefundRequests((current) => [
+          {
+            id: `local-refund-${Date.now()}`,
+            order_id: supportOrder.orderId || supportOrder.id,
+            reason: supportMessage || 'No reason provided',
+            status: 'Pending',
+            created_at: new Date().toISOString(),
+          },
+          ...current,
+        ]);
+      } else {
+        setSupportTickets((current) => [
+          {
+            id: `local-ticket-${Date.now()}`,
+            subject:
+              supportType === 'replacement'
+                ? `Replacement Request: ${supportOrder.orderId || supportOrder.id}`
+                : supportType === 'chat'
+                  ? `Chat Inquiry: ${supportOrder.orderId || supportOrder.id}`
+                  : `Order Help: ${supportOrder.orderId || supportOrder.id}`,
+            message: supportMessage,
+            status: 'open',
+            created_at: new Date().toISOString(),
+            messages: supportMessage
+              ? [{ sender: 'customer', text: supportMessage, createdAt: new Date().toISOString() }]
+              : [],
+          },
+          ...current,
+        ]);
+      }
+
+      setSupportFeedback({
+        type: 'success',
+        message: result.message,
+      });
       toast.success(result.message, { id: toastId });
       setSupportOrder(null);
       setSupportType(null);
       setSupportMessage('');
-    } catch (error: any) {
-      console.error('Support error:', error);
-      toast.error(error.message || 'Failed to send request', { id: toastId });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to send request';
+      setSupportFeedback({ type: 'error', message });
+      toast.error(message, { id: toastId });
     } finally {
       setIsSubmittingSupport(false);
     }
@@ -224,6 +328,12 @@ export function ProfileClient({ initialOrders, initialAddresses, profile, settin
       }
 
       setAddresses(result.addresses);
+      setAddressFeedback({
+        type: 'success',
+        message: addressForm.id
+          ? settings.addressUpdatedText?.[lang] || 'Address updated successfully!'
+          : settings.addressAddedText?.[lang] || 'Address added successfully!',
+      });
       toast.success(
         addressForm.id
           ? settings.addressUpdatedText?.[lang] || 'Address updated successfully!'
@@ -235,6 +345,7 @@ export function ProfileClient({ initialOrders, initialAddresses, profile, settin
       const message = error instanceof Error
         ? error.message
         : settings.failedToSaveAddressText?.[lang] || 'Failed to save address. Please try again.';
+      setAddressFeedback({ type: 'error', message });
       toast.error(message, { id: toastId });
     } finally {
       setIsSavingAddress(false);
@@ -252,11 +363,16 @@ export function ProfileClient({ initialOrders, initialAddresses, profile, settin
       }
 
       setAddresses(result.addresses);
+      setAddressFeedback({
+        type: 'success',
+        message: settings.addressDeletedText?.[lang] || 'Address deleted successfully!',
+      });
       toast.success(settings.addressDeletedText?.[lang] || 'Address deleted successfully!', { id: toastId });
     } catch (error: unknown) {
       const message = error instanceof Error
         ? error.message
         : settings.failedToDeleteAddressText?.[lang] || 'Failed to delete address. Please try again.';
+      setAddressFeedback({ type: 'error', message });
       toast.error(message, { id: toastId });
     } finally {
       setBusyAddressId(null);
@@ -274,11 +390,16 @@ export function ProfileClient({ initialOrders, initialAddresses, profile, settin
       }
 
       setAddresses(result.addresses);
+      setAddressFeedback({
+        type: 'success',
+        message: settings.defaultAddressUpdatedText?.[lang] || 'Default address updated successfully!',
+      });
       toast.success(settings.defaultAddressUpdatedText?.[lang] || 'Default address updated successfully!', { id: toastId });
     } catch (error: unknown) {
       const message = error instanceof Error
         ? error.message
         : settings.failedToUpdateDefaultAddressText?.[lang] || 'Failed to update default address. Please try again.';
+      setAddressFeedback({ type: 'error', message });
       toast.error(message, { id: toastId });
     } finally {
       setBusyAddressId(null);
@@ -288,9 +409,8 @@ export function ProfileClient({ initialOrders, initialAddresses, profile, settin
   if (!user) return null;
 
   const displayName = profile?.full_name || user.email?.split('@')[0] || 'Member';
-  const totalSpent = orders.reduce((sum: number, order: any) => sum + Number(order.total || 0), 0);
-  const activeOrders = orders.filter((order: any) => !['Delivered', 'Cancelled'].includes(order.status || '')).length;
-  const lastOrderDate = orders[0]?.createdAt ? new Date(orders[0].createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'No orders yet';
+  const totalSpent = orders.reduce((sum, order) => sum + Number(order.total || 0), 0);
+  const activeOrders = orders.filter((order) => !['Delivered', 'Cancelled'].includes(order.status || '')).length;
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 pt-0 pb-12 animate-in fade-in duration-300">
@@ -337,8 +457,8 @@ export function ProfileClient({ initialOrders, initialAddresses, profile, settin
               <p className="mt-4 text-2xl font-bold text-slate-900">{addresses.length}</p>
             </div>
             <div className="p-6">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Last Activity</p>
-              <p className="mt-4 text-sm font-bold text-slate-900">{lastOrderDate}</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Support Cases</p>
+              <p className="mt-4 text-sm font-bold text-slate-900">{supportTickets.length + refundRequests.length}</p>
             </div>
           </div>
         </div>
@@ -353,6 +473,7 @@ export function ProfileClient({ initialOrders, initialAddresses, profile, settin
           <nav className="grid grid-cols-1 border border-slate-300 bg-white sm:grid-cols-3 lg:block">
             {[
               { id: 'orders', label: 'Orders', icon: Package },
+              { id: 'support', label: 'Support', icon: MessageSquare },
               { id: 'profile', label: 'Settings', icon: Settings },
               { id: 'addresses', label: 'Addresses', icon: MapPin },
             ].map((item) => (
@@ -428,7 +549,7 @@ export function ProfileClient({ initialOrders, initialAddresses, profile, settin
                                </div>
                                <div>
                                   <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Order Total</p>
-                                  <p className="text-sm font-bold text-slate-900">{formatPrice(order.total, lang, undefined, order.currency)}</p>
+                                  <p className="text-sm font-bold text-slate-900">{formatPrice(order.total, lang, undefined, order.currency ?? undefined)}</p>
                                </div>
                                <div>
                                   <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Progress</p>
@@ -472,7 +593,9 @@ export function ProfileClient({ initialOrders, initialAddresses, profile, settin
                                             <div className="relative">
                                                <div className="absolute -left-[31px] top-1 w-2 h-2 bg-slate-900" />
                                                <p className="text-sm font-bold text-slate-900 uppercase tracking-tight">System Confirmation</p>
-                                               <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest mt-1">{new Date(order.createdAt).toLocaleTimeString()}</p>
+                                               <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest mt-1">
+                                                 {order.createdAt ? new Date(order.createdAt).toLocaleTimeString() : '---'}
+                                               </p>
                                             </div>
                                             <div className="relative">
                                                <div className={`absolute -left-[31px] top-1 w-2 h-2 ${order.status === 'Shipped' || order.status === 'Delivered' ? 'bg-slate-900' : 'bg-slate-200'}`} />
@@ -485,15 +608,15 @@ export function ProfileClient({ initialOrders, initialAddresses, profile, settin
                                       <div className="bg-white border border-slate-300 p-8">
                                          <h4 className="text-[11px] font-bold text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-3 mb-6">Manifest Summary</h4>
                                          <div className="space-y-4">
-                                            {order.items?.map((item: any, idx: number) => (
+                                            {order.items?.map((item, idx) => (
                                               <div key={idx} className="flex justify-between items-center text-sm">
                                                  <span className="text-slate-900 font-bold uppercase tracking-tight">{item.name || item.title} <span className="text-slate-400 font-bold pl-2">X{item.quantity}</span></span>
-                                                 <span className="font-bold text-slate-900">{formatPrice(item.price * item.quantity, lang, undefined, order.currency)}</span>
+                                                 <span className="font-bold text-slate-900">{formatPrice(item.price * item.quantity, lang, undefined, order.currency ?? undefined)}</span>
                                               </div>
                                             ))}
                                             <div className="pt-6 border-t-2 border-slate-900 flex justify-between items-center font-bold text-lg mt-4">
                                                <span className="text-xs uppercase tracking-widest text-slate-400">Total Valuation</span>
-                                               <span className="text-slate-900 tracking-tighter underline underline-offset-8 decoration-slate-300 decoration-2">{formatPrice(order.total, lang, undefined, order.currency)}</span>
+                                               <span className="text-slate-900 tracking-tighter underline underline-offset-8 decoration-slate-300 decoration-2">{formatPrice(order.total, lang, undefined, order.currency ?? undefined)}</span>
                                             </div>
                                          </div>
                                       </div>
@@ -505,6 +628,108 @@ export function ProfileClient({ initialOrders, initialAddresses, profile, settin
                         </div>
                       );
                     })}
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {activeTab === 'support' && (
+              <motion.div
+                key="support"
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-6"
+              >
+                <div className="h-10 flex items-center justify-between border-b-2 border-slate-300 pb-3">
+                  <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Support Activity</h3>
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+                    {supportTickets.length + refundRequests.length} TOTAL
+                  </span>
+                </div>
+
+                {supportFeedback && (
+                  <div className={`border px-5 py-4 text-sm font-medium ${
+                    supportFeedback.type === 'success'
+                      ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                      : 'border-rose-200 bg-rose-50 text-rose-700'
+                  }`}>
+                    {supportFeedback.message}
+                  </div>
+                )}
+
+                {supportTickets.length === 0 && refundRequests.length === 0 ? (
+                  <div className="border border-slate-300 bg-white py-20 text-center">
+                    <MessageSquare className="mx-auto mb-4 h-10 w-10 text-slate-200" />
+                    <p className="text-sm font-bold uppercase tracking-widest text-slate-900">No support activity yet</p>
+                    <p className="mt-3 text-sm text-slate-500">Open any order and use the help button when you need assistance.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {supportTickets.map((ticket) => (
+                      <div key={ticket.id} className="border border-slate-300 bg-white p-6">
+                        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                          <div>
+                            <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Support Ticket</p>
+                            <h4 className="mt-2 text-sm font-bold uppercase tracking-tight text-slate-900">
+                              {ticket.subject || 'Customer support request'}
+                            </h4>
+                            <p className="mt-3 text-sm leading-6 text-slate-600">{ticket.message || 'No initial message recorded.'}</p>
+                          </div>
+                          <div className="space-y-2 text-right">
+                            <span className="inline-flex border border-slate-300 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-700">
+                              {ticket.status || 'open'}
+                            </span>
+                            <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                              {ticket.created_at ? new Date(ticket.created_at).toLocaleString() : '---'}
+                            </p>
+                          </div>
+                        </div>
+
+                        {ticket.messages && ticket.messages.length > 0 && (
+                          <div className="mt-6 border-t border-slate-200 pt-5">
+                            <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Conversation</p>
+                            <div className="mt-4 space-y-3">
+                              {ticket.messages.map((message, index) => (
+                                <div key={`${ticket.id}-${index}`} className="border border-slate-200 bg-slate-50 px-4 py-3">
+                                  <div className="flex items-center justify-between gap-4">
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                                      {message.sender === 'admin' ? 'Admin reply' : 'Your message'}
+                                    </span>
+                                    <span className="text-[10px] uppercase tracking-widest text-slate-400">
+                                      {message.createdAt ? new Date(message.createdAt).toLocaleString() : '---'}
+                                    </span>
+                                  </div>
+                                  <p className="mt-2 text-sm leading-6 text-slate-700">{message.text || '-'}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+
+                    {refundRequests.map((refund) => (
+                      <div key={refund.id} className="border border-slate-300 bg-white p-6">
+                        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                          <div>
+                            <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Refund Request</p>
+                            <h4 className="mt-2 text-sm font-bold uppercase tracking-tight text-slate-900">
+                              Order #{refund.order_id || refund.id.slice(0, 8).toUpperCase()}
+                            </h4>
+                            <p className="mt-3 text-sm leading-6 text-slate-600">{refund.reason || 'No reason provided.'}</p>
+                            {refund.comments && <p className="mt-2 text-sm leading-6 text-slate-500">{refund.comments}</p>}
+                          </div>
+                          <div className="space-y-2 text-right">
+                            <span className="inline-flex border border-slate-300 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-700">
+                              {refund.status || 'Pending'}
+                            </span>
+                            <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                              {refund.created_at ? new Date(refund.created_at).toLocaleString() : '---'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </motion.div>
@@ -638,6 +863,16 @@ export function ProfileClient({ initialOrders, initialAddresses, profile, settin
                      {settings.addNewAddressTitleText?.[lang] || 'Add New Address'}
                    </button>
                  </div>
+
+                 {addressFeedback && (
+                   <div className={`border px-5 py-4 text-sm font-medium ${
+                     addressFeedback.type === 'success'
+                       ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                       : 'border-rose-200 bg-rose-50 text-rose-700'
+                   }`}>
+                     {addressFeedback.message}
+                   </div>
+                 )}
                  
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                    {addresses.length === 0 ? (
@@ -775,11 +1010,17 @@ export function ProfileClient({ initialOrders, initialAddresses, profile, settin
                   <div className="space-y-2 md:col-span-2">
                     <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400">{settings.countryLabelText?.[lang] || 'Country'}</label>
                     <select value={addressForm.country} onChange={(e) => handleAddressFieldChange('country', e.target.value)} className="w-full border border-slate-300 bg-white p-4 text-sm font-bold text-slate-900 transition-all focus:outline-none focus:border-slate-900">
+                      {settings.shippingCountries?.map((c) => (
+                        <option key={c.code} value={c.code}>{typeof c.name === 'string' ? c.name : c.name?.[lang] || c.name?.en || c.code}</option>
+                      )) || (
+                        <>
                       <option value="SE">Sweden</option>
                       <option value="DK">Denmark</option>
                       <option value="FI">Finland</option>
                       <option value="NO">Norway</option>
                       <option value="IS">Iceland</option>
+                        </>
+                      )}
                     </select>
                   </div>
                 </div>

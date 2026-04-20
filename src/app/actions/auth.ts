@@ -1,4 +1,5 @@
 'use server';
+﻿import { logger } from '@/lib/logger';
 
 import { ensureUserProfile } from '@/lib/admin';
 import { upsertNewsletterSubscriber } from '@/app/actions/newsletter';
@@ -34,7 +35,7 @@ export async function syncCurrentUserProfileAction(name?: string): Promise<AuthA
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to synchronize profile.';
-    console.error('[Action Error] syncCurrentUserProfileAction:', error);
+    logger.error('[Action Error] syncCurrentUserProfileAction:', error);
     return {
       success: false,
       message,
@@ -116,7 +117,7 @@ export async function recordSignupConsentAction({
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to save signup consent.';
-    console.error('[Action Error] recordSignupConsentAction:', error);
+    logger.error('[Action Error] recordSignupConsentAction:', error);
     return {
       success: false,
       message,
@@ -124,3 +125,4 @@ export async function recordSignupConsentAction({
     };
   }
 }
+

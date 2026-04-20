@@ -1,4 +1,5 @@
 'use server';
+﻿import { logger } from '@/lib/logger';
 
 import { revalidatePath } from 'next/cache';
 import { createAdminClient, createClient } from '@/utils/supabase/server';
@@ -127,9 +128,9 @@ export async function saveCategoryAction(input: SaveCategoryInput): Promise<Cate
       success: true,
       message: input.id ? 'Collection updated successfully.' : 'Collection created successfully.',
     };
-  } catch (error: any) {
-    console.error('[saveCategoryAction] Critical Error:', error);
-    let errorMessage = error?.message || 'Unknown error';
+  } catch (error: unknown) {
+    logger.error('[saveCategoryAction] Critical Error:', error);
+    let errorMessage = error instanceof Error ? error.message : 'Unknown error';
     
     // Check for common missing column error
     if (errorMessage.includes('pinned_in_search') && (errorMessage.includes('column') || errorMessage.includes('does not exist'))) {
@@ -196,11 +197,11 @@ export async function deleteCategoryAction(input: DeleteCategoryInput): Promise<
       success: true,
       message: 'Collection deleted successfully.',
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return {
       success: false,
       message: 'Failed to delete collection.',
-      error: error?.message || 'Unknown error',
+      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
 }
@@ -233,11 +234,11 @@ export async function deleteCategoriesAction(input: DeleteCategoriesInput): Prom
       success: true,
       message: 'Collections deleted successfully.',
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return {
       success: false,
       message: 'Failed to delete collections.',
-      error: error?.message || 'Unknown error',
+      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
 }
@@ -273,9 +274,9 @@ export async function toggleCategorySearchPinAction(
       success: true,
       message: input.pinnedInSearch ? 'Collection pinned to search.' : 'Collection removed from search pins.',
     };
-  } catch (error: any) {
-    console.error('[toggleCategorySearchPinAction] Critical Error:', error);
-    let errorMessage = error?.message || 'Unknown error';
+  } catch (error: unknown) {
+    logger.error('[toggleCategorySearchPinAction] Critical Error:', error);
+    let errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
     // Check for common missing column error
     if (errorMessage.includes('pinned_in_search') && (errorMessage.includes('column') || errorMessage.includes('does not exist'))) {
@@ -289,3 +290,4 @@ export async function toggleCategorySearchPinAction(
     };
   }
 }
+

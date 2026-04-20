@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@/lib/logger';
 import { requireAdminUser } from '@/lib/admin';
 
 export async function POST(req: NextRequest) {
@@ -47,7 +48,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ url: finalUrl });
     } catch (uploadError: unknown) {
       const message = uploadError instanceof Error ? uploadError.message : 'Upload failed';
-      console.error('R2 Upload Error:', message);
+      logger.error('R2 Upload Error:', message);
       return NextResponse.json({ error: message }, { status: 500 });
     }
   } catch (error: unknown) {
@@ -55,3 +56,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
+

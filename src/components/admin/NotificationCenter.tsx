@@ -1,4 +1,5 @@
 "use client";
+import { logger } from '@/lib/logger';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Bell, Package, MessageSquare, RefreshCcw, X, Users, Star, CheckCheck, Trash2, ArrowRight } from 'lucide-react';
@@ -44,6 +45,7 @@ function readPersistedState(): PersistedNotificationState {
       clearedBefore: typeof parsed.clearedBefore === 'string' ? parsed.clearedBefore : null,
     };
   } catch {
+    window.localStorage.removeItem(STORAGE_KEY);
     return { readIds: [], clearedBefore: null };
   }
 }
@@ -104,7 +106,7 @@ function getNotificationStyle(type: NotificationType) {
 }
 
 export function NotificationCenter() {
-  const supabase = createClient();
+  const [supabase] = useState(() => createClient());
   const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const persistedState = readPersistedState();
@@ -158,6 +160,18 @@ export function NotificationCenter() {
           .order('created_at', { ascending: false })
           .limit(6),
       ]);
+
+      const responseErrors = [
+        ordersRes.error,
+        ticketsRes.error,
+        refundsRes.error,
+        customersRes.error,
+        reviewsRes.error,
+      ].filter(Boolean);
+
+      if (responseErrors.length > 0 && process.env.NODE_ENV === 'development') {
+        logger.warn('Admin notifications refresh encountered partial Supabase errors.', responseErrors);
+      }
 
       const customerMap = new Map<string, { email: string; name: string }>(
         (customersRes.data ?? []).map((customer) => [
@@ -273,11 +287,18 @@ export function NotificationCenter() {
         return true;
       }
 
-      return notification.timestamp.getTime() > clearedBefore.getTime();
+      // Ensure we compare timestamps correctly (seconds or ms)
+      const noteTime = notification.timestamp.getTime();
+      const clearTime = clearedBefore.getTime();
+      
+      return noteTime > clearTime;
     });
   }, [notifications, clearedBefore]);
 
-  const unreadCount = visibleNotifications.filter((notification) => !readIds.includes(notification.id)).length;
+  const unreadCount = useMemo(() => 
+    visibleNotifications.filter((notification) => !readIds.includes(notification.id)).length,
+    [visibleNotifications, readIds]
+  );
 
   const markAllAsRead = () => {
     const nextReadIds = Array.from(new Set([...readIds, ...visibleNotifications.map((notification) => notification.id)]));
@@ -289,10 +310,14 @@ export function NotificationCenter() {
   };
 
   const clearOldData = () => {
+    // Set cutoff to exactly now to hide all current ones
     const cutoff = new Date();
     setClearedBefore(cutoff);
+    
+    // Also mark them as read so they don't count towards the badge if the UI lag occurs
     const nextReadIds = Array.from(new Set([...readIds, ...visibleNotifications.map((notification) => notification.id)]));
     setReadIds(nextReadIds);
+    
     persistState({
       readIds: nextReadIds,
       clearedBefore: cutoff.toISOString(),
@@ -302,7 +327,7 @@ export function NotificationCenter() {
   const handleOpen = () => {
     const nextOpen = !isOpen;
     setIsOpen(nextOpen);
-    if (nextOpen) {
+    if (nextOpen && unreadCount > 0) {
       markAllAsRead();
     }
   };
@@ -435,3 +460,4 @@ export function NotificationCenter() {
     </div>
   );
 }
+

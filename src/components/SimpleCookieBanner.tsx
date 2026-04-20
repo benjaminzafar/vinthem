@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { useState } from "react";
 import { createConsentState, persistConsent, readStoredConsent } from "@/lib/consent";
+import { usePathname } from "next/navigation";
+import { getClientLocale } from "@/lib/locale";
+import { localizeHref } from "@/lib/i18n-routing";
 
 type CookieBannerCopy = {
   eyebrow: string;
@@ -15,6 +18,8 @@ type CookieBannerCopy = {
 
 export function SimpleCookieBanner({ copy }: { copy: CookieBannerCopy }) {
   const [visible, setVisible] = useState(() => readStoredConsent() === null);
+  const pathname = usePathname();
+  const lang = getClientLocale(pathname);
 
   if (!visible) {
     return null;
@@ -39,10 +44,10 @@ export function SimpleCookieBanner({ copy }: { copy: CookieBannerCopy }) {
         {copy.description}
       </p>
       <div className="mt-3 flex flex-wrap gap-4 text-sm text-stone-600">
-        <Link href="/p/privacy-policy" className="underline underline-offset-4">
+        <Link href={localizeHref(lang, "/p/privacy-policy")} className="underline underline-offset-4">
           {copy.privacyLabel}
         </Link>
-        <Link href="/p/cookie-policy" className="underline underline-offset-4">
+        <Link href={localizeHref(lang, "/p/cookie-policy")} className="underline underline-offset-4">
           {copy.cookieLabel}
         </Link>
       </div>

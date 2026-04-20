@@ -1,12 +1,13 @@
-
+﻿
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
+import { StorefrontSettings } from '@/store/useSettingsStore';
 
 interface FutureSectionsProps {
   lang: string;
-  settings: any;
+  settings: StorefrontSettings;
 }
 
 export function FutureSections({ lang, settings }: FutureSectionsProps) {
@@ -61,3 +62,4 @@ export function FutureSections({ lang, settings }: FutureSectionsProps) {
     </section>
   );
 }
+

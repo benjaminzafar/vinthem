@@ -1,4 +1,5 @@
 "use client";
+import { logger } from '@/lib/logger';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { 
@@ -15,6 +16,7 @@ import { Product } from '@/store/useCartStore';
 import { Category } from '@/types';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { isValidUrl } from '@/lib/utils';
 import { InfiniteScrollSentinel } from '@/components/admin/InfiniteScrollSentinel';
 import { deleteProductAction } from '@/app/actions/admin-products';
 
@@ -51,6 +53,7 @@ type CategoryRecord = {
 };
 
 export function ProductManager({ 
+  initialProducts = [],
   initialCategories = [] 
 }: { 
   selectedProductId?: string | null, 
@@ -61,25 +64,31 @@ export function ProductManager({
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab ] = useState<'all' | 'active' | 'drafts'>('all');
   const debouncedSearchQuery = useDebounce(searchQuery, 400);
-  const [products, setProducts] = useState<Product[]>([]); 
+  const [products, setProducts] = useState<Product[]>(initialProducts); 
   const [categories, setCategories] = useState<Category[]>(initialCategories);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(initialProducts.length === 0);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   
   // Use pageRef to avoid dependency loop in fetch function
   const pageRef = useRef(0);
   const ITEMS_PER_PAGE = 50;
   
-  const supabase = createClient();
+  const [supabase] = useState(() => createClient());
   const router = useRouter();
   const customConfirm = useCustomConfirm();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const fetchProducts = useCallback(async (isFirstPage: boolean = false) => {
-    if (isFirstPage) {
-      setLoading(true);
+  const fetchProducts = useCallback(async ({ reset = false, showLoader = false }: { reset?: boolean; showLoader?: boolean } = {}) => {
+    if (reset) {
       pageRef.current = 0;
+    }
+
+    if (showLoader) {
+      setLoading(true);
+    } else if (reset) {
+      setRefreshing(true);
     } else {
       setLoadingMore(true);
     }
@@ -121,7 +130,7 @@ export function ProductManager({
         createdAt: p.created_at
       }));
 
-      if (isFirstPage) {
+      if (reset) {
         setProducts(mappedProducts);
       } else {
         setProducts(prev => {
@@ -146,19 +155,24 @@ export function ProductManager({
         pageRef.current += 1;
       }
 
-    } catch (error: any) {
-      console.error('[ProductManager] Fetch error:', error);
-      toast.error('Failed to load products: ' + error.message);
+    } catch (error: unknown) {
+      const err = error as Error;
+      logger.error('[ProductManager] Fetch error:', err);
+      toast.error('Failed to load products: ' + err.message);
       setHasMore(false); // Stop loop on error
     } finally {
       setLoading(false);
+      setRefreshing(false);
       setLoadingMore(false);
     }
   }, [supabase, debouncedSearchQuery, activeTab]);
 
   useEffect(() => {
-    fetchProducts(true);
-  }, [debouncedSearchQuery, activeTab, fetchProducts]);
+    void fetchProducts({
+      reset: true,
+      showLoader: initialProducts.length === 0,
+    });
+  }, [debouncedSearchQuery, activeTab, fetchProducts, initialProducts.length]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -172,19 +186,21 @@ export function ProductManager({
       }
     };
     
-    fetchCategories();
+    if (initialCategories.length === 0) {
+      fetchCategories();
+    }
 
     const productsChannel = supabase
       .channel('products-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
-        fetchProducts(true);
+        void fetchProducts({ reset: true, showLoader: false });
       })
       .subscribe();
 
     return () => {
       supabase.removeChannel(productsChannel);
     };
-  }, [supabase, fetchProducts]);
+  }, [supabase, fetchProducts, initialCategories.length]);
 
   const handleOpenModal = (product?: Product) => {
     if (product) {
@@ -204,8 +220,9 @@ export function ProductManager({
         if (!result.success) throw new Error(result.message);
         setProducts(prev => prev.filter(p => p.id !== id));
         toast.success('Product deleted successfully', { id: toastId });
-      } catch (error: any) {
-        toast.error('Delete failed: ' + error.message, { id: toastId });
+      } catch (error: unknown) {
+        const err = error as Error;
+        toast.error('Delete failed: ' + err.message, { id: toastId });
       }
     }
   };
@@ -219,6 +236,12 @@ export function ProductManager({
         </div>
         
         <div className="flex items-center gap-4">
+          {refreshing && (
+            <div className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-500">
+              <Package className="w-3.5 h-3.5 animate-pulse" />
+              Syncing
+            </div>
+          )}
           <div className="relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input 
@@ -245,7 +268,7 @@ export function ProductManager({
             {['all', 'active', 'drafts'].map((tab) => (
               <button
                 key={tab}
-                onClick={() => setActiveTab(tab as any)}
+                onClick={() => setActiveTab(tab as 'all' | 'active' | 'drafts')}
                 className={`h-full text-[11px] font-bold uppercase tracking-widest border-b-2 transition-all ${
                   activeTab === tab 
                     ? 'text-slate-900 border-slate-900' 
@@ -292,7 +315,7 @@ export function ProductManager({
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 bg-slate-50 border border-slate-200 rounded flex items-center justify-center overflow-hidden shrink-0">
-                        {product.imageUrl ? (
+                        {isValidUrl(product.imageUrl) ? (
                           <Image src={product.imageUrl} alt="" width={48} height={48} className="w-full h-full object-cover" />
                         ) : (
                           <Package className="w-5 h-5 text-slate-300" />
@@ -341,7 +364,7 @@ export function ProductManager({
         </div>
 
         <InfiniteScrollSentinel 
-          onIntersect={() => fetchProducts(false)}
+          onIntersect={() => void fetchProducts({ reset: false, showLoader: false })}
           isLoading={loadingMore}
           hasMore={hasMore}
           loadingMessage="Streaming inventory entries..."
@@ -359,3 +382,4 @@ export function ProductManager({
     </div>
   );
 }
+

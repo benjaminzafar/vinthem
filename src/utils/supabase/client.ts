@@ -25,8 +25,8 @@ export function createClient() {
     return createBrowserClient(supabaseUrl, supabaseAnonKey);
   }
 
-  if (typeof window !== 'undefined' && (globalThis as any).__supabase_client) {
-    return (globalThis as any).__supabase_client;
+  if (typeof window !== 'undefined' && globalThis.__supabase_client) {
+    return globalThis.__supabase_client;
   }
 
   const client = createBrowserClient(
@@ -41,13 +41,13 @@ export function createClient() {
         // Stability Hardening: Prevent "Lock broken" AbortError
         lockAcquireTimeout: 10000, 
         lockRetryDelay: 50,         
-      } as any
+      },
     }
   );
 
   // Store in globalThis for the next call
   if (typeof window !== 'undefined') {
-    (globalThis as any).__supabase_client = client;
+    globalThis.__supabase_client = client;
   }
 
   return client;

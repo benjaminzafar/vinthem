@@ -1,4 +1,5 @@
 'use server';
+﻿import { logger } from '@/lib/logger';
 
 import { revalidatePath } from 'next/cache';
 
@@ -32,7 +33,7 @@ export async function deleteProductAction(productId: string): Promise<ProductAct
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to delete product.';
-    console.error('[Action Error] deleteProductAction:', error);
+    logger.error('[Action Error] deleteProductAction:', error);
     return {
       success: false,
       message,
@@ -40,3 +41,4 @@ export async function deleteProductAction(productId: string): Promise<ProductAct
     };
   }
 }
+

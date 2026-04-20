@@ -1,4 +1,5 @@
 'use server';
+﻿import { logger } from '@/lib/logger';
 
 import { randomBytes } from 'node:crypto';
 import { revalidatePath } from 'next/cache';
@@ -16,6 +17,14 @@ type SubscriberPayload = {
   marketingConsent: boolean;
   userId?: string | null;
 };
+
+function revalidateNewsletterViews() {
+  revalidatePath('/');
+  revalidatePath('/[lang]', 'page');
+  revalidatePath('/admin/crm');
+  revalidatePath('/unsubscribe');
+  revalidatePath('/[lang]/unsubscribe', 'page');
+}
 
 function sanitizeEmail(rawEmail: string | null | undefined): string {
   return (rawEmail ?? '').trim().toLowerCase();
@@ -91,13 +100,12 @@ export async function upsertNewsletterSubscriber({
       throw error;
     }
 
-    revalidatePath('/');
-    revalidatePath('/admin/crm');
+    revalidateNewsletterViews();
 
     return { success: true, message: 'You are subscribed and can unsubscribe anytime.' };
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to update newsletter preferences.';
-    console.error('[Action Error] upsertNewsletterSubscriber:', error);
+    logger.error('[Action Error] upsertNewsletterSubscriber:', error);
     return { success: false, message: 'Failed to subscribe. Please try again later.', error: message };
   }
 }
@@ -143,9 +151,7 @@ export async function unsubscribeAction(formData: FormData): Promise<NewsletterR
       throw error;
     }
 
-    revalidatePath('/');
-    revalidatePath('/admin/crm');
-    revalidatePath('/unsubscribe');
+    revalidateNewsletterViews();
 
     return {
       success: true,
@@ -153,7 +159,8 @@ export async function unsubscribeAction(formData: FormData): Promise<NewsletterR
     };
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to update newsletter preferences.';
-    console.error('[Action Error] unsubscribeAction:', error);
+    logger.error('[Action Error] unsubscribeAction:', error);
     return { success: false, message: 'Unable to unsubscribe right now. Please try again later.', error: message };
   }
 }
+

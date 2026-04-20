@@ -1,4 +1,5 @@
-"use client";
+﻿"use client";
+import { logger } from '@/lib/logger';
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import * as Sentry from "@sentry/react";
 
@@ -22,7 +23,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Uncaught error:', error, errorInfo);
+    logger.error('Uncaught error:', error, errorInfo);
     Sentry.captureException(error, { extra: { componentStack: errorInfo.componentStack } });
   }
 
@@ -49,3 +50,4 @@ export class ErrorBoundary extends Component<Props, State> {
     return this.props.children;
   }
 }
+

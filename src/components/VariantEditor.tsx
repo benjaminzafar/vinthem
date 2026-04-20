@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { Product, ProductOption, ProductVariant } from '@/store/useCartStore';
 import { Plus, X, ImageIcon, Upload } from 'lucide-react';
 import { toast } from 'sonner';
@@ -163,7 +164,13 @@ export function VariantEditor({ formData, setFormData }: VariantEditorProps) {
                     <div key={colorVal} className="flex flex-col items-center gap-2">
                       <div className="relative w-full aspect-square rounded-md border border-gray-200/60 overflow-hidden flex items-center justify-center group bg-white">
                         {imageUrl ? (
-                          <img src={imageUrl} alt={colorVal} className="w-full h-full object-cover" />
+                          <Image 
+                            src={imageUrl} 
+                            alt={colorVal} 
+                            width={160}
+                            height={160}
+                            className="w-full h-full object-cover" 
+                          />
                         ) : (
                           <div className="text-[10px] font-black text-zinc-400 uppercase text-center leading-tight tracking-wider">Empty</div>
                         )}
@@ -234,7 +241,13 @@ export function VariantEditor({ formData, setFormData }: VariantEditorProps) {
                       <td className="py-3 px-4">
                         <div className="relative w-12 h-12 rounded-lg border border-gray-200/60 overflow-hidden flex items-center justify-center group bg-white">
                           {variant.imageUrl ? (
-                            <img src={variant.imageUrl} alt="Variant" className="w-full h-full object-cover" />
+                            <Image 
+                              src={variant.imageUrl} 
+                              alt="Variant" 
+                              width={48}
+                              height={48}
+                              className="w-full h-full object-cover" 
+                            />
                           ) : (
                             <div className="text-[8px] font-black text-zinc-400 uppercase text-center leading-tight">...</div>
                           )}

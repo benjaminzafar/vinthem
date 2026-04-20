@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronDown, ChevronRight, MessageSquare, Clock, AlertCircle } from 'lucide-react';
 import { replySupportTicketAction } from '@/app/actions/support';
@@ -201,7 +202,9 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
                               <div>
                                 <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Attachment</h4>
                                 <a href={ticket.imageUrl} target="_blank" rel="noopener noreferrer" className="block rounded border border-slate-300 overflow-hidden">
-                                  <img src={ticket.imageUrl} alt="" className="w-full grayscale hover:grayscale-0 transition-all" />
+                                  <div className="relative aspect-[4/3] w-full">
+                                    <Image src={ticket.imageUrl} alt="" fill className="object-cover grayscale hover:grayscale-0 transition-all" sizes="(max-width: 1024px) 100vw, 320px" />
+                                  </div>
                                 </a>
                               </div>
                             )}

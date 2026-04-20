@@ -40,8 +40,8 @@ export const CategoryDeleteModal: React.FC<CategoryDeleteModalProps> = ({
       toast.success(result.message, { id: toastId });
       onDeleted();
       onClose();
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to remove', { id: toastId });
+    } catch (error: unknown) {
+      toast.error((error instanceof Error ? error.message : String(error)) || 'Failed to remove', { id: toastId });
     } finally {
       setIsDeleting(false);
     }
@@ -118,3 +118,4 @@ export const CategoryDeleteModal: React.FC<CategoryDeleteModalProps> = ({
     </div>
   );
 };
+

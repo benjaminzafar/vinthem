@@ -6,7 +6,10 @@ import { IntegrationsContainer } from './integrations/IntegrationsContainer';
 export function IntegrationsManager({ initialConfig }: { initialConfig: Record<string, string> }) {
   return (
     <div className="max-w-[1400px] mx-auto">
-      <IntegrationsContainer initialConfig={initialConfig} />
+      <IntegrationsContainer
+        key={JSON.stringify(initialConfig)}
+        initialConfig={initialConfig}
+      />
     </div>
   );
 }

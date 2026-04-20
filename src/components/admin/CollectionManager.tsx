@@ -1,4 +1,5 @@
 "use client";
+import { logger } from '@/lib/logger';
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { deleteCategoriesAction, toggleCategorySearchPinAction } from '@/app/actions/categories';
@@ -11,34 +12,42 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { useCustomConfirm } from '@/components/ConfirmationContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { InfiniteScrollSentinel } from '@/components/admin/InfiniteScrollSentinel';
+import Image from 'next/image';
+import { isValidUrl } from '@/lib/utils';
 
 export function CollectionManager({ 
   initialCategories = [],
   initialProducts = [] 
 }: { 
   initialCategories?: Category[],
-  initialProducts?: Product[]
+  initialProducts?: Array<{ id: string; categoryId: string | null }>
 }) {
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>(initialCategories);
-  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [products, setProducts] = useState<Array<{ id: string; categoryId: string | null }>>(initialProducts);
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery, 400);
   const [selectedCollections, setSelectedCollections] = useState<string[]>([]);
   
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(initialCategories.length === 0);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const pageRef = useRef(0);
   const ITEMS_PER_PAGE = 30;
 
   const customConfirm = useCustomConfirm();
-  const supabase = createClient();
+  const [supabase] = useState(() => createClient());
 
-  const fetchCategories = useCallback(async (isFirstPage: boolean = false) => {
-    if (isFirstPage) {
-      setLoading(true);
+  const fetchCategories = useCallback(async ({ reset = false, showLoader = false }: { reset?: boolean; showLoader?: boolean } = {}) => {
+    if (reset) {
       pageRef.current = 0;
+    }
+
+    if (showLoader) {
+      setLoading(true);
+    } else if (reset) {
+      setRefreshing(true);
     } else {
       setLoadingMore(true);
     }
@@ -63,7 +72,7 @@ export function CollectionManager({
 
       if (error) throw error;
 
-      let batchCategories = (rootData || []).map((c: any) => ({
+      let batchCategories = (rootData || []).map((c) => ({
         ...c, isFeatured: c.is_featured, showInHero: c.show_in_hero, 
         pinnedInSearch: c.pinned_in_search,
         parentId: c.parent_id, imageUrl: c.image_url, iconUrl: c.icon_url
@@ -77,7 +86,7 @@ export function CollectionManager({
           .in('parent_id', rootIds);
         
         if (childrenData) {
-          const mappedChildren = childrenData.map((c: any) => ({
+          const mappedChildren = childrenData.map((c) => ({
             ...c, isFeatured: c.is_featured, showInHero: c.show_in_hero, 
             pinnedInSearch: c.pinned_in_search,
             parentId: c.parent_id, imageUrl: c.image_url, iconUrl: c.icon_url
@@ -86,7 +95,7 @@ export function CollectionManager({
         }
       }
 
-      if (isFirstPage) {
+      if (reset) {
         setCategories(batchCategories);
       } else {
         setCategories(prev => {
@@ -107,12 +116,14 @@ export function CollectionManager({
         pageRef.current += 1;
       }
 
-    } catch (error: any) {
-      console.error('[CollectionManager] Fetch error:', error);
-      toast.error('Load failed: ' + error.message);
+    } catch (error: unknown) {
+      const err = error as Error;
+      logger.error('[CollectionManager] Fetch error:', err);
+      toast.error('Load failed: ' + err.message);
       setHasMore(false);
     } finally {
       setLoading(false);
+      setRefreshing(false);
       setLoadingMore(false);
     }
   }, [supabase, debouncedSearchQuery]);
@@ -122,10 +133,13 @@ export function CollectionManager({
   }, [initialCategories]);
 
   useEffect(() => {
-    fetchCategories(true);
-  }, [debouncedSearchQuery, fetchCategories]);
+    void fetchCategories({
+      reset: true,
+      showLoader: initialCategories.length === 0,
+    });
+  }, [debouncedSearchQuery, fetchCategories, initialCategories.length]);
 
-  const refreshCategories = () => fetchCategories(true);
+  const refreshCategories = () => void fetchCategories({ reset: true, showLoader: false });
 
   const toggleAll = () => {
     const parents = categories.filter(c => !c.parentId);
@@ -144,8 +158,9 @@ export function CollectionManager({
       toast.success(result.message);
       setSelectedCollections([]);
       refreshCategories();
-    } catch (error: any) {
-      toast.error('Deletion failed: ' + error.message);
+    } catch (error: unknown) {
+      const err = error as Error;
+      toast.error('Deletion failed: ' + err.message);
     }
   };
 
@@ -170,13 +185,14 @@ export function CollectionManager({
       }
 
       toast.success(result.message);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as Error;
       setCategories((prev) =>
         prev.map((entry) =>
           entry.id === category.id ? { ...entry, pinnedInSearch: !nextPinnedState } : entry,
         ),
       );
-      toast.error('Search pin update failed: ' + error.message, { duration: 6000 });
+      toast.error('Search pin update failed: ' + err.message, { duration: 6000 });
     }
   };
 
@@ -197,9 +213,10 @@ export function CollectionManager({
     const fetchProductCounts = async () => {
       const { data } = await supabase.from('products').select('id, category_id');
       if (data) {
-        setProducts(data.map((p: any) => ({
-          ...p, categoryId: p.category_id
-        })) as unknown as Product[]);
+        setProducts(data.map((p) => ({
+          id: p.id as string,
+          categoryId: (p.category_id as string | null) ?? null
+        })));
       }
     };
     fetchProductCounts();
@@ -226,6 +243,12 @@ export function CollectionManager({
         </div>
         
         <div className="flex items-center gap-4">
+          {refreshing && (
+            <div className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-500">
+              <Layers className="h-3.5 w-3.5 animate-pulse" />
+              Syncing
+            </div>
+          )}
           <div className="relative group">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
             <input 
@@ -302,8 +325,8 @@ export function CollectionManager({
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-4" style={{ marginLeft: `${level * 24}px` }}>
-                      <div className="w-10 h-10 bg-slate-50 border border-slate-200 rounded-[4px] flex items-center justify-center overflow-hidden shrink-0 group-hover:border-slate-900 transition-all">
-                        {parent.imageUrl ? <img src={parent.imageUrl} alt="" className="w-full h-full object-cover" /> : <Package className="w-4 h-4 text-slate-300" />}
+                      <div className="w-10 h-10 bg-slate-50 border border-slate-200 rounded-[4px] flex items-center justify-center overflow-hidden shrink-0 group-hover:border-slate-900 transition-all relative">
+                        {isValidUrl(parent.imageUrl) ? <Image src={parent.imageUrl} alt={parent.name} fill sizes="40px" className="object-cover" /> : <Package className="w-4 h-4 text-slate-300" />}
                       </div>
                       <div className="min-w-0">
                          <p className="font-black text-slate-900 text-xs tracking-tight truncate">{parent.name}</p>
@@ -345,7 +368,7 @@ export function CollectionManager({
         </div>
 
         <InfiniteScrollSentinel 
-          onIntersect={() => fetchCategories(false)}
+          onIntersect={() => void fetchCategories({ reset: false, showLoader: false })}
           isLoading={loadingMore}
           hasMore={hasMore}
           loadingMessage="Expanding catalog levels..."
@@ -354,3 +377,4 @@ export function CollectionManager({
     </div>
   );
 }
+

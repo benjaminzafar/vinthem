@@ -11,6 +11,7 @@ import { MediaPickerModal } from '@/components/admin/MediaPickerModal';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { BlogPost } from '@/types';
 import { genAI } from '@/lib/ai';
+import { isValidUrl } from '@/lib/utils';
 
 type BlogEditorProps = {
   initialPost?: BlogPost | null;
@@ -381,7 +382,7 @@ Content: "${formData.content.en}"`;
               </div>
               <div className="p-6">
                 <div className="group relative mb-4 aspect-[4/3] cursor-pointer overflow-hidden rounded-[4px] border-2 border-dashed border-slate-200 bg-slate-50 transition-all hover:border-slate-900">
-                  {formData.imageUrl ? (
+                  {isValidUrl(formData.imageUrl) ? (
                     <Image src={formData.imageUrl} alt="" fill sizes="(max-width: 768px) 100vw, 600px" className="object-cover" />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center">

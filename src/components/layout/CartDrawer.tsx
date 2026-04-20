@@ -5,18 +5,26 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, ShoppingBag, Trash2, Plus, Minus, ArrowRight, ShieldCheck, ShoppingCart } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
 import { useUIStore } from '@/store/useUIStore';
-import { useSettingsStore } from '@/store/useSettingsStore';
+import { type StorefrontSettings } from '@/store/useSettingsStore';
 import { formatPrice } from '@/lib/currency';
 import { getClientLocale } from '@/lib/locale';
+import { localizeHref } from '@/lib/i18n-routing';
+import { useStorefrontSettings } from '@/hooks/useStorefrontSettings';
 import { Portal } from './Portal';
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
-export function CartDrawer() {
+type CartDrawerProps = {
+  initialSettings?: Partial<StorefrontSettings>;
+};
+
+export function CartDrawer({ initialSettings }: CartDrawerProps) {
   const { isCartOpen, setCartOpen } = useUIStore();
   const { items, removeItem, updateQuantity, total } = useCartStore();
-  const { settings } = useSettingsStore();
-  const lang = getClientLocale();
+  const settings = useStorefrontSettings(initialSettings);
+  const pathname = usePathname();
+  const lang = getClientLocale(pathname);
 
   // Prevent background scroll when drawer is open
   useEffect(() => {
@@ -52,7 +60,7 @@ export function CartDrawer() {
               className="relative w-full max-w-md bg-white border-l border-slate-100 flex flex-col shadow-2xl h-full"
             >
               {/* Header */}
-              <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 shrink-0 bg-white z-10">
+              <div className="flex items-center justify-between px-4 sm:px-6 h-16 border-b border-slate-100 shrink-0 bg-white z-10">
                 <div className="flex items-center gap-3">
                   <ShoppingBag className="w-5 h-5 text-slate-900" strokeWidth={1.5} />
                   <h2 className="text-sm font-black uppercase tracking-[0.2em] text-slate-900">
@@ -201,7 +209,7 @@ export function CartDrawer() {
                   </div>
 
                   <Link
-                    href="/payment"
+                    href={localizeHref(lang, '/payment')}
                     onClick={handleClose}
                     className="w-full h-14 bg-slate-900 text-white flex items-center justify-center gap-3 text-[11px] font-black uppercase tracking-[0.25em] transition-all hover:bg-slate-800 rounded group shadow-lg shadow-slate-900/10 active:scale-[0.98]"
                   >

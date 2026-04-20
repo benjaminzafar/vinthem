@@ -1,4 +1,5 @@
 'use server';
+﻿import { logger } from '@/lib/logger';
 
 import { createClient } from '@/utils/supabase/server';
 import { revalidatePath } from 'next/cache';
@@ -10,6 +11,33 @@ export type ActionResponse = {
   message: string;
   error?: string;
 };
+
+function revalidateStorefrontPaths(languages: string[]) {
+  const staticPaths = [
+    '/',
+    '/products',
+    '/auth',
+    '/cart',
+    '/payment',
+    '/profile',
+    '/privacy-policy',
+    '/cookie-policy',
+    '/terms-of-service',
+    '/p/privacy-policy',
+    '/p/cookie-policy',
+    '/p/terms-of-service',
+  ];
+
+  staticPaths.forEach((path) => revalidatePath(path));
+
+  languages.forEach((lang) => {
+    staticPaths
+      .filter((path) => path !== '/')
+      .forEach((path) => revalidatePath(`/${lang}${path}`));
+
+    revalidatePath(`/${lang}`);
+  });
+}
 
 /**
  * Update Storefront Settings
@@ -66,18 +94,14 @@ export async function updateSettingsAction(settings: StorefrontSettingsType): Pr
       }
     }
 
-    // Purge cache to reflect changes immediately across the site
+    revalidateStorefrontPaths(settings.languages || ['en']);
     revalidatePath('/', 'layout');
-    revalidatePath('/products');
     revalidatePath('/admin');
-    revalidatePath('/p/privacy-policy');
-    revalidatePath('/p/cookie-policy');
-    revalidatePath('/p/terms-of-service');
     
     return { success: true, message: 'Settings saved successfully' };
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to save settings';
-    console.error('[Action Error] updateSettingsAction:', error);
+    logger.error('[Action Error] updateSettingsAction:', error);
     return { success: false, message: 'Failed to save settings', error: message };
   }
 }
@@ -90,3 +114,4 @@ export async function uploadAssetAction(formData: FormData) {
   // Logic for direct server-side upload if needed
   return { success: true, message: 'Ready' };
 }
+

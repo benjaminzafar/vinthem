@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireAdminUser } from '@/lib/admin';
+import { logger } from '@/lib/logger';
 
 export async function GET() {
   try {
@@ -18,7 +19,8 @@ export async function GET() {
     return NextResponse.json(config);
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Internal Server Error';
-    console.error('Integrations GET error:', msg);
+    logger.error('Integrations GET error:', msg);
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
+

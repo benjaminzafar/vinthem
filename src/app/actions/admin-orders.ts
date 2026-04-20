@@ -1,4 +1,5 @@
 'use server';
+﻿import { logger } from '@/lib/logger';
 
 import { revalidatePath } from 'next/cache';
 
@@ -68,7 +69,7 @@ export async function updateOrderAction(input: OrderUpdateInput): Promise<OrderA
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to update order.';
-    console.error('[Action Error] updateOrderAction:', error);
+    logger.error('[Action Error] updateOrderAction:', error);
     return {
       success: false,
       message,
@@ -76,3 +77,4 @@ export async function updateOrderAction(input: OrderUpdateInput): Promise<OrderA
     };
   }
 }
+

@@ -125,11 +125,12 @@ export async function saveProductAction(input: SaveProductInput) {
       revalidatePath('/admin/products');
       return { success: true, data };
     }
-  } catch (error: any) {
-    console.error('Error in saveProductAction:', error);
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Error in saveProductAction:', err);
     return { 
       success: false, 
-      error: error?.message || (typeof error === 'string' ? error : 'Failed to save product.') 
+      error: err?.message || 'Failed to save product.' 
     };
   }
 

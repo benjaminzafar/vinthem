@@ -5,18 +5,18 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 import { ArrowRight } from 'lucide-react';
-import { Category } from '@/types';
-import { useSettingsStore } from '@/store/useSettingsStore';
+import { Category, StorefrontSettingsType } from '@/types';
+import { useStorefrontSettings } from '@/hooks/useStorefrontSettings';
+import { localizeHref } from '@/lib/i18n-routing';
 
 interface HeroSliderProps {
   categories: Category[];
   lang: string;
-  settings?: any;
+  settings?: StorefrontSettingsType;
 }
 
 export function HeroSlider({ categories, lang, settings: propSettings }: HeroSliderProps) {
-  const { settings: storeSettings } = useSettingsStore();
-  const settings = propSettings || storeSettings;
+  const settings = useStorefrontSettings(propSettings);
   const [currentIndex, setCurrentIndex] = useState(0);
   const featuredCategories = categories.filter(c => c.showInHero).slice(0, 3);
 
@@ -77,7 +77,7 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
             {/* Desktop Button */}
             <div className="hidden lg:block">
               <Link 
-                href={`/products?category=${encodeURIComponent(category.name)}`}
+                href={localizeHref(lang, `/products?category=${encodeURIComponent(category.name)}`)}
                 className="inline-flex items-center bg-black text-white px-12 py-5 rounded-2xl font-bold hover:bg-gray-800 transition-all duration-300 uppercase tracking-widest text-sm"
               >
                 {settings.shopNowText?.[lang] || 'Explore'} <ArrowRight className="ml-3 w-5 h-5" />
@@ -106,7 +106,7 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
           {/* Mobile Button */}
           <div className="w-full flex justify-center order-3 mt-6 lg:hidden z-10 flex-shrink-0 pb-10">
             <Link 
-              href={`/products?category=${encodeURIComponent(category.name)}`}
+              href={localizeHref(lang, `/products?category=${encodeURIComponent(category.name)}`)}
               className="flex items-center justify-center bg-black text-white px-10 py-4 rounded-2xl font-bold hover:bg-gray-800 transition-all duration-300 uppercase tracking-[0.2em] text-sm w-full"
             >
               {settings.shopNowText?.[lang] || 'Explore'} <ArrowRight className="ml-3 w-5 h-5" />

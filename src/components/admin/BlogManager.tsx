@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Download, Edit, Plus, Search, Sparkles, Trash2, User } from 'lucide-react';
@@ -11,6 +11,7 @@ import { useCustomConfirm } from '@/components/ConfirmationContext';
 import { useDebounce } from '@/hooks/useDebounce';
 import { downloadXLSX } from '@/utils/export';
 import { BlogPost } from '@/types';
+import { isValidUrl } from '@/lib/utils';
 
 type BlogManagerProps = {
   initialPosts?: BlogPost[];
@@ -23,6 +24,10 @@ export function BlogManager({ initialPosts = [] }: BlogManagerProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPosts, setSelectedPosts] = useState<string[]>([]);
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
+
+  useEffect(() => {
+    setPosts(initialPosts);
+  }, [initialPosts]);
 
   const filteredPosts = useMemo(() => {
     const query = debouncedSearchQuery.toLowerCase();
@@ -180,7 +185,7 @@ export function BlogManager({ initialPosts = [] }: BlogManagerProps) {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-4">
                         <div className="relative h-12 w-16 overflow-hidden rounded-[4px] border border-slate-200 bg-slate-50">
-                          {post.imageUrl ? (
+                          {isValidUrl(post.imageUrl) ? (
                             <Image src={post.imageUrl} alt="" fill sizes="128px" className="object-cover" />
                           ) : null}
                         </div>

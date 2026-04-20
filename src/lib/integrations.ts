@@ -1,4 +1,5 @@
 import { decrypt } from '@/lib/encryption';
+import { logger } from '@/lib/logger';
 
 const ENCRYPTED_VALUE_PARTS = 3;
 const HEX_SEGMENT_PATTERN = /^[a-f0-9]+$/i;
@@ -23,7 +24,10 @@ export function maybeDecryptStoredValue(value: string | null | undefined): strin
 
   try {
     return decrypt(value);
-  } catch {
+  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      logger.warn('Encrypted integration value could not be decrypted. Falling back to the stored raw value.', error);
+    }
     return value;
   }
 }
@@ -59,3 +63,5 @@ export function normalizePostHogIngestionHost(host: string | null | undefined): 
 
   return normalizedHost;
 }
+
+

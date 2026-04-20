@@ -3,13 +3,14 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Product } from '@/store/useCartStore';
+import { StorefrontSettingsType } from '@/types';
 import { formatPrice } from '@/lib/currency';
 import { ArrowRight, Package } from 'lucide-react';
 
 interface FeaturedProductsProps {
   products: Product[];
   lang: string;
-  settings: any;
+  settings: StorefrontSettingsType;
 }
 
 export function FeaturedProducts({ products, lang, settings }: FeaturedProductsProps) {

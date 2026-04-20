@@ -1,147 +1,95 @@
 import { NextResponse } from 'next/server';
-
 import { createClient } from '@/utils/supabase/server';
-import {
-  maybeDecryptStoredValue,
-  normalizePostHogAppHost,
-} from '@/lib/integrations';
+import { decrypt } from '@/lib/encryption';
 
-type IntegrationRow = {
-  key: string;
-  value: string;
-};
+const SOURCE_COLORS = ['#0F172A', '#475569', '#94A3B8', '#E2E8F0'];
 
-type PostHogSeries = {
-  action?: {
-    name?: string;
-  };
-  breakdown_value?: string | null;
-  count?: number | string;
-  data?: Array<number | string | null>;
-  labels?: Array<string | null>;
-};
+interface PostHogSeries {
+  action?: { name?: string };
+  breakdown_value?: string;
+  data?: (number | null)[];
+}
 
-type PulsePoint = {
-  name: string;
-  visits: number;
-  unique: number;
-};
-
-type TrafficSource = {
+interface SourcePayload {
   name: string;
   value: number;
   color: string;
-};
+}
 
-type PageSummary = {
+interface PageSummary {
   path: string;
-  views: number;
-  growth: string;
-};
+  visits: number;
+}
 
-type ActivityItem = {
-  id: number;
-  user: string;
-  action: string;
-  target: string;
-  path: string;
+interface PulsePoint {
   time: string;
-};
+  visits: number;
+}
 
-type TrafficPayload = {
+interface TrafficPayload {
+  sources: SourcePayload[];
+  pages: PageSummary[];
   pulse: PulsePoint[];
-  sources: TrafficSource[];
-  topPages: PageSummary[];
-  recentActivity: ActivityItem[];
+  totalVisits: number;
   activeNow: number;
   isReal: boolean;
-  error?: string;
+}
+
+const logger = {
+  info: (msg: string, ...args: unknown[]) => {}, // Purged for production
+  error: (msg: string, ...args: unknown[]) => console.error(`[TrafficAPI][ERROR] ${msg}`, ...args),
 };
 
-const SOURCE_COLORS = ['#0f172a', '#334155', '#64748b', '#94a3b8'];
-
-function toNumber(value: number | string | null | undefined): number {
-  if (typeof value === 'number') {
-    return Number.isFinite(value) ? value : 0;
-  }
-
-  if (typeof value === 'string') {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : 0;
-  }
-
-  return 0;
+function toNumber(val: unknown): number {
+  if (val === null || val === undefined) return 0;
+  return Number(val) || 0;
 }
 
-function extractSeries(payload: unknown): PostHogSeries[] {
-  if (!payload || typeof payload !== 'object') {
-    return [];
-  }
-
-  const typedPayload = payload as {
-    results?: unknown;
-    result?: unknown;
-    query?: { results?: unknown; result?: unknown };
-  };
-
-  const candidates = [
-    typedPayload.results,
-    typedPayload.result,
-    typedPayload.query?.results,
-    typedPayload.query?.result,
-  ];
-
-  for (const candidate of candidates) {
-    if (Array.isArray(candidate)) {
-      return candidate as PostHogSeries[];
-    }
-  }
-
-  return [];
+function buildEmptyRealPayload(message?: string): TrafficPayload {
+  return {
+    sources: [],
+    pages: [],
+    pulse: [],
+    totalVisits: 0,
+    activeNow: 0,
+    isReal: true,
+    ...(message ? { message } : {})
+  } as TrafficPayload & { message?: string };
 }
 
-function buildPulse(results: PostHogSeries[]): PulsePoint[] {
-  const seriesLength = results.reduce((maxLength, series) => {
-    return Math.max(maxLength, series.data?.length ?? 0);
-  }, 0);
-
-  return Array.from({ length: seriesLength }).map((_, index) => {
-    const defaultLabel = `${index}:00`;
-
-    return results.reduce<PulsePoint>(
-      (accumulator, series) => {
-        const label = series.labels?.[index];
-        if (typeof label === 'string' && label.trim().length > 0) {
-          accumulator.name = label;
-        }
-
-        const value = toNumber(series.data?.[index]);
-        if (series.action?.name === 'Pageviews') {
-          accumulator.visits += value;
-        }
-
-        if (series.action?.name === 'Unique Users') {
-          accumulator.unique += value;
-        }
-
-        return accumulator;
-      },
-      { name: defaultLabel, visits: 0, unique: 0 }
-    );
-  });
-}
-
-function buildSources(results: PostHogSeries[]): TrafficSource[] {
+function buildSources(results: PostHogSeries[]): SourcePayload[] {
   const sourceTotals = new Map<string, number>();
 
   for (const series of results) {
-    if (series.action?.name !== 'Pageviews') {
+    const seriesName = series.action?.name?.toLowerCase() || '';
+    if (!seriesName.includes('pageview') && !seriesName.includes('$pageview')) {
       continue;
     }
 
-    const key = series.breakdown_value && series.breakdown_value !== 'null'
-      ? series.breakdown_value
-      : 'Direct';
+    const rawValue = series.breakdown_value || '';
+    let key = 'Direct Link';
+    const lowerValue = rawValue.toLowerCase();
+
+    // Normalize technical and null markers (case-insensitive) to human-readable 'Direct Link'
+    if (
+      rawValue && 
+      lowerValue !== 'null' && 
+      lowerValue !== 'undefined' && 
+      !lowerValue.includes('posthog_breakdown_null') && 
+      !lowerValue.includes('an_null_$$')
+    ) {
+      key = rawValue;
+      
+      // Secondary Human-friendliness cleanup
+      const lowerKey = key.toLowerCase();
+      if (lowerKey.includes('google')) key = 'Google Search';
+      else if (lowerKey.includes('instagram')) key = 'Instagram';
+      else if (lowerKey.includes('facebook')) key = 'Facebook';
+      else if (lowerKey.includes('t.co')) key = 'Twitter/X';
+      else if (lowerKey.includes('pinterest')) key = 'Pinterest';
+      else if (lowerKey.includes('linkedin')) key = 'LinkedIn';
+      else if (lowerKey.includes('youtube')) key = 'YouTube';
+    }
 
     const total = (series.data ?? []).reduce<number>((sum, value) => sum + toNumber(value), 0);
     sourceTotals.set(key, (sourceTotals.get(key) ?? 0) + total);
@@ -159,162 +107,125 @@ function buildSources(results: PostHogSeries[]): TrafficSource[] {
     .slice(0, 4);
 }
 
-function buildEmptyRealPayload(error: string): TrafficPayload {
-  return {
-    pulse: [],
-    sources: [],
-    topPages: [],
-    recentActivity: [],
-    activeNow: 0,
-    isReal: true,
-    error,
-  };
+function buildPages(results: PostHogSeries[]): PageSummary[] {
+  const pages: PageSummary[] = [];
+
+  for (const series of results) {
+    const rawPath = String(series.breakdown_value || '/');
+    
+    // Clean up technical markers for paths
+    if (
+      !rawPath || 
+      rawPath === 'null' || 
+      rawPath === 'undefined' || 
+      rawPath.includes('POSTHOG_BREAKDOWN_NULL') || 
+      rawPath.includes('an_null_$$')
+    ) {
+      continue;
+    }
+    
+    const count = (series.data ?? []).reduce<number>((sum, val) => sum + toNumber(val), 0);
+    if (count > 0) {
+      pages.push({ path: rawPath, visits: count });
+    }
+  }
+
+  return pages
+    .sort((a, b) => b.visits - a.visits)
+    .slice(0, 5);
 }
 
-function getMockTrafficData(): TrafficPayload {
-  const hours = Array.from({ length: 24 }, (_, index) => {
-    const hour = (new Date().getHours() - (23 - index) + 24) % 24;
-    return `${hour}:00`;
-  });
+function buildPulse(results: PostHogSeries[]): PulsePoint[] {
+  const timeMap = new Map<string, number>();
 
-  const products = [
-    { name: 'Minimalist Oak Chair', path: '/product/oak-chair' },
-    { name: 'Ceramic Vase Set', path: '/product/ceramic-vases' },
-    { name: 'Linen Pillow Case', path: '/product/linen-pillows' },
-    { name: 'Wool Throw Blanket', path: '/product/wool-throw' },
-    { name: 'Canvas Wall Art', path: '/product/wall-art' },
-  ];
+  for (const series of results) {
+    if (!series.data || !Array.isArray(series.data)) continue;
+    
+    series.data.forEach((val, i) => {
+      const timeStr = `T-${24 - i}h`;
+      timeMap.set(timeStr, (timeMap.get(timeStr) ?? 0) + toNumber(val));
+    });
+  }
 
-  const recentNames = ['Someone', 'A guest', 'Returning client', 'User'];
-
-  return {
-    pulse: hours.map((hour) => ({
-      name: hour,
-      visits: Math.floor(Math.random() * 50) + 10,
-      unique: Math.floor(Math.random() * 30) + 5,
-    })),
-    sources: [
-      { name: 'Direct', value: 45, color: '#0f172a' },
-      { name: 'Google', value: 30, color: '#334155' },
-      { name: 'Instagram', value: 15, color: '#64748b' },
-      { name: 'Other', value: 10, color: '#94a3b8' },
-    ],
-    topPages: [
-      { path: '/product/minimalist-desk', views: 842, growth: '+15%' },
-      { path: '/product/terrazzo-lamp', views: 654, growth: '+8%' },
-      { path: '/collection/new-arrivals', views: 432, growth: '+22%' },
-      { path: '/product/scandinavian-rug', views: 321, growth: '-2%' },
-      { path: '/blog/interior-trends-2026', views: 189, growth: '+10%' },
-    ],
-    recentActivity: Array.from({ length: 6 }, (_, index) => {
-      const product = products[Math.floor(Math.random() * products.length)];
-
-      return {
-        id: index,
-        user: recentNames[Math.floor(Math.random() * recentNames.length)],
-        action: 'viewed',
-        target: product.name,
-        path: product.path,
-        time: `${index + 1}m ago`,
-      };
-    }),
-    activeNow: Math.floor(Math.random() * 14) + 5,
-    isReal: false,
-  };
+  return Array.from(timeMap.entries()).map(([time, visits]) => ({ time, visits }));
 }
 
 export async function GET() {
-  const supabase = await createClient();
-  const { data } = await supabase.from('integrations').select('key, value');
-
-  const config = (data ?? []).reduce<Record<string, string>>((accumulator, row) => {
-    const integration = row as IntegrationRow;
-    accumulator[integration.key.toUpperCase()] = integration.value;
-    return accumulator;
-  }, {});
-
-  const apiKey = maybeDecryptStoredValue(config.POSTHOG_API_KEY);
-  const projectId = maybeDecryptStoredValue(config.POSTHOG_PROJECT_ID);
-  const host = normalizePostHogAppHost(config.POSTHOG_HOST);
-
-  if (!apiKey || !projectId) {
-    return NextResponse.json(getMockTrafficData());
-  }
-
   try {
-    // We perform TWO queries in parallel:
-    // 1. Total traffic baseline (to ensure Pulse charts always have data)
-    // 2. Referrer breakdown (for the Sources pie chart)
-    const [totalRes, breakdownRes] = await Promise.all([
-      fetch(`${host}/api/projects/${projectId}/query/`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query: {
-            kind: 'InsightVizNode',
-            source: {
-              kind: 'TrendsQuery',
-              series: [
-                { kind: 'EventsNode', event: '$pageview', name: 'Pageviews', math: 'total' },
-                { kind: 'EventsNode', event: '$pageview', name: 'Unique Users', math: 'dau' },
-              ],
-              dateRange: { date_from: '-24h' },
-              interval: 'hour',
-            },
-          },
-        }),
-        cache: 'no-store',
-      }),
-      fetch(`${host}/api/projects/${projectId}/query/`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query: {
-            kind: 'InsightVizNode',
-            source: {
-              kind: 'TrendsQuery',
-              series: [{ kind: 'EventsNode', event: '$pageview', name: 'Pageviews', math: 'total' }],
-              dateRange: { date_from: '-24h' },
-              interval: 'hour',
-              breakdownFilter: { breakdown: '$initial_referrer', breakdown_type: 'event' },
-            },
-          },
-        }),
-        cache: 'no-store',
-      }),
+    const supabase = await createClient();
+
+    // 1. Fetch encrypted PostHog credentials from public.integrations
+    const { data: integrations, error: fetchErr } = await supabase
+      .from('integrations')
+      .select('key, value')
+      .in('key', ['POSTHOG_API_KEY', 'POSTHOG_HOST', 'POSTHOG_PROJECT_ID']);
+
+    if (fetchErr || !integrations) throw new Error('Could not fetch PostHog integration settings.');
+
+    const config = Object.fromEntries(integrations.map((i) => [i.key, i.value]));
+    const apiKeyEnc = config['POSTHOG_API_KEY'];
+    const host = config['POSTHOG_HOST'] || 'https://eu.i.posthog.com';
+    const projectId = config['POSTHOG_PROJECT_ID'];
+
+    if (!apiKeyEnc || !projectId) throw new Error('PostHog API key or Project ID missing.');
+
+    const apiKey = decrypt(apiKeyEnc);
+
+    // 2. Query PostHog Trends API
+    // We fetch data from the last 24h, broken down by referrer ($initial_referrer) for sources 
+    // and by path ($pathname) for pages.
+    const queryUrl = `${host}/api/projects/${projectId}/insights/trend/?` + new URLSearchParams({
+      insight: 'TRENDS',
+      interval: 'hour',
+      date_from: '-24h',
+      display: 'ActionsLineGraph',
+      events: JSON.stringify([{ id: '$pageview', math: 'dau' }]),
+      breakdown: '$initial_referrer',
+      breakdown_type: 'event'
+    }).toString();
+
+    const pagesQueryUrl = `${host}/api/projects/${projectId}/insights/trend/?` + new URLSearchParams({
+      insight: 'TRENDS',
+      interval: 'hour',
+      date_from: '-24h',
+      display: 'ActionsLineGraph',
+      events: JSON.stringify([{ id: '$pageview', math: 'dau' }]),
+      breakdown: '$pathname',
+      breakdown_type: 'event'
+    }).toString();
+
+    const headers = { 'Authorization': `Bearer ${apiKey}` };
+    const [sourcesRes, pagesRes] = await Promise.all([
+      fetch(queryUrl, { headers }),
+      fetch(pagesQueryUrl, { headers })
     ]);
 
-    if (!totalRes.ok) {
-      const errorText = await totalRes.text();
-      return NextResponse.json(buildEmptyRealPayload(`PostHog query failed (${totalRes.status}). ${errorText.slice(0, 160)}`));
+    if (!sourcesRes.ok || !pagesRes.ok) {
+      throw new Error(`PostHog API responded with error: ${sourcesRes.status} / ${pagesRes.status}`);
     }
 
-    const [totalPayload, breakdownPayload] = await Promise.all([
-      totalRes.json(),
-      breakdownRes.ok ? breakdownRes.json() : Promise.resolve({ results: [] })
-    ]);
+    const sourcesData = await sourcesRes.json();
+    const pagesData = await pagesRes.json();
 
-    const totalResults = extractSeries(totalPayload);
-    const breakdownResults = extractSeries(breakdownPayload);
+    const results = (sourcesData.result || []) as PostHogSeries[];
+    const pageResults = (pagesData.result || []) as PostHogSeries[];
 
-    if (totalResults.length === 0 && breakdownResults.length === 0) {
-      return NextResponse.json(buildEmptyRealPayload('PostHog returned no usable chart series.'));
-    }
-
-    const pulse = buildPulse(totalResults);
-    const sources = buildSources(breakdownResults);
+    // 3. Transform data for our CRM Dashboard
+    const sources = buildSources(results);
+    const pages = buildPages(pageResults);
+    const pulse = buildPulse(results);
 
     return NextResponse.json({
-      pulse,
       sources,
-      topPages: [],
-      recentActivity: [],
+      pages,
+      pulse,
+      totalVisits: Array.from(sources.values()).reduce((sum, s) => sum + s.value, 0),
       activeNow: pulse[pulse.length - 1]?.visits ?? 0,
       isReal: true,
     } satisfies TrafficPayload);
-  } catch (error) {
+  } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown PostHog error';
-    console.error('Real-mode fetch failed:', error);
+    logger.error('Real-mode fetch failed:', error);
     return NextResponse.json(buildEmptyRealPayload(message));
   }
 }

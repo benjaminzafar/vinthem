@@ -51,3 +51,65 @@ export interface Review {
   adminReply?: string;
   adminReplyAt?: string;
 }
+
+export interface Product {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  sale_price?: number;
+  is_sale: boolean;
+  image_url?: string;
+  images?: string[];
+  category_id?: string;
+  inventory?: number;
+  sku?: string;
+  created_at: string;
+}
+
+export interface OrderItem {
+  id?: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image?: string;
+  sku?: string;
+}
+
+export interface ShippingDetails {
+  email: string;
+  name?: string;
+  firstName?: string;
+  lastName?: string;
+  address?: string;
+  city?: string;
+  country?: string;
+  zip?: string;
+  phone?: string;
+}
+
+export interface AdminOrder {
+  id: string;
+  orderId?: string; // friendly id
+  user_id: string | null;
+  items: OrderItem[];
+  total: number;
+  subtotal: number;
+  shipping_cost: number;
+  tax_amount: number;
+  status: 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
+  shipping_details: ShippingDetails;
+  created_at: string;
+  createdAt?: string; // mapped for UI
+  customerEmail?: string; // mapped for UI
+  trackingCarrier?: string;
+  trackingNumber?: string;
+}
+
+export interface User {
+  id: string;
+  email: string | null;
+  name?: string;
+  role: 'admin' | 'client' | null;
+  created_at?: string;
+}

@@ -3,9 +3,11 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { cookies } from 'next/headers';
 import { CookiePreferencesButton } from '@/components/CookiePreferencesButton';
+import { localizeHref } from '@/lib/i18n-routing';
+import { StorefrontSettingsType } from '@/types';
 
 interface FooterProps {
-  settings: any;
+  settings: StorefrontSettingsType;
 }
 
 export default async function Footer({ settings }: FooterProps) {
@@ -17,7 +19,7 @@ export default async function Footer({ settings }: FooterProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8 mb-20">
           <div className="col-span-1 md:col-span-4 lg:col-span-5 pr-8">
-            <Link href="/" className="inline-block mb-8 group">
+            <Link href={localizeHref(lang, '/')} className="inline-block mb-8 group">
               {settings.logoImage ? (
                 <div className="relative h-10 w-40">
                   <Image 
@@ -44,7 +46,7 @@ export default async function Footer({ settings }: FooterProps) {
                 <ul className="space-y-4 text-sm text-gray-500">
                   {(section.links || []).map((link, lIndex) => (
                     <li key={lIndex}>
-                      <Link href={link.href || '#'} className="hover:text-brand-ink transition-colors">
+                      <Link href={link.href ? localizeHref(lang, link.href) : '#'} className="hover:text-brand-ink transition-colors">
                         {link.label?.[lang]}
                       </Link>
                     </li>
@@ -61,7 +63,7 @@ export default async function Footer({ settings }: FooterProps) {
           </p>
           <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-500">
             <CookiePreferencesButton label={settings.cookiePreferencesButtonText?.[lang] || 'Cookie Preferences'} />
-            <Link href="/unsubscribe" className="hover:text-brand-ink transition-colors">
+            <Link href={localizeHref(lang, '/unsubscribe')} className="hover:text-brand-ink transition-colors">
               {settings.unsubscribeLinkText?.[lang] || 'Unsubscribe'}
             </Link>
             {settings.socialInstagram && <a href={settings.socialInstagram} target="_blank" rel="noopener noreferrer" className="hover:text-brand-ink transition-colors" aria-label="Visit our Instagram">{settings.instagramText?.[lang] || 'Instagram'}</a>}

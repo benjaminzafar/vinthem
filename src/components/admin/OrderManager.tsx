@@ -1,4 +1,5 @@
-"use client";
+﻿"use client";
+import { logger } from '@/lib/logger';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { AdminHeader } from '@/components/admin/AdminHeader';
@@ -16,6 +17,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { downloadXLSX } from '@/utils/export';
 import { InfiniteScrollSentinel } from '@/components/admin/InfiniteScrollSentinel';
 import { updateOrderAction } from '@/app/actions/admin-orders';
+import { AdminOrder, OrderItem } from '@/types';
 import Image from 'next/image';
 
 export function OrderManager({ 
@@ -23,25 +25,31 @@ export function OrderManager({
   initialOrders = [],
 }: { 
   onSeedClick?: () => void;
-  initialOrders?: any[];
+  initialOrders?: AdminOrder[];
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery, 400);
   const [loading, setLoading] = useState(initialOrders.length === 0);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const pageRef = useRef(0);
   const ITEMS_PER_PAGE = 50;
   
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
-  const [orders, setOrders] = useState<any[]>(initialOrders);
+  const [orders, setOrders] = useState<AdminOrder[]>(initialOrders);
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
-  const supabase = createClient();
+  const [supabase] = useState(() => createClient());
 
-  const fetchOrders = useCallback(async (isFirstPage: boolean = false) => {
-    if (isFirstPage) {
-      setLoading(true);
+  const fetchOrders = useCallback(async ({ reset = false, showLoader = false }: { reset?: boolean; showLoader?: boolean } = {}) => {
+    if (reset) {
       pageRef.current = 0;
+    }
+
+    if (showLoader) {
+      setLoading(true);
+    } else if (reset) {
+      setRefreshing(true);
     } else {
       setLoadingMore(true);
     }
@@ -64,14 +72,14 @@ export function OrderManager({
 
       if (error) throw error;
 
-      const mappedOrders = (data || []).map((o: any) => ({
+      const mappedOrders: AdminOrder[] = (data || []).map((o) => ({
         ...o,
         createdAt: o.created_at,
         orderId: o.order_id,
         customerEmail: o.shipping_details?.email
       }));
 
-      if (isFirstPage) {
+      if (reset) {
         setOrders(mappedOrders);
       } else {
         setOrders(prev => {
@@ -92,19 +100,24 @@ export function OrderManager({
         pageRef.current += 1;
       }
 
-    } catch (error: any) {
-      console.error('[OrderManager] Fetch error:', error);
-      toast.error('Failed to load orders: ' + error.message);
+    } catch (error: unknown) {
+      const err = error as Error;
+      logger.error('[OrderManager] Fetch error:', err);
+      toast.error('Failed to load orders: ' + err.message);
       setHasMore(false);
     } finally {
       setLoading(false);
+      setRefreshing(false);
       setLoadingMore(false);
     }
   }, [supabase, debouncedSearchQuery]);
 
   useEffect(() => {
-    fetchOrders(true);
-  }, [debouncedSearchQuery, fetchOrders]);
+    void fetchOrders({
+      reset: true,
+      showLoader: initialOrders.length === 0,
+    });
+  }, [debouncedSearchQuery, fetchOrders, initialOrders.length]);
 
   const handleUpdateOrder = async (orderId: string, updates: Record<string, unknown>) => {
     setUpdatingOrderId(orderId);
@@ -121,8 +134,9 @@ export function OrderManager({
       }
       setOrders(prev => prev.map(o => o.id === orderId ? { ...o, ...updates } : o));
       toast.success('Order updated successfully', { id: toastId });
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to update order', { id: toastId });
+    } catch (error: unknown) {
+      const err = error as Error;
+      toast.error(err.message || 'Failed to update order', { id: toastId });
     } finally {
       setUpdatingOrderId(null);
     }
@@ -131,7 +145,9 @@ export function OrderManager({
   useEffect(() => {
     const channel = supabase
       .channel('orders_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => fetchOrders(true))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
+        void fetchOrders({ reset: true, showLoader: false });
+      })
       .subscribe();
 
     return () => {
@@ -153,7 +169,7 @@ export function OrderManager({
           ...(onSeedClick ? [{ label: 'Seed Test Data', icon: Database, onClick: onSeedClick }] : []),
           { label: 'Export XLSX', icon: Download, onClick: () => downloadXLSX(orders, 'orders') }
         ]}
-        statsLabel={`${orders.length} orders`}
+        statsLabel={`${orders.length} orders${refreshing ? ' • syncing' : ''}`}
       />
 
       <div className="bg-slate-50 border border-slate-300 rounded p-4 text-sm text-slate-700 flex items-center gap-3">
@@ -216,7 +232,7 @@ export function OrderManager({
                         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
                           <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-6 border-b border-slate-200 pb-2">Order Line Items</h4>
                           <div className="space-y-4">
-                            {order.items?.map((item: any, index: number) => (
+                            {order.items?.map((item, index: number) => (
                               <div key={index} className="flex items-center justify-between py-2">
                                 <div className="flex items-center space-x-4">
                                   <div className="w-12 h-12 bg-white border border-slate-200 rounded flex items-center justify-center overflow-hidden shrink-0 relative">
@@ -281,7 +297,7 @@ export function OrderManager({
         </div>
 
         <InfiniteScrollSentinel 
-          onIntersect={() => fetchOrders(false)}
+          onIntersect={() => void fetchOrders({ reset: false, showLoader: false })}
           isLoading={loadingMore}
           hasMore={hasMore}
           loadingMessage="Streaming order ledger..."
@@ -290,3 +306,4 @@ export function OrderManager({
     </div>
   );
 }
+

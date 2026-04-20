@@ -11,6 +11,7 @@ import { AccountDropdown } from './AccountDropdown';
 import { MobileMenu } from './MobileMenu';
 import { CartToggle } from './CartToggle';
 import { cookies } from 'next/headers';
+import { localizeHref } from '@/lib/i18n-routing';
 
 export default async function Navigation() {
   const supabase = await createClient();
@@ -41,7 +42,8 @@ export default async function Navigation() {
     imageUrl: cat.image_url,
     iconUrl: cat.icon_url,
     pinnedInSearch: cat.pinned_in_search,
-    showInHero: cat.show_in_hero
+    showInHero: cat.show_in_hero,
+    isFeatured: false
   }));
 
   // Resolve language from cookie
@@ -56,7 +58,7 @@ export default async function Navigation() {
         <div className="flex justify-between h-16 items-center relative">
           {/* Brand Logo */}
           <div className="flex-1 flex items-center">
-            <Link href="/" className="flex items-center space-x-3 group">
+            <Link href={localizeHref(lang, '/')} className="flex items-center space-x-3 group">
               {settings?.logoImage && settings.logoImage.trim() !== "" ? (
                 <div className="relative h-8 w-32">
                   <Image
@@ -78,10 +80,10 @@ export default async function Navigation() {
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">
-            {(settings?.navbarLinks || []).map((link: any, index: number) => (
+            {(settings?.navbarLinks || []).map((link: { href: string; label: Record<string, string> }, index: number) => (
               <Link
                 key={index}
-                href={link.href}
+                href={localizeHref(lang, link.href)}
                 className="text-sm font-medium text-slate-600 hover:text-brand-ink transition-colors"
               >
                 {link.label[lang] || link.label['en']}
@@ -118,8 +120,8 @@ export default async function Navigation() {
                 />
               ) : (
                 <Link
-                  href="/auth"
-                  className="px-5 py-2.5 text-sm font-medium text-white bg-brand-ink rounded-none hover:bg-gray-800 transition-colors"
+                  href={localizeHref(lang, '/auth')}
+                  className="px-5 py-2.5 text-sm font-medium text-white bg-brand-ink rounded-md hover:bg-gray-800 transition-colors"
                 >
                   {settings?.loginText?.[lang] || 'Login'}
                 </Link>

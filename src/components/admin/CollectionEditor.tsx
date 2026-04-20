@@ -13,11 +13,13 @@ import {
 import { toast } from 'sonner';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { genAI } from '@/lib/ai';
+import { extractFirstJsonObject } from '@/lib/json';
 import { saveCategoryAction } from '@/app/actions/categories';
 import { MediaPickerModal } from './MediaPickerModal';
 import { IconSelector } from '../IconSelector';
 import { IconRenderer } from '../IconRenderer';
 import Image from 'next/image';
+import { isValidUrl } from '@/lib/utils';
 
 interface CollectionEditorProps {
   initialCollection?: Category | null;
@@ -59,8 +61,10 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
       const supabase = createClient();
       const { data } = await supabase.from('categories').select('*').order('name');
       if (data) {
-        setCategories((data as any[]).map(c => ({
-          id: c.id, name: c.name, parentId: c.parent_id
+        setCategories((data as Array<Record<string, unknown>>).map(c => ({
+          id: c.id as string, 
+          name: c.name as string, 
+          parentId: c.parent_id as string
         })) as unknown as Category[]);
       }
     };
@@ -113,11 +117,12 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
         description: result.description || prev.description
       }));
       toast.success('AI Analysis complete!', { id: toastId });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('AI error:', error);
       const timestamp = new Date().toLocaleTimeString('sv-SE', { hour12: false });
-      const errorMessage = error?.message || '';
-      const status = error?.status;
+      const err = error as { message?: string; status?: number };
+      const errorMessage = err?.message || '';
+      const status = err?.status;
 
       if (status === 401 || status === 403) {
         toast.error('Action Required: Please set your Groq API Key in the Integrations Manager.', { 
@@ -176,11 +181,12 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
 
       setAiChatInput('');
       toast.success('Collection draft generated!', { id: toastId });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('AI Draft Error:', error);
       const timestamp = new Date().toLocaleTimeString('sv-SE', { hour12: false });
-      const errorMessage = error?.message || '';
-      const status = error?.status;
+      const err = error as { message?: string; status?: number };
+      const errorMessage = err?.message || '';
+      const status = err?.status;
 
       if (status === 401 || status === 403) {
         toast.error('Action Required: Please set your Groq API Key in the Integrations Manager.', { 
@@ -230,8 +236,9 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
         router.push('/admin/collections');
         router.refresh();
       } else throw new Error(result.error);
-    } catch (error: any) {
-      toast.error('Save failed: ' + error.message, { 
+    } catch (error: unknown) {
+      const err = error as Error;
+      toast.error('Save failed: ' + err.message, { 
         id: toastId,
         duration: 8000
       });
@@ -250,8 +257,9 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
       const url = await uploadImageWithTimeout(file, `categories/${Date.now()}_${file.name}`);
       setFormData(prev => ({ ...prev, imageUrl: url }));
       toast.success('Banner uploaded', { id: toastId });
-    } catch (error: any) {
-      toast.error('Upload failed: ' + error.message, { id: toastId });
+    } catch (error: unknown) {
+      const err = error as Error;
+      toast.error('Upload failed: ' + err.message, { id: toastId });
     } finally {
       setUploading(false);
     }
@@ -267,14 +275,67 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
       const url = await uploadImageWithTimeout(file, `categories/${Date.now()}_${file.name}`);
       setFormData(prev => ({ ...prev, iconUrl: url }));
       toast.success('Icon uploaded', { id: toastId });
-    } catch (error: any) {
-      toast.error('Upload failed: ' + error.message, { id: toastId });
+    } catch (error: unknown) {
+      const err = error as Error;
+      toast.error('Upload failed: ' + err.message, { id: toastId });
     } finally {
       setUploading(false);
     }
   };
 
   const languages = settings.languages || ['sv', 'en'];
+
+  const handleAITranslateCollection = async () => {
+    if (!formData.name?.trim()) {
+      toast.error('Collection name is required for translation.');
+      return;
+    }
+    const targetLangs = languages.filter(l => l !== 'sv');
+    if (targetLangs.length === 0) {
+      toast.info('No extra languages configured.');
+      return;
+    }
+    setGenerating(true);
+    const toastId = toast.loading('AI translating collection...');
+    try {
+      const prompt = `Translate the following collection information into these languages: ${targetLangs.join(', ')}.
+Return ONLY a JSON object where each top-level key is an ISO 639-1 language code, and each value is an object with "name" and "description" fields.
+Example: { "en": { "name": "...", "description": "..." }, "fi": { "name": "...", "description": "..." } }
+
+Collection Name (Swedish): "${formData.name}"
+Collection Description (Swedish): "${formData.description || ''}"`;
+
+      const model = genAI.getGenerativeModel({
+        model: 'llama-3.3-70b-versatile',
+        generationConfig: { responseMimeType: 'application/json' }
+      });
+      const aiResponse = await model.generateContent(prompt);
+      const rawText = aiResponse.response.text() || '{}';
+      const jsonStr = extractFirstJsonObject(rawText) || rawText;
+      const result = JSON.parse(jsonStr) as Record<string, { name?: string; description?: string }>;
+
+      const newTranslations = { ...formData.translations };
+      for (const lang of targetLangs) {
+        if (result[lang]) {
+          newTranslations[lang] = {
+            name: result[lang].name?.trim() || newTranslations[lang]?.name || '',
+            description: result[lang].description?.trim() || newTranslations[lang]?.description || ''
+          };
+        }
+      }
+      setFormData(prev => ({ ...prev, translations: newTranslations }));
+      toast.success('Collection translated to all languages', { id: toastId });
+    } catch (error: unknown) {
+      const err = error as Error & { status?: number };
+      if (err.status === 401 || err.status === 403) {
+        toast.error('Action Required: Please set your Groq API Key in the Integrations Manager.', { id: toastId, duration: 6000 });
+      } else {
+        toast.error(err.message || 'AI translation failed', { id: toastId, duration: 8000 });
+      }
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
@@ -427,7 +488,8 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
 
                 {activeTab === 'translations' && (
                   <div className="space-y-8 animate-in fade-in duration-300">
-                    <div className="flex gap-4 border-b border-slate-100 pb-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex gap-4 border-b border-slate-100 pb-2">
                        {languages.map(lang => (
                          <button 
                            key={lang}
@@ -437,6 +499,15 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
                            {lang}
                          </button>
                        ))}
+                      </div>
+                      <button
+                        onClick={handleAITranslateCollection}
+                        disabled={generating || !formData.name?.trim()}
+                        className="flex items-center gap-1.5 px-4 py-1.5 text-[9px] font-black uppercase tracking-widest bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-all disabled:opacity-50"
+                      >
+                        {generating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Languages className="w-3 h-3" />}
+                        AI Translate All
+                      </button>
                     </div>
                     <div className="grid grid-cols-1 gap-6">
                       <div className="space-y-3">
@@ -525,7 +596,7 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
               </div>
               <div className="p-6">
                  <div className="relative aspect-[16/9] bg-slate-50 border-2 border-dashed border-slate-200 rounded-[4px] flex items-center justify-center overflow-hidden hover:border-slate-900 transition-all cursor-pointer group mb-4">
-                    {formData.imageUrl ? (
+                    {isValidUrl(formData.imageUrl) ? (
                       <Image src={formData.imageUrl} alt="" fill sizes="(max-width: 768px) 100vw, 600px" className="object-cover" />
                     ) : (
                       <div className="text-center p-6">
@@ -567,8 +638,10 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
                       {formData.iconUrl ? (
                          formData.iconUrl.startsWith('icon:') ? (
                            <IconRenderer iconName={formData.iconUrl} className="w-8 h-8 text-slate-900" />
-                         ) : (
+                         ) : isValidUrl(formData.iconUrl) ? (
                            <Image src={formData.iconUrl} alt="Icon" fill sizes="64px" className="object-cover" />
+                         ) : (
+                           <Star className="w-6 h-6 text-slate-200" />
                          )
                       ) : <Star className="w-6 h-6 text-slate-200" />}
                     </div>

@@ -1,4 +1,5 @@
 'use server';
+﻿import { logger } from '@/lib/logger';
 
 import { revalidatePath } from 'next/cache';
 
@@ -99,7 +100,7 @@ export async function submitProductReviewAction(input: CustomerReviewInput): Pro
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to submit review.';
-    console.error('[Action Error] submitProductReviewAction:', error);
+    logger.error('[Action Error] submitProductReviewAction:', error);
     return {
       success: false,
       message,
@@ -143,7 +144,7 @@ export async function createAdminReviewAction(input: AdminReviewInput): Promise<
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to create review.';
-    console.error('[Action Error] createAdminReviewAction:', error);
+    logger.error('[Action Error] createAdminReviewAction:', error);
     return {
       success: false,
       message,
@@ -151,3 +152,4 @@ export async function createAdminReviewAction(input: AdminReviewInput): Promise<
     };
   }
 }
+

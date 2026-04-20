@@ -16,7 +16,7 @@ import {
 import type { CRMCustomer, CRMOrder, RefundRecord, ReviewRecord, SupportTicket } from './types';
 
 export function CRMContainer() {
-  const supabase = createClient();
+  const [supabase] = useState(() => createClient());
   const [activeTab, setActiveTab] = useState<'customers' | 'tickets' | 'refunds' | 'newsletter' | 'reviews'>('customers');
   
   const [customers, setCustomers] = useState<Array<Record<string, unknown>>>([]);
@@ -314,7 +314,8 @@ export function CRMContainer() {
       <CRMAnalytics 
         tickets={normalizedTickets} 
         customers={customerSummaries} 
-        refunds={normalizedRefunds} 
+        refunds={normalizedRefunds}
+        orders={normalizedOrders}
       />
 
       {/* 2. Management Hub (Unified border-bottom tabs) */}
@@ -330,7 +331,7 @@ export function CRMContainer() {
             ].map((tab) => (
               <button 
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => setActiveTab(tab.id as 'customers' | 'tickets' | 'refunds' | 'newsletter' | 'reviews')}
                 className={`h-full flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest border-b-2 transition-all ${
                   activeTab === tab.id 
                     ? 'text-slate-900 border-slate-900' 

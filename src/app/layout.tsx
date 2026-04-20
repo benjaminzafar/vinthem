@@ -9,9 +9,9 @@ import { getSettings, getIntegrations } from "@/lib/data";
 import { normalizePostHogIngestionHost } from "@/lib/integrations";
 import { LazyMotion, domAnimation } from "motion/react";
 import { PostHogProvider } from "@/components/PostHogProvider";
-import { cookies } from "next/headers";
 import { CookieBannerMount } from "@/components/CookieBannerMount";
 import { CartDrawer } from "@/components/layout/CartDrawer";
+import { getServerLocale } from "@/lib/server-locale";
 
 export const metadata: Metadata = {
   title: {
@@ -27,8 +27,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cookieStore = await cookies();
-  const lang = cookieStore.get('NEXT_LOCALE')?.value || 'en';
+  const lang = await getServerLocale();
   // Fetch settings on the server for hydration (cached)
   const settings = await getSettings() || {};
   const integrations = await getIntegrations() || {};
@@ -41,11 +40,11 @@ export default async function RootLayout({
     essentialOnlyLabel: settings.consentEssentialOnlyText?.[lang] || "Essential only",
   };
 
-  // Default Clarity ID from user request
-  const clarityId = integrations.CLARITY_ID || "wcb4auvfrs";
+  // Only use Clarity ID from integrations, no hardcoded fallbacks
+  const clarityId = integrations.CLARITY_ID;
 
   return (
-    <html lang="en" className="h-full antialiased" suppressHydrationWarning>
+    <html lang={lang} className="h-full antialiased" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://xeatyjjiywcrkuvifyhm.supabase.co" crossOrigin="" />
         <link rel="preconnect" href="https://pub-f44233c26dba4e9795b3ccf51fe6f2cb.r2.dev" crossOrigin="" />
@@ -62,7 +61,7 @@ export default async function RootLayout({
             <ConfirmationProvider>
               <LazyMotion features={domAnimation}>
                 {children}
-                <CartDrawer />
+                <CartDrawer initialSettings={settings} />
               </LazyMotion>
               {process.env.NODE_ENV === 'production' ? <Analytics /> : null}
             </ConfirmationProvider>
