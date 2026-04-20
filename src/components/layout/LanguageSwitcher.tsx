@@ -84,10 +84,10 @@ export function LanguageSwitcher({ availableLanguages, variant = 'dropdown' }: L
       <button 
         disabled={isPending}
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center space-x-2 p-1.5 px-3 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all text-[10px] font-black uppercase tracking-widest border border-transparent hover:border-slate-100 rounded ${isPending ? 'opacity-50' : ''}`}
+        className={`flex items-center space-x-2 p-1.5 px-3 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all text-[10px] font-black uppercase tracking-widest border border-transparent hover:border-slate-100 rounded-lg ${isPending ? 'opacity-50' : ''}`}
       >
         {isPending ? <Loader2 className="w-3 h-3 animate-spin text-slate-400" /> : <span>{currentLocale}</span>}
-        <ChevronDown className={`w-3 h-3 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} strokeWidth={2} />
+        <ChevronDown className={`w-3 h-3 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} strokeWidth={1.5} />
       </button>
 
       <AnimatePresence>

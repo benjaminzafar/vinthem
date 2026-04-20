@@ -133,9 +133,6 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
       
       <div className="flex flex-col flex-1 px-1">
         <div className="flex items-center gap-2 mb-3">
-          <span className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
-            {product.categoryName}
-          </span>
           {product.status === 'draft' && (
              <span className="text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 bg-slate-100 text-slate-400 border border-slate-200 rounded">Draft</span>
           )}

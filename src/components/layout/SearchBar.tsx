@@ -145,7 +145,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
     <div className="relative">
       <button 
         onClick={handleToggle}
-        className="p-2 text-slate-600 hover:text-slate-900 transition-colors"
+        className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-lg"
         aria-label="Search"
       >
         <Search className="w-5 h-5" strokeWidth={1.5} />
@@ -191,7 +191,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                     <kbd className="hidden sm:flex h-6 items-center gap-1.5 px-2 font-mono text-[10px] font-medium text-slate-500 border border-slate-100 rounded">ESC</kbd>
                     <button 
                       onClick={() => setIsOverlayOpen(false)}
-                      className="p-1 text-slate-600 hover:text-slate-900 transition-colors"
+                      className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-lg"
                     >
                       <X className="w-5 h-5" strokeWidth={1.5} />
                     </button>

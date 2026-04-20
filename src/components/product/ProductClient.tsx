@@ -190,11 +190,6 @@ export function ProductClient({
         <section className="flex flex-col">
           <div className="border border-slate-200 bg-white p-6 sm:p-8 rounded">
             <div className="flex flex-wrap items-center gap-3">
-              {product.categoryName && (
-                <span className="border border-slate-200 px-3 py-1 text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 rounded">
-                  {product.categoryName}
-                </span>
-              )}
               {product.sku && (
                 <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
                   SKU {product.sku}

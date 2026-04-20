@@ -154,7 +154,7 @@ export function CartDrawer({ initialSettings }: CartDrawerProps) {
                                 className="px-2.5 py-1.5 text-slate-600 hover:text-slate-900 transition-colors"
                                 aria-label="Decrease quantity"
                               >
-                                <Minus className="w-3 h-3" strokeWidth={2} />
+                                <Minus className="w-3 h-3" strokeWidth={1.5} />
                               </button>
                               <span className="w-8 text-center text-[11px] font-bold text-slate-900 tabular-nums">
                                 {item.quantity}
@@ -164,7 +164,7 @@ export function CartDrawer({ initialSettings }: CartDrawerProps) {
                                 className="px-2.5 py-1.5 text-slate-600 hover:text-slate-900 transition-colors"
                                 aria-label="Increase quantity"
                               >
-                                <Plus className="w-3 h-3" strokeWidth={2} />
+                                <Plus className="w-3 h-3" strokeWidth={1.5} />
                               </button>
                             </div>
                             <p className="text-[12px] font-black text-slate-900 tracking-tight">
@@ -214,7 +214,7 @@ export function CartDrawer({ initialSettings }: CartDrawerProps) {
                     className="w-full h-14 bg-slate-900 text-white flex items-center justify-center gap-3 text-[11px] font-black uppercase tracking-[0.25em] transition-all hover:bg-slate-800 rounded group shadow-lg shadow-slate-900/10 active:scale-[0.98]"
                   >
                     {settings?.proceedToPaymentText?.[lang] || 'Proceed to Payment'}
-                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" strokeWidth={2} />
+                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" strokeWidth={1.5} />
                   </Link>
                   
                   <div className="flex items-center justify-center gap-2.5 text-slate-400">

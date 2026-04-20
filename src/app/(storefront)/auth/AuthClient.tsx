@@ -139,7 +139,7 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
           <h2 className="text-3xl font-sans font-bold tracking-tight text-zinc-900">
             {isLogin ? settings.signInTitle?.[lang] : settings.signUpTitle?.[lang]}
           </h2>
-          <p className="mt-3 text-sm text-zinc-400 font-medium leading-relaxed">
+          <p className="mt-3 text-sm text-zinc-600 font-medium leading-relaxed">
             {isLogin ? 'Enter your details to access your account' : 'Start your journey with us today'}
           </p>
         </div>
@@ -147,11 +147,11 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
         <form className="space-y-6" onSubmit={handleAuth}>
           {!isLogin && (
             <div className="relative group">
-              <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-zinc-400 transition-colors group-focus-within:text-zinc-600" />
+              <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-zinc-500 transition-colors group-focus-within:text-zinc-900" />
               <input
                 type="text"
                 required
-                className="appearance-none rounded-xl relative block w-full pl-11 pr-4 py-4 bg-zinc-50/50 border border-zinc-100 placeholder-zinc-400 text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-200 focus:bg-white transition-all sm:text-sm font-medium"
+                className="appearance-none rounded-xl relative block w-full pl-11 pr-4 py-4 bg-zinc-50/80 border border-zinc-200 placeholder-zinc-500 text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-400 focus:bg-white transition-all sm:text-sm font-medium"
                 placeholder={settings.fullNameLabelText?.[lang]}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -160,11 +160,11 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
           )}
           
           <div className="relative group">
-            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-zinc-400 transition-colors group-focus-within:text-zinc-600" />
+            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-zinc-500 transition-colors group-focus-within:text-zinc-900" />
             <input
               type="email"
               required
-              className="appearance-none rounded-xl relative block w-full pl-11 pr-4 py-4 bg-zinc-50/50 border border-zinc-100 placeholder-zinc-400 text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-200 focus:bg-white transition-all sm:text-sm font-medium"
+              className="appearance-none rounded-xl relative block w-full pl-11 pr-4 py-4 bg-zinc-50/80 border border-zinc-200 placeholder-zinc-500 text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-400 focus:bg-white transition-all sm:text-sm font-medium"
               placeholder={settings.emailLabel?.[lang]}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -172,11 +172,11 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
           </div>
 
           <div className="relative group">
-            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-zinc-400 transition-colors group-focus-within:text-zinc-600" />
+            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-zinc-500 transition-colors group-focus-within:text-zinc-900" />
             <input
               type="password"
               required
-              className="appearance-none rounded-xl relative block w-full pl-11 pr-4 py-4 bg-zinc-50/50 border border-zinc-100 placeholder-zinc-400 text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-200 focus:bg-white transition-all sm:text-sm font-medium"
+              className="appearance-none rounded-xl relative block w-full pl-11 pr-4 py-4 bg-zinc-50/80 border border-zinc-200 placeholder-zinc-500 text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-400 focus:bg-white transition-all sm:text-sm font-medium"
               placeholder={settings.passwordLabel?.[lang]}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -247,11 +247,11 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
         </form>
 
         <div className="relative my-10 flex items-center">
-          <div className="flex-grow border-t border-zinc-100"></div>
-          <span className="flex-shrink mx-4 text-[10px] font-bold uppercase tracking-widest text-zinc-300">
+          <div className="flex-grow border-t border-zinc-200"></div>
+          <span className="flex-shrink mx-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">
             Secure Entry
           </span>
-          <div className="flex-grow border-t border-zinc-100"></div>
+          <div className="flex-grow border-t border-zinc-200"></div>
         </div>
 
         <div className="space-y-4">
@@ -278,7 +278,7 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
         </div>
 
         <div className="mt-10 text-center">
-          <p className="text-[11px] font-medium text-zinc-400">
+          <p className="text-[11px] font-medium text-zinc-600">
             {isLogin ? settings.dontHaveAccountText?.[lang] : settings.alreadyHaveAccountText?.[lang]}
             {' '}
             <button
