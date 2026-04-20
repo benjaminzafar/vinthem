@@ -1,6 +1,7 @@
-﻿"use client";
+"use client";
 import { logger } from '@/lib/logger';
 import { useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 import { createClient } from '@/utils/supabase/client';
 import posthog from 'posthog-js';
@@ -18,6 +19,8 @@ declare global {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { setUser, setIsAdmin, setIsAuthLoading } = useAuthStore();
   const initialized = useRef(false);
+  const router = useRouter();
+
 
   const identifyUser = (user: { id: string; email?: string; user_metadata?: Record<string, unknown> } | null) => {
     if (user && typeof window !== 'undefined' && hasAnalyticsConsent()) {
