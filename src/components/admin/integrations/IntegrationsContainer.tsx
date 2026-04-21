@@ -324,11 +324,11 @@ export function IntegrationsContainer({ initialConfig }: { initialConfig: Record
                     isSaving={savingId === 'Zoho'}
                     onSave={() => handleSave('Zoho', ['ZOHO_USER', 'ZOHO_PASS', 'ZOHO_SENDER_NAME', 'ZOHO_SMTP_HOST', 'ZOHO_SMTP_PORT'])}
                   >
-                    <CredentialInput label="Zoho User (Email)" value={config['ZOHO_USER']} onChange={v => handleUpdate('ZOHO_USER', v)} />
+                    <CredentialInput label="Zoho User (Email)" value={config['ZOHO_USER']} onChange={v => handleUpdate('ZOHO_USER', v)} placeholder="info@vinthem.com" />
                     <CredentialInput label="Zoho Password" value={config['ZOHO_PASS']} onChange={v => handleUpdate('ZOHO_PASS', v)} type="password" />
-                    <CredentialInput label="Sender Name" value={config['ZOHO_SENDER_NAME']} onChange={v => handleUpdate('ZOHO_SENDER_NAME', v)} />
-                    <CredentialInput label="SMTP Host" value={config['ZOHO_SMTP_HOST']} onChange={v => handleUpdate('ZOHO_SMTP_HOST', v)} placeholder="smtp.zoho.com" />
-                    <CredentialInput label="SMTP Port" value={config['ZOHO_SMTP_PORT']} onChange={v => handleUpdate('ZOHO_SMTP_PORT', v)} placeholder="465" />
+                    <CredentialInput label="Sender Name" value={config['ZOHO_SENDER_NAME']} onChange={v => handleUpdate('ZOHO_SENDER_NAME', v)} placeholder="Vinthem" />
+                    <CredentialInput label="SMTP Host" value={config['ZOHO_SMTP_HOST']} onChange={v => handleUpdate('ZOHO_SMTP_HOST', v)} placeholder="smtp.zoho.com (US) or smtppro.zoho.eu (EU)" />
+                    <CredentialInput label="SMTP Port" value={config['ZOHO_SMTP_PORT']} onChange={v => handleUpdate('ZOHO_SMTP_PORT', v)} placeholder="465 (SSL) or 587 (TLS)" />
                     <button onClick={handleTestEmail} className="text-[11px] font-bold text-zinc-600 hover:text-zinc-900 flex items-center gap-1 mt-2 transition-colors focus:outline-none">
                        <Search className="w-3.5 h-3.5" /> Send Test Handshake
                     </button>
