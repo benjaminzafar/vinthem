@@ -1,4 +1,4 @@
-# CHECK_MEMORY
+﻿# CHECK_MEMORY
 
 Permanent project memory and problem log. Read before each task and update after every meaningful change.
 
@@ -42,3 +42,6 @@ Date       | What was done                              | Mistake that was fixed
 2026-04-20 | **Admin Notification Persistence & State Reliability** | **FIXED MISTAKE**: Resolved a bug where cleared notifications would reappear upon dashboard reload; implemented strict boundary-based filtering using timestamps and localStorage to ensure cleared data remains hidden even during real-time updates.
 2026-04-20 | **Final Pre-Launch Audit & Build Recovery** | **FIXED MISTAKE**: Conducted a final codebase purge of 'any' types and console logs; resolved a critical build failure caused by a naming conflict between middleware.ts and proxy.ts, and fixed a TypeScript compilation error by removing unsupported Supabase client options while preserving protection via singletons.
 2026-04-20 | **Navbar UI Polish: Desktop Login Icon** | **FIXED MISTAKE**: Replaced the textual 'Login' button in the desktop navbar with a modern User icon to match the Search and Cart action icons, ensuring a cleaner and more consistent visual hierarchy.
+2026-04-20 | **Storefront Accessibility & Minimalism Polish** | **FIXED MISTAKE**: Resolved low-contrast text and input field visibility issues on the Login page; harmonized all navbar and drawer icons to a consistent 1.5 stroke weight with matching hover states; and removed redundant collection names from product cards and details to achieve a cleaner, more focused storefront aesthetic.
+2026-04-20 | **Authentication Synchronization Fix** | **FIXED MISTAKE**: Resolved the critical 'stale UI' bug where the Navigation bar failed to reflect login/logout state without a manual refresh. Implemented a global router.refresh() trigger in the AuthProvider's onAuthStateChange listener to ensure Server Components stay in sync with the client-side session.
+Failed to save address.

@@ -24,9 +24,30 @@ END $$;
 CREATE TABLE IF NOT EXISTS public.users (
     id uuid REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
     email text UNIQUE NOT NULL,
+    full_name text,
     display_name text,
     role text DEFAULT 'client',
     created_at timestamptz DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.addresses (
+    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id uuid REFERENCES auth.users ON DELETE CASCADE NOT NULL,
+    first_name text NOT NULL,
+    last_name text NOT NULL,
+    street text NOT NULL,
+    city text NOT NULL,
+    postal_code text NOT NULL,
+    country text NOT NULL DEFAULT 'SE',
+    is_default boolean DEFAULT false,
+    created_at timestamptz DEFAULT now() NOT NULL,
+    updated_at timestamptz DEFAULT now() NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS public.integrations (
+    id text PRIMARY KEY DEFAULT 'primary',
+    data jsonb NOT NULL DEFAULT '{}'::jsonb,
+    updated_at timestamptz DEFAULT now() NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS public.orders (
