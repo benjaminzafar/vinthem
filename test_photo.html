@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vinthem Photo Connection Test</title>
+    <style>
+        body { font-family: sans-serif; padding: 40px; background: #f8fafc; }
+        .card { background: white; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; max-width: 500px; }
+        img { width: 100%; border-radius: 4px; border: 1px solid #e2e8f0; }
+        .success { color: green; font-weight: bold; }
+        .fail { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Vinthem Photo Connection Test</h1>
+    <p>If you see the image below, your computer CAN talk to Cloudflare. If you see a broken icon, your network or firewall is blocking Cloudflare.</p>
+    
+    <div class="card">
+        <h3>Test Image (Gifts & Home Decor)</h3>
+        <img src="https://cdn.vinthem.com/categories/1776162421107_Gifts%20%26%20Home%20Decor%20(1).jpg" 
+             onload="document.getElementById('status').innerHTML = '✅ SUCCESS: Image loaded!';"
+             onerror="document.getElementById('status').innerHTML = '❌ FAIL: Could not reach Cloudflare R2. Check your network or VPN.';" />
+        <p id="status">Testing connection...</p>
+    </div>
+    
+    <div style="margin-top: 20px;">
+        <p><strong>URL tested:</strong> https://cdn.vinthem.com/categories/1776162421107_Gifts%20%26%20Home%20Decor%20(1).jpg</p>
+    </div>
+
+    <script>
+        // Check if the domain is reachable via fetch too
+        fetch('https://cdn.vinthem.com/categories/1776162421107_Gifts%20%26%20Home%20Decor%20(1).jpg', { method: 'HEAD' })
+            .then(res => console.log('Fetch test:', res.status === 200 ? 'OK' : 'Failed'))
+            .catch(err => console.error('Fetch test error:', err));
+    </script>
+</body>
+</html>

@@ -25,8 +25,8 @@ export function StableChartContainer({
 
     const updateReadiness = () => {
       const { width, height } = element.getBoundingClientRect();
-      // Recharts throws error if width/height is -1. Ensure they are comfortably positive.
-      const ready = width > 1 && height > 1;
+      // Recharts throws error if width/height is -1 or 0. Ensure they are comfortably positive.
+      const ready = Math.floor(width) > 0 && Math.floor(height) > 0;
       setIsReady(ready);
     };
 

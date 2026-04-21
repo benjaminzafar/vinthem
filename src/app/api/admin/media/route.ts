@@ -56,6 +56,10 @@ export async function GET(req: NextRequest) {
            }
         }
 
+        if (process.env.NODE_ENV !== 'production') {
+          console.log(`[Media API Trace] Key: ${key} -> URL: ${url}`);
+        }
+
         return {
           key: key,
           size: obj.Size,
