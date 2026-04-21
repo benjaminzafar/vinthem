@@ -127,7 +127,8 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
     const formData = new FormData();
     formData.append('file', sanitizedFile);
     
-    const uploadPath = currentPath.length > 0 ? currentPath.join('/') : 'uploads';
+    const folderPath = currentPath.length > 0 ? currentPath.join('/') : '';
+    const uploadPath = folderPath ? `${folderPath}/${sanitizedName}` : sanitizedName;
     formData.append('path', uploadPath);
 
     try {
