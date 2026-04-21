@@ -106,12 +106,11 @@ export function AssetGrid({
               onClick={() => selectionMode && onSelect?.(obj.url)}
             >
               <div className={`aspect-square bg-slate-50 rounded overflow-hidden border transition-all ${selectionMode ? 'border-slate-300 hover:border-slate-900' : 'border-slate-300 hover:border-slate-900'} flex items-center justify-center relative`}>
-                <Image 
+                <img 
                   src={obj.url} 
                   alt={obj.key}
-                  fill
-                  className={`object-cover transition-transform group-hover:scale-105 ${deletingKey === obj.key ? 'opacity-20 grayscale' : ''}`}
-                  unoptimized 
+                  className={`absolute inset-0 w-full h-full object-cover transition-transform group-hover:scale-105 ${deletingKey === obj.key ? 'opacity-20 grayscale' : ''}`}
+                  loading="lazy"
                 />
                 
                 {/* Refined Action Overlay - Match Admin Style */}
