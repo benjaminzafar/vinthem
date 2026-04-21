@@ -183,23 +183,10 @@ export async function testEmailConnectionAction(config: {
     // If 'to' is provided, send a real test email
     if (config.to && config.to.includes('@')) {
       await transporter.sendMail({
-        from: `"${config.sender || 'Vinthem'}" <${config.user}>`,
+        from: config.user,
         to: config.to,
-        subject: `Verification: Vinthem SMTP System Ready (${new Date().toLocaleTimeString()})`,
-        text: `Your Vinthem shop is now connected to Brevo SMTP servers. Verification completed successfully at ${new Date().toLocaleString()}.`,
-        html: `
-          <div style="font-family: sans-serif; padding: 40px; background-color: #f8fafc; border-radius: 12px; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0;">
-            <div style="text-align: center; margin-bottom: 30px;">
-               <h1 style="color: #0f172a; margin: 0; font-size: 24px;">SMTP Verification Successful</h1>
-               <div style="height: 2px; width: 60px; background-color: #0ea5e9; margin: 15px auto;"></div>
-            </div>
-            <p style="color: #475569; line-height: 1.6; font-size: 16px;">Congratulations! Your Vinthem storefront infrastructure has successfully established a high-performance relay connection with <strong>Brevo SMTP</strong>.</p>
-            <div style="background-color: #ffffff; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 25px;">
-               <p style="margin: 0; font-size: 14px; color: #64748b;">This email confirms that your shop is now ready to send transactional notifications including order confirmations and support tickets.</p>
-            </div>
-            <p style="font-size: 12px; color: #94a3b8; margin-top: 30px; text-align: center;">Verified at ${new Date().toLocaleString()}</p>
-          </div>
-        `
+        subject: `Vinthem Test Email - ${new Date().toLocaleTimeString()}`,
+        text: 'Hello! This is a successful SMTP test from your Vinthem shop using Brevo relay. If you see this, your email system is live.',
       });
       return { success: true, message: `SMTP test email successfully sent to ${config.to}` };
     }
