@@ -705,7 +705,7 @@ Text to translate: "${sourceText}"`;
                           { value: '', label: 'Showcase All Featured Products' },
                           ...categories.map(c => ({ 
                             value: (c.id as string), 
-                            label: typeof c.name === 'string' ? c.name : (c.name as any)?.en || 'Untitled Category' 
+                            label: typeof c.name === 'string' ? c.name : (c.name as Record<string, string>)?.en || 'Untitled Category' 
                           }))
                         ]}
                         value={settings.featuredCategoryId || ''}

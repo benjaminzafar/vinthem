@@ -10,25 +10,6 @@ import { createAdminReviewAction } from '@/app/actions/reviews';
 export function ReviewGenerator() {
   const [products, setProducts] = useState<Product[]>([]);
   const [generating, setGenerating] = useState(false);
-  const [generatingProductId, setGeneratingProductId] = useState<string | null>(null);
-  const supabase = createClient();
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      const { data } = await supabase.from('products').select('*, categories(name)');
-      if (data) {
-        const mapped = (data as any[]).map(p => ({
-          ...p,
-          categoryName: p.categories?.name
-        }));
-        setProducts(mapped as Product[]);
-      }
-    };
-
-    fetchProducts();
-  }, [supabase]);
-
-  const handleGenerateReview = async (product: Product) => {
     if (!product.id) return;
     setGeneratingProductId(product.id);
     setGenerating(true);

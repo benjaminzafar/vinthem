@@ -99,7 +99,7 @@ export async function GET(req: NextRequest) {
     // Return structured error
     return NextResponse.json({ 
         error: message,
-        code: (error as any)?.name || 'UNKNOWN_ERROR',
+        code: (error && typeof error === 'object' && 'name' in error) ? (error as { name: string }).name : 'UNKNOWN_ERROR',
         suggestion: message.includes('AccessKeyId') ? 'Verify your Access Key ID and Secret in Integrations.' : 
                    message.includes('Bucket') ? 'Verify that the bucket name "onlineshop" exists in your Cloudflare dashboard.' : 
                    undefined

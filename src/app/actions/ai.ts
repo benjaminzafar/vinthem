@@ -78,7 +78,7 @@ export async function generateAIContentAction(params: AIContentParams) {
     }
 
     // 5. Convert Gemini Contents structure to OpenAI Messages structure
-    const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string | any[] }> = [];
+    const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [];
     
     // Add system instruction if provided
     if (params.generationConfig?.systemInstruction) {
@@ -116,7 +116,7 @@ export async function generateAIContentAction(params: AIContentParams) {
         return null;
       }));
       
-      const filteredParts = parts.filter(p => p !== null) as any[];
+      const filteredParts = parts.filter((p): p is NonNullable<typeof p> => p !== null);
       messages.push({ 
         role, 
         content: filteredParts.length === 1 && filteredParts[0].type === 'text' 

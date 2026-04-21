@@ -49,3 +49,4 @@ firebase-debug.log
 .gemini/
 scratch/
 .antigravity/
+.CHECK_MEMORY.md
