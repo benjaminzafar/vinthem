@@ -136,18 +136,45 @@ export async function testEmailConnectionAction(config: {
   try {
     await requireAdminUser();
 
-    if (config.pass === '********') {
-       return { success: false, message: 'Stored password is masked. Please re-enter to test.' };
+    // Handle masked password by fetching from DB
+    let finalPass = config.pass;
+    let finalUser = config.user;
+    let finalHost = config.host;
+    let finalPort = config.port;
+
+    if (finalPass === '********') {
+       const { supabase: adminClient } = await requireAdminUser();
+       const { data: storedKeys } = await adminClient
+         .from('integrations')
+         .select('key, value')
+         .in('key', ['ZOHO_USER', 'ZOHO_PASS', 'ZOHO_SMTP_HOST', 'ZOHO_SMTP_PORT']);
+       
+       const getVal = (k: string) => {
+         const row = storedKeys?.find(r => r.key === k);
+         return row ? maybeDecryptStoredValue(row.value) : '';
+       };
+
+       finalPass = getVal('ZOHO_PASS');
+       if (!finalUser) finalUser = getVal('ZOHO_USER');
+       if (!finalHost) finalHost = getVal('ZOHO_SMTP_HOST');
+       if (!finalPort) finalPort = getVal('ZOHO_SMTP_PORT');
+    }
+
+    if (!finalPass || finalPass === '********') {
+       return { success: false, message: 'No valid password found to perform handshake.' };
     }
 
     const transporter = nodemailer.createTransport({
-      host: config.host || 'smtp.zoho.com',
-      port: Number(config.port) || 465,
-      secure: Number(config.port) === 465,
+      host: finalHost || 'smtp.zoho.com',
+      port: Number(finalPort) || 465,
+      secure: Number(finalPort) === 465,
       auth: {
-        user: config.user,
-        pass: config.pass,
+        user: finalUser,
+        pass: finalPass,
       },
+      // Robustness: short timeout for testing
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
     });
 
     await transporter.verify();
