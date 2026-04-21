@@ -140,7 +140,7 @@ function applySecurityHeaders(request: NextRequest, response: NextResponse, nonc
       "base-uri 'self'",
       "frame-ancestors 'none'",
       "object-src 'none'",
-      "img-src 'self' data: blob: https://images.unsplash.com https://ui-avatars.com https://picsum.photos https://upload.wikimedia.org https://*.supabase.co https://*.r2.dev",
+      "img-src 'self' data: blob: https://images.unsplash.com https://ui-avatars.com https://picsum.photos https://upload.wikimedia.org https://*.supabase.co https://*.r2.dev https://cdn.vinthem.com",
       "font-src 'self' data:",
       "style-src 'self' 'unsafe-inline'",
       `script-src ${buildScriptSrc(nonce)}`,
