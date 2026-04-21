@@ -131,7 +131,7 @@ function applySecurityHeaders(request: NextRequest, response: NextResponse, nonc
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
   response.headers.set('Cross-Origin-Opener-Policy', 'same-origin');
-  response.headers.set('Cross-Origin-Resource-Policy', 'same-site');
+  response.headers.set('Cross-Origin-Resource-Policy', 'cross-origin');
   response.headers.set('X-CSP-Nonce', nonce);
   const isLocalhost = request.nextUrl.hostname === 'localhost' || request.nextUrl.hostname === '127.0.0.1';
   
