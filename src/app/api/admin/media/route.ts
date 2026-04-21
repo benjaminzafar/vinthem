@@ -44,14 +44,15 @@ export async function GET(req: NextRequest) {
         
         if (publicUrl) {
            const baseUrl = publicUrl.replace(/\/$/, '');
-           // Encode the key parts but keep the slashes
-           const encodedKey = key.split('/').map(segment => encodeURIComponent(segment)).join('/');
+           // Ensure the key doesn't have a leading slash before joining
+           const cleanKey = key.startsWith('/') ? key.slice(1) : key;
+           const encodedKey = cleanKey.split('/').map(segment => encodeURIComponent(segment)).join('/');
            url = `${baseUrl}/${encodedKey}`;
         } else {
-           // Fallback to env or construct
            const envUrl = process.env.R2_PUBLIC_URL?.replace(/\/$/, '');
            if (envUrl) {
-             const encodedKey = key.split('/').map(segment => encodeURIComponent(segment)).join('/');
+             const cleanKey = key.startsWith('/') ? key.slice(1) : key;
+             const encodedKey = cleanKey.split('/').map(segment => encodeURIComponent(segment)).join('/');
              url = `${envUrl}/${encodedKey}`;
            }
         }
