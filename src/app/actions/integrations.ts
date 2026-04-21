@@ -165,8 +165,8 @@ export async function testEmailConnectionAction(config: {
     }
 
     const transporter = nodemailer.createTransport({
-      host: finalHost || 'smtp.zoho.com',
-      port: Number(finalPort) || 465,
+      host: finalHost || 'smtp-relay.brevo.com',
+      port: Number(finalPort) || 587,
       secure: Number(finalPort) === 465,
       auth: {
         user: finalUser,
