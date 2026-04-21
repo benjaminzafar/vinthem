@@ -148,7 +148,7 @@ export async function testEmailConnectionAction(config: {
        const { data: storedKeys } = await adminClient
          .from('integrations')
          .select('key, value')
-         .in('key', ['ZOHO_USER', 'ZOHO_PASS', 'ZOHO_SMTP_HOST', 'ZOHO_SMTP_PORT']);
+         .in('key', ['ZOHO_USER', 'ZOHO_PASS', 'ZOHO_SMTP_HOST', 'ZOHO_SMTP_PORT', 'ZOHO_TEST_EMAIL']);
        
        const getVal = (k: string) => {
          const row = storedKeys?.find(r => r.key === k);
@@ -185,13 +185,19 @@ export async function testEmailConnectionAction(config: {
       await transporter.sendMail({
         from: `"${config.sender || 'Vinthem'}" <${config.user}>`,
         to: config.to,
-        subject: 'Vinthem SMTP Verification',
-        text: 'This is a test email from your Vinthem shop to verify Brevo SMTP relay is working correctly.',
+        subject: `Verification: Vinthem SMTP System Ready (${new Date().toLocaleTimeString()})`,
+        text: `Your Vinthem shop is now connected to Brevo SMTP servers. Verification completed successfully at ${new Date().toLocaleString()}.`,
         html: `
-          <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
-            <h2 style="color: #0c4a6e;">Vinthem SMTP Verification</h2>
-            <p>Congratulations! Your Brevo SMTP server is correctly configured and ready to send transactional emails.</p>
-            <p style="font-size: 12px; color: #666; margin-top: 20px;">Sent from: <strong>${config.sender || 'Vinthem'}</strong></p>
+          <div style="font-family: sans-serif; padding: 40px; background-color: #f8fafc; border-radius: 12px; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0;">
+            <div style="text-align: center; margin-bottom: 30px;">
+               <h1 style="color: #0f172a; margin: 0; font-size: 24px;">SMTP Verification Successful</h1>
+               <div style="height: 2px; width: 60px; background-color: #0ea5e9; margin: 15px auto;"></div>
+            </div>
+            <p style="color: #475569; line-height: 1.6; font-size: 16px;">Congratulations! Your Vinthem storefront infrastructure has successfully established a high-performance relay connection with <strong>Brevo SMTP</strong>.</p>
+            <div style="background-color: #ffffff; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 25px;">
+               <p style="margin: 0; font-size: 14px; color: #64748b;">This email confirms that your shop is now ready to send transactional notifications including order confirmations and support tickets.</p>
+            </div>
+            <p style="font-size: 12px; color: #94a3b8; margin-top: 30px; text-align: center;">Verified at ${new Date().toLocaleString()}</p>
           </div>
         `
       });

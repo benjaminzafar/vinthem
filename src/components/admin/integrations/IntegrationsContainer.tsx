@@ -323,7 +323,7 @@ export function IntegrationsContainer({ initialConfig }: { initialConfig: Record
                     logo={<div className="bg-white w-full h-full flex items-center justify-center font-bold text-sky-600 leading-none tracking-tighter">BREVO</div>}
                     isConnected={config['ZOHO_USER_CONNECTED'] === 'true'}
                     isSaving={savingId === 'Zoho'}
-                    onSave={() => handleSave('Zoho', ['ZOHO_USER', 'ZOHO_PASS', 'ZOHO_SENDER_NAME', 'ZOHO_SMTP_HOST', 'ZOHO_SMTP_PORT'])}
+                    onSave={() => handleSave('Zoho', ['ZOHO_USER', 'ZOHO_PASS', 'ZOHO_SENDER_NAME', 'ZOHO_SMTP_HOST', 'ZOHO_SMTP_PORT', 'ZOHO_TEST_EMAIL'])}
                   >
                     <CredentialInput label="SMTP Login (Brevo Email)" value={config['ZOHO_USER']} onChange={v => handleUpdate('ZOHO_USER', v)} placeholder="info@vinthem.com" />
                     <CredentialInput label="SMTP Key / Password" value={config['ZOHO_PASS']} onChange={v => handleUpdate('ZOHO_PASS', v)} type="password" />
