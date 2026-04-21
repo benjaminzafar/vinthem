@@ -133,7 +133,7 @@ export async function ensureUserProfile(user: User, name?: string | null) {
     {
       id: user.id,
       email: user.email ?? null,
-      name: name ?? '',
+      full_name: name ?? '',
       role: existingProfile?.role ?? 'client',
     },
     { onConflict: 'id' }

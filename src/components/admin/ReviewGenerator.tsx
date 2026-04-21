@@ -1,6 +1,7 @@
 "use client";
-import { logger } from '@/lib/logger';
+
 import React, { useState, useEffect } from 'react';
+import { logger } from '@/lib/logger';
 import { createClient } from '@/utils/supabase/client';
 import { Product } from '@/store/useCartStore';
 import { genAI } from '@/lib/ai';
@@ -10,6 +11,16 @@ import { createAdminReviewAction } from '@/app/actions/reviews';
 export function ReviewGenerator() {
   const [products, setProducts] = useState<Product[]>([]);
   const [generating, setGenerating] = useState(false);
+  const [generatingProductId, setGeneratingProductId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.from('products').select('*').limit(10).then(({ data }) => {
+      if (data) setProducts(data as any);
+    });
+  }, []);
+
+  const handleGenerateReview = async (product: Product) => {
     if (!product.id) return;
     setGeneratingProductId(product.id);
     setGenerating(true);
@@ -29,7 +40,8 @@ export function ReviewGenerator() {
       });
 
       const aiResponse = await model.generateContent(prompt);
-      const review = JSON.parse(aiResponse.response.text() || '{}');
+      const reviewText = aiResponse.response.text();
+      const review = JSON.parse(reviewText || '{}');
       
       const result = await createAdminReviewAction({
         productId: product.id,
@@ -43,8 +55,8 @@ export function ReviewGenerator() {
     } catch (error: unknown) {
       logger.error('Error generating review:', error);
       const timestamp = new Date().toLocaleTimeString('sv-SE', { hour12: false });
-      const errorMessage = (error as Record<string, unknown>)?.message || '';
-      const status = (error as Record<string, unknown>)?.status;
+      const errorMessage = (error as any)?.message || 'Internal Error';
+      const status = (error as any)?.status;
 
       if (status === 401 || status === 403) {
         toast.error('Action Required: Please set your Groq API Key in the Integrations Manager.', { 
@@ -54,10 +66,7 @@ export function ReviewGenerator() {
         return;
       }
 
-      toast.error(`## Error Type\nConsole Error\n\n## Error Message\n[${timestamp}] AI Review Generation failed. ${errorMessage}`, { 
-        id: toastId, 
-        duration: 8000 
-      });
+      toast.error(`AI Review Generation failed: ${errorMessage}`, { id: toastId, duration: 5000 });
     } finally {
       setGeneratingProductId(null);
       setGenerating(false);
@@ -66,24 +75,29 @@ export function ReviewGenerator() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900">Fake Review Generator</h2>
-      <div className="py-8 border-b border-gray-200/60 last:border-0">
-        <div className="space-y-4">
-          {products.map(product => (
-            <div key={product.id} className="flex items-center justify-between p-4 border border-gray-200/60 rounded">
-              <span className="font-medium text-gray-900">{product.title}</span>
-              <button
-                onClick={() => handleGenerateReview(product)}
-                disabled={generating && generatingProductId === product.id}
-                className="w-full sm:w-auto flex items-center justify-center bg-zinc-900 text-white hover:bg-zinc-800 border border-transparent px-6 py-3 text-sm font-medium rounded-md transition-colors disabled:opacity-50"
-              >
-                {generating && generatingProductId === product.id ? 'Generating...' : 'Generate Review'}
-              </button>
+      <h2 className="text-2xl font-bold text-gray-900 border-b border-gray-100 pb-4">Fake Review Generator</h2>
+      <div className="space-y-4">
+        {products.map(product => (
+          <div key={product.id} className="flex items-center justify-between p-4 border border-gray-200/60 rounded-xl bg-white shadow-sm">
+            <div className="flex flex-col">
+              <span className="font-semibold text-gray-900">{product.title}</span>
+              <span className="text-xs text-gray-500 uppercase tracking-wider">{product.categoryName || 'Product'}</span>
             </div>
-          ))}
-        </div>
+            <button
+              onClick={() => handleGenerateReview(product)}
+              disabled={generating && generatingProductId === product.id}
+              className="px-6 py-2 bg-zinc-900 text-white text-xs font-bold rounded-lg hover:bg-black transition-all disabled:opacity-50"
+            >
+              {generating && generatingProductId === product.id ? 'Generating...' : 'Generate Review'}
+            </button>
+          </div>
+        ))}
+        {products.length === 0 && (
+          <div className="py-12 text-center text-gray-500 text-sm italic">
+            No products available to generate reviews for.
+          </div>
+        )}
       </div>
     </div>
   );
 }
-

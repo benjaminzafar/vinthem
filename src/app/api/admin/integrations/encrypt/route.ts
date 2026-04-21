@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { encrypt } from '@/lib/encryption';
 import { requireAdminUser } from '@/lib/admin';
-import { isSensitiveIntegrationKey, normalizePostHogIngestionHost } from '@/lib/integrations';
+import { isSensitiveIntegrationKey } from '@/lib/integrations';
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,9 +17,7 @@ export async function POST(req: NextRequest) {
     for (const [key, value] of Object.entries(updates)) {
       if (typeof value === 'string' && value.trim() !== '') {
         const sanitizedValue = value.replace(/[<>]/g, '');
-        const normalizedValue = key === 'POSTHOG_HOST'
-          ? normalizePostHogIngestionHost(sanitizedValue)
-          : sanitizedValue;
+        const normalizedValue = sanitizedValue;
         const storedValue = isSensitiveIntegrationKey(key)
           ? encrypt(normalizedValue)
           : normalizedValue;

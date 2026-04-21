@@ -14,7 +14,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { isValidUrl } from '@/lib/utils';
 import { normalizeProductOptions, inferOptionsFromLegacyArrays, normalizeGeneratedVariants, buildVariantsFromOptions } from '@/lib/product-variants';
-import { extractFirstJsonObject } from '@/lib/json';
+import { safeParseAiResponse } from '@/lib/json';
 import { parseCatalogPrompt } from '@/lib/product-import';
 import { saveProductAction } from '@/app/actions/products';
 import type { ProductVariantInput } from '@/app/actions/products';
@@ -25,6 +25,29 @@ const STRIPE_TAX_CODE_OPTIONS = [
   { value: 'txcd_10000000', label: 'Digital services' },
   { value: 'txcd_92010001', label: 'Shipping / delivery' },
 ];
+
+interface ProductAIDraft {
+  title?: string;
+  description?: string;
+  price?: number;
+  stock?: number;
+  sku?: string;
+  weight?: number;
+  tags?: string[];
+  options?: Array<{ name: string; values: string[] }>;
+  variants?: Array<{ options: Record<string, string>; price: number; stock: number; sku: string }>;
+  colors?: string[]; // Legacy support for older prompts
+  sizes?: string[];
+  material?: string[];
+}
+
+interface ProductTranslationResult {
+  [lang: string]: {
+    title?: string;
+    description?: string;
+    options?: Array<{ name: string; values: string[] }>;
+  };
+}
 
 interface ProductEditorProps {
   initialProduct?: Product | null;
@@ -94,10 +117,10 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
   };
 
   useEffect(() => {
-    if (initialProduct) {
+    if (initialProduct && initialProduct.id !== formData.id) {
       setFormData(mapDbToForm(initialProduct));
     }
-  }, [initialProduct]);
+  }, [initialProduct, formData.id]);
 
   const handleSave = async (statusOverride?: 'published' | 'draft') => {
     if (!formData.title?.trim()) {
@@ -200,7 +223,7 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
 
       const model = genAI.getGenerativeModel({ model: 'llama-3.3-70b-versatile', generationConfig: { responseMimeType: 'application/json' }});
       const aiResponse = await model.generateContent(prompt);
-      const result = JSON.parse(extractFirstJsonObject(aiResponse.response.text()) || '{}');
+      const result = safeParseAiResponse<ProductAIDraft>(aiResponse.response.text(), {});
       
       const normalizedOptions = normalizeProductOptions(result.options);
       const inferredOptions = normalizedOptions.length > 0 ? normalizedOptions : inferOptionsFromLegacyArrays({ 
@@ -275,30 +298,46 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
     setGenerating(true);
     const toastId = toast.loading('AI translating product...');
     try {
-      const prompt = `Translate the following product information into these languages: ${languages.filter(l => l !== 'sv').join(', ')}.
-Return ONLY a JSON object where each top-level key is an ISO 639-1 language code, and each value is an object with "title" and "description" fields.
-Example: { "en": { "title": "...", "description": "..." }, "fi": { "title": "...", "description": "..." } }
+      const prompt = `Translate the following product information into these languages: ${languages.join(', ')}.
+Return ONLY a valid raw JSON object. No markdown backticks, no conversational text.
+Schema: Each top-level key must be an ISO 639-1 language code, and each value an object with "title", "description", and an optional "options" array.
+"options" should match the structure: [{"name": "Translated Attribute Name", "values": ["Translated Value 1", ...]}]
+
+Example: { 
+  "en": { "title": "...", "description": "...", "options": [{"name": "Color", "values": ["Red"]}] },
+  "fi": { "title": "...", "description": "...", "options": [{"name": "Väri", "values": ["Punainen"]}] }
+}
 
 Product Title (Swedish): "${formData.title}"
-Product Description (Swedish): "${formData.description || ''}"`;
+Product Description (Swedish): "${formData.description || ''}"
+Product Options: ${JSON.stringify(formData.options || [])}`;
 
       const model = genAI.getGenerativeModel({
         model: 'llama-3.3-70b-versatile',
         generationConfig: { responseMimeType: 'application/json' }
       });
       const aiResponse = await model.generateContent(prompt);
-      const rawText = aiResponse.response.text() || '{}';
-      const jsonStr = extractFirstJsonObject(rawText) || rawText;
-      const result = JSON.parse(jsonStr) as Record<string, { title?: string; description?: string }>;
+      const result = safeParseAiResponse<ProductTranslationResult>(aiResponse.response.text(), {});
 
       const newTranslations = { ...formData.translations };
       for (const lang of languages) {
-        if (lang === 'sv') continue; // skip source
         if (result[lang]) {
           newTranslations[lang] = {
             title: result[lang].title?.trim() || newTranslations[lang]?.title || '',
-            description: result[lang].description?.trim() || newTranslations[lang]?.description || ''
+            description: result[lang].description?.trim() || newTranslations[lang]?.description || '',
+            options: Array.isArray(result[lang].options) ? result[lang].options : (newTranslations[lang]?.options || [])
           };
+          
+          // If we are currently on the 'sv' tab or 'sv' is the target, 
+          // we also update the primary fields if they were used for translation
+          if (lang === 'sv') {
+            setFormData(prev => ({
+              ...prev,
+              title: result[lang].title?.trim() || prev.title,
+              description: result[lang].description?.trim() || prev.description,
+              options: Array.isArray(result[lang].options) ? result[lang].options : prev.options
+            }));
+          }
         }
       }
       setFormData(prev => ({ ...prev, translations: newTranslations }));
@@ -632,6 +671,68 @@ Product Description (Swedish): "${formData.description || ''}"`;
                       className="w-full p-4 border border-slate-200 rounded-[4px] text-sm resize-none"
                     />
                   </div>
+
+                  {formData.translations?.[selectedLang]?.options && formData.translations[selectedLang].options!.length > 0 && (
+                    <div className="space-y-4 pt-4 border-t border-slate-100">
+                       <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Translated Attributes ({selectedLang})</label>
+                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          {formData.translations[selectedLang].options!.map((option, optIdx) => (
+                            <div key={`${selectedLang}-opt-${optIdx}`} className="space-y-2 p-3 bg-slate-50 rounded border border-slate-100">
+                               <input 
+                                 type="text"
+                                 value={option.name}
+                                 onChange={(e) => {
+                                   const newOpts = [...(formData.translations?.[selectedLang]?.options || [])];
+                                   newOpts[optIdx] = { ...newOpts[optIdx], name: e.target.value };
+                                   setFormData({
+                                     ...formData,
+                                     translations: {
+                                       ...formData.translations,
+                                       [selectedLang]: { 
+                                         title: formData.translations?.[selectedLang]?.title || '',
+                                         description: formData.translations?.[selectedLang]?.description || '',
+                                         ...formData.translations?.[selectedLang],
+                                         options: newOpts 
+                                       }
+                                     }
+                                   });
+                                 }}
+                                 className="w-full text-[10px] font-bold uppercase tracking-wider bg-transparent border-none p-0 focus:ring-0 text-slate-900"
+                                 placeholder="Attribute Name"
+                               />
+                               <div className="flex flex-wrap gap-1">
+                                  {option.values.map((val, valIdx) => (
+                                    <input 
+                                      key={valIdx}
+                                      type="text"
+                                      value={val}
+                                      onChange={(e) => {
+                                        const newOpts = [...(formData.translations?.[selectedLang]?.options || [])];
+                                        const newVals = [...newOpts[optIdx].values];
+                                        newVals[valIdx] = e.target.value;
+                                        newOpts[optIdx] = { ...newOpts[optIdx], values: newVals };
+                                        setFormData({
+                                          ...formData,
+                                          translations: {
+                                            ...formData.translations,
+                                            [selectedLang]: { 
+                                              title: formData.translations?.[selectedLang]?.title || '',
+                                              description: formData.translations?.[selectedLang]?.description || '',
+                                              ...formData.translations?.[selectedLang],
+                                              options: newOpts 
+                                            }
+                                          }
+                                        });
+                                      }}
+                                      className="text-[10px] px-2 py-1 bg-white border border-slate-200 rounded min-w-[60px]"
+                                    />
+                                  ))}
+                               </div>
+                            </div>
+                          ))}
+                       </div>
+                    </div>
+                  )}
                </div>
             </div>
           </section>

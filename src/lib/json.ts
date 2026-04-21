@@ -42,3 +42,41 @@ export function extractFirstJsonObject(input: string): string | null {
 
   return null;
 }
+
+/**
+ * Robustly parses a JSON response from an AI model.
+ * Handles markdown code blocks, leading/trailing whitespace, and multiple objects.
+ */
+export function safeParseAiResponse<T = any>(input: string, fallback: T): T {
+  if (!input) return fallback;
+
+  let cleaned = input.trim();
+
+  // 1. Remove markdown code blocks if present
+  if (cleaned.includes('```')) {
+    const blocks = cleaned.split('```');
+    // Usually the second item is the content of the block
+    // (e.g. [text, json, text])
+    const middleBlock = blocks[1]?.replace(/^[a-z]+/, '').trim();
+    if (middleBlock) cleaned = middleBlock;
+  }
+
+  // 2. Extract first valid JSON object structure
+  const jsonStr = extractFirstJsonObject(cleaned);
+  
+  if (!jsonStr) {
+    // If no object structure, it might be a raw JSON array or string
+    try {
+      return JSON.parse(cleaned) as T;
+    } catch {
+      return fallback;
+    }
+  }
+
+  try {
+    return JSON.parse(jsonStr) as T;
+  } catch (err) {
+    console.error('[JSON] Parsing failed for AI response:', err);
+    return fallback;
+  }
+}

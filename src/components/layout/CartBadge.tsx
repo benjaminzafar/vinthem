@@ -6,6 +6,13 @@ import { useCartStore } from '@/store/useCartStore';
 
 export function CartBadge() {
   const { items } = useCartStore();
+  const [mounted, setMounted] = React.useState(false);
+  
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
   
   return (
     <AnimatePresence mode="wait">

@@ -44,11 +44,16 @@ export async function GET(req: NextRequest) {
         
         if (publicUrl) {
            const baseUrl = publicUrl.replace(/\/$/, '');
-           url = `${baseUrl}/${key}`;
+           // Encode the key parts but keep the slashes
+           const encodedKey = key.split('/').map(segment => encodeURIComponent(segment)).join('/');
+           url = `${baseUrl}/${encodedKey}`;
         } else {
            // Fallback to env or construct
            const envUrl = process.env.R2_PUBLIC_URL?.replace(/\/$/, '');
-           url = envUrl ? `${envUrl}/${key}` : '';
+           if (envUrl) {
+             const encodedKey = key.split('/').map(segment => encodeURIComponent(segment)).join('/');
+             url = `${envUrl}/${encodedKey}`;
+           }
         }
 
         return {

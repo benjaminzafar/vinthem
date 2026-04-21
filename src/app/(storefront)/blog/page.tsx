@@ -17,8 +17,8 @@ export async function generateMetadata() {
   const lang = 'en'; // Default or handle via cookie logic if possible here
 
   return {
-    title: `${settings.journalTitleText?.[lang] || 'Journal'} | Mavren Shop`,
-    description: settings.journalSubtitleText?.[lang] || 'Read the latest stories and updates from Mavren Shop.',
+    title: `${settings.journalTitleText?.[lang] || 'Journal'} | Vinthem`,
+    description: settings.journalSubtitleText?.[lang] || 'Read the latest stories and updates from Vinthem.',
   };
 }
 

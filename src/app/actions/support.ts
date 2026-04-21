@@ -232,3 +232,40 @@ export async function replySupportTicketAction(input: ReplySupportTicketInput): 
   }
 }
 
+export async function deleteSupportTicketAction(ticketId: string): Promise<SupportActionResult> {
+  try {
+    const { supabase } = await requireAdminUser();
+    const safeTicketId = sanitizeMessage(ticketId);
+
+    if (!safeTicketId) {
+      throw new Error('Ticket ID is required.');
+    }
+
+    const { error } = await supabase
+      .from('support_tickets')
+      .delete()
+      .eq('id', safeTicketId);
+
+    if (error) {
+      throw error;
+    }
+
+    revalidatePath('/admin');
+    revalidateSupportViews();
+
+    return {
+      success: true,
+      message: 'Ticket permanently archived/deleted.',
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to delete support ticket.';
+    logger.error('[Action Error] deleteSupportTicketAction:', error);
+    return {
+      success: false,
+      message,
+      error: message,
+    };
+  }
+}
+
+

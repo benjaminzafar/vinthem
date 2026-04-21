@@ -1,7 +1,14 @@
 -- Mavren Shop: Schema Repair & Beautiful Seed Data
 -- Run this in your Supabase SQL Editor: https://supabase.com/dashboard/project/xeatyjjiywcrkuvifyhm/sql/new
 
--- 0. REPAIR STORAGE (Create 'images' bucket if missing)
+-- 0. HARDEN CORE SCHEMA (Enforce SKU uniqueness for UPSERT)
+-- First, fix any existing products with missing or duplicate empty SKUs to avoid index conflicts
+UPDATE public.products SET sku = id::text WHERE sku IS NULL OR sku = '';
+
+ALTER TABLE public.products DROP CONSTRAINT IF EXISTS products_sku_key;
+ALTER TABLE public.products ADD CONSTRAINT products_sku_key UNIQUE (sku);
+
+-- 1. REPAIR STORAGE (Create 'images' bucket if missing)
 INSERT INTO storage.buckets (id, name, public) 
 VALUES ('images', 'images', true)
 ON CONFLICT (id) DO NOTHING;
@@ -43,6 +50,20 @@ CREATE TABLE IF NOT EXISTS public.addresses (
     created_at timestamptz DEFAULT now() NOT NULL,
     updated_at timestamptz DEFAULT now() NOT NULL
 );
+
+-- Enable RLS for addresses
+ALTER TABLE public.addresses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.addresses FORCE ROW LEVEL SECURITY;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'addresses' AND policyname = 'Users can manage own addresses') THEN
+        CREATE POLICY "Users can manage own addresses" ON public.addresses FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'addresses' AND policyname = 'Admin full access to addresses') THEN
+        CREATE POLICY "Admin full access to addresses" ON public.addresses FOR ALL TO authenticated USING (app_private.is_admin()) WITH CHECK (app_private.is_admin());
+    END IF;
+END $$;
 
 CREATE TABLE IF NOT EXISTS public.integrations (
     id text PRIMARY KEY DEFAULT 'primary',
@@ -228,14 +249,13 @@ ON CONFLICT (id) DO UPDATE SET
   image_url = EXCLUDED.image_url;
 
 -- Now insert products with verified category_id
-INSERT INTO public.products (title, description, price, stock, category, category_id, image_url, is_featured, sku)
+INSERT INTO public.products (title, description, price, stock, category_id, image_url, is_featured, sku)
 VALUES 
   (
     'Mavren Modular Sofa', 
     'Handcrafted with premium linen and sustainable oak. Designed for comfort and longevity.', 
     12499.00, 
     5, 
-    'Living Room', 
     '65f4d8a1-c8b2-4d5e-9f0a-1a2b3c4d5e6f', 
     'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=2940&auto=format&fit=crop', 
     true, 
@@ -246,7 +266,6 @@ VALUES
     'Solid European oak with a natural oil finish. A timeless piece for any bedroom.', 
     8990.00, 
     8, 
-    'Bedroom', 
     '75f4d8a1-c8b2-4d5e-9f0a-1a2b3c4d5e7f', 
     'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?q=80&w=2940&auto=format&fit=crop', 
     true, 
@@ -257,7 +276,6 @@ VALUES
     'Matte white stoneware, individually hand-thrown. Perfect for sculptural simplicity.', 
     450.00, 
     25, 
-    'Living Room', 
     '65f4d8a1-c8b2-4d5e-9f0a-1a2b3c4d5e6f', 
     'https://images.unsplash.com/photo-1581783898377-1c85bf937427?q=80&w=2940&auto=format&fit=crop', 
     true, 
@@ -268,7 +286,6 @@ VALUES
     'Silent movement with brushed aluminum markers. Elegance in every second.', 
     699.00, 
     12, 
-    'Kitchen', 
     '85f4d8a1-c8b2-4d5e-9f0a-1a2b3c4d5e8f', 
     'https://images.unsplash.com/photo-1563861826100-9cb868fdbe1c?q=80&w=2940&auto=format&fit=crop', 
     true, 
@@ -280,3 +297,7 @@ ON CONFLICT (sku) DO UPDATE SET
   price = EXCLUDED.price,
   category_id = EXCLUDED.category_id,
   image_url = EXCLUDED.image_url;
+
+-- 4. FINAL HARDENING: Restore commercial flow
+UPDATE public.products SET stock = 50 WHERE stock IS NULL OR stock = 0;
+UPDATE public.products SET status = 'published' WHERE status IS NULL;

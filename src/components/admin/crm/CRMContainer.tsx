@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { createClient } from '@/utils/supabase/client';
+import { getCRMDataAction } from '@/app/actions/crm';
 import { useDebounce } from '@/hooks/useDebounce';
 import { CRMAnalytics } from './CRMAnalytics';
 import { CustomerTable } from './CustomerTable';
@@ -13,98 +14,91 @@ import {
   Users, MessageSquare, RefreshCcw, Target, 
   Megaphone
 } from 'lucide-react';
-import type { CRMCustomer, CRMOrder, RefundRecord, ReviewRecord, SupportTicket } from './types';
+import { 
+  CRMUser, 
+  SupportTicket, 
+  RefundRequest, 
+  AdminOrder, 
+  Review, 
+  NewsletterSubscriber, 
+  NewsletterCampaign,
+  CRMData
+} from '@/types';
+import type { CRMCustomer, CRMOrder, RefundRecord, ReviewRecord, SupportTicket as SupportTicketUI } from './types';
 
-export function CRMContainer() {
+export function CRMContainer({ initialData }: { initialData?: CRMData }) {
   const [supabase] = useState(() => createClient());
   const [activeTab, setActiveTab] = useState<'customers' | 'tickets' | 'refunds' | 'newsletter' | 'reviews'>('customers');
   
-  const [customers, setCustomers] = useState<Array<Record<string, unknown>>>([]);
-  const [loadingCustomers, setLoadingCustomers] = useState(true);
-  const [orders, setOrders] = useState<Array<Record<string, unknown>>>([]);
-  const [loadingOrders, setLoadingOrders] = useState(true);
-  const [tickets, setTickets] = useState<Array<Record<string, unknown>>>([]);
-  const [loadingTickets, setLoadingTickets] = useState(true);
-  const [refunds, setRefunds] = useState<Array<Record<string, unknown>>>([]);
-  const [loadingRefunds, setLoadingRefunds] = useState(true);
-  const [reviews, setReviews] = useState<Array<Record<string, unknown>>>([]);
-  const [loadingReviews, setLoadingReviews] = useState(true);
-  const [subscribers, setSubscribers] = useState<Array<Record<string, unknown>>>([]);
-  const [loadingSubscribers, setLoadingSubscribers] = useState(true);
-  const [campaigns, setCampaigns] = useState<Array<Record<string, unknown>>>([]);
-  const [loadingCampaigns, setLoadingCampaigns] = useState(true);
+  const [customers, setCustomers] = useState<CRMUser[]>(initialData?.users ?? []);
+  const [loadingCustomers, setLoadingCustomers] = useState(!initialData?.users);
+  const [orders, setOrders] = useState<AdminOrder[]>(initialData?.orders ?? []);
+  const [loadingOrders, setLoadingOrders] = useState(!initialData?.orders);
+  const [tickets, setTickets] = useState<SupportTicket[]>(initialData?.tickets ?? []);
+  const [loadingTickets, setLoadingTickets] = useState(!initialData?.tickets);
+  const [refunds, setRefunds] = useState<RefundRequest[]>(initialData?.refunds ?? []);
+  const [loadingRefunds, setLoadingRefunds] = useState(!initialData?.refunds);
+  const [reviews, setReviews] = useState<Review[]>(initialData?.reviews ?? []);
+  const [loadingReviews, setLoadingReviews] = useState(!initialData?.reviews);
+  const [subscribers, setSubscribers] = useState<NewsletterSubscriber[]>(initialData?.subscribers ?? []);
+  const [loadingSubscribers, setLoadingSubscribers] = useState(!initialData?.subscribers);
+  const [campaigns, setCampaigns] = useState<NewsletterCampaign[]>(initialData?.campaigns ?? []);
+  const [loadingCampaigns, setLoadingCampaigns] = useState(!initialData?.campaigns);
 
   const [selectedCustomer, setSelectedCustomer] = useState<CRMCustomer | null>(null);
 
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebounce(searchQuery, 300);
 
-  useEffect(() => {
-    const fetchCustomers = async () => {
-      const { data, error } = await supabase.from('users').select('*').order('created_at', { ascending: false });
-      if (!error) setCustomers((data ?? []) as Array<Record<string, unknown>>);
+  const syncCRMData = async () => {
+    const response = await getCRMDataAction();
+    if (response.success && response.data) {
+      setCustomers(response.data.users);
+      setOrders(response.data.orders);
+      setTickets(response.data.tickets);
+      setRefunds(response.data.refunds);
+      setReviews(response.data.reviews);
+      setSubscribers(response.data.subscribers);
+      setCampaigns(response.data.campaigns);
+      
+      // Clear all loading states
       setLoadingCustomers(false);
-    };
-    fetchCustomers();
-    const channel = supabase.channel('crm_users').on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, fetchCustomers).subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [supabase]);
-
-  useEffect(() => {
-    const fetchOrders = async () => {
-      const { data, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
-      if (!error) setOrders((data ?? []) as Array<Record<string, unknown>>);
       setLoadingOrders(false);
-    };
-    fetchOrders();
-    const channel = supabase.channel('crm_orders').on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, fetchOrders).subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [supabase]);
-
-  useEffect(() => {
-    const fetchTickets = async () => {
-      const { data, error } = await supabase.from('support_tickets').select('*').order('created_at', { ascending: false });
-      if (!error) setTickets((data ?? []) as Array<Record<string, unknown>>);
       setLoadingTickets(false);
-    };
-    fetchTickets();
-    const channel = supabase.channel('crm_tickets').on('postgres_changes', { event: '*', schema: 'public', table: 'support_tickets' }, fetchTickets).subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [supabase]);
-
-  useEffect(() => {
-    const fetchRefunds = async () => {
-      const { data, error } = await supabase.from('refund_requests').select('*').order('created_at', { ascending: false });
-      if (!error) setRefunds((data ?? []) as Array<Record<string, unknown>>);
       setLoadingRefunds(false);
-    };
-    fetchRefunds();
-    const channel = supabase.channel('crm_refunds').on('postgres_changes', { event: '*', schema: 'public', table: 'refund_requests' }, fetchRefunds).subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [supabase]);
-
-  useEffect(() => {
-    const fetchReviews = async () => {
-      const { data, error } = await supabase.from('reviews').select('*').order('created_at', { ascending: false });
-      if (!error) setReviews((data ?? []) as Array<Record<string, unknown>>);
       setLoadingReviews(false);
-    };
-    fetchReviews();
-    const channel = supabase.channel('crm_reviews').on('postgres_changes', { event: '*', schema: 'public', table: 'reviews' }, fetchReviews).subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [supabase]);
-
-  useEffect(() => {
-    const fetchNewsletter = async () => {
-      const { data: subs } = await supabase.from('newsletter_subscribers').select('*').order('subscribed_at', { ascending: false });
-      const { data: camps } = await supabase.from('newsletter_campaigns').select('*').order('sent_at', { ascending: false });
-      if (subs) setSubscribers(subs as Array<Record<string, unknown>>);
-      if (camps) setCampaigns(camps as Array<Record<string, unknown>>);
       setLoadingSubscribers(false);
       setLoadingCampaigns(false);
-    };
-    fetchNewsletter();
-    const channel = supabase.channel('crm_newsletter').on('postgres_changes', { event: '*', schema: 'public', table: 'newsletter_subscribers' }, fetchNewsletter).subscribe();
+    }
+  };
+
+  useEffect(() => {
+    const channel = supabase.channel('crm_users').on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, syncCRMData).subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [supabase]);
+
+  useEffect(() => {
+    const channel = supabase.channel('crm_orders').on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, syncCRMData).subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [supabase]);
+
+  useEffect(() => {
+    const channel = supabase.channel('crm_tickets').on('postgres_changes', { event: '*', schema: 'public', table: 'support_tickets' }, syncCRMData).subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [supabase]);
+
+  useEffect(() => {
+    const channel = supabase.channel('crm_refunds').on('postgres_changes', { event: '*', schema: 'public', table: 'refund_requests' }, syncCRMData).subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [supabase]);
+
+  useEffect(() => {
+    const channel = supabase.channel('crm_reviews').on('postgres_changes', { event: '*', schema: 'public', table: 'reviews' }, syncCRMData).subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [supabase]);
+
+  useEffect(() => {
+    const channel = supabase.channel('crm_newsletter').on('postgres_changes', { event: '*', schema: 'public', table: 'newsletter_subscribers' }, syncCRMData).subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [supabase]);
 
@@ -131,18 +125,12 @@ export function CRMContainer() {
 
   const normalizedOrders = useMemo<CRMOrder[]>(() => {
     return orders.map((order) => {
-      const shippingDetails = typeof order.shipping_details === 'object' && order.shipping_details !== null
-        ? order.shipping_details as Record<string, unknown>
-        : {};
+      const shippingDetails = order.shipping_details || {};
 
       return {
         id: String(order.id),
-        orderId: typeof order.order_id === 'string' ? order.order_id : String(order.id),
-        customerEmail: typeof order.customer_email === 'string'
-          ? order.customer_email
-          : typeof shippingDetails.email === 'string'
-            ? shippingDetails.email
-            : null,
+        orderId: order.orderId || String(order.id),
+        customerEmail: order.customerEmail || shippingDetails.email || null,
         createdAt: typeof order.created_at === 'string' ? order.created_at : null,
         status: typeof order.status === 'string' ? order.status : 'Processing',
         total: Number(order.total ?? 0),
@@ -153,10 +141,11 @@ export function CRMContainer() {
     });
   }, [orders]);
 
-  const normalizedTickets = useMemo<SupportTicket[]>(() => {
+  const normalizedTickets = useMemo<SupportTicketUI[]>(() => {
     return tickets.map((ticket) => {
-      const userId = typeof ticket.user_id === 'string' ? ticket.user_id : null;
-      const customer = userId ? customerMap.get(userId) : null;
+      // Find customer by email since support_tickets table doesn't have user_id
+      const customer = Array.from(customerMap.values()).find(c => c.email === ticket.customer_email);
+      const userId = customer?.id || null;
 
       return {
         id: String(ticket.id),
@@ -171,7 +160,11 @@ export function CRMContainer() {
             : null,
         status: ticket.status === 'resolved' || ticket.status === 'in-progress' ? ticket.status : 'open',
         priority: typeof ticket.priority === 'string' ? ticket.priority : 'NORMAL',
-        messages: Array.isArray(ticket.messages) ? ticket.messages as SupportTicket['messages'] : [],
+        messages: Array.isArray(ticket.messages) ? (ticket.messages as any[]).map(m => ({
+          sender: m.role === 'admin' ? 'admin' : 'customer',
+          text: (m.content || m.text || '').trim(),
+          createdAt: m.timestamp || m.createdAt || m.created_at || new Date().toISOString()
+        })) : [],
         imageUrl: typeof ticket.image_url === 'string' ? ticket.image_url : null,
         createdAt: typeof ticket.created_at === 'string' ? ticket.created_at : null,
         updatedAt: typeof ticket.updated_at === 'string' ? ticket.updated_at : null,
@@ -228,59 +221,121 @@ export function CRMContainer() {
   }, [campaigns]);
 
   const customerSummaries = useMemo<CRMCustomer[]>(() => {
-    return customers.map((customer) => {
-      const id = String(customer.id);
-      const email = typeof customer.email === 'string' ? customer.email : '';
-      const name = typeof customer.full_name === 'string'
-        ? customer.full_name
-        : typeof customer.display_name === 'string'
-          ? customer.display_name
-          : typeof customer.name === 'string'
-            ? customer.name
-            : email.split('@')[0] || 'Customer';
+    // 1. Identify all unique customer "entities" from all sources
+    const identityMap = new Map<string, { email: string; name?: string; role?: string; createdAt?: string; id?: string }>();
 
-      const customerOrders = normalizedOrders.filter((order) => order.userId === id || (!!email && order.customerEmail === email));
-      const customerTickets = normalizedTickets.filter((ticket) => ticket.userId === id || (!!email && ticket.customerEmail === email));
-      const customerRefunds = normalizedRefunds.filter((refund) => refund.userId === id || (!!email && refund.customerEmail === email));
-      const customerReviews = normalizedReviews.filter((review) => review.userId === id || (!!email && review.customerEmail === email));
+    // Source A: Registered Users
+    customers.forEach((c) => {
+      const email = String(c.email || '').toLowerCase();
+      if (!email) return;
+      identityMap.set(email, {
+        id: String(c.id),
+        email,
+        name: String(c.full_name || c.display_name || c.name || ''),
+        role: String(c.role || 'client'),
+        createdAt: String(c.created_at || ''),
+      });
+    });
+
+    // Source B: Orders (Captures Guest Checkouts)
+    normalizedOrders.forEach((o) => {
+      const email = String(o.customerEmail || '').toLowerCase();
+      if (!email || identityMap.has(email)) return;
+      identityMap.set(email, {
+        email,
+        name: email.split('@')[0],
+        role: 'guest',
+        createdAt: String(o.createdAt || ''),
+      });
+    });
+
+    // Source C: Support Tickets (Captures Prospective/Support-only users)
+    normalizedTickets.forEach((t) => {
+      const email = String(t.customerEmail || '').toLowerCase();
+      if (!email || identityMap.has(email)) return;
+      identityMap.set(email, {
+        email,
+        name: t.customerName || email.split('@')[0],
+        role: 'guest',
+        createdAt: String(t.createdAt || ''),
+      });
+    });
+
+    // 2. Map identities to full summaries with aggregated stats
+    return Array.from(identityMap.values()).map((identity) => {
+      const email = identity.email;
+      const userId = identity.id;
+
+      // Aggregate activity across all tables using either ID or Email
+      const customerOrders = normalizedOrders.filter((o) => (userId && o.userId === userId) || o.customerEmail?.toLowerCase() === email);
+      const customerTickets = normalizedTickets.filter((t) => (userId && t.userId === userId) || t.customerEmail?.toLowerCase() === email);
+      const customerRefunds = normalizedRefunds.filter((r) => (userId && r.userId === userId) || r.customerEmail?.toLowerCase() === email);
+      const customerReviews = normalizedReviews.filter((rv) => (userId && rv.userId === userId) || rv.customerEmail?.toLowerCase() === email);
+
       const lastActivityCandidates = [
-        customer.created_at,
-        ...customerOrders.map((order) => order.createdAt),
-        ...customerTickets.map((ticket) => ticket.updatedAt || ticket.createdAt),
-        ...customerRefunds.map((refund) => refund.createdAt),
-        ...customerReviews.map((review) => review.createdAt),
-      ].filter((value): value is string => typeof value === 'string');
+        identity.createdAt,
+        ...customerOrders.map((o) => o.createdAt),
+        ...customerTickets.map((t) => t.updatedAt || t.createdAt),
+        ...customerRefunds.map((r) => r.createdAt),
+        ...customerReviews.map((rv) => rv.createdAt),
+      ].filter((v): v is string => !!v && typeof v === 'string');
 
       return {
-        id,
+        id: userId || `guest_${email}`,
         email,
-        name,
-        role: typeof customer.role === 'string' ? customer.role : 'client',
-        createdAt: typeof customer.created_at === 'string' ? customer.created_at : null,
+        name: identity.name || email.split('@')[0] || 'Customer',
+        role: identity.role || 'client',
+        createdAt: identity.createdAt || null,
         orderCount: customerOrders.length,
         ticketCount: customerTickets.length,
         refundCount: customerRefunds.length,
         reviewCount: customerReviews.length,
-        totalSpent: customerOrders.reduce((sum, order) => sum + Number(order.total ?? 0), 0),
+        totalSpent: customerOrders.reduce((sum, o) => sum + Number(o.total || 0), 0),
         lastActiveAt: lastActivityCandidates.sort().at(-1) ?? null,
       };
     });
   }, [customers, normalizedOrders, normalizedRefunds, normalizedReviews, normalizedTickets]);
 
   const normalizedSubscribers = useMemo(() => {
-    return subscribers.map((subscriber) => {
-      const email = typeof subscriber.email === 'string' ? subscriber.email : '';
-      const linkedCustomer = customerSummaries.find((customer) => customer.email?.toLowerCase() === email.toLowerCase());
-
-      return {
-        ...subscriber,
+    const subscriberMap = new Map<string, any>();
+    
+    // 1. Start with explicit subscribers (source of truth for opt-in/out)
+    subscribers.forEach(sub => {
+      const email = String(sub.email || '').toLowerCase();
+      if (!email) return;
+      subscriberMap.set(email, {
+        ...sub,
         email,
-        status: subscriber.status === 'unsubscribed' ? 'unsubscribed' : 'subscribed',
-        source: typeof subscriber.source === 'string' ? subscriber.source : 'unknown',
-        subscribedAt: typeof subscriber.subscribed_at === 'string' ? subscriber.subscribed_at : null,
-        unsubscribedAt: typeof subscriber.unsubscribed_at === 'string' ? subscriber.unsubscribed_at : null,
-        consentedAt: typeof subscriber.consented_at === 'string' ? subscriber.consented_at : null,
-        customerName: linkedCustomer?.name ?? null,
+        status: sub.status === 'unsubscribed' ? 'unsubscribed' : 'subscribed',
+        source: String(sub.source || 'newsletter_form'),
+        subscribedAt: sub.subscribed_at || sub.created_at || null,
+        isExplicit: true
+      });
+    });
+
+    // 2. Add all other discovered identities as "Registered" leads if not already present
+    customerSummaries.forEach(customer => {
+      const email = String(customer.email || '').toLowerCase();
+      if (!email || subscriberMap.has(email)) return;
+
+      // Only include people with valid contact info (email)
+      subscriberMap.set(email, {
+        email,
+        status: 'registered', // New status for people in Auth but not newsletter table
+        source: customer.role === 'admin' ? 'admin_system' : 'user_registration',
+        subscribedAt: customer.createdAt,
+        customerName: customer.name,
+        isExplicit: false
+      });
+    });
+
+    // 3. Attach metadata to everyone
+    return Array.from(subscriberMap.values()).map(sub => {
+      const linkedCustomer = customerSummaries.find(c => c.email?.toLowerCase() === sub.email.toLowerCase());
+      return {
+        ...sub,
+        customerName: sub.customerName || linkedCustomer?.name || null,
+        role: linkedCustomer?.role || 'client'
       };
     });
   }, [customerSummaries, subscribers]);

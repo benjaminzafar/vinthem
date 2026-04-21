@@ -4,7 +4,6 @@ import { StorefrontSettings } from '@/store/useSettingsStore';
 import { logger } from '@/lib/logger';
 import {
   maybeDecryptStoredValue,
-  normalizePostHogIngestionHost,
 } from '@/lib/integrations';
 
 // We use react cache to deduplicate requests within a single render cycle (request)
@@ -24,11 +23,6 @@ export const getIntegrations = cache(async () => {
 
   const config: Record<string, string> = {};
   integrations?.forEach(item => {
-    if (item.key === 'POSTHOG_HOST') {
-      config[item.key] = normalizePostHogIngestionHost(item.value);
-      return;
-    }
-
     config[item.key] = maybeDecryptStoredValue(item.value);
   });
 
@@ -44,10 +38,15 @@ export const getSettings = cache(async () => {
     .single();
 
   if (error || !settingsData) {
-    if (error) logger.error('Error fetching settings:', error);
+    if (error) {
+      logger.error(`Error fetching settings: [${error.code}] ${error.message}`, {
+        details: error.details,
+        hint: error.hint
+      });
+    }
     // Return minimal defaults so the UI doesn't crash
     return ({
-      storeName: { en: 'Mavren Shop', sv: 'Mavren Shop' },
+      storeName: { en: 'Vinthem', sv: 'Vinthem' },
       logoUrl: '',
       heroBackgroundColor: '#ffffff',
       primaryColor: '#000000'

@@ -3,9 +3,14 @@ import { createClient } from '@/utils/supabase/server';
 import { ensureUserProfile } from '@/lib/admin';
 
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = new URL(request.url);
-  const code = searchParams.get('code');
-  const next = searchParams.get('next') ?? '/';
+  const requestUrl = new URL(request.url);
+  const code = requestUrl.searchParams.get('code');
+  const next = requestUrl.searchParams.get('next') ?? '/';
+  
+  // Robust origin detection for production environments
+  const proto = request.headers.get('x-forwarded-proto') || 'https';
+  const host = request.headers.get('host') || requestUrl.host;
+  const origin = `${proto}://${host}`;
 
   if (code) {
     const supabase = await createClient();

@@ -146,11 +146,11 @@ export async function getPolicyPageMetadata(slug: string) {
   const { page } = await getRenderablePolicyPage(slug);
 
   if (!page) {
-    return { title: 'Page Not Found | Mavren Shop' };
+    return { title: 'Page Not Found | Vinthem' };
   }
 
   return {
-    title: `${getLocalizedValue(page.title, lang, 'Policy')} | Mavren Shop`,
+    title: `${getLocalizedValue(page.title, lang, 'Policy')} | Vinthem`,
   };
 }
 

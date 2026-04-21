@@ -42,14 +42,20 @@ export interface StaticPage {
 
 export interface Review {
   id?: string;
-  productId: string;
-  userId: string;
-  userName: string;
+  productId?: string;
+  product_id?: string;
+  userId?: string;
+  user_id?: string;
+  userName?: string;
+  user_name?: string;
   rating: number;
   comment: string;
-  createdAt: string;
+  createdAt?: string;
+  created_at: string;
   adminReply?: string;
+  admin_reply?: string;
   adminReplyAt?: string;
+  admin_reply_at?: string;
 }
 
 export interface Product {
@@ -91,10 +97,12 @@ export interface ShippingDetails {
 export interface AdminOrder {
   id: string;
   orderId?: string; // friendly id
+  order_id?: string; // mapped from db
   user_id: string | null;
   items: OrderItem[];
   total: number;
   subtotal: number;
+  currency?: string;
   shipping_cost: number;
   tax_amount: number;
   status: 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
@@ -112,4 +120,65 @@ export interface User {
   name?: string;
   role: 'admin' | 'client' | null;
   created_at?: string;
+}
+
+export interface SupportTicket {
+  id: string;
+  customer_email: string;
+  subject: string;
+  description?: string;
+  message?: string;
+  status: 'open' | 'closed' | 'archived' | 'resolved' | 'in-progress';
+  priority: 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
+  image_url?: string;
+  messages: Array<{
+    role: 'user' | 'admin';
+    content: string;
+    timestamp: string;
+  }>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RefundRequest {
+  id: string;
+  user_id: string;
+  order_id: string;
+  status: 'Pending' | 'Approved' | 'Rejected' | 'Refunded';
+  reason: string;
+  created_at: string;
+}
+
+export interface NewsletterSubscriber {
+  id: string;
+  email: string;
+  status?: 'subscribed' | 'unsubscribed' | 'registered';
+  source?: string;
+  subscribed_at: string;
+  created_at?: string;
+}
+
+export interface NewsletterCampaign {
+  id: string;
+  subject: string;
+  content: string;
+  sent_at: string;
+  recipient_count: number;
+}
+
+export interface CRMUser extends User {
+  full_name?: string | null;
+  display_name?: string | null;
+  last_sign_in_at?: string | null;
+  is_authenticated?: boolean;
+}
+
+export interface CRMData {
+  users: CRMUser[];
+  tickets: SupportTicket[];
+  refunds: RefundRequest[];
+  orders: AdminOrder[];
+  reviews: Review[];
+  subscribers: NewsletterSubscriber[];
+  campaigns: NewsletterCampaign[];
 }

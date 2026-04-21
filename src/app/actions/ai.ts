@@ -52,10 +52,17 @@ export async function generateAIContentAction(params: AIContentParams) {
     const groqModel = integrationsMap["GROQ_MODEL"] || "llama-3.3-70b-versatile";
 
     if (!groqKey) {
+      console.warn(`[Groq Action] [${now}] GROQ_API_KEY is missing from 'integrations' table.`);
       throw new Error("Groq API Key not found in integrations. Please set it in the Integrations Manager.");
     }
 
-    const apiKey = decrypt(groqKey);
+    let apiKey = "";
+    try {
+      apiKey = decrypt(groqKey);
+    } catch (decryptErr) {
+      console.error(`[Groq Action] [${now}] FAILED TO DECRYPT GROQ_API_KEY. The ENCRYPTION_SECRET might be invalid or have changed.`, decryptErr);
+      throw new Error("Security Error: Failed to decrypt AI credentials. Please re-save your Groq API Key in the Integrations Manager.");
+    }
 
     // 3. Initialize OpenAI Client (configured for Groq)
     const client = new OpenAI({
@@ -89,7 +96,7 @@ export async function generateAIContentAction(params: AIContentParams) {
       const role = content.role === 'model' ? 'assistant' : 'user';
       const parts = await Promise.all(content.parts.map(async (part) => {
         if (part.text) {
-          return { type: "text", text: part.text };
+          return { type: "text" as const, text: part.text };
         }
         if (part.image_url || (part.inlineData && part.inlineData.data)) {
           let dataUrl = "";
@@ -102,14 +109,14 @@ export async function generateAIContentAction(params: AIContentParams) {
               dataUrl = `data:${mime};base64,${base64}`;
             } catch (err) {
               console.warn("[GROQ] Failed to fetch image:", part.image_url);
-              return { type: "text", text: "[Image Error]" };
+              return { type: "text" as const, text: "[Image Error]" };
             }
           } else if (part.inlineData?.data) {
             dataUrl = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
           }
           
           if (dataUrl) {
-            return { type: "image_url", image_url: { url: dataUrl } };
+            return { type: "image_url" as const, image_url: { url: dataUrl } };
           }
           return null;
         }
@@ -121,7 +128,7 @@ export async function generateAIContentAction(params: AIContentParams) {
         role, 
         content: filteredParts.length === 1 && filteredParts[0].type === 'text' 
           ? filteredParts[0].text 
-          : filteredParts 
+          : (filteredParts as any) 
       });
     }
 

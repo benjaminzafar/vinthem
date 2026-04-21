@@ -17,7 +17,27 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: '**.r2.dev',
+        hostname: 'vinthem.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.vinthem.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.vinthem.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'pub-f44233c26dba4e9795b3ccf51fe6f2cb.r2.dev',
+        port: '',
+        pathname: '/**',
       },
     ],
     qualities: [60, 75],

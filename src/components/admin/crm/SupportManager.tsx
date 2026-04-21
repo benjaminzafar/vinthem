@@ -3,8 +3,8 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronDown, ChevronRight, MessageSquare, Clock, AlertCircle } from 'lucide-react';
-import { replySupportTicketAction } from '@/app/actions/support';
+import { ChevronDown, ChevronRight, MessageSquare, Clock, AlertCircle, Trash2 } from 'lucide-react';
+import { replySupportTicketAction, deleteSupportTicketAction } from '@/app/actions/support';
 import { toast } from 'sonner';
 import type { SupportTicket } from './types';
 
@@ -74,6 +74,27 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
       toast.success(result.message, { id: toastId });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to update support ticket.';
+      toast.error(message, { id: toastId });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleDeleteTicket = async (ticketId: string) => {
+    if (!window.confirm('Are you absolutely sure you want to permanently delete this ticket and all its messages? This action cannot be undone.')) {
+      return;
+    }
+
+    setIsUpdating(true);
+    const toastId = toast.loading('Deleting ticket...');
+
+    try {
+      const result = await deleteSupportTicketAction(ticketId);
+      if (!result.success) throw new Error(result.error || result.message);
+      toast.success(result.message, { id: toastId });
+      setExpandedTicketId(null);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to delete support ticket.';
       toast.error(message, { id: toastId });
     } finally {
       setIsUpdating(false);
@@ -196,6 +217,17 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
                                     Mark as {s}
                                   </button>
                                 ))}
+                              </div>
+                              <div className="pt-4 border-t border-slate-100">
+                                <h4 className="text-[10px] font-bold text-rose-400 uppercase tracking-widest mb-4">Critical Actions</h4>
+                                <button
+                                  onClick={() => handleDeleteTicket(ticket.id)}
+                                  disabled={isUpdating}
+                                  className="w-full py-2 px-3 rounded text-[10px] font-bold uppercase tracking-widest border border-rose-100 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white transition-all flex items-center justify-center gap-2 group disabled:opacity-50"
+                                >
+                                  <Trash2 className="w-3 h-3 transition-transform group-hover:scale-110" />
+                                  Archive & Delete
+                                </button>
                               </div>
                             </div>
                             {ticket.imageUrl && (

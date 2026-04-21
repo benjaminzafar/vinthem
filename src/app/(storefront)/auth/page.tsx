@@ -14,7 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
     .single();
 
   const settings = settingsData?.data || {};
-  const storeName = settings.storeName?.en || 'Mavren Shop';
+  const storeName = settings.storeName?.en || 'Vinthem';
 
   return {
     title: `Authentication | ${storeName}`,

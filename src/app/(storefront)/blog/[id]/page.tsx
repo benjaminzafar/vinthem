@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   if (!post) return { title: 'Article Not Found' };
 
   return {
-    title: `${post.title['en'] || 'Journal'} | Mavren Shop`,
+    title: `${post.title['en'] || 'Journal'} | Vinthem`,
   };
 }
 

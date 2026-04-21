@@ -24,7 +24,7 @@ export async function syncCurrentUserProfileAction(name?: string): Promise<AuthA
     }
 
     if (!user) {
-      throw new Error('Authentication required.');
+      throw new Error('You appear to be signed out. Please sign in again.');
     }
 
     await ensureUserProfile(user, name?.replace(/[<>]/g, '').trim() || user.user_metadata?.full_name);

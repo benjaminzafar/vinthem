@@ -24,10 +24,11 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
   const [marketingOptIn, setMarketingOptIn] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { setIsAdmin } = useAuthStore();
+  const { setUser, setIsAdmin } = useAuthStore();
   const settings = useStorefrontSettings(initialSettings);
   const lang = getClientLocale(pathname);
   const signUpTermsPrefix = settings.signUpTermsConsentText?.[lang] || 'I agree to the';
@@ -36,6 +37,8 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
+    setLoading(true);
     const supabase = createClient();
 
     try {
@@ -54,10 +57,23 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
           email, 
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback`
+            emailRedirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback`,
+            data: {
+              full_name: name
+            }
           }
         });
         if (error) throw error;
+
+        // If confirmation is required, there is NO session yet.
+        // We cannot call server actions that require a session.
+        if (!data.session) {
+          toast.success(settings.accountCreatedSuccessText?.[lang] || 'Account created! Please check your email to confirm your account.', {
+            duration: 10000
+          });
+          setIsLogin(true); // Switch to login view
+          return;
+        }
 
         if (data.user) {
           const syncResult = await syncCurrentUserProfileAction(name);
@@ -74,11 +90,13 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
         }
       }
 
-      // Check admin role
+      // Check admin role or establish session state
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        const syncResult = await syncCurrentUserProfileAction(name);
-        if (!syncResult.success) throw new Error(syncResult.message);
+        setUser(user);
+        // Ensure profile exists (especially on social login or legacy accounts)
+        await syncCurrentUserProfileAction(name || user.user_metadata?.full_name);
+        
         const { data: profile } = await supabase
           .from('users')
           .select('role')
@@ -92,8 +110,15 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
       navigate.refresh();
       navigate.push(redirectTarget);
     } catch (error: unknown) {
-      const msg = error instanceof Error ? error.message : 'Authentication failed';
-      toast.error(msg);
+      const err = error as any;
+      if (err.status === 429 || err.code === 'too_many_requests' || err.message?.toLowerCase().includes('rate limit')) {
+        toast.error('Security Check: Too many requests. Please wait 5-10 minutes before trying again to protect your account.');
+      } else {
+        const msg = err.message || 'Authentication failed';
+        toast.error(msg);
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -185,12 +210,24 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
 
           <button
             type="submit"
-            className="group relative w-full flex items-center justify-center py-4 px-6 bg-zinc-900 text-white text-[13px] font-bold rounded-2xl transition-all hover:bg-black hover:shadow-xl hover:shadow-zinc-200/50 active:scale-[0.98]"
+            disabled={loading}
+            className="group relative w-full flex items-center justify-center py-4 px-6 bg-zinc-900 text-white text-[13px] font-bold rounded-2xl transition-all hover:bg-black hover:shadow-xl hover:shadow-zinc-200/50 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <span>{isLogin ? settings.signInButtonText?.[lang] : settings.signUpButtonText?.[lang]}</span>
-            <div className="absolute right-6 opacity-40 transition-transform group-hover:translate-x-1 group-hover:opacity-100">
-               {isLogin ? <Lock className="w-3.5 h-3.5" /> : <User className="w-3.5 h-3.5" />}
-            </div>
+            <span>
+              {loading ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                  {isLogin ? 'Signing In...' : 'Creating Account...'}
+                </div>
+              ) : (
+                isLogin ? settings.signInButtonText?.[lang] : settings.signUpButtonText?.[lang]
+              )}
+            </span>
+            {!loading && (
+              <div className="absolute right-6 opacity-40 transition-transform group-hover:translate-x-1 group-hover:opacity-100">
+                 {isLogin ? <Lock className="w-3.5 h-3.5" /> : <User className="w-3.5 h-3.5" />}
+              </div>
+            )}
           </button>
 
           {!isLogin && (

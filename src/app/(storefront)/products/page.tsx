@@ -31,10 +31,10 @@ export async function generateMetadata({ searchParams }: ProductsPageProps) {
   const search = (params.search as string) || '';
 
   const title = search 
-    ? `Search: ${search} | Mavren Shop`
+    ? `Search: ${search} | Vinthem`
     : category !== 'All' 
-      ? `${category} | Mavren Shop` 
-      : 'All Products | Mavren Shop';
+      ? `${category} | Vinthem` 
+      : 'All Products | Vinthem';
 
   return {
     title,

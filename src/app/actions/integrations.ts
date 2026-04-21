@@ -9,7 +9,6 @@ import { requireAdminUser } from '@/lib/admin';
 import {
   isSensitiveIntegrationKey,
   maybeDecryptStoredValue,
-  normalizePostHogIngestionHost,
 } from '@/lib/integrations';
 
 export type IntegrationActionResponse = {
@@ -42,9 +41,7 @@ export async function getIntegrationsAction(): Promise<IntegrationActionResponse
         return;
       }
 
-      config[item.key] = item.key === 'POSTHOG_HOST'
-        ? normalizePostHogIngestionHost(item.value)
-        : maybeDecryptStoredValue(item.value);
+      config[item.key] = maybeDecryptStoredValue(item.value);
     });
 
     return { success: true, message: 'Config loaded', data: config };
@@ -69,9 +66,7 @@ export async function saveIntegrationAction(updates: Record<string, string>): Pr
     for (const [key, value] of Object.entries(updates)) {
       if (typeof value === 'string' && value.trim() !== '' && value !== '********') {
         const sanitizedValue = value.replace(/[<>]/g, '');
-        const normalizedValue = key === 'POSTHOG_HOST'
-          ? normalizePostHogIngestionHost(sanitizedValue)
-          : sanitizedValue;
+        const normalizedValue = sanitizedValue;
         const finalValue = isSensitiveIntegrationKey(key)
           ? encrypt(normalizedValue)
           : normalizedValue;

@@ -101,13 +101,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
   }, [searchQuery, allProducts, allCategories, lang]);
   
   const discoveryCategories = useMemo(() => {
-    const pinned = allCategories.filter(c => c.pinnedInSearch).slice(0, 9);
-    const heroCollections = allCategories.filter(c => !c.pinnedInSearch && c.showInHero).slice(0, 9 - pinned.length);
-    const remainingSlots = Math.max(0, 9 - pinned.length - heroCollections.length);
-    const others = allCategories
-      .filter(c => !c.pinnedInSearch && !c.showInHero)
-      .slice(0, remainingSlots);
-    return [...pinned, ...heroCollections, ...others].slice(0, 9);
+    return allCategories.filter(c => c.pinnedInSearch).slice(0, 12);
   }, [allCategories]);
 
   const isRemoteImage = (url?: string) => url && (url.startsWith('http') || url.startsWith('/') || url.startsWith('blob:'));
@@ -212,7 +206,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                         {/* 4 Featured Elements Logic */}
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
                           <div className="lg:col-span-12">
-                            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-slate-400 mb-8 px-1 text-center lg:text-left">
+                            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-slate-400 mb-8 px-1 text-center">
                               {settings?.searchDiscoverCollectionsText?.[lang] || 'Discover'}
                             </p>
                             {discoveryCategories.length > 0 ? (

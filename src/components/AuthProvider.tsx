@@ -4,7 +4,6 @@ import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 import { createClient } from '@/utils/supabase/client';
-import posthog from 'posthog-js';
 import { useAuthStore } from '@/store/useAuthStore';
 import { hasAnalyticsConsent } from '@/lib/consent';
 
@@ -24,19 +23,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const identifyUser = (user: { id: string; email?: string; user_metadata?: Record<string, unknown> } | null) => {
     if (user && typeof window !== 'undefined' && hasAnalyticsConsent()) {
-      // 1. Identify in PostHog
-      posthog.identify(user.id, {
-        email: user.email,
-        name: user.user_metadata?.full_name
-      });
-
-      // 2. Identify in Clarity
+      // 1. Identify in Clarity
       if (window.clarity) {
         window.clarity("set", "user_id", user.id);
         window.clarity("set", "email", user.email || "");
       }
-    } else if (typeof window !== 'undefined') {
-      posthog.reset();
     }
   };
   useEffect(() => {

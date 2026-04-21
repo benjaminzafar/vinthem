@@ -90,7 +90,7 @@ export function IntegrationsContainer({ initialConfig }: { initialConfig: Record
   const getIntegrationIdsByCategory = (catId: string) => {
     switch (catId) {
       case 'ai': return ['Groq'];
-      case 'marketing': return ['PostHog', 'Clarity', 'Instagram', 'TikTok', 'Reddit', 'Facebook'];
+      case 'marketing': return ['Clarity', 'Instagram', 'TikTok', 'Reddit', 'Facebook'];
       case 'shipping': return ['PostNord', 'DHL', 'Bring', 'DBSchenker', 'UPS'];
       case 'system': return ['Stripe', 'Zoho', 'R2', 'GoogleShopping'];
       default: return [];
@@ -139,27 +139,7 @@ export function IntegrationsContainer({ initialConfig }: { initialConfig: Record
                exit={{ opacity: 0, y: -5 }}
                transition={{ duration: 0.2 }}
              >
-               {id === 'PostHog' && (
-                 <IntegrationCard
-                    id="PostHog"
-                    title="PostHog (Real-time Analytics)"
-                    logo={<Globe className="text-emerald-600" />}
-                    isConnected={config['POSTHOG_API_KEY_CONNECTED'] === 'true'}
-                    isSaving={savingId === 'PostHog'}
-                    onSave={() => handleSave('PostHog', ['POSTHOG_PROJECT_ID', 'POSTHOG_PROJECT_KEY', 'POSTHOG_API_KEY', 'POSTHOG_HOST'])}
-                    tutorial={
-                      <div className="space-y-1">
-                        <p>1. Ensure your **Personal API Key** starts with <code className="bg-zinc-100 px-1 rounded text-zinc-900">phx_</code> (not the project token).</p>
-                        <p>2. If your project is in the US region, change the Host URL to <code className="bg-zinc-100 px-1 rounded text-zinc-900">https://app.posthog.com</code>.</p>
-                      </div>
-                    }
-                  >
-                    <CredentialInput label="Project ID" value={config['POSTHOG_PROJECT_ID']} onChange={v => handleUpdate('POSTHOG_PROJECT_ID', v)} />
-                    <CredentialInput label="Project Token (Public)" value={config['POSTHOG_PROJECT_KEY']} onChange={v => handleUpdate('POSTHOG_PROJECT_KEY', v)} />
-                    <CredentialInput label="Personal API Key (Private)" value={config['POSTHOG_API_KEY']} onChange={v => handleUpdate('POSTHOG_API_KEY', v)} type="password" />
-                    <CredentialInput label="Host URL" value={config['POSTHOG_HOST']} onChange={v => handleUpdate('POSTHOG_HOST', v)} placeholder="https://eu.posthog.com" />
-                  </IntegrationCard>
-               )}
+
                {id === 'Clarity' && (
                  <IntegrationCard
                     id="Clarity"

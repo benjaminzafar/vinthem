@@ -5,7 +5,7 @@ import { getSettings } from '@/lib/data';
 import type { StorefrontSettings } from '@/store/useSettingsStore';
 
 export const metadata: Metadata = {
-  title: 'Cart | Mavren Shop',
+  title: 'Cart | Vinthem',
   description: 'Review your selected products, update quantities, and continue to secure checkout.',
 };
 

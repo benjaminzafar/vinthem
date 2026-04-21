@@ -164,3 +164,55 @@ export async function unsubscribeAction(formData: FormData): Promise<NewsletterR
   }
 }
 
+/**
+ * Dispatches a new campaign to the audience
+ */
+export async function dispatchCampaignAction(payload: { subject: string; content: string }): Promise<NewsletterResponse> {
+  const subject = payload.subject.trim();
+  const content = payload.content.trim();
+
+  if (!subject || !content) {
+    return { success: false, message: 'Campaign subject and content are required.' };
+  }
+
+  try {
+    const supabase = createAdminClient();
+    const now = new Date().toISOString();
+
+    // Calculate reach: Subscribers + Registered Auth Users
+    const [subsRes, authRes] = await Promise.all([
+      supabase.from('newsletter_subscribers').select('email').eq('status', 'subscribed'),
+      supabase.auth.admin.listUsers()
+    ]);
+
+    const subscribers = subsRes.data || [];
+    const authUsers = authRes.data?.users || [];
+    
+    // Unique audience calculation
+    const recipientSet = new Set<string>();
+    subscribers.forEach(s => recipientSet.add(s.email.toLowerCase()));
+    authUsers.forEach(u => u.email && recipientSet.add(u.email.toLowerCase()));
+
+    const { error: campaignError } = await supabase
+      .from('newsletter_campaigns')
+      .insert({
+        subject,
+        content,
+        sent_at: now,
+        recipient_count: recipientSet.size
+      });
+
+    if (campaignError) throw campaignError;
+
+    revalidateNewsletterViews();
+
+    return { 
+      success: true, 
+      message: `Campaign "${subject}" dispatched to ${recipientSet.size} recipients.` 
+    };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to dispatch campaign.';
+    logger.error('[Action Error] dispatchCampaignAction:', error);
+    return { success: false, message: 'Failed to launch campaign. System core rejected the request.', error: message };
+  }
+}

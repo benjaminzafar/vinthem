@@ -224,28 +224,39 @@ export function ProductClient({
               </div>
             </div>
 
-            {product.options?.length ? (
-              <div className="mt-8 space-y-6">
-                {product.options.map((option) => (
-                  <div key={option.name}>
-                    <p className="mb-3 text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">
-                      {option.name}
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {option.values.map((value) => (
-                        <button
-                          key={value}
-                          onClick={() => handleOptionChange(option.name, value)}
-                          className={`border px-4 py-3 text-[11px] font-black uppercase tracking-[0.18em] transition-all rounded ${selectedOptions[option.name] === value ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-400'}`}
-                        >
-                          {value}
-                        </button>
-                      ))}
+            {(() => {
+              const displayOptions = product.translations?.[lang]?.options || product.options;
+              if (!displayOptions?.length) return null;
+
+              return (
+                <div className="mt-8 space-y-6">
+                  {displayOptions.map((option, optIdx) => (
+                    <div key={option.name}>
+                      <p className="mb-3 text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">
+                        {option.name}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {option.values.map((value, valIdx) => {
+                          // The selectedOptions key is always the primary option name to maintain variant logic
+                          const primaryOptionName = product.options?.[optIdx]?.name || option.name;
+                          const primaryValue = product.options?.[optIdx]?.values?.[valIdx] || value;
+
+                          return (
+                            <button
+                              key={value}
+                              onClick={() => handleOptionChange(primaryOptionName, primaryValue)}
+                              className={`border px-4 py-3 text-[11px] font-black uppercase tracking-[0.18em] transition-all rounded ${selectedOptions[primaryOptionName] === primaryValue ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-400'}`}
+                            >
+                              {value}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            ) : null}
+                  ))}
+                </div>
+              );
+            })()}
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <button

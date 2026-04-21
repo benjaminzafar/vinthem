@@ -3,8 +3,8 @@ import { Suspense } from "react";
 import { UnsubscribeClient } from "./UnsubscribeClient";
 
 export const metadata: Metadata = {
-  title: "Unsubscribe | Mavren Shop",
-  description: "Manage your Mavren Shop marketing email preferences.",
+  title: "Unsubscribe | Vinthem",
+  description: "Manage your Vinthem marketing email preferences.",
 };
 
 export default function UnsubscribePage() {

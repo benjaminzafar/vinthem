@@ -10,7 +10,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const settings = await getSettings();
-  const storeName = settings.storeName?.en || 'Mavren Shop';
+  const storeName = settings.storeName?.en || 'Vinthem';
 
   if (!user) return { title: `Profile | ${storeName}` };
 

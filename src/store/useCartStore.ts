@@ -1,5 +1,6 @@
 "use client";
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 export interface ProductOption {
   name: string;
@@ -57,6 +58,7 @@ export interface Product {
       description: string;
       features?: string[];
       specifications?: { name: string; value: string }[];
+      options?: ProductOption[];
     };
   };
 }
@@ -74,7 +76,9 @@ interface CartStore {
   total: (lang?: string) => number;
 }
 
-export const useCartStore = create<CartStore>((set, get) => ({
+export const useCartStore = create<CartStore>()(
+  persist(
+    (set, get) => ({
   items: [],
   addItem: (product) => set((state) => {
     const existing = state.items.find(i => i.id === product.id);
@@ -99,4 +103,9 @@ export const useCartStore = create<CartStore>((set, get) => ({
   })),
   clearCart: () => set({ items: [] }),
   total: () => get().items.reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0)
-}));
+    }),
+    {
+      name: 'mavren-shop-cart',
+    }
+  )
+);

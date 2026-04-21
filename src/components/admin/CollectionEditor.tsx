@@ -13,7 +13,7 @@ import {
 import { toast } from 'sonner';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { genAI } from '@/lib/ai';
-import { extractFirstJsonObject } from '@/lib/json';
+import { safeParseAiResponse } from '@/lib/json';
 import { saveCategoryAction } from '@/app/actions/categories';
 import { MediaPickerModal } from './MediaPickerModal';
 import { IconSelector } from '../IconSelector';
@@ -54,6 +54,25 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
   const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
   const [isIconSelectorOpen, setIsIconSelectorOpen] = useState(false);
   const [pickerTarget, setPickerTarget] = useState<'image' | 'icon'>('image');
+
+  // Sync form data when initialCollection prop changes (e.g. navigation)
+  useEffect(() => {
+    if (initialCollection && initialCollection.id !== formData.id) {
+      setFormData({
+        id: initialCollection.id,
+        name: initialCollection.name || '',
+        slug: initialCollection.slug || '',
+        description: initialCollection.description || '',
+        isFeatured: initialCollection.isFeatured ?? false,
+        showInHero: initialCollection.showInHero ?? false,
+        pinnedInSearch: initialCollection.pinnedInSearch ?? false,
+        parentId: initialCollection.parentId || '',
+        imageUrl: initialCollection.imageUrl || '',
+        iconUrl: initialCollection.iconUrl || '',
+        translations: initialCollection.translations || {}
+      });
+    }
+  }, [initialCollection, formData.id]);
 
   // Fetch all categories for parent selector
   useEffect(() => {
@@ -105,11 +124,11 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
       });
 
       const aiResponse = await model.generateContent([
-        { text: 'Analyze this collection banner image and generate a catchy, highly descriptive Swedish name and a persuasive, multi-paragraph Swedish marketing description for this product collection. Return ONLY JSON with "name", "slug" and "description" fields.' },
+        { text: 'Analyze this collection banner image and generate a catchy, highly descriptive Swedish name and a persuasive, multi-paragraph Swedish marketing description for this product collection. Return ONLY a valid raw JSON object with "name", "slug" and "description" fields.' },
         { inlineData: { data: base64Data, mimeType: blob.type } }
       ]);
 
-      const result = JSON.parse(aiResponse.response.text());
+      const result = safeParseAiResponse(aiResponse.response.text(), {}) as any;
       setFormData(prev => ({
         ...prev,
         name: result.name || prev.name,
@@ -170,7 +189,7 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
       });
       
       const aiResponse = await model.generateContent(prompt);
-      const result = JSON.parse(aiResponse.response.text());
+      const result = safeParseAiResponse(aiResponse.response.text(), {}) as any;
       
       setFormData(prev => ({
         ...prev,
@@ -290,7 +309,7 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
       toast.error('Collection name is required for translation.');
       return;
     }
-    const targetLangs = languages.filter(l => l !== 'sv');
+    const targetLangs = languages;
     if (targetLangs.length === 0) {
       toast.info('No extra languages configured.');
       return;
@@ -298,8 +317,9 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
     setGenerating(true);
     const toastId = toast.loading('AI translating collection...');
     try {
-      const prompt = `Translate the following collection information into these languages: ${targetLangs.join(', ')}.
-Return ONLY a JSON object where each top-level key is an ISO 639-1 language code, and each value is an object with "name" and "description" fields.
+      const prompt = `Translate the following collection information into these languages: ${languages.join(', ')}.
+Return ONLY a valid raw JSON object. No markdown backticks, no conversational text.
+Schema: Each top-level key must be an ISO 639-1 language code, and each value an object with "name" and "description" fields.
 Example: { "en": { "name": "...", "description": "..." }, "fi": { "name": "...", "description": "..." } }
 
 Collection Name (Swedish): "${formData.name}"
@@ -310,17 +330,25 @@ Collection Description (Swedish): "${formData.description || ''}"`;
         generationConfig: { responseMimeType: 'application/json' }
       });
       const aiResponse = await model.generateContent(prompt);
-      const rawText = aiResponse.response.text() || '{}';
-      const jsonStr = extractFirstJsonObject(rawText) || rawText;
-      const result = JSON.parse(jsonStr) as Record<string, { name?: string; description?: string }>;
+      const result = safeParseAiResponse<Record<string, { name?: string; description?: string }>>(aiResponse.response.text(), {}) as any;
 
       const newTranslations = { ...formData.translations };
-      for (const lang of targetLangs) {
+      for (const lang of languages) {
         if (result[lang]) {
           newTranslations[lang] = {
             name: result[lang].name?.trim() || newTranslations[lang]?.name || '',
             description: result[lang].description?.trim() || newTranslations[lang]?.description || ''
           };
+
+          // If we are currently on the 'sv' tab or 'sv' is the target, 
+          // we also update the primary fields if they were used for translation
+          if (lang === 'sv') {
+            setFormData(prev => ({
+              ...prev,
+              name: result[lang].name?.trim() || prev.name,
+              description: result[lang].description?.trim() || prev.description
+            }));
+          }
         }
       }
       setFormData(prev => ({ ...prev, translations: newTranslations }));

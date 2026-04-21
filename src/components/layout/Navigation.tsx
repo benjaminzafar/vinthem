@@ -53,7 +53,7 @@ export default async function Navigation() {
 
   return (
     <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
-      <h1 className="sr-only">Mavren Shop - Premium Scandinavian Interior Design</h1>
+      <h1 className="sr-only">Vinthem - Premium Scandinavian Interior Design</h1>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center relative">
           {/* Brand Logo */}
@@ -63,7 +63,7 @@ export default async function Navigation() {
                 <div className="relative h-8 w-32">
                   <Image
                     src={settings.logoImage}
-                    alt={settings.storeName?.[lang] || 'Mavren'}
+                    alt={settings.storeName?.[lang] || 'Vinthem'}
                     fill
                     className="object-contain transition-transform group-hover:scale-105"
                     sizes="(max-width: 768px) 100px, 128px"
@@ -72,7 +72,7 @@ export default async function Navigation() {
                 </div>
               ) : (
                 <span className="text-xl font-normal text-gray-900">
-                  {settings?.storeName?.[lang] || 'Mavren'}
+                  {settings?.storeName?.[lang] || 'Vinthem'}
                 </span>
               )}
             </Link>

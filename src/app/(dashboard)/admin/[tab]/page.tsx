@@ -1,4 +1,4 @@
-import { createClient } from '@/utils/supabase/server';
+import { createClient, createAdminClient } from '@/utils/supabase/server';
 import { notFound } from 'next/navigation';
 import { Overview } from '@/components/admin/Overview';
 import { IntegrationsManager } from '@/components/admin/IntegrationsManager';
@@ -11,6 +11,7 @@ import { PageManager } from '@/components/admin/PageManager';
 import { StorefrontSettings } from '@/components/admin/StorefrontSettings';
 import { MediaManager } from '@/components/admin/MediaManager';
 import { getIntegrationsAction } from '@/app/actions/integrations';
+import { getCRMDataAction } from '@/app/actions/crm';
 import { mapBlogRow, mapPageRow } from '@/lib/admin-content';
 import { Category, type ShippingDetails } from '@/types';
 import { Product } from '@/store/useCartStore';
@@ -211,7 +212,10 @@ export default async function AdminTabPage({ params, searchParams }: TabPageProp
     );
   }
 
-  if (tab === 'customers') return <CustomersAndCRMManager />;
+  if (tab === 'customers') {
+    const response = await getCRMDataAction();
+    return <CustomersAndCRMManager initialData={response.data} />;
+  }
   if (tab === 'blogs') {
     const { data } = await supabase.from('blog_posts').select('*').order('created_at', { ascending: false });
     const initialPosts = (data || []).map((post) => mapBlogRow(post as Record<string, unknown>));

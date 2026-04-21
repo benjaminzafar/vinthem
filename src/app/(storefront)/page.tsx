@@ -18,10 +18,10 @@ export async function generateMetadata() {
   const lang = await getServerLocale();
   
   return {
-    title: settings.storeName?.[lang] || 'Mavren Shop | Modern Scandinavian Design',
+    title: settings.storeName?.[lang] || 'Vinthem | Modern Scandinavian Design',
     description: settings.seoDescription?.[lang] || 'Premium furniture and home accessories with a minimalist Scandinavian aesthetic.',
     openGraph: {
-      title: settings.storeName?.[lang] || 'Mavren Shop',
+      title: settings.storeName?.[lang] || 'Vinthem',
       description: settings.seoDescription?.[lang],
       images: ['/og-image.jpg'],
     },
@@ -109,7 +109,7 @@ export default async function StorefrontPage() {
         <HeroSlider categories={categories} lang={lang} settings={settings} />
       ) : (
         <section className="h-[60vh] flex flex-col items-center justify-center bg-gray-50 px-4 text-center">
-          <h2 className="text-4xl font-sans font-black text-brand-ink mb-4 tracking-tight">Welcome to {settings.storeName?.[lang] || 'Mavren Shop'}</h2>
+          <h2 className="text-4xl font-sans font-black text-brand-ink mb-4 tracking-tight">Welcome to {settings.storeName?.[lang] || 'Vinthem'}</h2>
           <p className="text-brand-muted max-w-md mx-auto mb-8">We are currently setting up our collections. Please check back shortly for our premium Scandinavian designs.</p>
           <div className="w-12 h-1 bg-brand-ink"></div>
         </section>

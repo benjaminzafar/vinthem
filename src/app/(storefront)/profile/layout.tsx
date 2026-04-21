@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'My Profile | Mavren Shop',
+  title: 'My Profile | Vinthem',
   description: 'Manage your personal information, view order history, and update shipping addresses.',
 };
 

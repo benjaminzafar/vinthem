@@ -5,7 +5,7 @@ import { getSettings } from '@/lib/data';
 import type { StorefrontSettings } from '@/store/useSettingsStore';
 
 export const metadata: Metadata = {
-  title: 'Checkout | Mavren Shop',
+  title: 'Checkout | Vinthem',
   description: 'Enter shipping details, review estimated taxes, and continue to secure Stripe checkout.',
 };
 
