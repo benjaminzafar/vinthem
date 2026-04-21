@@ -133,6 +133,8 @@ function applySecurityHeaders(request: NextRequest, response: NextResponse, nonc
   response.headers.set('Cross-Origin-Opener-Policy', 'same-origin');
   response.headers.set('Cross-Origin-Resource-Policy', 'same-site');
   response.headers.set('X-CSP-Nonce', nonce);
+  const isLocalhost = request.nextUrl.hostname === 'localhost' || request.nextUrl.hostname === '127.0.0.1';
+  
   response.headers.set(
     'Content-Security-Policy',
     [
@@ -148,8 +150,8 @@ function applySecurityHeaders(request: NextRequest, response: NextResponse, nonc
       "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
       "worker-src 'self' blob:",
       "form-action 'self'",
-      "upgrade-insecure-requests",
-    ].join('; ')
+      !isLocalhost ? "upgrade-insecure-requests" : "",
+    ].filter(Boolean).join('; ')
   );
 }
 
