@@ -132,6 +132,7 @@ export async function testEmailConnectionAction(config: {
   host: string;
   port: string;
   sender: string;
+  to?: string;
 }): Promise<IntegrationActionResponse> {
   try {
     await requireAdminUser();
@@ -178,6 +179,24 @@ export async function testEmailConnectionAction(config: {
     });
 
     await transporter.verify();
+
+    // If 'to' is provided, send a real test email
+    if (config.to && config.to.includes('@')) {
+      await transporter.sendMail({
+        from: `"${config.sender || 'Vinthem'}" <${config.user}>`,
+        to: config.to,
+        subject: 'Vinthem SMTP Verification',
+        text: 'This is a test email from your Vinthem shop to verify Brevo SMTP relay is working correctly.',
+        html: `
+          <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
+            <h2 style="color: #0c4a6e;">Vinthem SMTP Verification</h2>
+            <p>Congratulations! Your Brevo SMTP server is correctly configured and ready to send transactional emails.</p>
+            <p style="font-size: 12px; color: #666; margin-top: 20px;">Sent from: <strong>${config.sender || 'Vinthem'}</strong></p>
+          </div>
+        `
+      });
+      return { success: true, message: `SMTP test email successfully sent to ${config.to}` };
+    }
     
     return { success: true, message: 'SMTP Handshake successful. Server is ready to relay.' };
   } catch (error: unknown) {

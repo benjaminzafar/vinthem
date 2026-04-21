@@ -81,7 +81,8 @@ export function IntegrationsContainer({ initialConfig }: { initialConfig: Record
       pass: config['ZOHO_PASS'],
       host: config['ZOHO_SMTP_HOST'],
       port: config['ZOHO_SMTP_PORT'],
-      sender: config['ZOHO_SENDER_NAME']
+      sender: config['ZOHO_SENDER_NAME'],
+      to: config['ZOHO_TEST_EMAIL']
     });
     if (result.success) toast.success(result.message, { id: toastId });
     else toast.error(result.message, { id: toastId });
@@ -329,8 +330,11 @@ export function IntegrationsContainer({ initialConfig }: { initialConfig: Record
                     <CredentialInput label="Sender Name" value={config['ZOHO_SENDER_NAME']} onChange={v => handleUpdate('ZOHO_SENDER_NAME', v)} placeholder="Vinthem" />
                     <CredentialInput label="SMTP Host" value={config['ZOHO_SMTP_HOST']} onChange={v => handleUpdate('ZOHO_SMTP_HOST', v)} placeholder="smtp-relay.brevo.com" />
                     <CredentialInput label="SMTP Port" value={config['ZOHO_SMTP_PORT']} onChange={v => handleUpdate('ZOHO_SMTP_PORT', v)} placeholder="587 (TLS) or 465 (SSL)" />
+                    <div className="pt-2 mt-2 border-t border-zinc-100">
+                      <CredentialInput label="Test Recipient Email" value={config['ZOHO_TEST_EMAIL']} onChange={v => handleUpdate('ZOHO_TEST_EMAIL', v)} placeholder="recipient@example.com" />
+                    </div>
                     <button onClick={handleTestEmail} className="text-[11px] font-bold text-zinc-600 hover:text-zinc-900 flex items-center gap-1 mt-2 transition-colors focus:outline-none">
-                       <Search className="w-3.5 h-3.5" /> Send Test Handshake
+                       <Search className="w-3.5 h-3.5" /> Send Test Handshake & Email
                     </button>
                   </IntegrationCard>
                )}
