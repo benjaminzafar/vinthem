@@ -214,12 +214,6 @@ export async function estimateCheckout(
   locale?: string,
 ): Promise<CheckoutEstimate> {
   const shippingDetails = sanitizeShippingDetails(shippingInput);
-  const settings = await getSettings();
-  const allowedCountries = (settings.shippingCountries || ALLOWED_SHIPPING_COUNTRIES.map(c => ({ code: c }))).map(c => c.code.toUpperCase());
-  if (!allowedCountries.includes(shippingDetails.country)) {
-    throw new Error('Shipping country is not supported.');
-  }
-
   const { validatedItems, subtotal, categoriesById } = await loadValidatedItems(items);
   const shipping = getShippingCost(shippingDetails.country);
   const market = resolveMarket(locale || shippingDetails.country);
