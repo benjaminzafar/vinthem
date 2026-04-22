@@ -36,6 +36,16 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
   const navigate = useRouter();
 
   useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024 && isMobileMenuOpen) {
+        setMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isMobileMenuOpen, setMobileMenuOpen]);
+
+  useEffect(() => {
     if (isMobileMenuOpen) {
       // Lock scroll without snapping to top
       document.body.style.overflow = 'hidden';
@@ -103,7 +113,7 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 h-[100dvh] w-full sm:w-[85vw] sm:max-w-sm bg-white border-l border-gray-100 z-[201] flex flex-col"
+              className="lg:hidden fixed top-0 right-0 h-[100dvh] w-full sm:w-[85vw] sm:max-w-sm bg-white border-l border-gray-100 z-[201] flex flex-col shadow-2xl"
             >
               <div className="flex items-center justify-between h-16 px-6 border-b border-gray-100">
                 <span className="text-xl font-sans font-medium tracking-tight uppercase tracking-[0.1em]">{labels.menu}</span>

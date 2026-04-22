@@ -102,13 +102,15 @@ export default async function Navigation() {
               settings={settings}
             />
 
-            <div className="hidden md:block">
+            <div className="hidden md:block relative h-full flex items-center">
               <LanguageSwitcher availableLanguages={availableLanguages} />
             </div>
 
-            <CartToggle />
+            <div className="h-full flex items-center">
+              <CartToggle />
+            </div>
 
-            <div className="hidden md:block">
+            <div className="hidden md:block relative h-full flex items-center">
               {user ? (
                 <AccountDropdown
                   user={user}

@@ -52,17 +52,17 @@ export function AccountDropdown({ user, isAdmin, labels }: AccountDropdownProps)
     <div className="relative" ref={dropdownRef}>
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-2 p-1 rounded-lg hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-200"
+        className="flex items-center space-x-2 p-1.5 rounded-lg hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-200"
         aria-label="Toggle user menu"
       >
-        <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-200 relative">
+        <div className="w-7 h-7 rounded-full overflow-hidden border border-gray-200 relative">
           <Image 
             src={(user.user_metadata?.avatar_url || user.user_metadata?.picture) ? (user.user_metadata?.avatar_url || user.user_metadata?.picture) : `https://ui-avatars.com/api/?name=${user.user_metadata?.full_name || 'U'}&background=random`} 
             alt="Profile" 
             fill
             className="object-cover" 
             referrerPolicy="no-referrer"
-            sizes="32px"
+            sizes="28px"
           />
         </div>
       </button>
