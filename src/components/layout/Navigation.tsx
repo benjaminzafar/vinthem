@@ -94,8 +94,8 @@ export default async function Navigation() {
           </div>
 
           {/* Right Actions: Rebuilt from Scratch for Perfection */}
-          <div className="flex-1 flex items-center justify-end h-full">
-            <div className="flex items-center space-x-0.5 sm:space-x-1">
+          <div className="flex-1 flex justify-end h-full">
+            <div className="flex h-full space-x-0.5 sm:space-x-1">
               
               {/* 1. Search Action */}
               <div className="relative group flex items-center h-full">
@@ -108,17 +108,17 @@ export default async function Navigation() {
               </div>
 
               {/* 2. Language Action */}
-              <div className="hidden md:flex items-center h-full">
+              <div className="hidden md:flex h-full">
                 <LanguageSwitcher availableLanguages={availableLanguages} />
               </div>
 
               {/* 3. Cart Action */}
-              <div className="flex items-center h-full">
+              <div className="flex h-full">
                 <CartToggle />
               </div>
 
               {/* 4. Account/Login Action */}
-              <div className="hidden md:flex items-center h-full">
+              <div className="hidden md:flex h-full">
                 {user ? (
                   <AccountDropdown
                     user={user}
