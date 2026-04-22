@@ -93,62 +93,72 @@ export default async function Navigation() {
             ))}
           </div>
 
-          {/* Actions */}
-          <div className="flex-1 flex items-center justify-end space-x-4">
-            <SearchBar
-              placeholder={settings?.searchPlaceholder?.[lang]}
-              categories={categories}
-              lang={lang}
-              settings={settings}
-            />
+          {/* Right Actions: Rebuilt from Scratch for Perfection */}
+          <div className="flex-1 flex items-center justify-end h-full">
+            <div className="flex items-center space-x-0.5 sm:space-x-1">
+              
+              {/* 1. Search Action */}
+              <div className="relative group flex items-center h-full">
+                <SearchBar
+                  placeholder={settings?.searchPlaceholder?.[lang]}
+                  categories={categories}
+                  lang={lang}
+                  settings={settings}
+                />
+              </div>
 
-            <div className="hidden md:block relative h-full flex items-center">
-              <LanguageSwitcher availableLanguages={availableLanguages} />
-            </div>
+              {/* 2. Language Action */}
+              <div className="hidden md:flex items-center h-full">
+                <LanguageSwitcher availableLanguages={availableLanguages} />
+              </div>
 
-            <div className="h-full flex items-center">
-              <CartToggle />
-            </div>
+              {/* 3. Cart Action */}
+              <div className="flex items-center h-full">
+                <CartToggle />
+              </div>
 
-            <div className="hidden md:block relative h-full flex items-center">
-              {user ? (
-                <AccountDropdown
+              {/* 4. Account/Login Action */}
+              <div className="hidden md:flex items-center h-full">
+                {user ? (
+                  <AccountDropdown
+                    user={user}
+                    isAdmin={isAdmin}
+                    labels={{
+                      profile: settings?.myProfileText?.[lang] || 'My Profile',
+                      adminPanel: settings?.adminPanelText?.[lang] || 'Admin Panel',
+                      logout: settings?.logoutText?.[lang] || 'Logout',
+                      loggedOutSuccess: settings?.loggedOutSuccessText?.[lang] || 'Logged out successfully'
+                    }}
+                  />
+                ) : (
+                  <Link
+                    href={localizeHref(lang, '/auth')}
+                    className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all rounded-lg flex items-center justify-center"
+                    aria-label={settings?.loginText?.[lang] || 'Login'}
+                  >
+                    <User className="w-5 h-5" strokeWidth={1.5} />
+                  </Link>
+                )}
+              </div>
+
+              {/* 5. Mobile Menu Trigger */}
+              <div className="lg:hidden flex items-center h-full ml-2">
+                <MobileMenu
                   user={user}
                   isAdmin={isAdmin}
+                  settings={settings}
+                  lang={lang}
+                  availableLanguages={availableLanguages}
                   labels={{
-                    profile: settings?.myProfileText?.[lang] || 'My Profile',
-                    adminPanel: settings?.adminPanelText?.[lang] || 'Admin Panel',
+                    menu: settings?.menuText?.[lang] || 'Menu',
+                    language: settings?.languageLabel?.[lang] || 'Language',
+                    account: settings?.accountLabel?.[lang] || 'Account',
+                    adminDashboard: settings?.adminDashboardText?.[lang] || 'Admin Dashboard',
                     logout: settings?.logoutText?.[lang] || 'Logout',
-                    loggedOutSuccess: settings?.loggedOutSuccessText?.[lang] || 'Logged out successfully'
+                    login: settings?.loginText?.[lang] || 'Login'
                   }}
                 />
-              ) : (
-                <Link
-                  href={localizeHref(lang, '/auth')}
-                  className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-lg"
-                  aria-label={settings?.loginText?.[lang] || 'Login'}
-                >
-                  <User className="w-5 h-5" strokeWidth={1.5} />
-                </Link>
-              )}
-            </div>
-
-            <div className="lg:hidden">
-              <MobileMenu
-                user={user}
-                isAdmin={isAdmin}
-                settings={settings}
-                lang={lang}
-                availableLanguages={availableLanguages}
-                labels={{
-                  menu: settings?.menuText?.[lang] || 'Menu',
-                  language: settings?.languageLabel?.[lang] || 'Language',
-                  account: settings?.accountLabel?.[lang] || 'Account',
-                  adminDashboard: settings?.adminDashboardText?.[lang] || 'Admin Dashboard',
-                  logout: settings?.logoutText?.[lang] || 'Logout',
-                  login: settings?.loginText?.[lang] || 'Login'
-                }}
-              />
+              </div>
             </div>
           </div>
         </div>
