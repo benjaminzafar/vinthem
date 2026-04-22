@@ -80,7 +80,7 @@ export function LanguageSwitcher({ availableLanguages, variant = 'dropdown' }: L
   }
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative h-full flex items-center" ref={dropdownRef}>
       <button 
         disabled={isPending}
         onClick={() => setIsOpen(!isOpen)}

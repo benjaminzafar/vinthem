@@ -49,7 +49,7 @@ export function AccountDropdown({ user, isAdmin, labels }: AccountDropdownProps)
   };
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative h-full flex items-center" ref={dropdownRef}>
       <button 
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center space-x-2 p-1.5 rounded-lg hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-200"

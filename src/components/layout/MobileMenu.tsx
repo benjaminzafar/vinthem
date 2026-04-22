@@ -34,16 +34,22 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
   const menuRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
   const navigate = useRouter();
+  const [isDesktop, setIsDesktop] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 1024 && isMobileMenuOpen) {
+      const desktop = window.innerWidth >= 1024;
+      setIsDesktop(desktop);
+      if (desktop && isMobileMenuOpen) {
         setMobileMenuOpen(false);
       }
     };
+    handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [isMobileMenuOpen, setMobileMenuOpen]);
+
+  if (isDesktop) return null;
 
   useEffect(() => {
     if (isMobileMenuOpen) {
