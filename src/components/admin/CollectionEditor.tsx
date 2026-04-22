@@ -421,7 +421,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
             <button 
               onClick={handleAIChatAutoFill}
               disabled={generating || !aiChatInput.trim()}
-              className="bg-indigo-600 text-white px-8 rounded-[4px] text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all flex items-center gap-2 disabled:opacity-50"
+              className="h-12 bg-indigo-600 text-white px-8 rounded-[4px] text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shrink-0"
             >
               {generating ? 'Drafting...' : 'AI Draft'}
               {!generating && <Wand2 className="w-4 h-4" />}
