@@ -136,6 +136,16 @@ export interface StorefrontSettings {
   emailLabel: LocalizedString;
   passwordLabel: LocalizedString;
   forgotPasswordText: LocalizedString;
+  forgotPasswordTitle: LocalizedString;
+  forgotPasswordSubtitle: LocalizedString;
+  sendResetLinkButtonText: LocalizedString;
+  backToLoginText: LocalizedString;
+  resetPasswordSentSuccessText: LocalizedString;
+  resetPasswordTitle: LocalizedString;
+  newPasswordLabel: LocalizedString;
+  confirmNewPasswordLabel: LocalizedString;
+  resetPasswordButtonText: LocalizedString;
+  passwordResetSuccessText: LocalizedString;
   dontHaveAccountText: LocalizedString;
   alreadyHaveAccountText: LocalizedString;
   signInButtonText: LocalizedString;
@@ -493,6 +503,16 @@ export const defaultSettings: StorefrontSettings = {
   emailLabel: { en: 'Email', sv: 'E-post', fi: 'Sähköposti', da: 'E-mail' },
   passwordLabel: { en: 'Password', sv: 'Lösenord', fi: 'Salasana', da: 'Adgangskode' },
   forgotPasswordText: { en: 'Forgot Password?', sv: 'Glömt lösenord?', fi: 'Unohditko salasanan?', da: 'Glemt adgangskode?' },
+  forgotPasswordTitle: { en: 'Reset Password', sv: 'Återställ lösenord', fi: 'Nollaa salasana', da: 'Nulstil adgangskode' },
+  forgotPasswordSubtitle: { en: 'Enter your email address and we will send you a link to reset your password.', sv: 'Ange din e-postadress så skickar vi en länk för att återställa ditt lösenord.', fi: 'Anna sähköpostiosoitteesi، niin lähetämme linkin salasanan nollaamiseksi.', da: 'Indtast din e-mailadresse، og vi sender dig et link til at nulstille din adgangskode.' },
+  sendResetLinkButtonText: { en: 'Send Reset Link', sv: 'Skicka återställningslänk', fi: 'Lähetä nollauslinkki', da: 'Send nulstillingslink' },
+  backToLoginText: { en: 'Back to Login', sv: 'Tillbaka till inloggning', fi: 'Takaisin kirjautumiseen', da: 'Tilbage til login' },
+  resetPasswordSentSuccessText: { en: 'Password reset link sent! Please check your email.', sv: 'Återställningslänk skickad! Kontrollera din e-post.', fi: 'Salasanan nollauslinkki lähetetty! Tarkista sähköpostisi.', da: 'Nulstillingslink sendt! Tjek venligst din e-mail.' },
+  resetPasswordTitle: { en: 'Create New Password', sv: 'Skapa nytt lösenord', fi: 'Luo uusi salasana', da: 'Opret ny adgangskode' },
+  newPasswordLabel: { en: 'New Password', sv: 'Nytt lösenord', fi: 'Uusi salasana', da: 'Ny adgangskode' },
+  confirmNewPasswordLabel: { en: 'Confirm New Password', sv: 'Bekräfta nytt lösenord', fi: 'Vahvista uusi salasana', da: 'Bekræft ny adgangskode' },
+  resetPasswordButtonText: { en: 'Update Password', sv: 'Uppdatera lösenord', fi: 'Päivitä salasana', da: 'Opdater adgangskode' },
+  passwordResetSuccessText: { en: 'Password updated successfully! You can now sign in.', sv: 'Lösenordet har uppdaterats! Du kan nu logga in.', fi: 'Salasana päivitetty onnistuneesti! Voit nyt kirjautua sisään.', da: 'Adgangskode opdateret med succes! Du kan nu logge ind.' },
   dontHaveAccountText: { en: "Don't have an account?", sv: 'Har du inget konto?', fi: 'Eikö sinulla ole tiliä?', da: 'Har du ikke en konto?' },
   alreadyHaveAccountText: { en: 'Already have an account?', sv: 'Har du redan ett konto?', fi: 'Onko sinulla jo tili?', da: 'Har du allerede en konto?' },
   signInButtonText: { en: 'Sign In', sv: 'Logga in', fi: 'Kirjaudu sisään', da: 'Log ind' },

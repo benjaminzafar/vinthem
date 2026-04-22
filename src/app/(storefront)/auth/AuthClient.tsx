@@ -27,6 +27,7 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
   const [marketingOptIn, setMarketingOptIn] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showOTP, setShowOTP] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [otpType, setOtpType] = useState<'signup' | 'magiclink'>('signup');
   const navigate = useRouter();
   const pathname = usePathname();
@@ -127,6 +128,26 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
       setLoading(false);
     }
   };
+  
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (loading) return;
+    setLoading(true);
+    const supabase = createClient();
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/reset-password`,
+      });
+      if (error) throw error;
+      toast.success(settings.resetPasswordSentSuccessText?.[lang]);
+      setIsForgotPassword(false);
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to send reset link');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleGoogleLogin = async () => {
     if (!settings.googleAuthEnabled) {
@@ -202,7 +223,59 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
                 onClick={() => setShowOTP(false)}
                 className="text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-zinc-900 transition-colors"
               >
-                Back to {isLogin ? 'Sign In' : 'Sign Up'}
+                Back to {isForgotPassword ? 'Reset Password' : (isLogin ? 'Sign In' : 'Sign Up')}
+              </button>
+            </div>
+          </div>
+        ) : isForgotPassword ? (
+          <div className="bg-white/90 backdrop-blur-md p-10 rounded-2xl border border-zinc-100">
+            <div className="mb-12 text-center">
+              <h2 className="text-3xl font-sans font-bold tracking-tight text-zinc-900">
+                {settings.forgotPasswordTitle?.[lang]}
+              </h2>
+              <p className="mt-3 text-sm text-zinc-600 font-medium leading-relaxed">
+                {settings.forgotPasswordSubtitle?.[lang]}
+              </p>
+            </div>
+
+            <form className="space-y-6" onSubmit={handleForgotPassword}>
+              <div className="relative group">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-zinc-500 transition-colors group-focus-within:text-zinc-900" />
+                <input
+                  type="email"
+                  required
+                  className="appearance-none rounded-xl relative block w-full pl-11 pr-4 py-4 bg-zinc-50/80 border border-zinc-200 placeholder-zinc-500 text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-400 focus:bg-white transition-all sm:text-sm font-medium"
+                  placeholder={settings.emailLabel?.[lang]}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="group relative w-full flex items-center justify-center py-4 px-6 bg-zinc-900 text-white text-[13px] font-bold rounded-2xl transition-all hover:bg-black hover:shadow-xl hover:shadow-zinc-200/50 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span>
+                  {loading ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                      Sending...
+                    </div>
+                  ) : (
+                    settings.sendResetLinkButtonText?.[lang]
+                  )}
+                </span>
+              </button>
+            </form>
+
+            <div className="mt-10 text-center">
+              <button
+                type="button"
+                onClick={() => setIsForgotPassword(false)}
+                className="text-[11px] font-black uppercase tracking-widest text-zinc-950 underline underline-offset-4 decoration-zinc-200 hover:decoration-zinc-950 transition-all"
+              >
+                {settings.backToLoginText?.[lang]}
               </button>
             </div>
           </div>
@@ -255,6 +328,18 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
+
+              {isLogin && (
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setIsForgotPassword(true)}
+                    className="text-[11px] font-medium text-zinc-500 hover:text-zinc-900 transition-colors"
+                  >
+                    {settings.forgotPasswordText?.[lang]}
+                  </button>
+                </div>
+              )}
 
               <button
                 type="submit"
