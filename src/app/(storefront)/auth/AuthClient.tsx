@@ -132,12 +132,32 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (loading) return;
+
+    // Implementation of 10-minute rate limiting
+    const RATE_LIMIT_MS = 10 * 60 * 1000;
+    const lastRequestKey = `last_reset_request_${email}`;
+    const lastRequest = localStorage.getItem(lastRequestKey);
+    const now = Date.now();
+
+    if (lastRequest) {
+      const timePassed = now - parseInt(lastRequest);
+      if (timePassed < RATE_LIMIT_MS) {
+        const minutesLeft = Math.ceil((RATE_LIMIT_MS - timePassed) / 60000);
+        toast.error(`Please wait ${minutesLeft} minute(s) before requesting another code.`);
+        return;
+      }
+    }
+
     setLoading(true);
     const supabase = createClient();
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email);
       if (error) throw error;
+      
+      // Store current time on success
+      localStorage.setItem(lastRequestKey, now.toString());
+      
       toast.success(settings.resetPasswordSentSuccessText?.[lang] || 'Recovery code sent');
       setOtpType('recovery');
       setShowOTP(true);
