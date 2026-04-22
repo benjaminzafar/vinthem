@@ -187,14 +187,16 @@ Content: "${formData.content.en}"`;
             </div>
           </div>
 
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="flex h-11 items-center gap-2 rounded-[4px] bg-slate-900 px-8 text-[10px] font-black uppercase tracking-widest text-white transition-all hover:bg-slate-800"
-          >
-            <Save className="h-4 w-4" />
-            {saving ? 'Saving...' : 'Publish Page'}
-          </button>
+          <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 w-full md:w-auto">
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="flex h-11 items-center justify-center gap-2 rounded-[4px] bg-slate-900 px-8 text-[10px] font-black uppercase tracking-widest text-white transition-all hover:bg-slate-800 w-full md:w-auto"
+            >
+              <Save className="h-4 w-4" />
+              {saving ? 'Saving...' : 'Publish Page'}
+            </button>
+          </div>
         </div>
 
         <div className="mb-10 flex flex-col items-center gap-6 rounded-[4px] border border-indigo-100 bg-indigo-50/30 p-6 md:flex-row">
@@ -207,12 +209,12 @@ Content: "${formData.content.en}"`;
             <p className="text-[10px] font-black uppercase tracking-widest text-indigo-900">Page Assistant</p>
             <p className="mt-1 text-sm text-indigo-700">Draft a polished static page from the title, then localize it across active languages.</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
             <button
               type="button"
               onClick={handleAIAutoComplete}
               disabled={generating}
-              className="flex h-11 items-center gap-2 rounded-[4px] border border-indigo-100 bg-white px-5 text-[10px] font-black uppercase tracking-widest text-indigo-700 transition-all hover:bg-indigo-50"
+              className="flex h-11 items-center justify-center gap-2 rounded-[4px] border border-indigo-100 bg-white px-5 text-[10px] font-black uppercase tracking-widest text-indigo-700 transition-all hover:bg-indigo-50 w-full sm:w-auto"
             >
               <Wand2 className="h-4 w-4" />
               Auto-Draft
@@ -221,7 +223,7 @@ Content: "${formData.content.en}"`;
               type="button"
               onClick={handleAITranslate}
               disabled={generating}
-              className="flex h-11 items-center gap-2 rounded-[4px] bg-indigo-600 px-5 text-[10px] font-black uppercase tracking-widest text-white transition-all hover:bg-indigo-700"
+              className="flex h-11 items-center justify-center gap-2 rounded-[4px] bg-indigo-600 px-5 text-[10px] font-black uppercase tracking-widest text-white transition-all hover:bg-indigo-700 w-full sm:w-auto"
             >
               <Languages className="h-4 w-4" />
               Translate

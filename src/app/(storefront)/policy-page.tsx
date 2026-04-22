@@ -87,10 +87,6 @@ function getLocalizedValue(
 }
 
 async function getPolicyPageSource(slug: string) {
-  if (!(slug in POLICY_MAP)) {
-    return { page: null, settings: null as Partial<StorefrontSettings> | null };
-  }
-
   const supabase = await createClient();
   const settings = {
     ...defaultPolicyContent,
@@ -130,13 +126,22 @@ function buildPolicyFromSettings(
 async function getRenderablePolicyPage(slug: string) {
   const { page, settings } = await getPolicyPageSource(slug);
 
-  if (!(slug in POLICY_MAP) || !settings) {
-    return { page: null, settings: null as Partial<StorefrontSettings> | null };
+  if (!settings) {
+    return { page: null, settings: null };
   }
 
-  const settingsBackedPage = buildPolicyFromSettings(slug as PolicySlug, settings);
+  // If it's a core policy, check if we should prefer settings-backed content
+  if (slug in POLICY_MAP) {
+    const settingsBackedPage = buildPolicyFromSettings(slug as PolicySlug, settings);
+    return {
+      page: settingsBackedPage ?? page,
+      settings,
+    };
+  }
+
+  // For custom slugs, return the page from database
   return {
-    page: settingsBackedPage ?? page,
+    page,
     settings,
   };
 }
@@ -162,6 +167,7 @@ export async function renderPolicyPage(slug: string) {
     notFound();
   }
 
+  const isCorePolicy = (slug === 'privacy-policy' || slug === 'cookie-policy' || slug === 'terms-of-service');
   const presentation = getPolicyPresentation(slug);
   const PolicyIcon = presentation.icon;
   const title = getLocalizedValue(page.title, lang, 'Policy');
@@ -182,32 +188,47 @@ export async function renderPolicyPage(slug: string) {
           <span className="font-medium text-slate-900">{title}</span>
         </nav>
 
-        <section className="border border-slate-300 bg-white">
-          <div className="border-b border-slate-300 px-6 py-6 md:px-10 md:py-8">
+        <section className="border border-slate-300 bg-white shadow-sm transition-all hover:shadow-md">
+          <div className="border-b border-slate-300 px-6 py-8 md:px-10 md:py-10">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center border border-slate-300 bg-white">
-                <PolicyIcon className="h-4 w-4 text-slate-900" />
+              <div className="flex h-12 w-12 items-center justify-center border border-slate-300 bg-slate-50 text-slate-900">
+                <PolicyIcon className="h-5 w-5" />
               </div>
-              <span className="text-[11px] font-bold uppercase tracking-[0.24em] text-slate-400">{presentation.eyebrow}</span>
+              <span className="text-[11px] font-bold uppercase tracking-[0.24em] text-slate-400">
+                {isCorePolicy ? presentation.eyebrow : 'Information'}
+              </span>
             </div>
 
-            <h1 className="mt-6 text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">
+            <h1 className="mt-6 text-4xl font-bold tracking-tight text-slate-900 md:text-5xl">
               {title}
             </h1>
 
-            <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-500">
-              {presentation.lead}
-            </p>
+            {isCorePolicy && (
+              <>
+                <p className="mt-4 max-w-3xl text-base leading-7 text-slate-600">
+                  {presentation.lead}
+                </p>
 
-            <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-[11px] font-bold uppercase tracking-widest text-slate-400">
-              <span>{updatedLabel}: <span className="text-slate-700">{updatedAt}</span></span>
-              <span>Source: <span className="text-slate-700">Storefront Settings</span></span>
-            </div>
+                <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-[11px] font-bold uppercase tracking-widest text-slate-400/80">
+                  <span>{updatedLabel}: <span className="text-slate-900">{updatedAt}</span></span>
+                  <span>Source: <span className="text-slate-900">Storefront Settings</span></span>
+                </div>
+              </>
+            )}
           </div>
 
-          <div className="px-6 py-8 md:px-10 md:py-10">
-            <div className="prose prose-slate max-w-none prose-headings:font-sans prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-slate-900 prose-h2:mt-10 prose-h2:border-t prose-h2:border-slate-200 prose-h2:pt-6 prose-h3:mt-8 prose-p:text-[15px] prose-p:leading-8 prose-p:text-slate-600 prose-li:text-[15px] prose-li:leading-8 prose-li:text-slate-600 prose-strong:text-slate-900 prose-a:font-semibold prose-a:text-slate-900 prose-a:underline prose-a:underline-offset-4 prose-ul:space-y-2 prose-ol:space-y-2">
-              <ReactMarkdown>{content}</ReactMarkdown>
+          <div className="px-6 py-10 md:px-10 md:py-12">
+            <div className="prose prose-slate max-w-none 
+              prose-headings:font-sans prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-slate-900 
+              prose-h2:mt-12 prose-h2:mb-6 prose-h2:border-t prose-h2:border-slate-100 prose-h2:pt-8
+              prose-h3:mt-10 prose-h3:mb-4
+              prose-p:text-[16px] prose-p:leading-8 prose-p:text-slate-600 prose-p:mb-6
+              prose-li:text-[16px] prose-li:leading-8 prose-li:text-slate-600
+              prose-strong:text-slate-900 prose-a:font-semibold prose-a:text-slate-900
+              prose-img:rounded-sm">
+              <div className="whitespace-pre-wrap">
+                <ReactMarkdown>{content}</ReactMarkdown>
+              </div>
             </div>
           </div>
         </section>

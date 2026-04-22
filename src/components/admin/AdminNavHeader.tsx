@@ -12,7 +12,7 @@ export default function AdminNavHeader({ onToggle }: { onToggle: () => void }) {
 
   return (
     <header className="bg-white border-b border-slate-300 sticky top-0 z-30 flex-shrink-0">
-      <div className="flex items-center justify-between px-6 sm:px-8 h-16">
+      <div className="flex items-center justify-between px-4 sm:px-8 h-16">
         <div className="flex items-center">
           <button 
             onClick={onToggle}
@@ -36,7 +36,7 @@ export default function AdminNavHeader({ onToggle }: { onToggle: () => void }) {
               <input 
                 type="text" 
                 placeholder="Search..." 
-                className="pl-10 pr-4 h-9 bg-slate-50 border border-slate-300 rounded text-sm focus:outline-none focus:border-slate-900 transition-all w-64 placeholder:text-slate-400 text-slate-900"
+                className="pl-10 pr-4 h-9 bg-slate-50 border border-slate-300 rounded text-sm focus:outline-none focus:border-slate-900 transition-all w-32 lg:w-64 placeholder:text-slate-400 text-slate-900"
               />
             </div>
           )}

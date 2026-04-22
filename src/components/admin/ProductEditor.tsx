@@ -401,7 +401,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
             </div>
           </div>
           
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
             <button 
               onClick={() => handleSave('draft')}
               disabled={loading}
@@ -430,13 +430,13 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                 <Sparkles className="w-4 h-4 text-indigo-600" />
                 <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-900">AI Designer Assistance</h3>
              </div>
-             <div className="flex gap-2">
+             <div className="flex flex-col sm:flex-row gap-3">
                 <input 
                   type="text" 
                   value={aiChatInput}
                   onChange={(e) => setAiChatInput(e.target.value)}
                   placeholder="Describe your product or paste raw supplier text here..."
-                  className="flex-1 h-11 border border-slate-200 rounded-[4px] px-4 text-sm focus:outline-none focus:border-indigo-500"
+                  className="w-full sm:flex-1 h-11 border border-slate-200 rounded-[4px] px-4 text-sm focus:outline-none focus:border-indigo-500"
                 />
                 <button 
                   onClick={handleAIChatAutoFill}

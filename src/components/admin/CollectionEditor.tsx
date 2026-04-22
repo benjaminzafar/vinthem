@@ -386,7 +386,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
             </div>
           </div>
           
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
             <button 
               onClick={handleSave}
               disabled={saving || uploading}
@@ -409,7 +409,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                <span className="text-[9px] text-indigo-400 font-bold uppercase tracking-widest">Generative Metadata</span>
             </div>
           </div>
-          <div className="flex-1 w-full flex gap-2">
+          <div className="flex-1 w-full flex flex-col sm:flex-row gap-3">
             <input 
               type="text" 
               placeholder="Describe the collection vibe (e.g. minimalist autumn clothing collection)..."

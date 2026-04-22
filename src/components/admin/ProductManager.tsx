@@ -235,29 +235,30 @@ export function ProductManager({
           <p className="text-sm text-slate-500 mt-1">Manage your store's inventory and details</p>
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full md:w-auto">
           {refreshing && (
             <div className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-500">
               <Package className="w-3.5 h-3.5 animate-pulse" />
               Syncing
             </div>
           )}
-          <div className="relative">
+          <div className="relative flex-1 sm:flex-none">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input 
               type="text"
               placeholder="Search products..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-4 h-10 bg-white border border-slate-300 rounded text-sm focus:outline-none focus:border-slate-900 transition-all w-64 text-slate-900"
+              className="pl-10 pr-4 h-10 bg-white border border-slate-300 rounded text-sm focus:outline-none focus:border-slate-900 transition-all w-full sm:w-64 text-slate-900"
             />
           </div>
           <button 
             onClick={() => router.push('/admin/products/new')}
-            className="h-10 px-6 bg-slate-900 text-white rounded text-sm font-medium hover:bg-slate-800 transition-all flex items-center gap-2"
+            className="h-10 px-4 sm:px-6 bg-slate-900 text-white rounded text-sm font-medium hover:bg-slate-800 transition-all flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
-            Add Product
+            <span className="hidden sm:inline">Add Product</span>
+            <span className="sm:hidden text-[11px]">Add</span>
           </button>
         </div>
       </div>

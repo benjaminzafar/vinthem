@@ -381,45 +381,49 @@ export function NotificationCenter() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.97, y: 10 }}
+            initial={{ opacity: 0, scale: 0.95, y: -10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.97, y: 10 }}
-            className="absolute right-0 mt-2 z-50 w-[380px] overflow-hidden border border-slate-300 bg-white shadow-2xl"
+            exit={{ opacity: 0, scale: 0.95, y: -10 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            className="absolute right-[-0.75rem] sm:right-0 mt-4 z-[100] w-[calc(100vw-2rem)] sm:w-[420px] overflow-hidden rounded-2xl border border-white/40 bg-white/90 backdrop-blur-xl shadow-[0_24px_48px_-12px_rgba(0,0,0,0.12)]"
           >
-            <div className="border-b border-slate-300 bg-slate-50 px-5 py-4">
-              <div className="flex items-start justify-between gap-4">
+            <div className="border-b border-slate-100 bg-white/50 px-6 py-5">
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-slate-400">Admin Activity</p>
-                  <h3 className="mt-2 text-sm font-bold uppercase tracking-widest text-slate-900">Notifications</h3>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Activity Hub</p>
+                  <h3 className="mt-1 text-base font-bold text-slate-900">Notifications</h3>
                 </div>
-                <button onClick={() => setIsOpen(false)} className="text-slate-400 transition-colors hover:text-slate-900">
+                <button 
+                  onClick={() => setIsOpen(false)} 
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-400 transition-all hover:bg-slate-200 hover:text-slate-900"
+                >
                   <X className="h-4 w-4" />
                 </button>
               </div>
 
-              <div className="mt-4 flex flex-wrap gap-2">
+              <div className="mt-5 flex gap-3">
                 <button
                   type="button"
                   onClick={markAllAsRead}
-                  className="inline-flex items-center gap-2 border border-slate-300 bg-white px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-slate-900 transition-colors hover:bg-slate-50"
+                  className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-white transition-all hover:bg-slate-800 hover:shadow-lg active:scale-95"
                 >
                   <CheckCheck className="h-3.5 w-3.5" />
-                  Mark read
+                  Mark all as read
                 </button>
                 <button
                   type="button"
                   onClick={clearOldData}
-                  className="inline-flex items-center gap-2 border border-slate-300 bg-white px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-slate-900 transition-colors hover:bg-slate-50"
+                  className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-slate-600 transition-all hover:bg-slate-50 active:scale-95"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
-                  Clear old data
+                  Clean logs
                 </button>
               </div>
             </div>
 
-            <div className="max-h-[440px] overflow-y-auto">
+            <div className="max-h-[500px] overflow-y-auto custom-scrollbar bg-transparent">
               {visibleNotifications.length > 0 ? (
-                <div className="divide-y divide-slate-200">
+                <div className="divide-y divide-slate-100/50">
                   {visibleNotifications.map((notification) => {
                     const style = getNotificationStyle(notification.type);
                     const NotificationIcon = style.icon;
@@ -433,22 +437,22 @@ export function NotificationCenter() {
                           router.push(notification.link);
                           setIsOpen(false);
                         }}
-                        className={`flex w-full gap-4 px-5 py-4 text-left transition-colors hover:bg-slate-50 ${!isRead ? 'bg-slate-50/60' : 'bg-white'}`}
+                        className={`flex w-full gap-5 px-6 py-5 text-left transition-all duration-300 ${!isRead ? 'bg-slate-900/[0.02] border-l-2 border-slate-900' : 'bg-transparent hover:bg-slate-50'}`}
                       >
-                        <div className={`flex h-11 w-11 shrink-0 items-center justify-center border ${style.border} ${style.bg}`}>
-                          <NotificationIcon className={`h-4 w-4 ${style.accent}`} />
+                        <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border ${style.border} ${style.bg} transition-transform group-hover:scale-110`}>
+                          <NotificationIcon className={`h-5 w-5 ${style.accent}`} />
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-start justify-between gap-3">
                             <div>
-                              <p className="text-[11px] font-bold uppercase tracking-widest text-slate-900">{notification.title}</p>
-                              <p className="mt-2 text-sm leading-6 text-slate-600">{notification.message}</p>
+                              <p className={`text-[11px] font-bold uppercase tracking-widest ${!isRead ? 'text-slate-900' : 'text-slate-500'}`}>{notification.title}</p>
+                              <p className={`mt-2 text-[13px] leading-relaxed ${!isRead ? 'text-slate-800 font-medium' : 'text-slate-500 font-normal'}`}>{notification.message}</p>
                             </div>
                             <div className="shrink-0 text-right">
                               <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
                                 {formatDistanceToNow(notification.timestamp, { addSuffix: true })}
                               </p>
-                              {!isRead && <div className="mt-3 ml-auto h-2 w-2 bg-slate-900" />}
+                              {!isRead && <div className="mt-3 ml-auto h-1.5 w-1.5 rounded-full bg-slate-900 animate-pulse" />}
                             </div>
                           </div>
                         </div>
@@ -469,17 +473,17 @@ export function NotificationCenter() {
               )}
             </div>
 
-            <div className="border-t border-slate-300 bg-white px-5 py-4">
+            <div className="border-t border-slate-100 bg-white/50 px-6 py-5">
               <button
                 type="button"
                 onClick={() => {
                   router.push('/admin/customers');
                   setIsOpen(false);
                 }}
-                className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-500 transition-colors hover:text-slate-900"
+                className="group flex w-full items-center justify-between rounded-xl bg-slate-50 p-4 transition-all hover:bg-slate-900 hover:text-white"
               >
-                Open CRM activity
-                <ArrowRight className="h-4 w-4" />
+                <span className="text-[11px] font-bold uppercase tracking-widest">Explore CRM activity</span>
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </button>
             </div>
           </motion.div>

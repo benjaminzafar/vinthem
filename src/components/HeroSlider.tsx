@@ -78,7 +78,7 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
             <div className="hidden lg:block">
               <Link 
                 href={localizeHref(lang, `/products?category=${encodeURIComponent(category.name)}`)}
-                className="inline-flex items-center bg-black text-white px-12 py-5 rounded-2xl font-bold hover:bg-gray-800 transition-all duration-300 uppercase tracking-widest text-sm"
+                className="inline-flex items-center bg-black text-white px-12 py-5 rounded font-bold hover:bg-gray-800 transition-all duration-300 uppercase tracking-widest text-sm"
               >
                 {settings.shopNowText?.[lang] || 'Explore'} <ArrowRight className="ml-3 w-5 h-5" />
               </Link>
@@ -87,7 +87,7 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
  
           {/* Image Content */}
           <div className="w-full lg:w-[55%] order-2 z-0 flex-shrink-0 flex items-center justify-center mt-4 lg:mt-0">
-            <div className="relative w-full max-h-[50vh] lg:max-h-none aspect-[16/10] sm:aspect-[16/9] lg:aspect-[4/3] xl:aspect-[16/10] overflow-hidden rounded-2xl shadow-sm">
+            <div className="relative w-full max-h-[50vh] lg:max-h-none aspect-[16/10] sm:aspect-[16/9] lg:aspect-[4/3] xl:aspect-[16/10] overflow-hidden rounded shadow-sm">
               {category.imageUrl && (
                 <Image 
                   src={imageToShow || ''} 
@@ -107,7 +107,7 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
           <div className="w-full flex justify-center order-3 mt-6 lg:hidden z-10 flex-shrink-0 pb-10">
             <Link 
               href={localizeHref(lang, `/products?category=${encodeURIComponent(category.name)}`)}
-              className="flex items-center justify-center bg-black text-white px-10 py-4 rounded-2xl font-bold hover:bg-gray-800 transition-all duration-300 uppercase tracking-[0.2em] text-sm w-full"
+              className="flex items-center justify-center bg-black text-white px-10 py-4 rounded font-bold hover:bg-gray-800 transition-all duration-300 uppercase tracking-[0.2em] text-sm w-full"
             >
               {settings.shopNowText?.[lang] || 'Explore'} <ArrowRight className="ml-3 w-5 h-5" />
             </Link>
@@ -122,7 +122,7 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
             key={i}
             onClick={() => setCurrentIndex(i)}
             aria-label={`Go to slide ${i + 1}`}
-            className={`h-1.5 rounded-2xl transition-all duration-500 ${i === currentIndex ? 'w-8 bg-black' : 'w-4 bg-gray-300'}`}
+            className={`h-1.5 rounded transition-all duration-500 ${i === currentIndex ? 'w-8 bg-black' : 'w-4 bg-gray-300'}`}
           />
         ))}
       </div>

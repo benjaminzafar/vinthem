@@ -5,13 +5,18 @@ import { createAdminClient } from '@/utils/supabase/server';
 import { requireAdminUser } from '@/lib/admin';
 import { logger } from '@/lib/logger';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2022-11-15' as any,
-});
+import { getStripeClient } from '@/lib/stripe-server';
 
 export async function createStripeRefundAction(orderId: string, amount?: number) {
   try {
     await requireAdminUser();
+    
+    // Dynamically get the Stripe client with secure decrypted keys
+    const stripe = await getStripeClient();
+    if (!stripe) {
+      throw new Error('Stripe is not configured in settings. Please add your API keys first.');
+    }
+
     const supabase = createAdminClient();
 
     // 1. Fetch Order to get PaymentIntent ID
