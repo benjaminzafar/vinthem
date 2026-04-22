@@ -96,7 +96,7 @@ export function LanguageSwitcher({ availableLanguages, variant = 'dropdown' }: L
             initial={{ opacity: 0, y: 0 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 0 }}
-            className="absolute right-0 top-full mt-0 w-32 bg-white shadow-2xl shadow-slate-900/10 border border-slate-100 z-[100] py-2 overflow-hidden rounded-xl"
+            className="absolute right-0 top-[calc(100%+1px)] mt-0 w-32 bg-white shadow-2xl shadow-slate-900/10 border border-slate-100 z-[100] py-2 overflow-hidden rounded-xl"
           >
             {availableLanguages.map((lng) => (
               <button
