@@ -12,6 +12,7 @@ import { StorefrontSettings, MenuLink } from '@/store/useSettingsStore';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { Portal } from './Portal';
+import { UserAvatar } from '../ui/UserAvatar';
 
 interface MobileMenuProps {
   user: SupabaseUser | null;
@@ -158,16 +159,11 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
                       <span className="text-xs font-medium uppercase tracking-wider text-gray-500">{labels.account}</span>
                       <div className="flex items-center justify-between bg-gray-50 p-4 rounded-none">
                         <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 rounded-none relative overflow-hidden border border-gray-200">
-                            <Image
-                              src={(user.user_metadata?.avatar_url || user.user_metadata?.picture) ? (user.user_metadata?.avatar_url || user.user_metadata?.picture) : `https://ui-avatars.com/api/?name=${user.user_metadata?.full_name || 'U'}&background=random`}
-                              alt="Profile"
-                              fill
-                              className="object-cover"
-                              referrerPolicy="no-referrer"
-                              sizes="40px"
-                            />
-                          </div>
+                          <UserAvatar 
+                            name={user.user_metadata?.full_name || user.email}
+                            imageUrl={user.user_metadata?.avatar_url || user.user_metadata?.picture}
+                            size={40}
+                          />
                           <div>
                             <p className="text-sm font-medium text-brand-ink">{user.user_metadata?.full_name || 'Account'}</p>
                             <p className="text-xs text-gray-500 truncate max-w-[120px]">{user.email}</p>

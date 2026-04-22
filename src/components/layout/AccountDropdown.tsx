@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { UserAvatar } from '../ui/UserAvatar';
 
 import { User as UserType } from '@/types';
 import { User as SupabaseUser } from '@supabase/supabase-js';
@@ -52,19 +53,14 @@ export function AccountDropdown({ user, isAdmin, labels }: AccountDropdownProps)
     <div className="relative h-full flex items-center" ref={dropdownRef}>
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-2 p-1.5 rounded-lg hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-200"
+        className="flex items-center p-1 rounded-lg hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100"
         aria-label="Toggle user menu"
       >
-        <div className="w-7 h-7 rounded-full overflow-hidden border border-gray-200 relative">
-          <Image 
-            src={(user.user_metadata?.avatar_url || user.user_metadata?.picture) ? (user.user_metadata?.avatar_url || user.user_metadata?.picture) : `https://ui-avatars.com/api/?name=${user.user_metadata?.full_name || 'U'}&background=random`} 
-            alt="Profile" 
-            fill
-            className="object-cover" 
-            referrerPolicy="no-referrer"
-            sizes="28px"
-          />
-        </div>
+        <UserAvatar 
+          name={user.user_metadata?.full_name || user.email}
+          imageUrl={user.user_metadata?.avatar_url || user.user_metadata?.picture}
+          size={28}
+        />
       </button>
 
       <AnimatePresence>
