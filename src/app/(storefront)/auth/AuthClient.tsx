@@ -28,7 +28,7 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
   const [loading, setLoading] = useState(false);
   const [showOTP, setShowOTP] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
-  const [otpType, setOtpType] = useState<'signup' | 'magiclink'>('signup');
+  const [otpType, setOtpType] = useState<'signup' | 'magiclink' | 'recovery'>('signup');
   const navigate = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -136,12 +136,11 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
     const supabase = createClient();
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset-password`,
-      });
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
       if (error) throw error;
-      toast.success(settings.resetPasswordSentSuccessText?.[lang]);
-      setIsForgotPassword(false);
+      toast.success(settings.resetPasswordSentSuccessText?.[lang] || 'Recovery code sent');
+      setOtpType('recovery');
+      setShowOTP(true);
     } catch (error: any) {
       toast.error(error.message || 'Failed to send reset link');
     } finally {
@@ -197,6 +196,11 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
                 const supabase = createClient();
                 await supabase.auth.getSession();
                 
+                if (otpType === 'recovery') {
+                  navigate.push('/auth/reset-password');
+                  return;
+                }
+
                 toast.success(settings.loginSuccessText?.[lang] || 'Authenticated successfully');
                 
                 // Set loading back to true to hide the OTP form and show a transition
