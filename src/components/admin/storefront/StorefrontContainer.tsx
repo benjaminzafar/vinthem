@@ -813,7 +813,60 @@ Text to translate: "${sourceText}"`;
                     </div>
                     <LocalizedSettingInput label="Consent Essential Description" value={settings.consentEssentialDescriptionText} onChange={v => handleUpdate('consentEssentialDescriptionText', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('consentEssentialDescriptionText', 'Consent Essential Description')} isGenerating={generatingId === 'consentEssentialDescriptionText-fill'} isTranslating={generatingId === 'consentEssentialDescriptionText-translate'} />
                     <LocalizedSettingInput label="Consent Analytics Description" value={settings.consentAnalyticsDescriptionText} onChange={v => handleUpdate('consentAnalyticsDescriptionText', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('consentAnalyticsDescriptionText', 'Consent Analytics Description')} isGenerating={generatingId === 'consentAnalyticsDescriptionText-fill'} isTranslating={generatingId === 'consentAnalyticsDescriptionText-translate'} />
+                    <LocalizedSettingInput label="Consent Marketing Title" value={settings.consentMarketingTitleText} onChange={v => handleUpdate('consentMarketingTitleText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('consentMarketingTitleText', 'Consent Marketing Title')} isGenerating={generatingId === 'consentMarketingTitleText-fill'} isTranslating={generatingId === 'consentMarketingTitleText-translate'} />
                     <LocalizedSettingInput label="Consent Marketing Description" value={settings.consentMarketingDescriptionText} onChange={v => handleUpdate('consentMarketingDescriptionText', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('consentMarketingDescriptionText', 'Consent Marketing Description')} isGenerating={generatingId === 'consentMarketingDescriptionText-fill'} isTranslating={generatingId === 'consentMarketingDescriptionText-translate'} />
+                  </div>
+                </SettingCard>
+
+                <SettingCard id="OTPVerification" title="Security & OTP Verification" icon={Lock}>
+                  <div className="space-y-8">
+                    <LocalizedSettingInput 
+                      label="OTP Modal Title" 
+                      value={settings.otpTitle} 
+                      onChange={v => handleUpdate('otpTitle', v)} 
+                      languages={settings.languages} 
+                      onAITranslate={() => handleAITranslate('otpTitle', 'OTP Title')} 
+                      isGenerating={generatingId === 'otpTitle-fill'} 
+                      isTranslating={generatingId === 'otpTitle-translate'} 
+                    />
+                    <LocalizedSettingInput 
+                      label="OTP Modal Subtitle" 
+                      value={settings.otpSubtitle} 
+                      onChange={v => handleUpdate('otpSubtitle', v)} 
+                      languages={settings.languages} 
+                      onAITranslate={() => handleAITranslate('otpSubtitle', 'OTP Subtitle')} 
+                      isGenerating={generatingId === 'otpSubtitle-fill'} 
+                      isTranslating={generatingId === 'otpSubtitle-translate'} 
+                    />
+                    <LocalizedSettingInput 
+                      label="Spam Folder Reminder" 
+                      value={settings.otpCheckSpam} 
+                      onChange={v => handleUpdate('otpCheckSpam', v)} 
+                      languages={settings.languages} 
+                      onAITranslate={() => handleAITranslate('otpCheckSpam', 'OTP Spam Reminder')} 
+                      isGenerating={generatingId === 'otpCheckSpam-fill'} 
+                      isTranslating={generatingId === 'otpCheckSpam-translate'} 
+                    />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <LocalizedSettingInput 
+                        label="Verify Button Text" 
+                        value={settings.otpVerifyButton} 
+                        onChange={v => handleUpdate('otpVerifyButton', v)} 
+                        languages={settings.languages} 
+                        onAITranslate={() => handleAITranslate('otpVerifyButton', 'OTP Verify Button')} 
+                        isGenerating={generatingId === 'otpVerifyButton-fill'} 
+                        isTranslating={generatingId === 'otpVerifyButton-translate'} 
+                      />
+                      <LocalizedSettingInput 
+                        label="Clear/Try Again Text" 
+                        value={settings.otpClearButton} 
+                        onChange={v => handleUpdate('otpClearButton', v)} 
+                        languages={settings.languages} 
+                        onAITranslate={() => handleAITranslate('otpClearButton', 'OTP Clear Button')} 
+                        isGenerating={generatingId === 'otpClearButton-fill'} 
+                        isTranslating={generatingId === 'otpClearButton-translate'} 
+                      />
+                    </div>
                   </div>
                 </SettingCard>
 

@@ -357,6 +357,11 @@ export interface StorefrontSettings {
   initialStockText: LocalizedString;
   weightKgText: LocalizedString;
   shippingClassText: LocalizedString;
+  otpTitle: LocalizedString;
+  otpSubtitle: LocalizedString;
+  otpCheckSpam: LocalizedString;
+  otpVerifyButton: LocalizedString;
+  otpClearButton: LocalizedString;
   shippingCountries: Array<{ code: string; name: LocalizedString }>;
 }
 
@@ -731,6 +736,11 @@ export const defaultSettings: StorefrontSettings = {
   initialStockText: { en: 'Initial Stock', sv: 'Initialt lager', fi: 'Alkuvarasto', da: 'Startlager' },
   weightKgText: { en: 'Weight (kg)', sv: 'Vikt (kg)', fi: 'Paino (kg)', da: 'Vægt (kg)' },
   shippingClassText: { en: 'Shipping Class', sv: 'Fraktklass', fi: 'Toimitusluokka', da: 'Forsendelsesklasse' },
+  otpTitle: { en: 'Verify your email', sv: 'Bekräfta din e-post', fi: 'Vahvista sähköpostisi', da: 'Bekræft din e-mail' },
+  otpSubtitle: { en: "We've sent an 8-digit code to", sv: 'Vi har skickat en 8-siffrig kod till', fi: 'Olemme lähettäneet 8-numeroisen koodin osoitteeseen', da: 'Vi har sendt en 8-cifret kode til' },
+  otpCheckSpam: { en: "Don't see it? Please check your spam folder.", sv: 'Ser du det inte? Kontrollera din skräppostmapp.', fi: 'Etkö näe sitä? Tarkista roskapostikansiosi.', da: 'Kan du ikke se den? Tjek venligst din spam-mappe.' },
+  otpVerifyButton: { en: 'Verify & Continue', sv: 'Verifiera och fortsätt', fi: 'Vahvista ja jatka', da: 'Bekræft og fortsæt' },
+  otpClearButton: { en: 'Clear and try again', sv: 'Rensa och försök igen', fi: 'Tyhjennä ja yritä uudelleen', da: 'Ryd og prøv igen' },
   shippingCountries: [
     { code: 'SE', name: { en: 'Sweden', sv: 'Sverige', fi: 'Ruotsi', da: 'Sverige' } },
     { code: 'FI', name: { en: 'Finland', sv: 'Finland', fi: 'Suomi', da: 'Finland' } },

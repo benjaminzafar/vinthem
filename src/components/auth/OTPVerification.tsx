@@ -12,15 +12,36 @@ interface OTPVerificationProps {
   email: string;
   type?: 'signup' | 'magiclink' | 'recovery' | 'email_change';
   onSuccess?: () => void;
+  labels?: {
+    title?: string;
+    subtitle?: string;
+    checkSpam?: string;
+    verifyButton?: string;
+    clearButton?: string;
+    errorFullCode?: string;
+    errorInvalid?: string;
+    successMessage?: string;
+  };
 }
 
-export function OTPVerification({ email, type = 'signup', onSuccess }: OTPVerificationProps) {
-  const [otp, setOtp] = useState<string[]>(new Array(6).fill(""));
+export function OTPVerification({ email, type = 'signup', onSuccess, labels }: OTPVerificationProps) {
+  const [otp, setOtp] = useState<string[]>(new Array(8).fill(""));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const supabase = createClient();
   const router = useRouter();
+
+  const L = {
+    title: labels?.title || "Verify your email",
+    subtitle: labels?.subtitle || "We've sent an 8-digit code to",
+    checkSpam: labels?.checkSpam || "Don't see it? Please check your spam folder.",
+    verifyButton: labels?.verifyButton || "Verify & Continue",
+    clearButton: labels?.clearButton || "Clear and try again",
+    errorFullCode: labels?.errorFullCode || "Please enter the full 8-digit code.",
+    errorInvalid: labels?.errorInvalid || "Invalid or expired code.",
+    successMessage: labels?.successMessage || "Identity verified successfully!"
+  };
 
   // Focus the first input on mount
   useEffect(() => {
@@ -33,11 +54,10 @@ export function OTPVerification({ email, type = 'signup', onSuccess }: OTPVerifi
     if (isNaN(Number(element.value))) return false;
 
     const newOtp = [...otp];
-    newOtp[index] = element.value.slice(-1); // Only take the last character
+    newOtp[index] = element.value.slice(-1);
     setOtp(newOtp);
 
-    // Move to next input if value is entered
-    if (element.value && index < 5) {
+    if (element.value && index < 7) {
       inputRefs.current[index + 1]?.focus();
     }
   };
@@ -51,17 +71,16 @@ export function OTPVerification({ email, type = 'signup', onSuccess }: OTPVerifi
   };
 
   const handlePaste = (e: React.ClipboardEvent) => {
-    const data = e.clipboardData.getData("text").slice(0, 6);
+    const data = e.clipboardData.getData("text").slice(0, 8);
     if (!/^\d+$/.test(data)) return;
 
     const newOtp = [...otp];
     data.split("").forEach((char, index) => {
-      if (index < 6) newOtp[index] = char;
+      if (index < 8) newOtp[index] = char;
     });
     setOtp(newOtp);
     
-    // Focus the last input or the next empty one
-    const nextIndex = data.length < 6 ? data.length : 5;
+    const nextIndex = data.length < 8 ? data.length : 7;
     inputRefs.current[nextIndex]?.focus();
   };
 
@@ -69,8 +88,8 @@ export function OTPVerification({ email, type = 'signup', onSuccess }: OTPVerifi
     if (e) e.preventDefault();
     const token = otp.join("");
     
-    if (token.length !== 6) {
-      setError("Please enter the full 6-digit code.");
+    if (token.length !== 8) {
+      setError(L.errorFullCode);
       return;
     }
 
@@ -78,7 +97,7 @@ export function OTPVerification({ email, type = 'signup', onSuccess }: OTPVerifi
     setError(null);
 
     try {
-      const { data, error: verifyError } = await supabase.auth.verifyOtp({
+      const { error: verifyError } = await supabase.auth.verifyOtp({
         email,
         token,
         type: type === 'magiclink' ? 'magiclink' : type as any,
@@ -86,7 +105,7 @@ export function OTPVerification({ email, type = 'signup', onSuccess }: OTPVerifi
 
       if (verifyError) throw verifyError;
 
-      toast.success("Identity verified successfully!");
+      toast.success(L.successMessage);
       if (onSuccess) {
         onSuccess();
       } else {
@@ -94,35 +113,37 @@ export function OTPVerification({ email, type = 'signup', onSuccess }: OTPVerifi
         router.refresh();
       }
     } catch (err: any) {
-      setError(err.message || "Invalid or expired code.");
-      toast.error(err.message || "Verification failed.");
+      setError(err.message || L.errorInvalid);
+      toast.error(err.message || L.errorInvalid);
     } finally {
       setLoading(false);
     }
   };
 
-  // Auto-verify when OTP is complete
   useEffect(() => {
-    if (otp.join("").length === 6 && !loading) {
+    if (otp.join("").length === 8 && !loading) {
       handleVerify();
     }
   }, [otp]);
 
   return (
-    <div className="w-full max-w-md mx-auto p-8 bg-white border border-slate-100 rounded-3xl shadow-2xl shadow-slate-200/50">
+    <div className="w-full max-w-md mx-auto p-6 sm:p-8 bg-white border border-slate-100 rounded-3xl shadow-2xl shadow-slate-200/50">
       <div className="text-center mb-8">
         <div className="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-slate-900/20">
           <ShieldCheck className="w-8 h-8 text-white" strokeWidth={1.5} />
         </div>
-        <h2 className="text-2xl font-bold text-slate-900 tracking-tight mb-2">Verify your email</h2>
-        <p className="text-slate-500 text-sm">
-          We've sent a 6-digit code to <br />
-          <span className="font-semibold text-slate-900">{email}</span>
-        </p>
+        <h2 className="text-2xl font-bold text-slate-900 tracking-tight mb-2">{L.title}</h2>
+        <div className="text-slate-500 text-sm space-y-1">
+          <p>{L.subtitle}</p>
+          <p className="font-semibold text-slate-900 break-all">{email}</p>
+          <p className="text-xs text-amber-600 bg-amber-50 py-1 px-3 rounded-full inline-block mt-2 font-medium">
+            {L.checkSpam}
+          </p>
+        </div>
       </div>
 
       <form onSubmit={handleVerify} className="space-y-8">
-        <div className="flex justify-between gap-2 sm:gap-3" onPaste={handlePaste}>
+        <div className="grid grid-cols-4 gap-2 sm:gap-3" onPaste={handlePaste}>
           {otp.map((data, index) => (
             <input
               key={index}
@@ -134,7 +155,7 @@ export function OTPVerification({ email, type = 'signup', onSuccess }: OTPVerifi
               onChange={(e) => handleChange(e.target, index)}
               onKeyDown={(e) => handleKeyDown(e, index)}
               className={`
-                w-12 h-14 sm:w-14 sm:h-16 text-center text-xl font-bold bg-slate-50 border-2 rounded-xl transition-all duration-200 outline-none
+                w-full h-12 sm:h-14 text-center text-lg font-bold bg-slate-50 border-2 rounded-xl transition-all duration-200 outline-none
                 ${data ? 'border-slate-900 bg-white ring-4 ring-slate-900/5' : 'border-slate-100 text-slate-300 focus:border-slate-400 focus:bg-white'}
                 ${error ? 'border-red-500 ring-red-500/5' : ''}
               `}
