@@ -160,10 +160,18 @@ export function CRMContainer({ initialData }: { initialData?: CRMData }) {
             : null,
         status: ticket.status === 'resolved' || ticket.status === 'in-progress' ? ticket.status : 'open',
         priority: typeof ticket.priority === 'string' ? ticket.priority : 'NORMAL',
-        messages: Array.isArray(ticket.messages) ? (ticket.messages as any[]).map(m => ({
-          sender: m.role === 'admin' ? 'admin' : 'customer',
-          text: (m.content || m.text || '').trim(),
-          createdAt: m.timestamp || m.createdAt || m.created_at || new Date().toISOString()
+        messages: Array.isArray(ticket.messages) ? (ticket.messages as Array<{
+          sender?: string;
+          role?: string;
+          text?: string;
+          content?: string;
+          createdAt?: string;
+          timestamp?: string;
+          created_at?: string;
+        }>).map(m => ({
+          sender: (m.sender === 'admin' || m.role === 'admin') ? 'admin' : 'customer',
+          text: (m.text || m.content || '').trim(),
+          createdAt: m.createdAt || m.timestamp || m.created_at || new Date().toISOString()
         })) : [],
         imageUrl: typeof ticket.image_url === 'string' ? ticket.image_url : null,
         createdAt: typeof ticket.created_at === 'string' ? ticket.created_at : null,

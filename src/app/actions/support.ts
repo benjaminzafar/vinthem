@@ -96,6 +96,13 @@ export async function submitSupportRequestAction(input: SupportRequestInput): Pr
       const { error } = await supabase.from('support_tickets').insert({
         subject,
         message: safeMessage,
+        messages: [
+          {
+            sender: 'customer',
+            text: safeMessage,
+            createdAt: new Date().toISOString(),
+          }
+        ],
         user_id: user.id,
         status: 'open',
       });
@@ -313,10 +320,21 @@ export async function updateReturnWorkflowAction(input: {
       }
     }
 
-    // 3. Update Status in DB
+    // 3. Update Status and Append System Message Log
+    const existingMessages = request.messages || [];
+    const systemLog = {
+      sender: 'admin' as const,
+      text: `[SYSTEM] Automation: Changed status to ${input.status}. Localized email triggered in ${effectiveLang.toUpperCase()}.`,
+      createdAt: new Date().toISOString(),
+    };
+
     const { error: updateErr } = await adminSupabase
       .from('refund_requests')
-      .update({ status: input.status, updated_at: new Date().toISOString() })
+      .update({ 
+        status: input.status, 
+        messages: [...existingMessages, systemLog],
+        updated_at: new Date().toISOString() 
+      })
       .eq('id', input.requestId);
 
     if (updateErr) throw updateErr;

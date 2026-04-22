@@ -171,10 +171,14 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
                                   <div key={idx} className={`flex ${msg.sender === 'admin' ? 'justify-end' : 'justify-start'}`}>
                                     <div className={`max-w-[85%] p-4 rounded text-sm ${
                                       msg.sender === 'admin' 
-                                        ? 'bg-slate-900 text-white rounded-tr-none' 
+                                        ? msg.text.startsWith('[SYSTEM]') 
+                                          ? 'bg-slate-50 border border-slate-200 text-slate-500 rounded-tr-none'
+                                          : 'bg-slate-900 text-white rounded-tr-none' 
                                         : 'bg-white border border-slate-300 text-slate-900 rounded-tl-none'
                                     }`}>
-                                      <p className={msg.sender === 'admin' ? '' : 'font-medium'}>{msg.text}</p>
+                                      <p className={`${msg.sender === 'admin' ? '' : 'font-medium'} ${msg.text.startsWith('[SYSTEM]') ? 'italic text-[11px]' : ''}`}>
+                                        {msg.text.startsWith('[SYSTEM]') ? msg.text.replace('[SYSTEM]', '🤖') : msg.text}
+                                      </p>
                                       <span className={`text-[9px] font-bold uppercase tracking-widest block mt-2 ${msg.sender === 'admin' ? 'text-slate-400' : 'text-slate-400'}`}>
                                         {new Date(msg.createdAt).toLocaleString()}
                                       </span>

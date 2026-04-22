@@ -2,14 +2,14 @@
 import { logger } from '@/lib/logger';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Bell, Package, MessageSquare, RefreshCcw, X, Users, Star, CheckCheck, Trash2, ArrowRight } from 'lucide-react';
+import { Bell, Package, MessageSquare, RefreshCcw, X, Users, Star, CheckCheck, Trash2, ArrowRight, Megaphone } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { formatDistanceToNow } from 'date-fns';
 import { useRouter } from 'next/navigation';
 
 import { createClient } from '@/utils/supabase/client';
 
-type NotificationType = 'order' | 'ticket' | 'refund' | 'customer' | 'review';
+type NotificationType = 'order' | 'ticket' | 'refund' | 'customer' | 'review' | 'newsletter';
 
 type NotificationItem = {
   id: string;
@@ -95,6 +95,13 @@ function getNotificationStyle(type: NotificationType) {
         bg: 'bg-violet-50',
         border: 'border-violet-200',
       };
+    case 'newsletter':
+      return {
+        icon: Megaphone,
+        accent: 'text-sky-700',
+        bg: 'bg-sky-50',
+        border: 'border-sky-200',
+      };
     default:
       return {
         icon: Bell,
@@ -132,7 +139,7 @@ export function NotificationCenter() {
     let active = true;
 
     const fetchNotifications = async () => {
-      const [ordersRes, ticketsRes, refundsRes, customersRes, reviewsRes] = await Promise.all([
+      const [ordersRes, ticketsRes, refundsRes, customersRes, reviewsRes, newsletterRes] = await Promise.all([
         supabase
           .from('orders')
           .select('id, order_id, created_at')
@@ -159,6 +166,11 @@ export function NotificationCenter() {
           .select('id, rating, comment, created_at, user_id, user_name')
           .order('created_at', { ascending: false })
           .limit(6),
+        supabase
+          .from('newsletter_subscribers')
+          .select('id, email, subscribed_at, source')
+          .order('subscribed_at', { ascending: false })
+          .limit(6),
       ]);
 
       const responseErrors = [
@@ -167,6 +179,7 @@ export function NotificationCenter() {
         refundsRes.error,
         customersRes.error,
         reviewsRes.error,
+        newsletterRes.error,
       ].filter(Boolean);
 
       if (responseErrors.length > 0 && process.env.NODE_ENV === 'development') {
@@ -200,11 +213,13 @@ export function NotificationCenter() {
             ? ticket.customer_email
             : linkedCustomer?.email || linkedCustomer?.name || 'a customer';
 
+          const statusBadge = ticket.status === 'open' ? 'NEW' : ticket.status.toUpperCase();
+
           return {
             id: `ticket-${ticket.id}`,
             type: 'ticket' as const,
-            title: 'New support activity',
-            message: `${ticket.subject || 'Support request'} from ${customerLabel}.`,
+            title: `Support: ${statusBadge}`,
+            message: `${ticket.subject || 'Inquiry'} from ${customerLabel}.`,
             timestamp: new Date(ticket.created_at),
             link: '/admin/customers',
           };
@@ -238,6 +253,14 @@ export function NotificationCenter() {
             link: '/admin/customers',
           };
         }),
+        ...(newsletterRes.data ?? []).map((sub) => ({
+          id: `sub-${sub.id}`,
+          type: 'newsletter' as const,
+          title: 'New Subscriber',
+          message: `${sub.email} joined from ${sub.source || 'home'}.`,
+          timestamp: new Date(sub.subscribed_at),
+          link: '/admin/customers',
+        })),
       ]
         .filter((item) => !Number.isNaN(item.timestamp.getTime()))
         .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
@@ -270,6 +293,10 @@ export function NotificationCenter() {
       .channel('admin-notifications-reviews')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'reviews' }, () => void fetchNotifications())
       .subscribe();
+    const newsletterChannel = supabase
+      .channel('admin-notifications-newsletter')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'newsletter_subscribers' }, () => void fetchNotifications())
+      .subscribe();
 
     return () => {
       active = false;
@@ -278,6 +305,7 @@ export function NotificationCenter() {
       supabase.removeChannel(refundsChannel);
       supabase.removeChannel(customersChannel);
       supabase.removeChannel(reviewsChannel);
+      supabase.removeChannel(newsletterChannel);
     };
   }, [supabase]);
 
