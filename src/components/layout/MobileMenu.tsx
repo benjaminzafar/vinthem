@@ -49,14 +49,10 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
     return () => window.removeEventListener('resize', handleResize);
   }, [isMobileMenuOpen, setMobileMenuOpen]);
 
-  if (isDesktop) return null;
-
   useEffect(() => {
     if (isMobileMenuOpen) {
-      // Lock scroll without snapping to top
       document.body.style.overflow = 'hidden';
       document.documentElement.style.overflow = 'hidden';
-      // touch-action: none prevents some mobile browsers from scrolling via drag
       document.body.style.touchAction = 'none';
       document.documentElement.style.touchAction = 'none';
     } else {
@@ -83,13 +79,15 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
       document.addEventListener('mousedown', handleClickOutside);
     }
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isMobileMenuOpen]);
+  }, [isMobileMenuOpen, setMobileMenuOpen]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate.refresh();
     setMobileMenuOpen(false);
   };
+
+  if (isDesktop) return null;
 
   return (
     <>
