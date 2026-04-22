@@ -11,11 +11,13 @@ export function CartToggle() {
   return (
     <button
       onClick={() => setCartOpen(true)}
-      className="relative p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-lg"
+      className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-lg group"
       aria-label="View Shopping Cart"
     >
-      <ShoppingBag className="w-5 h-5" strokeWidth={1.5} />
-      <CartBadge />
+      <div className="relative">
+        <ShoppingBag className="w-5 h-5" strokeWidth={1.5} />
+        <CartBadge />
+      </div>
     </button>
   );
 }
