@@ -217,7 +217,7 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
                 await supabase.auth.getSession();
                 
                 if (otpType === 'recovery') {
-                  navigate.push('/auth/reset-password');
+                  navigate.push(`/${lang}/auth/reset-password`);
                   return;
                 }
 
