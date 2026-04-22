@@ -7,7 +7,9 @@ import {
   Plus, 
   Download, 
   Search, 
-  Trash2
+  Trash2,
+  Check,
+  X
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -79,6 +81,10 @@ export function ProductManager({
   const router = useRouter();
   const customConfirm = useCustomConfirm();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Selection State
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkProcessing, setBulkProcessing] = useState(false);
 
   const fetchProducts = useCallback(async ({ reset = false, showLoader = false }: { reset?: boolean; showLoader?: boolean } = {}) => {
     if (reset) {
@@ -227,6 +233,57 @@ export function ProductManager({
     }
   };
 
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleAll = () => {
+    if (selectedIds.size === products.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(products.map(p => p.id)));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    
+    const confirmed = await customConfirm(
+      'Bulk Delete', 
+      `Are you sure you want to delete ${selectedIds.size} selected products? This cannot be undone.`
+    );
+
+    if (confirmed) {
+      setBulkProcessing(true);
+      const toastId = toast.loading(`Deleting ${selectedIds.size} products...`);
+      try {
+        const ids = Array.from(selectedIds);
+        // Sequential delete for safety, though bulk action would be better on server
+        const results = await Promise.all(ids.map(id => deleteProductAction(id)));
+        const failedCount = results.filter(r => !r.success).length;
+        
+        if (failedCount > 0) {
+          toast.error(`Deleted ${ids.length - failedCount} products, but ${failedCount} failed.`, { id: toastId });
+        } else {
+          toast.success(`Successfully deleted ${ids.length} products`, { id: toastId });
+        }
+        
+        setProducts(prev => prev.filter(p => !selectedIds.has(p.id)));
+        setSelectedIds(new Set());
+      } catch (error: unknown) {
+        const err = error as Error;
+        toast.error('Bulk delete failed: ' + err.message, { id: toastId });
+      } finally {
+        setBulkProcessing(false);
+      }
+    }
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -290,7 +347,18 @@ export function ProductManager({
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-slate-300 text-[11px] uppercase font-bold tracking-widest text-slate-500 bg-slate-50">
-                <th className="px-6 py-4 w-12 text-center opacity-30"><Plus className="w-4 h-4 mx-auto" /></th>
+                <th className="px-6 py-4 w-12 text-center">
+                  <div 
+                    onClick={toggleAll}
+                    className={`w-4 h-4 border rounded-sm mx-auto cursor-pointer transition-all flex items-center justify-center ${
+                      selectedIds.size === products.length && products.length > 0
+                        ? 'bg-slate-900 border-slate-900' 
+                        : 'border-slate-300 hover:border-slate-400 bg-white'
+                    }`}
+                  >
+                    {selectedIds.size === products.length && products.length > 0 && <Check className="w-3 h-3 text-white" />}
+                  </div>
+                </th>
                 <th className="px-6 py-4">Product</th>
                 <th className="px-6 py-4">Category</th>
                 <th className="px-6 py-4">Price</th>
@@ -308,10 +376,24 @@ export function ProductManager({
                 <tr 
                   key={product.id} 
                   onClick={() => handleOpenModal(product)}
-                  className="hover:bg-slate-50 transition-colors group cursor-pointer"
+                  className={`transition-colors group cursor-pointer ${
+                    selectedIds.has(product.id) ? 'bg-slate-50' : 'hover:bg-slate-50'
+                  }`}
                 >
-                  <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
-                    <div className="w-4 h-4 border border-slate-300 rounded-sm mx-auto group-hover:border-slate-900 transition-colors" />
+                  <td 
+                    className="px-6 py-4" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleSelect(product.id);
+                    }}
+                  >
+                    <div className={`w-4 h-4 border rounded-sm mx-auto transition-all flex items-center justify-center ${
+                      selectedIds.has(product.id)
+                        ? 'bg-slate-900 border-slate-900' 
+                        : 'border-slate-300 group-hover:border-slate-900 bg-white'
+                    }`}>
+                      {selectedIds.has(product.id) && <Check className="w-3 h-3 text-white" />}
+                    </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-4">
@@ -371,13 +453,40 @@ export function ProductManager({
           loadingMessage="Streaming inventory entries..."
         />
 
-        <div className="px-6 py-4 border-t border-slate-300 bg-slate-50 flex items-center justify-between h-14">
-           <p className="text-xs font-medium text-slate-500">
-             Showing <span className="text-slate-900 font-bold">{products.length}</span> entries 
-             {debouncedSearchQuery && <span> matching "{debouncedSearchQuery}"</span>}
-           </p>
-        </div>
       </div>
+
+      {/* Bulk Actions Bar */}
+      {selectedIds.size > 0 && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-8 duration-300">
+          <div className="bg-slate-900 text-white rounded-full px-6 py-3 shadow-2xl flex items-center gap-6 border border-white/10 backdrop-blur-md">
+            <div className="flex items-center gap-3 pr-6 border-r border-white/20">
+              <div className="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center text-[10px] font-black uppercase">
+                {selectedIds.size}
+              </div>
+              <span className="text-xs font-bold uppercase tracking-widest text-slate-300">Selected</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleBulkDelete}
+                disabled={bulkProcessing}
+                className="flex items-center gap-2 px-4 py-1.5 rounded-full hover:bg-rose-500/10 text-rose-400 transition-all group"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span className="text-[10px] font-black uppercase tracking-widest">Delete</span>
+              </button>
+
+              <button
+                onClick={() => setSelectedIds(new Set())}
+                className="flex items-center gap-2 px-4 py-1.5 rounded-full hover:bg-white/10 text-slate-400 transition-all"
+              >
+                <X className="w-4 h-4" />
+                <span className="text-[10px] font-black uppercase tracking-widest">Clear</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <input type="file" ref={fileInputRef} className="hidden" accept=".csv" />
     </div>
