@@ -1,8 +1,6 @@
 'use server';
-﻿import { logger } from '@/lib/logger';
-
+import { logger } from '@/lib/logger';
 import { revalidatePath } from 'next/cache';
-
 import { requireAdminUser } from '@/lib/admin';
 import { createClient } from '@/utils/supabase/server';
 
@@ -25,7 +23,7 @@ type UpdateRefundStatusInput = {
   status: RefundStatus;
 };
 
-type SupportTicketStatus = 'open' | 'in-progress' | 'resolved';
+type SupportTicketStatus = 'open' | 'in-progress' | 'resolved' | 'Approved' | 'WaitingItem' | 'Received' | 'Exchanged' | 'Refunded';
 
 type SupportTicketMessage = {
   sender: 'admin' | 'customer';
@@ -171,7 +169,7 @@ export async function replySupportTicketAction(input: ReplySupportTicketInput): 
     const { supabase } = await requireAdminUser();
     const ticketId = sanitizeMessage(input.ticketId);
     const replyText = sanitizeMessage(input.replyText ?? '');
-    const allowedStatuses: SupportTicketStatus[] = ['open', 'in-progress', 'resolved'];
+    const allowedStatuses: SupportTicketStatus[] = ['open', 'in-progress', 'resolved', 'Approved', 'WaitingItem', 'Received', 'Exchanged', 'Refunded'];
     const nextStatus = input.status ?? (replyText ? 'in-progress' : 'open');
 
     if (!ticketId) {
@@ -268,4 +266,104 @@ export async function deleteSupportTicketAction(ticketId: string): Promise<Suppo
   }
 }
 
+import { createAdminClient } from '@/utils/supabase/server';
+import { createStripeRefundAction } from './stripe-refund';
+import { sendTransactionalEmail } from '@/lib/brevo';
+import { getIntegrationsAction } from './integrations';
+import { SUPPORTED_LOCALES } from '@/lib/locales';
 
+export async function updateReturnWorkflowAction(input: {
+  requestId: string;
+  status: 'Approved' | 'WaitingItem' | 'Received' | 'Exchanged' | 'Refunded';
+  orderId?: string;
+  amount?: number;
+}): Promise<SupportActionResult> {
+  try {
+    const { supabase: userSupabase } = await requireAdminUser();
+    const adminSupabase = createAdminClient();
+
+    // 1. Fetch Request & User Info (Email and Language)
+    const { data: request, error: fetchErr } = await adminSupabase
+      .from('refund_requests')
+      .select('*, users!inner(email, preferred_lang, full_name)')
+      .eq('id', input.requestId)
+      .single();
+
+    if (fetchErr || !request) throw new Error('Return request not found.');
+
+    const userEmail = request.users.email;
+    const userLang = (request.users.preferred_lang || 'en').toLowerCase();
+    const userName = request.users.full_name || 'Customer';
+
+    // 1.5 Fetch Active Locales from settings to ensure true dynamic globalization
+    const { data: settingsRow } = await adminSupabase
+      .from('settings')
+      .select('data')
+      .eq('id', 'primary')
+      .single();
+    
+    const activeLocales = settingsRow?.data?.languages || ['en'];
+    const effectiveLang = activeLocales.includes(userLang) ? userLang : 'en';
+
+    // 2. Perform Financial Action if Status is 'Refunded'
+    if (input.status === 'Refunded' && input.orderId) {
+      const stripeRes = await createStripeRefundAction(input.orderId, input.amount);
+      if (!stripeRes.success) {
+        throw new Error(`Financial Refund Failed: ${stripeRes.message}`);
+      }
+    }
+
+    // 3. Update Status in DB
+    const { error: updateErr } = await adminSupabase
+      .from('refund_requests')
+      .update({ status: input.status, updated_at: new Date().toISOString() })
+      .eq('id', input.requestId);
+
+    if (updateErr) throw updateErr;
+
+    // 4. Send Localized Email via Brevo
+    const configRes = await getIntegrationsAction();
+    const config = configRes.data || {};
+    
+    const statusKey = 
+      input.status === 'Approved' ? 'RETURN_APPROVE' :
+      input.status === 'Received' ? 'RETURN_RECEIVED' :
+      input.status === 'Refunded' ? 'REFUND_DONE' : null;
+
+    if (statusKey && userEmail) {
+      const templateKey = `BREVO_TPL_${statusKey}_${effectiveLang.toUpperCase()}`;
+      const templateId = config[templateKey];
+      const policyLink = `${process.env.NEXT_PUBLIC_SITE_URL}/${effectiveLang}/returns`;
+
+      const subject = 
+        input.status === 'Approved' ? 'Return Request Approved - Mavren Shop' :
+        input.status === 'Received' ? 'Item Received - Return Update' :
+        input.status === 'Refunded' ? 'Refund Processed - Mavren Shop' : 'Update on your Return Request';
+
+      if (templateId && templateId !== '********') {
+        await sendTransactionalEmail({
+          to: [{ email: userEmail, name: userName }],
+          subject,
+          templateId: Number(templateId),
+          params: {
+            USER_NAME: userName,
+            POLICY_LINK: policyLink,
+            ORDER_ID: input.orderId || 'N/A'
+          }
+        });
+      }
+    }
+
+    revalidateSupportViews();
+    revalidatePath('/admin', 'layout');
+
+    return {
+      success: true,
+      message: `Status updated to ${input.status} and customer notified in ${effectiveLang.toUpperCase()}.`,
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Workflow update failed.';
+    logger.error('[Action Error] updateReturnWorkflowAction:', error);
+    return { success: false, message, error: message };
+  }
+}

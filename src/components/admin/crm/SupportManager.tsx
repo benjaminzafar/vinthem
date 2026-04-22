@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronDown, ChevronRight, MessageSquare, Clock, AlertCircle, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronRight, MessageSquare, Clock, AlertCircle, Trash2, Truck, Globe } from 'lucide-react';
 import { replySupportTicketAction, deleteSupportTicketAction } from '@/app/actions/support';
 import { toast } from 'sonner';
 import type { SupportTicket } from './types';
@@ -22,6 +22,8 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
     switch (status) {
       case 'open': return 'bg-slate-900 text-white border-slate-900';
       case 'resolved': return 'bg-emerald-50 text-emerald-700 border-emerald-100';
+      case 'Approved': case 'WaitingItem': case 'Received': case 'Exchanged': case 'Refunded': 
+        return 'bg-indigo-50 text-indigo-700 border-indigo-100';
       default: return 'bg-slate-50 text-slate-500 border-slate-200';
     }
   };
@@ -109,6 +111,7 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
             <tr className="border-b border-slate-300 text-[11px] uppercase tracking-widest text-slate-500 font-bold">
               <th className="px-6 py-4">Requester</th>
               <th className="px-6 py-4">Topic</th>
+              <th className="px-6 py-4 text-center"><Globe className="w-3.5 h-3.5 inline-block" /></th>
               <th className="px-6 py-4">Status</th>
               <th className="px-6 py-4">Priority</th>
             </tr>
@@ -132,6 +135,11 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
                       {ticket.customerName || ticket.customerEmail || 'Unknown requester'}
                     </td>
                     <td className="px-6 py-4 text-sm font-medium text-slate-500">{ticket.subject}</td>
+                    <td className="px-6 py-4 text-center">
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-tight bg-slate-100 text-slate-500 border border-slate-200">
+                        {ticket.locale || 'EN'}
+                      </span>
+                    </td>
                     <td className="px-6 py-4">
                       <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest border ${getStatusStyle(ticket.status)}`}>
                         {ticket.status}
@@ -211,14 +219,73 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
                                     onClick={() => handleStatusChange(ticket.id, s as SupportTicket['status'])}
                                     disabled={isUpdating}
                                     className={`py-2 px-3 rounded text-[10px] font-bold uppercase tracking-widest border transition-all ${
-                                      ticket.status === s ? 'bg-slate-900 text-white border-slate-900' : 'bg-slate-50 text-slate-500 border-slate-300'
+                                      ticket.status === s ? 'bg-slate-900 text-white border-slate-900' : 'bg-zinc-50 text-slate-500 border-slate-200'
                                     } disabled:opacity-50`}
                                   >
                                     Mark as {s}
                                   </button>
                                 ))}
                               </div>
-                              <div className="pt-4 border-t border-slate-100">
+
+                              {/* Return Workflow Section */}
+                              <div className="mt-6 pt-6 border-t border-slate-100">
+                                <h4 className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest mb-4 flex items-center gap-2 text-wrap">
+                                  <Truck className="w-3.5 h-3.5" /> Return Workflow
+                                </h4>
+                                <div className="grid grid-cols-1 gap-2">
+                                  {[
+                                    { id: 'Approved', label: 'Approve & Send Policy' },
+                                    { id: 'WaitingItem', label: 'Set Awaiting Item' },
+                                    { id: 'Received', label: 'Confirm Item Received' },
+                                    { id: 'Exchanged', label: 'Mark as Exchanged' },
+                                    { id: 'Refunded', label: 'Issue Final Refund' }
+                                  ].map((action) => {
+                                    const langSuffix = (ticket.locale || 'en').toUpperCase();
+                                    return (
+                                      <button 
+                                        key={action.id}
+                                        onClick={async () => {
+                                          const isRefund = action.id === 'Refunded';
+                                          const confirm = isRefund 
+                                            ? window.confirm('This will trigger a real financial REFUND via Stripe. Proceed?') 
+                                            : true;
+                                          
+                                          if (!confirm) return;
+
+                                          setIsUpdating(true);
+                                          const toastId = toast.loading(`Processing ${action.id}...`);
+                                          try {
+                                            const { updateReturnWorkflowAction } = await import('@/app/actions/support');
+                                            const res = await updateReturnWorkflowAction({
+                                              requestId: ticket.id,
+                                              status: action.id as any,
+                                              orderId: ticket.orderId ?? undefined
+                                            });
+                                            if (res.success) toast.success(res.message, { id: toastId });
+                                            else throw new Error(res.error || res.message);
+                                          } catch (err) {
+                                            const errorMessage = err instanceof Error ? err.message : 'Unknown error during refund';
+                                            toast.error(errorMessage, { id: toastId });
+                                          } finally {
+                                            setIsUpdating(false);
+                                          }
+                                        }}
+                                        disabled={isUpdating}
+                                        className={`py-2.5 px-3 rounded text-[10px] font-bold uppercase tracking-widest border transition-all ${
+                                          ticket.status === action.id 
+                                            ? 'bg-indigo-600 text-white border-indigo-600' 
+                                            : 'bg-white text-indigo-600 border-indigo-100 hover:border-indigo-300'
+                                        } disabled:opacity-50 text-left flex justify-between items-center group`}
+                                      >
+                                        <span>{action.label}</span>
+                                        <span className="text-[8px] opacity-40 group-hover:opacity-100 transition-opacity bg-indigo-50 text-indigo-500 px-1 rounded ml-1">sync:{langSuffix}</span>
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+
+                              <div className="pt-6 border-t border-slate-100 mt-6">
                                 <h4 className="text-[10px] font-bold text-rose-400 uppercase tracking-widest mb-4">Critical Actions</h4>
                                 <button
                                   onClick={() => handleDeleteTicket(ticket.id)}

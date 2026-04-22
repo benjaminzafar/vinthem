@@ -136,6 +136,7 @@ export interface SupportTicket {
     content: string;
     timestamp: string;
   }>;
+  locale?: string;
   created_at: string;
   updated_at: string;
 }
@@ -146,6 +147,7 @@ export interface RefundRequest {
   order_id: string;
   status: 'Pending' | 'Approved' | 'Rejected' | 'Refunded';
   reason: string;
+  locale?: string;
   created_at: string;
 }
 
@@ -171,6 +173,7 @@ export interface CRMUser extends User {
   display_name?: string | null;
   last_sign_in_at?: string | null;
   is_authenticated?: boolean;
+  preferred_lang?: string;
 }
 
 export interface CRMData {

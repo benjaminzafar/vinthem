@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { LifeBuoy, RotateCcw, Search, ShieldCheck, ShoppingBag } from 'lucide-react';
+import { LifeBuoy, RotateCcw, Search, ShieldCheck, ShoppingBag, Globe } from 'lucide-react';
 import { formatPrice } from '@/lib/currency';
 import type { CRMCustomer } from './types';
 
@@ -47,6 +47,7 @@ export function CustomerTable({
           <thead>
             <tr className="border-b border-slate-300 text-[11px] font-bold uppercase tracking-widest text-slate-500">
               <th className="px-6 py-4">Client Identity</th>
+              <th className="px-6 py-4 text-center"><Globe className="w-3.5 h-3.5 inline-block" /></th>
               <th className="px-6 py-4">Portfolio</th>
               <th className="px-6 py-4">Activity</th>
               <th className="px-6 py-4">Access Level</th>
@@ -79,6 +80,11 @@ export function CustomerTable({
                         <p className="truncate text-xs text-slate-400">{customer.email}</p>
                       </div>
                     </div>
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-tight bg-slate-100 text-slate-500 border border-slate-200">
+                      {customer.preferred_lang || 'EN'}
+                    </span>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-wrap gap-2">

@@ -27,7 +27,10 @@ export async function syncCurrentUserProfileAction(name?: string): Promise<AuthA
       throw new Error('You appear to be signed out. Please sign in again.');
     }
 
-    await ensureUserProfile(user, name?.replace(/[<>]/g, '').trim() || user.user_metadata?.full_name);
+    // Attempt to get language from user metadata or current URL context if available
+    const lang = user.user_metadata?.lang || 'en';
+
+    await ensureUserProfile(user, name?.replace(/[<>]/g, '').trim() || user.user_metadata?.full_name, lang);
 
     return {
       success: true,

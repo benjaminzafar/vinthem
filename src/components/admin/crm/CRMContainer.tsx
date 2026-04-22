@@ -168,6 +168,7 @@ export function CRMContainer({ initialData }: { initialData?: CRMData }) {
         imageUrl: typeof ticket.image_url === 'string' ? ticket.image_url : null,
         createdAt: typeof ticket.created_at === 'string' ? ticket.created_at : null,
         updatedAt: typeof ticket.updated_at === 'string' ? ticket.updated_at : null,
+        locale: (ticket as any).locale || 'en'
       };
     });
   }, [tickets, customerMap]);
@@ -185,6 +186,7 @@ export function CRMContainer({ initialData }: { initialData?: CRMData }) {
         orderId: typeof refund.order_id === 'string' ? refund.order_id : null,
         status: refund.status === 'Approved' || refund.status === 'Rejected' || refund.status === 'Refunded' ? refund.status : 'Pending',
         reason: typeof refund.reason === 'string' ? refund.reason : null,
+        locale: (refund as any).locale || 'en',
         createdAt: typeof refund.created_at === 'string' ? refund.created_at : null,
       };
     });

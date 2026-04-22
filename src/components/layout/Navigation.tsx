@@ -49,7 +49,9 @@ export default async function Navigation() {
   // Resolve language from cookie
   const cookieStore = await cookies();
   const lang = (cookieStore.get('NEXT_LOCALE')?.value || 'en') as string;
-  const availableLanguages = settings?.languages?.length ? settings.languages : ['en', 'sv', 'fi', 'da'];
+  
+  // Truly dynamic: use settings or fallback ONLY to the active language to prevent ghost flags
+  const availableLanguages = settings?.languages?.length ? settings.languages : [lang];
 
   return (
     <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">

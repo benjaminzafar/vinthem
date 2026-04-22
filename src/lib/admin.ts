@@ -117,13 +117,13 @@ export async function requireAdminBearerUser(authorizationHeader: string | null)
   return context;
 }
 
-export async function ensureUserProfile(user: User, name?: string | null) {
+export async function ensureUserProfile(user: User, name?: string | null, lang?: string) {
   const supabase = createAdminClient();
   const { data: existingProfile, error: readError } = await supabase
     .from('users')
-    .select('role')
+    .select('role, preferred_lang')
     .eq('id', user.id)
-    .maybeSingle<UserProfileRow>();
+    .maybeSingle<UserProfileRow & { preferred_lang: string | null }>();
 
   if (readError) {
     throw readError;
@@ -135,6 +135,8 @@ export async function ensureUserProfile(user: User, name?: string | null) {
       email: user.email ?? null,
       full_name: name ?? '',
       role: existingProfile?.role ?? 'client',
+      preferred_lang: lang ?? existingProfile?.preferred_lang ?? 'en',
+      updated_at: new Date().toISOString(),
     },
     { onConflict: 'id' }
   );

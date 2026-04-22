@@ -1,5 +1,6 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
+import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from './lib/locales';
 
 const resources = {
   en: {
@@ -62,7 +63,7 @@ const resources = {
       "generate_ai": "Generer med AI",
       "login": "Log ind",
       "logout": "Log ud",
-      "nordic_only": "Levering kun tilgængelig for nordiske lande.",
+      "nordic_only": "Levering kun tilgänglich for nordiske lande.",
       "language": "Sprog"
     }
   }
@@ -72,8 +73,9 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: "en",
-    fallbackLng: "en",
+    lng: DEFAULT_LOCALE,
+    fallbackLng: DEFAULT_LOCALE,
+    supportedLngs: undefined, // Allow any language to be initialized
     interpolation: {
       escapeValue: false
     }

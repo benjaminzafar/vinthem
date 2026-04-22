@@ -127,7 +127,12 @@ export default async function AdminTabPage({ params, searchParams }: TabPageProp
 
   if (tab === 'integrations') {
     const response = await getIntegrationsAction();
-    return <IntegrationsManager initialConfig={response.data || {}} />;
+    return (
+      <IntegrationsManager 
+        initialConfig={response.data || {}} 
+        activeLanguages={response.activeLocales}
+      />
+    );
   }
 
   if (tab === 'storefront') {

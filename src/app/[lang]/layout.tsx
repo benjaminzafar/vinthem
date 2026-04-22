@@ -2,10 +2,9 @@ import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 
-import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, normalizeLocalizedPath } from '@/lib/i18n-routing';
+import { getSettings } from '@/lib/data';
+import { normalizeLocalizedPath, DEFAULT_LANGUAGE } from '@/lib/locales';
 
-// Static params generation is removed to support dynamic language additions from the database.
-// This allows the storefront to scale without needing a manual code rebuild.
 
 export async function generateMetadata({
   params,
@@ -13,6 +12,9 @@ export async function generateMetadata({
   params: Promise<{ lang: string }>;
 }): Promise<Metadata> {
   const { lang } = await params;
+  const settings = await getSettings();
+  const activeLocales = settings?.languages || ['en', 'sv', 'fi', 'da'];
+  
   const headerStore = await headers();
   const pathnameWithoutLocale = headerStore.get('x-pathname-no-locale') || '/';
 
@@ -21,7 +23,7 @@ export async function generateMetadata({
       canonical: normalizeLocalizedPath(pathnameWithoutLocale, lang),
       languages: {
         ...Object.fromEntries(
-          SUPPORTED_LANGUAGES.map((locale) => [locale, normalizeLocalizedPath(pathnameWithoutLocale, locale)]),
+          activeLocales.map((locale) => [locale, normalizeLocalizedPath(pathnameWithoutLocale, locale)]),
         ),
         'x-default': normalizeLocalizedPath(pathnameWithoutLocale, DEFAULT_LANGUAGE),
       },

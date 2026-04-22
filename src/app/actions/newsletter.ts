@@ -39,6 +39,8 @@ function createUnsubscribeToken(): string {
   return randomBytes(24).toString('hex');
 }
 
+import { sendTransactionalEmail, syncContactToBrevo } from '@/lib/brevo';
+
 export async function upsertNewsletterSubscriber({
   email,
   source,
@@ -98,6 +100,18 @@ export async function upsertNewsletterSubscriber({
 
     if (error) {
       throw error;
+    }
+
+    // --- NEW: Sync to Brevo Contacts ---
+    // This ensures your Brevo dashboard is always up to date with new signups
+    try {
+      await syncContactToBrevo(normalizedEmail, {
+        SOURCE: payload.source,
+        SUBSCRIBED_AT: now,
+      });
+    } catch (syncErr) {
+      logger.error('Brevo Sync failed during signup:', syncErr);
+      // We don't throw here to avoid failing the local subscription
     }
 
     revalidateNewsletterViews();
@@ -166,6 +180,7 @@ export async function unsubscribeAction(formData: FormData): Promise<NewsletterR
 
 /**
  * Dispatches a new campaign to the audience
+ * Now actually sends emails via Brevo API!
  */
 export async function dispatchCampaignAction(payload: { subject: string; content: string }): Promise<NewsletterResponse> {
   const subject = payload.subject.trim();
@@ -179,7 +194,7 @@ export async function dispatchCampaignAction(payload: { subject: string; content
     const supabase = createAdminClient();
     const now = new Date().toISOString();
 
-    // Calculate reach: Subscribers + Registered Auth Users
+    // 1. Fetch Audience (Subscribers + Customers)
     const [subsRes, authRes] = await Promise.all([
       supabase.from('newsletter_subscribers').select('email').eq('status', 'subscribed'),
       supabase.auth.admin.listUsers()
@@ -188,18 +203,46 @@ export async function dispatchCampaignAction(payload: { subject: string; content
     const subscribers = subsRes.data || [];
     const authUsers = authRes.data?.users || [];
     
-    // Unique audience calculation
+    // 2. Build unique recipient list
     const recipientSet = new Set<string>();
     subscribers.forEach(s => recipientSet.add(s.email.toLowerCase()));
     authUsers.forEach(u => u.email && recipientSet.add(u.email.toLowerCase()));
 
+    const recipients = Array.from(recipientSet).map(email => ({ email }));
+
+    if (recipients.length === 0) {
+      return { success: false, message: 'No active subscribers found to send this campaign.' };
+    }
+
+    // 3. Dispatch via Brevo API
+    // We send this as a transactional batch. 
+    // In a high-traffic production build, this should be moved to a Background Worker or Queue.
+    const result = await sendTransactionalEmail({
+      to: recipients,
+      subject: subject,
+      htmlContent: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1e293b;">
+          ${content}
+          <hr style="margin: 30px 0; border: none; border-top: 1px solid #e2e8f0;" />
+          <p style="font-size: 12px; color: #94a3b8; text-align: center;">
+            You received this email because you are a customer or subscriber of Vinthem.
+          </p>
+        </div>
+      `
+    });
+
+    if (!result.success) {
+      throw new Error('Brevo API rejected the campaign dispatch.');
+    }
+
+    // 4. Record Campaign in DB
     const { error: campaignError } = await supabase
       .from('newsletter_campaigns')
       .insert({
         subject,
         content,
         sent_at: now,
-        recipient_count: recipientSet.size
+        recipient_count: recipients.length
       });
 
     if (campaignError) throw campaignError;
@@ -208,11 +251,11 @@ export async function dispatchCampaignAction(payload: { subject: string; content
 
     return { 
       success: true, 
-      message: `Campaign "${subject}" dispatched to ${recipientSet.size} recipients.` 
+      message: `Campaign "${subject}" successfully sent to ${recipients.length} recipients via Brevo API.` 
     };
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to dispatch campaign.';
     logger.error('[Action Error] dispatchCampaignAction:', error);
-    return { success: false, message: 'Failed to launch campaign. System core rejected the request.', error: message };
+    return { success: false, message: 'Failed to launch campaign. Check Brevo API status.', error: message };
   }
 }

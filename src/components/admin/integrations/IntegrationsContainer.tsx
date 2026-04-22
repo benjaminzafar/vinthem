@@ -11,10 +11,11 @@ import { toast } from 'sonner';
 import { AdminHeader } from '../AdminHeader';
 import { IntegrationCard } from './IntegrationCard';
 import { CredentialInput } from './CredentialInput';
+import { SUPPORTED_LOCALES } from '@/lib/locales';
 import { 
   saveIntegrationAction, 
   testStripeConnectionAction, 
-  testEmailConnectionAction 
+  testBrevoApiAction 
 } from '@/app/actions/integrations';
 
 // Category Definitions - Sharp Styling
@@ -25,12 +26,21 @@ const CATEGORIES = [
   { id: 'system', name: 'Core Infrastructure', icon: Settings2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
 ];
 
-export function IntegrationsContainer({ initialConfig }: { initialConfig: Record<string, string> }) {
+export function IntegrationsContainer({ 
+  initialConfig,
+  activeLanguages 
+}: { 
+  initialConfig: Record<string, string>;
+  activeLanguages?: string[];
+}) {
   const [activeCategory, setActiveCategory] = useState('ai');
   const [config, setConfig] = useState<Record<string, string>>(initialConfig || {});
   const [, startTransition] = useTransition();
   const [savingId, setSavingId] = useState<string | null>(null);
   const [isLoading] = useState(false);
+
+  // Use dynamic languages from prop or fallback to core locales
+  const locales = activeLanguages || SUPPORTED_LOCALES;
 
   const handleUpdate = (key: string, value: string) => {
     setConfig(prev => ({ ...prev, [key]: value }));
@@ -74,16 +84,9 @@ export function IntegrationsContainer({ initialConfig }: { initialConfig: Record
     else toast.error(result.message, { id: toastId });
   };
 
-  const handleTestEmail = async () => {
-    const toastId = toast.loading('Sending SMTP verification signal...');
-    const result = await testEmailConnectionAction({
-      user: config['ZOHO_USER'],
-      pass: config['ZOHO_PASS'],
-      host: config['ZOHO_SMTP_HOST'],
-      port: config['ZOHO_SMTP_PORT'],
-      sender: config['ZOHO_SENDER_NAME'],
-      to: config['ZOHO_TEST_EMAIL']
-    });
+  const handleTestBrevo = async () => {
+    const toastId = toast.loading('Pinging Brevo API v3...');
+    const result = await testBrevoApiAction(config['BREVO_API_KEY']);
     if (result.success) toast.success(result.message, { id: toastId });
     else toast.error(result.message, { id: toastId });
   };
@@ -93,9 +96,23 @@ export function IntegrationsContainer({ initialConfig }: { initialConfig: Record
       case 'ai': return ['Groq'];
       case 'marketing': return ['Clarity', 'Instagram', 'TikTok', 'Reddit', 'Facebook'];
       case 'shipping': return ['PostNord', 'DHL', 'Bring', 'DBSchenker', 'UPS'];
-      case 'system': return ['Stripe', 'Zoho', 'R2', 'GoogleShopping'];
+      case 'system': return ['Stripe', 'BrevoAPI', 'R2', 'GoogleShopping'];
       default: return [];
     }
+  };
+
+  // Generate dynamic keys for Brevo templates to ensure all LIVE locales are saved
+  const getEmailTemplateKeys = () => {
+    const baseKeys = ['BREVO_API_KEY', 'BREVO_LIST_ID', 'BREVO_ORDER_TEMPLATE_ID'];
+    const statusPrefixes = ['BREVO_TPL_SIGNUP', 'BREVO_TPL_ORDER', 'BREVO_TPL_RETURN_APPROVE', 'BREVO_TPL_RETURN_RECEIVED', 'BREVO_TPL_REFUND_DONE'];
+    
+    statusPrefixes.forEach(prefix => {
+      locales.forEach(lang => {
+        baseKeys.push(`${prefix}_${lang.toUpperCase()}`);
+      });
+    });
+    
+    return baseKeys;
   };
 
   if (isLoading) {
@@ -140,7 +157,6 @@ export function IntegrationsContainer({ initialConfig }: { initialConfig: Record
                exit={{ opacity: 0, y: -5 }}
                transition={{ duration: 0.2 }}
              >
-
                {id === 'Clarity' && (
                  <IntegrationCard
                     id="Clarity"
@@ -316,26 +332,54 @@ export function IntegrationsContainer({ initialConfig }: { initialConfig: Record
                     </button>
                   </IntegrationCard>
                )}
-               {id === 'Zoho' && (
-                 <IntegrationCard
-                    id="Zoho"
-                    title="Email Infrastructure (Brevo/SMTP)"
-                    logo={<div className="bg-white w-full h-full flex items-center justify-center font-bold text-sky-600 leading-none tracking-tighter">BREVO</div>}
-                    isConnected={config['ZOHO_USER_CONNECTED'] === 'true'}
-                    isSaving={savingId === 'Zoho'}
-                    onSave={() => handleSave('Zoho', ['ZOHO_USER', 'ZOHO_PASS', 'ZOHO_SENDER_NAME', 'ZOHO_SMTP_HOST', 'ZOHO_SMTP_PORT', 'ZOHO_TEST_EMAIL'])}
+               {id === 'BrevoAPI' && (
+                  <IntegrationCard
+                     id="BrevoAPI"
+                     title="Brevo API Integration"
+                     logo={<div className="bg-sky-600 w-full h-full flex items-center justify-center font-bold text-white leading-none tracking-tighter">BREVO</div>}
+                     isConnected={config['BREVO_API_KEY_CONNECTED'] === 'true'}
+                     isSaving={savingId === 'BrevoAPI'}
+                     onSave={() => handleSave('BrevoAPI', getEmailTemplateKeys())}
+                     tutorial={<p>Use the (v3) API Key found in your Brevo SMTP & API settings. All multilingual template mappings are managed here.</p>}
                   >
-                    <CredentialInput label="SMTP Login (Brevo Email)" value={config['ZOHO_USER']} onChange={v => handleUpdate('ZOHO_USER', v)} placeholder="info@vinthem.com" />
-                    <CredentialInput label="SMTP Key / Password" value={config['ZOHO_PASS']} onChange={v => handleUpdate('ZOHO_PASS', v)} type="password" />
-                    <CredentialInput label="Sender Name" value={config['ZOHO_SENDER_NAME']} onChange={v => handleUpdate('ZOHO_SENDER_NAME', v)} placeholder="Vinthem" />
-                    <CredentialInput label="SMTP Host" value={config['ZOHO_SMTP_HOST']} onChange={v => handleUpdate('ZOHO_SMTP_HOST', v)} placeholder="smtp-relay.brevo.com" />
-                    <CredentialInput label="SMTP Port" value={config['ZOHO_SMTP_PORT']} onChange={v => handleUpdate('ZOHO_SMTP_PORT', v)} placeholder="587 (TLS) or 465 (SSL)" />
-                    <div className="pt-2 mt-2 border-t border-zinc-100">
-                      <CredentialInput label="Test Recipient Email" value={config['ZOHO_TEST_EMAIL']} onChange={v => handleUpdate('ZOHO_TEST_EMAIL', v)} placeholder="recipient@example.com" />
-                    </div>
-                    <button onClick={handleTestEmail} className="text-[11px] font-bold text-zinc-600 hover:text-zinc-900 flex items-center gap-1 mt-2 transition-colors focus:outline-none">
-                       <Search className="w-3.5 h-3.5" /> Send Test Handshake & Email
-                    </button>
+                     <div className="space-y-4">
+                        <CredentialInput 
+                           label="Brevo API Key" 
+                           value={config['BREVO_API_KEY']} 
+                           onChange={v => handleUpdate('BREVO_API_KEY', v)} 
+                           type="password"
+                           placeholder="xkeysib-..."
+                        />
+                        <div className="grid grid-cols-2 gap-4">
+                           <CredentialInput 
+                              label="Add to List ID" 
+                              value={config['BREVO_LIST_ID']} 
+                              onChange={v => handleUpdate('BREVO_LIST_ID', v)} 
+                              placeholder="e.g. 2"
+                           />
+                           <CredentialInput 
+                              label="Confirmation Template ID" 
+                              value={config['BREVO_ORDER_TEMPLATE_ID']} 
+                              onChange={v => handleUpdate('BREVO_ORDER_TEMPLATE_ID', v)} 
+                              placeholder="e.g. 10"
+                           />
+                        </div>
+
+                        <div className="pt-4 border-t border-zinc-100">
+                           <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block mb-4">Multilingual Template IDs</label>
+                           
+                           <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-4">
+                             <TemplateGroup title="Signup" prefix="BREVO_TPL_SIGNUP" config={config} onUpdate={handleUpdate} locales={locales} />
+                             <TemplateGroup title="Order Conf" prefix="BREVO_TPL_ORDER" config={config} onUpdate={handleUpdate} locales={locales} />
+                             <TemplateGroup title="Return Approve" prefix="BREVO_TPL_RETURN_APPROVE" config={config} onUpdate={handleUpdate} locales={locales} />
+                             <TemplateGroup title="Item Received" prefix="BREVO_TPL_RETURN_RECEIVED" config={config} onUpdate={handleUpdate} locales={locales} />
+                             <TemplateGroup title="Refund Done" prefix="BREVO_TPL_REFUND_DONE" config={config} onUpdate={handleUpdate} locales={locales} />
+                           </div>
+                        </div>
+                     </div>
+                     <button onClick={handleTestBrevo} className="text-[11px] font-bold text-zinc-600 hover:text-zinc-900 flex items-center gap-1 mt-2 transition-colors focus:outline-none">
+                        <Activity className="w-3.5 h-3.5" /> Verify API Connection
+                     </button>
                   </IntegrationCard>
                )}
                {id === 'R2' && (
@@ -385,6 +429,52 @@ export function IntegrationsContainer({ initialConfig }: { initialConfig: Record
             <p className="text-[11px] text-zinc-500 font-medium mt-1">All API keys are AES-256 encrypted. Original values are permanently masked from browser view after synchronization.</p>
          </div>
       </div>
+    </div>
+  );
+}
+
+// Helper Components for Cleaner Multilingual UI
+function TemplateGroup({ title, prefix, config, onUpdate, locales }: { 
+  title: string, 
+  prefix: string, 
+  config: Record<string, string>, 
+  onUpdate: (k: string, v: string) => void,
+  locales: string[] | readonly string[]
+}) {
+  return (
+    <div className="space-y-2">
+      <h5 className="text-[10px] font-bold text-zinc-900 border-l-2 border-rose-500 pl-2 uppercase tracking-wider">{title}</h5>
+      <div className="space-y-1">
+        {locales.map(lang => (
+          <LanguageInput 
+            key={lang} 
+            label={lang.toUpperCase()} 
+            name={`${prefix}_${lang.toUpperCase()}`} 
+            value={config[`${prefix}_${lang.toUpperCase()}`]} 
+            onChange={onUpdate} 
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function LanguageInput({ label, name, value, onChange }: { 
+  label: string, 
+  name: string, 
+  value: string | undefined, 
+  onChange: (k: string, v: string) => void 
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="w-5 text-[9px] font-bold text-zinc-400">{label}</span>
+      <input 
+        type="text"
+        value={value || ''}
+        onChange={(e) => onChange(name, e.target.value)}
+        placeholder="ID"
+        className="flex-1 bg-zinc-50 border border-zinc-100 rounded px-2 py-1 text-[11px] font-mono focus:outline-none focus:border-rose-300 transition-all font-bold"
+      />
     </div>
   );
 }

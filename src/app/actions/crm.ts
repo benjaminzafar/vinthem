@@ -48,7 +48,8 @@ export async function getCRMDataAction(): Promise<{ success: boolean; data?: CRM
         role: profile?.role || authUser.user_metadata?.role || 'client',
         created_at: authUser.created_at,
         last_sign_in_at: authUser.last_sign_in_at,
-        is_authenticated: true // Marker for registration
+        is_authenticated: true, // Marker for registration
+        preferred_lang: profile?.preferred_lang || 'en'
       };
     });
 
@@ -58,12 +59,26 @@ export async function getCRMDataAction(): Promise<{ success: boolean; data?: CRM
 
     logger.info(`[CRM Action] Sync Success. Counts: AuthUsers: ${authUsers.length}, Orders: ${ordersRes.data?.length || 0}, Tickets: ${ticketsRes.data?.length || 0}`);
 
+    const ticketsRaw = ticketsRes.data || [];
+    const refundsRaw = refundsRes.data || [];
+    
+    // 4. Enrich CRM records with customer locales for Brevo synchronization
+    const enrichedTickets = ticketsRaw.map(ticket => {
+      const customer = unifiedUsers.find(u => u.id === ticket.user_id || u.email === ticket.customer_email);
+      return { ...ticket, locale: customer?.preferred_lang || 'en' };
+    });
+
+    const enrichedRefunds = refundsRaw.map(refund => {
+      const customer = unifiedUsers.find(u => u.id === refund.user_id);
+      return { ...refund, locale: customer?.preferred_lang || 'en' };
+    });
+
     return {
       success: true,
       data: {
         users: unifiedUsers,
-        tickets: ticketsRes.data || [],
-        refunds: refundsRes.data || [],
+        tickets: enrichedTickets,
+        refunds: enrichedRefunds,
         orders: ordersRes.data || [],
         reviews: reviewsRes.data || [],
         subscribers: subsRes.data || [],

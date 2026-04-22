@@ -1,7 +1,6 @@
 'use server';
 ﻿import { logger } from '@/lib/logger';
 import Stripe from 'stripe';
-import nodemailer from 'nodemailer';
 
 import { encrypt } from '@/lib/encryption';
 import { revalidatePath } from 'next/cache';
@@ -15,6 +14,7 @@ export type IntegrationActionResponse = {
   success: boolean;
   message: string;
   data?: Record<string, string>;
+  activeLocales?: string[];
   error?: string;
 };
 
@@ -25,13 +25,21 @@ export async function getIntegrationsAction(): Promise<IntegrationActionResponse
   try {
     const { supabase } = await requireAdminUser();
 
+    // 1. Fetch Integrations
     const { data: integrations, error } = await supabase
       .from('integrations')
       .select('key, value');
 
-    if (error) {
-      throw error;
-    }
+    if (error) throw error;
+
+    // 2. Fetch Active Locales from settings
+    const { data: settingsRow } = await supabase
+      .from('settings')
+      .select('data')
+      .eq('id', 'primary')
+      .single();
+
+    const activeLocales = settingsRow?.data?.languages || ['en', 'sv', 'fi', 'da'];
 
     const config: Record<string, string> = {};
     integrations?.forEach(item => {
@@ -44,7 +52,12 @@ export async function getIntegrationsAction(): Promise<IntegrationActionResponse
       config[item.key] = maybeDecryptStoredValue(item.value);
     });
 
-    return { success: true, message: 'Config loaded', data: config };
+    return { 
+      success: true, 
+      message: 'Config loaded', 
+      data: config,
+      activeLocales
+    };
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to fetch integrations';
     logger.error('[Action Error] getIntegrationsAction:', error);
@@ -124,77 +137,49 @@ export async function testStripeConnectionAction(apiKey: string): Promise<Integr
 }
 
 /**
- * Test Email Connection (SMTP)
+ * Test Brevo API Connection
  */
-export async function testEmailConnectionAction(config: {
-  user: string;
-  pass: string;
-  host: string;
-  port: string;
-  sender: string;
-  to?: string;
-}): Promise<IntegrationActionResponse> {
+export async function testBrevoApiAction(apiKey: string): Promise<IntegrationActionResponse> {
   try {
     await requireAdminUser();
-
-    // Handle masked password by fetching from DB
-    let finalPass = config.pass;
-    let finalUser = config.user;
-    let finalHost = config.host;
-    let finalPort = config.port;
-
-    if (finalPass === '********') {
+    
+    if (!apiKey || apiKey === '********') {
+       // Try to get from existing config if masked
        const { supabase: adminClient } = await requireAdminUser();
-       const { data: storedKeys } = await adminClient
+       const { data: row } = await adminClient
          .from('integrations')
-         .select('key, value')
-         .in('key', ['ZOHO_USER', 'ZOHO_PASS', 'ZOHO_SMTP_HOST', 'ZOHO_SMTP_PORT', 'ZOHO_TEST_EMAIL']);
+         .select('value')
+         .eq('key', 'BREVO_API_KEY')
+         .single();
        
-       const getVal = (k: string) => {
-         const row = storedKeys?.find(r => r.key === k);
-         return row ? maybeDecryptStoredValue(row.value) : '';
-       };
-
-       finalPass = getVal('ZOHO_PASS');
-       if (!finalUser) finalUser = getVal('ZOHO_USER');
-       if (!finalHost) finalHost = getVal('ZOHO_SMTP_HOST');
-       if (!finalPort) finalPort = getVal('ZOHO_SMTP_PORT');
+       if (row) {
+         apiKey = maybeDecryptStoredValue(row.value);
+       }
     }
 
-    if (!finalPass || finalPass === '********') {
-       return { success: false, message: 'No valid password found to perform handshake.' };
+    if (!apiKey || apiKey === '********' || !apiKey) {
+       return { success: false, message: 'Invalid or missing Brevo API key' };
     }
 
-    const transporter = nodemailer.createTransport({
-      host: finalHost || 'smtp-relay.brevo.com',
-      port: Number(finalPort) || 587,
-      secure: Number(finalPort) === 465,
-      auth: {
-        user: finalUser,
-        pass: finalPass,
+    const response = await fetch('https://api.brevo.com/v3/account', {
+      method: 'GET',
+      headers: {
+        'accept': 'application/json',
+        'api-key': apiKey,
       },
-      // Robustness: short timeout for testing
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
     });
 
-    await transporter.verify();
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'API verification failed');
 
-    // If 'to' is provided, send a real test email
-    if (config.to && config.to.includes('@')) {
-      await transporter.sendMail({
-        from: config.user,
-        to: config.to,
-        subject: `Vinthem Test Email - ${new Date().toLocaleTimeString()}`,
-        text: 'Hello! This is a successful SMTP test from your Vinthem shop using Brevo relay. If you see this, your email system is live.',
-      });
-      return { success: true, message: `SMTP test email successfully sent to ${config.to}` };
-    }
-    
-    return { success: true, message: 'SMTP Handshake successful. Server is ready to relay.' };
+    return { 
+      success: true, 
+      message: `Brevo API verified. Account: ${data.email}`,
+      data: { accountEmail: data.email }
+    };
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'SMTP Handshake failed';
-    logger.error('[Integrations] Email test failed:', error);
-    return { success: false, message: `Email connection failed: ${message}` };
+    const message = error instanceof Error ? error.message : 'Brevo test failed';
+    logger.error('[Integrations] Brevo API test failed:', error);
+    return { success: false, message: `Brevo API connection failed: ${message}` };
   }
 }

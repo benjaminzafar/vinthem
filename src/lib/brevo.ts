@@ -1,0 +1,104 @@
+import { createAdminClient } from '@/utils/supabase/server';
+import { maybeDecryptStoredValue } from '@/lib/integrations';
+import { logger } from '@/lib/logger';
+
+const BREVO_API_URL = 'https://api.brevo.com/v3';
+
+/**
+ * Retrieves the Brevo API Key from the encrypted integrations table.
+ */
+async function getBrevoApiKey(): Promise<string | null> {
+  // First check .env.local for local development convenience
+  if (process.env.BREVO_API_KEY) {
+    return process.env.BREVO_API_KEY;
+  }
+
+  try {
+    const supabase = createAdminClient();
+    const { data: row } = await supabase
+      .from('integrations')
+      .select('value')
+      .eq('key', 'BREVO_API_KEY')
+      .single();
+
+    if (!row) return null;
+    return maybeDecryptStoredValue(row.value);
+  } catch (error) {
+    logger.error('Failed to get Brevo API Key from DB:', error);
+    return null;
+  }
+}
+
+/**
+ * Sends a transactional email using Brevo API v3.
+ * Supports both HTML content or a specific Template ID.
+ */
+export async function sendTransactionalEmail(payload: {
+  to: { email: string; name?: string }[];
+  subject: string;
+  htmlContent?: string;
+  templateId?: number;
+  params?: Record<string, any>;
+}) {
+  const apiKey = await getBrevoApiKey();
+  if (!apiKey) {
+    logger.error('Brevo API key missing. Cannot send email.');
+    return { success: false, error: 'API_KEY_MISSING' };
+  }
+
+  try {
+    const response = await fetch(`${BREVO_API_URL}/smtp/email`, {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'api-key': apiKey,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        sender: { name: 'Vinthem', email: 'info@vinthem.com' },
+        ...payload,
+      }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to send email');
+
+    return { success: true, messageId: data.messageId };
+  } catch (error) {
+    logger.error('Brevo Email Error:', error);
+    return { success: false, error };
+  }
+}
+
+/**
+ * Adds or updates a contact in Brevo.
+ */
+export async function syncContactToBrevo(email: string, attributes?: Record<string, any>, listIds: number[] = []) {
+  const apiKey = await getBrevoApiKey();
+  if (!apiKey) return;
+
+  try {
+    // Add contact to list (or update if exists)
+    const response = await fetch(`${BREVO_API_URL}/contacts`, {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'api-key': apiKey,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        email,
+        attributes,
+        listIds,
+        updateEnabled: true, // Crucial: updates if contact already exists
+      }),
+    });
+
+    if (!response.ok && response.status !== 400) { // 400 can mean contact already exists if updateEnabled is false
+       const errorData = await response.json();
+       logger.error('Brevo Contact Sync Error:', errorData);
+    }
+  } catch (error) {
+    logger.error('Brevo Sync Exception:', error);
+  }
+}

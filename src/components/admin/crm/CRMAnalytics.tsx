@@ -19,6 +19,7 @@ import {
   Package,
   AlertTriangle,
   User as UserIcon,
+  Globe,
 } from 'lucide-react';
 
 import type { CRMCustomer, CRMOrder, RefundRecord, SupportTicket } from './types';
@@ -30,10 +31,6 @@ interface CRMAnalyticsProps {
   refunds: RefundRecord[];
   orders: CRMOrder[];
 }
-
-
-
-
 
 function EmptyPanel({ message, error }: { message: string, error?: string }) {
   return (
@@ -53,41 +50,58 @@ function EmptyPanel({ message, error }: { message: string, error?: string }) {
 export function CRMAnalytics({ tickets, customers, refunds, orders }: CRMAnalyticsProps) {
 
   const ticketDistribution = useMemo(() => {
-    const counts = {
-      open: tickets.filter(t => t.status === 'open').length,
-      'in-progress': tickets.filter(t => t.status === 'in-progress').length,
-      resolved: tickets.filter(t => t.status === 'resolved').length,
+    // 1. Group by Locale (Globalization visualization)
+    const localeCounts: Record<string, number> = {};
+    tickets.forEach(t => {
+      const locale = (t.locale || 'en').toUpperCase();
+      localeCounts[locale] = (localeCounts[locale] || 0) + 1;
+    });
+
+    const colors: Record<string, string> = {
+      'SV': '#006AA7', // Swedish Blue
+      'DE': '#000000', // Black/Dark for DE
+      'NO': '#BA0C2F', // Norwegian Red
+      'FI': '#003580', // Finnish Blue
+      'DA': '#C60C30', // Danish Red
+      'EN': '#475569', 
     };
-    
-    return [
-      { name: 'Open', value: counts.open, color: '#0F172A' },
-      { name: 'In-Progress', value: counts['in-progress'], color: '#475569' },
-      { name: 'Resolved', value: counts.resolved, color: '#94A3B8' },
-    ];
+
+    return Object.entries(localeCounts).map(([name, value]) => ({
+      name,
+      value,
+      color: colors[name] || '#94A3B8'
+    })).sort((a, b) => b.value - a.value);
   }, [tickets]);
 
   const refundDistribution = useMemo(() => {
+    // 2. Sync with the new 5-step Brevo Return Workflow
     const counts = {
-      Pending: refunds.filter(r => r.status === 'Pending').length,
-      Approved: refunds.filter(r => r.status === 'Approved').length,
-      Refunded: refunds.filter(r => r.status === 'Refunded').length,
-      Rejected: refunds.filter(r => r.status === 'Rejected').length,
+      Approved: tickets.filter(t => t.status === 'Approved').length,
+      WaitingItem: tickets.filter(t => t.status === 'WaitingItem').length,
+      Received: tickets.filter(t => t.status === 'Received').length,
+      Exchanged: tickets.filter(t => t.status === 'Exchanged').length,
+      Refunded: tickets.filter(t => t.status === 'Refunded').length,
     };
     
     return [
-      { name: 'Pending', value: counts.Pending, color: '#F59E0B' },
-      { name: 'Approved', value: counts.Approved, color: '#10B981' },
-      { name: 'Refunded', value: counts.Refunded, color: '#3B82F6' },
-      { name: 'Rejected', value: counts.Rejected, color: '#EF4444' },
+      { name: 'Approved', value: counts.Approved, color: '#10B981' }, // Emerald
+      { name: 'Waiting Item', value: counts.WaitingItem, color: '#F59E0B' }, // Amber
+      { name: 'Received', value: counts.Received, color: '#6366F1' }, // Indigo
+      { name: 'Exchanged', value: counts.Exchanged, color: '#8B5CF6' }, // Violet
+      { name: 'Final Refund', value: counts.Refunded, color: '#3B82F6' }, // Blue
     ];
-  }, [refunds]);
+  }, [tickets]);
 
-  const stats = useMemo(() => [
-    { name: 'Total Clients', value: customers.length.toString(), icon: Users, change: '+12%', changeType: 'positive' as const },
-    { name: 'Open Tickets', value: tickets.filter((ticket) => ticket.status === 'open').length.toString(), icon: MessageSquare, change: 'Active', changeType: 'positive' as const },
-    { name: 'Pending Returns', value: refunds.filter((refund) => refund.status === 'Pending').length.toString(), icon: RefreshCcw, change: 'Queue', changeType: 'negative' as const },
-    { name: 'System Performance', value: 'Optimal', icon: Package, change: 'Stable', changeType: 'positive' as const },
-  ], [customers.length, refunds, tickets]);
+  const stats = useMemo(() => {
+    const topLocale = [...ticketDistribution].sort((a, b) => b.value - a.value)[0]?.name || 'N/A';
+    
+    return [
+      { name: 'Total Clients', value: customers.length.toString(), icon: Users, change: '+12%', changeType: 'positive' as const },
+      { name: 'Top Market', value: topLocale, icon: Globe, change: 'Lead', changeType: 'positive' as const },
+      { name: 'Service Load', value: tickets.filter(t => t.status === 'open' || t.status === 'in-progress').length.toString(), icon: MessageSquare, change: 'Active', changeType: 'positive' as const },
+      { name: 'Returns Flow', value: tickets.filter(t => ['Approved', 'WaitingItem', 'Received'].includes(t.status as any)).length.toString(), icon: RefreshCcw, change: 'Tracking', changeType: 'positive' as const },
+    ];
+  }, [customers.length, tickets, ticketDistribution]);
 
   return (
     <div className="space-y-8">
@@ -113,21 +127,19 @@ export function CRMAnalytics({ tickets, customers, refunds, orders }: CRMAnalyti
         </div>
       </div>
 
-
-
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
         <div className="rounded border border-slate-300 bg-white p-6 sm:p-8">
           <div className="mb-6 flex items-center justify-between">
             <div>
               <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-slate-900">
-                <MessageSquare className="h-4 w-4 text-indigo-500" />
-                Service Pulse (Tickets)
+                <Globe className="h-4 w-4 text-indigo-500" />
+                Regional Pulse (Markets)
               </h3>
-              <p className="mt-1 text-[11px] font-medium text-slate-500">Live support queue distribution</p>
+              <p className="mt-1 text-[11px] font-medium text-slate-500">Support volume across European regions</p>
             </div>
             <div className="text-right">
               <span className="text-sm font-bold text-slate-900 font-mono">{tickets.length}</span>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Total Active</p>
+              <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Total Requests</p>
             </div>
           </div>
           
@@ -186,9 +198,9 @@ export function CRMAnalytics({ tickets, customers, refunds, orders }: CRMAnalyti
             <div>
               <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-slate-900">
                 <RefreshCcw className="h-4 w-4 text-orange-500" />
-                Logistics Flow (Returns)
+                Logistics Flow (Brevo Sync)
               </h3>
-              <p className="mt-1 text-[11px] font-medium text-slate-500">Refund and exchange lifecycle</p>
+              <p className="mt-1 text-[11px] font-medium text-slate-500">End-to-end return & exchange lifecycle</p>
             </div>
             <div className="text-right">
               <span className="text-sm font-bold text-slate-900 font-mono">{refunds.length}</span>
@@ -248,8 +260,6 @@ export function CRMAnalytics({ tickets, customers, refunds, orders }: CRMAnalyti
           </div>
         </div>
       </div>
-
-
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (

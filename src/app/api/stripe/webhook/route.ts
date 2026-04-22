@@ -3,6 +3,8 @@ import Stripe from 'stripe';
 
 import { getStripeCredentials } from '@/lib/stripe-server';
 import { createAdminClient } from '@/utils/supabase/server';
+import { sendTransactionalEmail, syncContactToBrevo } from '@/lib/brevo';
+import { logger } from '@/lib/logger';
 
 type CheckoutSessionWithPresentment = Stripe.Checkout.Session & {
   presentment_details?: {
@@ -55,6 +57,35 @@ export async function POST(req: NextRequest) {
               : null,
           })
           .eq('id', orderId);
+
+        // --- NEW: Brevo Integration ---
+        const customerEmail = session.customer_details?.email;
+        const customerName = session.customer_details?.name || 'Customer';
+
+        if (customerEmail && session.payment_status === 'paid') {
+          // 1. Sync Customer to Brevo Contacts
+          syncContactToBrevo(customerEmail, { 
+            FIRSTNAME: customerName.split(' ')[0], 
+            LASTNAME: customerName.split(' ').slice(1).join(' ') 
+          }).catch(err => logger.error('Async Brevo Contact Sync Error:', err));
+
+          // 2. Send Checkout Confirmation Email
+          sendTransactionalEmail({
+            to: [{ email: customerEmail, name: customerName }],
+            subject: `Order Confirmation #${orderId}`,
+            htmlContent: `
+              <h1>Thank you for your purchase!</h1>
+              <p>Hello ${customerName},</p>
+              <p>Your order <strong>#${orderId}</strong> is being processed.</p>
+              <p>Total amount: ${typeof session.amount_total === 'number' ? (session.amount_total / 100).toFixed(2) : '0.00'} ${session.currency?.toUpperCase()}</p>
+            `,
+            params: {
+              orderId,
+              total: session.amount_total ? session.amount_total / 100 : 0
+            }
+          }).catch(err => logger.error('Async Brevo Email Error:', err));
+        }
+        // ------------------------------
       }
     }
 

@@ -33,6 +33,7 @@ export type CRMCustomer = {
   reviewCount: number;
   totalSpent: number;
   lastActiveAt?: string | null;
+  preferred_lang?: string;
 };
 
 export type SupportMessage = {
@@ -44,14 +45,16 @@ export type SupportMessage = {
 export type SupportTicket = {
   id: string;
   userId?: string | null;
+  orderId?: string | null;
   customerEmail?: string | null;
   customerName?: string | null;
   subject?: string | null;
   description?: string | null;
-  status: 'open' | 'in-progress' | 'resolved';
+  status: 'open' | 'in-progress' | 'resolved' | 'Approved' | 'WaitingItem' | 'Received' | 'Exchanged' | 'Refunded';
   priority?: string | null;
   messages?: SupportMessage[];
   imageUrl?: string | null;
+  locale?: string;
   createdAt?: string | null;
   updatedAt?: string | null;
 };
@@ -64,6 +67,7 @@ export type RefundRecord = {
   orderId?: string | null;
   status: 'Pending' | 'Approved' | 'Rejected' | 'Refunded';
   reason?: string | null;
+  locale?: string;
   createdAt?: string | null;
 };
 
