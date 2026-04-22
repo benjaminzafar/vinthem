@@ -171,10 +171,23 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
             <OTPVerification 
               email={email}
               type={otpType}
-              onSuccess={() => {
-                toast.success(settings.loginSuccessText?.[lang]);
+              onSuccess={async () => {
+                // Ensure the session is fully synced to the client before redirecting
+                const supabase = createClient();
+                await supabase.auth.getSession();
+                
+                toast.success(settings.loginSuccessText?.[lang] || 'Authenticated successfully');
+                
+                // Set loading back to true to hide the OTP form and show a transition
+                setLoading(true);
+                
+                // Force a refresh to update server-side auth state
                 navigate.refresh();
-                navigate.push(redirectTarget);
+                
+                // Small delay to ensure the cookie is processed by the browser
+                setTimeout(() => {
+                  navigate.push(redirectTarget);
+                }, 100);
               }}
               labels={{
                 title: settings.otpTitle?.[lang],

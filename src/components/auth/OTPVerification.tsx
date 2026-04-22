@@ -27,6 +27,7 @@ interface OTPVerificationProps {
 export function OTPVerification({ email, type = 'signup', onSuccess, labels }: OTPVerificationProps) {
   const [otp, setOtp] = useState<string[]>(new Array(8).fill(""));
   const [loading, setLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const supabase = createClient();
@@ -104,14 +105,19 @@ export function OTPVerification({ email, type = 'signup', onSuccess, labels }: O
       });
 
       if (verifyError) throw verifyError;
-
+      
+      setIsSuccess(true);
       toast.success(L.successMessage);
-      if (onSuccess) {
-        onSuccess();
-      } else {
-        router.push('/');
-        router.refresh();
-      }
+      
+      // Delay to allow success animation and session sync
+      setTimeout(() => {
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          router.push('/');
+          router.refresh();
+        }
+      }, 800);
     } catch (err: any) {
       setError(err.message || L.errorInvalid);
       toast.error(err.message || L.errorInvalid);
@@ -134,11 +140,27 @@ export function OTPVerification({ email, type = 'signup', onSuccess, labels }: O
         </div>
         <h2 className="text-2xl font-bold text-slate-900 tracking-tight mb-2">{L.title}</h2>
         <div className="text-slate-500 text-sm space-y-1">
-          <p>{L.subtitle}</p>
-          <p className="font-semibold text-slate-900 break-all">{email}</p>
-          <p className="text-xs text-amber-600 bg-amber-50 py-1 px-3 rounded-full inline-block mt-2 font-medium">
-            {L.checkSpam}
-          </p>
+          <AnimatePresence mode="wait">
+            {isSuccess ? (
+              <motion.div
+                key="success-msg"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="text-emerald-600 font-bold flex items-center justify-center gap-2 py-2"
+              >
+                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                {L.successMessage}
+              </motion.div>
+            ) : (
+              <motion.div key="info-msg" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <p>{L.subtitle}</p>
+                <p className="font-semibold text-slate-900 break-all">{email}</p>
+                <p className="text-xs text-amber-600 bg-amber-50 py-1 px-3 rounded-full inline-block mt-2 font-medium">
+                  {L.checkSpam}
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
@@ -180,11 +202,11 @@ export function OTPVerification({ email, type = 'signup', onSuccess, labels }: O
 
         <button
           type="submit"
-          disabled={loading || otp.join("").length !== 6}
+          disabled={loading || otp.join("").length !== 8}
           className={`
             w-full py-4 rounded-xl font-bold tracking-tight transition-all active:scale-[0.98]
             flex items-center justify-center gap-2
-            ${loading || otp.join("").length !== 6
+            ${loading || otp.join("").length !== 8
               ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
               : 'bg-slate-900 text-white hover:bg-black shadow-lg shadow-slate-900/10'}
           `}
@@ -204,7 +226,7 @@ export function OTPVerification({ email, type = 'signup', onSuccess, labels }: O
             type="button"
             className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors"
             onClick={() => {
-              setOtp(new Array(6).fill(""));
+              setOtp(new Array(8).fill(""));
               inputRefs.current[0]?.focus();
             }}
           >
