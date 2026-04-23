@@ -3,7 +3,7 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Category, StorefrontSettingsType } from '@/types';
-import { ShoppingBag } from 'lucide-react';
+import { ShoppingBag, ArrowRight } from 'lucide-react';
 
 interface CollectionListProps {
   categories: Category[];
@@ -37,34 +37,42 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
             <p className="text-slate-500 text-sm">{settings.checkBackLaterText?.[lang]}</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
             {featuredCategories.map((category) => (
               <div 
                 key={category.id} 
                 className="group relative"
               >
-                <Link href={`/products?category=${encodeURIComponent(category.name)}`} className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-gray-100 group block">
-                {category.imageUrl && category.imageUrl.trim() !== "" ? (
-                  <Image
-                    src={category.imageUrl}
-                    alt={category.name}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                ) : (
-                  <div className="h-full w-full flex items-center justify-center text-slate-200 font-sans text-2xl bg-slate-50 uppercase tracking-tighter font-black">
-                    {category.name.substring(0, 2)}
+                <Link href={`/products?category=${encodeURIComponent(category.name)}`} className="group block">
+                  <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-gray-100 mb-4 transition-all">
+                    {category.imageUrl && category.imageUrl.trim() !== "" ? (
+                      <Image
+                        src={category.imageUrl}
+                        alt={category.name}
+                        fill
+                        sizes="(max-width: 768px) 50vw, 25vw"
+                        className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="h-full w-full flex items-center justify-center text-slate-200 font-sans text-2xl bg-slate-50 uppercase tracking-tighter font-black">
+                        {category.name.substring(0, 2)}
+                      </div>
+                    )}
+                    
+                    {/* Action Button - Exact match to FeaturedProducts */}
+                    <div className="absolute bottom-3 right-3 bg-brand-ink/90 backdrop-blur-md border border-white/10 w-10 h-10 md:w-12 md:h-12 rounded-full opacity-100 md:opacity-0 group-hover:opacity-100 transition-all duration-300 z-20 flex items-center justify-center hover:scale-110">
+                      <ArrowRight className="w-4 h-4 md:w-5 md:h-5 text-white" />
+                    </div>
                   </div>
-                )}
-                
-                {/* Visual Overlays matching FutureSections */}
-                <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-black/50 to-transparent opacity-80 pointer-events-none"></div>
-                
-                <div className="absolute top-8 left-8 right-8">
-                  <p className="text-white/90 font-medium text-sm tracking-widest uppercase mb-2">Collection</p>
-                  <h3 className="text-white text-3xl font-bold tracking-tight">{category.name}</h3>
-                </div>
+                  
+                  <div className="px-1">
+                    <h3 className="text-sm font-medium text-brand-ink truncate group-hover:text-brand-muted transition-colors">
+                      {category.name}
+                    </h3>
+                    <p className="text-[10px] text-brand-muted font-medium uppercase tracking-[0.1em] mt-0.5 opacity-70">
+                      Collection
+                    </p>
+                  </div>
                 </Link>
               </div>
             ))}
@@ -76,7 +84,7 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
             href="/products" 
             className="group inline-flex items-center text-[10px] font-black uppercase tracking-[0.2em] text-brand-ink hover:opacity-70 transition-all border-b-2 border-brand-ink pb-1"
           >
-            {settings.viewAllText?.[lang] || 'Explore All'} 
+            {settings.viewAllText?.[lang] || 'View All'} 
           </Link>
         </div>
       </div>
