@@ -129,3 +129,25 @@ export async function recordSignupConsentAction({
   }
 }
 
+export async function checkEmailExistsAction(email: string): Promise<{ exists: boolean }> {
+  try {
+    const admin = createAdminClient();
+    // Query our public.users profile table which exists for confirmed users
+    const { data, error } = await admin
+      .from('users')
+      .select('id')
+      .eq('email', email.trim())
+      .maybeSingle();
+    
+    if (error) {
+      logger.error('[Action Error] checkEmailExistsAction:', error);
+      return { exists: false };
+    }
+
+    return { exists: !!data };
+  } catch (error) {
+    logger.error('[Action Error] checkEmailExistsAction Exception:', error);
+    return { exists: false };
+  }
+}
+

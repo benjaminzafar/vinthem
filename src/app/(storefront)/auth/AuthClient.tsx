@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { Mail, Lock, User } from 'lucide-react';
 import type { StorefrontSettings } from '@/store/useSettingsStore';
 import Link from 'next/link';
-import { recordSignupConsentAction, syncCurrentUserProfileAction } from '@/app/actions/auth';
+import { checkEmailExistsAction, recordSignupConsentAction, syncCurrentUserProfileAction } from '@/app/actions/auth';
 import { getClientLocale } from '@/lib/locale';
 import { useStorefrontSettings } from '@/hooks/useStorefrontSettings';
 import Image from 'next/image';
@@ -55,6 +55,12 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
       } else {
         if (!acceptedTerms || !acceptedPrivacy) {
           throw new Error('You must accept the Terms and Privacy Policy to create an account.');
+        }
+
+        // 1. Pre-check if email already exists (Security & UX Hardening)
+        const checkResult = await checkEmailExistsAction(email);
+        if (checkResult.exists) {
+          throw new Error(settings.userAlreadyExistsErrorText?.[lang] || 'An account with this email already exists.');
         }
 
         const { data, error } = await supabase.auth.signUp({ 
