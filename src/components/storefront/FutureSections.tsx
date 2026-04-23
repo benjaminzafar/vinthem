@@ -65,7 +65,6 @@ export function FutureSections({ lang, settings }: FutureSectionsProps) {
             className="group inline-flex items-center text-[10px] font-black uppercase tracking-[0.2em] text-brand-ink hover:opacity-70 transition-all border-b-2 border-brand-ink pb-1"
           >
             {settings.futureViewAllText?.[lang] || 'View All Classics'} 
-            <ArrowRight className="ml-3 w-4 h-4 transition-transform group-hover:translate-x-1" />
           </Link>
         </div>
       </div>
