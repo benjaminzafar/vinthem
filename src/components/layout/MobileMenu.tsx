@@ -83,9 +83,14 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
   }, [isMobileMenuOpen, setMobileMenuOpen]);
 
   const handleLogout = async () => {
-    setMobileMenuOpen(false);
-    await supabase.auth.signOut();
-    window.location.href = `/${lang}`;
+    try {
+      await supabase.auth.signOut();
+      // Use location.replace for a hard clear of all states and cache
+      window.location.replace(`/${lang}`);
+    } catch (error) {
+      console.error('Logout error:', error);
+      window.location.href = `/${lang}`;
+    }
   };
 
   if (isDesktop) return null;
@@ -188,6 +193,7 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
                         </Link>
                       )}
                       <button
+                        type="button"
                         onClick={handleLogout}
                         className="w-full flex items-center justify-center space-x-2 py-3 text-red-600 bg-red-50 rounded font-medium hover:bg-red-100 transition-colors"
                       >

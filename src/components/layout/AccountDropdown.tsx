@@ -44,10 +44,14 @@ export function AccountDropdown({ user, isAdmin, labels }: AccountDropdownProps)
   }, [isOpen]);
 
   const handleLogout = async () => {
-    setIsOpen(false);
-    await supabase.auth.signOut();
-    toast.success(labels.loggedOutSuccess);
-    window.location.href = `/${getClientLocale(window.location.pathname)}`;
+    try {
+      setIsOpen(false);
+      await supabase.auth.signOut();
+      window.location.replace(`/${getClientLocale(window.location.pathname)}`);
+    } catch (error) {
+      console.error('Logout error:', error);
+      window.location.href = `/${getClientLocale(window.location.pathname)}`;
+    }
   };
 
   return (
