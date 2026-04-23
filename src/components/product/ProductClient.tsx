@@ -73,8 +73,21 @@ export function ProductClient({
   const allImages = useMemo(() => {
     const uniqueImages = new Set<string>();
     if (product.imageUrl) uniqueImages.add(product.imageUrl);
-    product.additionalImages?.forEach((image) => image && uniqueImages.add(image));
-    product.variants?.forEach((variant) => variant.imageUrl && uniqueImages.add(variant.imageUrl));
+    
+    // Robust array handling for production data
+    const additional = Array.isArray(product.additionalImages) 
+      ? product.additionalImages 
+      : [];
+    
+    additional.forEach((image) => {
+      if (image && typeof image === 'string') uniqueImages.add(image);
+    });
+
+    const variants = Array.isArray(product.variants) ? product.variants : [];
+    variants.forEach((variant) => {
+      if (variant.imageUrl) uniqueImages.add(variant.imageUrl);
+    });
+
     return [...uniqueImages];
   }, [product]);
 

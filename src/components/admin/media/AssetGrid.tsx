@@ -111,11 +111,26 @@ export function AssetGrid({
                   alt={obj.key}
                   className={`absolute inset-0 w-full h-full object-cover transition-transform group-hover:scale-105 ${deletingKey === obj.key ? 'opacity-20 grayscale' : ''}`}
                   loading="lazy"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const parent = target.parentElement;
+                    if (parent && !parent.querySelector('.broken-indicator')) {
+                      const diag = document.createElement('div');
+                      diag.className = 'broken-indicator absolute inset-0 flex flex-col items-center justify-center p-4 text-center bg-slate-50 border-2 border-dashed border-slate-200';
+                      diag.innerHTML = `
+                        <svg class="w-6 h-6 text-slate-300 mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/><path d="m9 10 2 2 4-4"/><path d="M12 18v-4"/><path d="M12 8h.01"/></svg>
+                        <p style="font-size: 10px; font-weight: 900; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em;">Link Broken</p>
+                        <button onclick="navigator.clipboard.writeText('${obj.url}'); alert('Path copied to clipboard')" style="margin-top: 8px; font-size: 8px; font-weight: 800; background: #0f172a; color: white; padding: 4px 8px; border-radius: 2px; text-transform: uppercase;">Copy Path</button>
+                      `;
+                      parent.appendChild(diag);
+                    }
+                  }}
                 />
                 
                 {/* Refined Action Overlay - Match Admin Style */}
                 {!selectionMode && (
-                  <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                  <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 z-10">
                      <button 
                        onClick={(e) => onCopyUrl(obj.url, obj.key, e)}
                        className="w-10 h-10 bg-white rounded flex items-center justify-center text-slate-900 hover:bg-slate-900 hover:text-white transition-all"
@@ -134,7 +149,7 @@ export function AssetGrid({
                 )}
 
                 {deletingKey === obj.key && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-white/60">
+                  <div className="absolute inset-0 flex items-center justify-center bg-white/60 z-20">
                     <RefreshCcw className="w-6 h-6 animate-spin text-slate-900" />
                   </div>
                 )}
