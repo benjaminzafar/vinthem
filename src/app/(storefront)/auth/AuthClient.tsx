@@ -124,18 +124,29 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
       return;
     }
     
-    // THE ULTIMATE BYPASS: Construct the authorize URL manually to prevent library leakage
-    // This forces every part of the handshake to stay on YOUR branded domain.
-    const brandedUrl = 'https://auth.vinthem.com';
-    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!;
-    const redirectTo = encodeURIComponent(`${brandedUrl}/auth/v1/callback`);
-    
-    const authorizeUrl = `${brandedUrl}/auth/v1/authorize?provider=google&redirect_uri=${redirectTo}`;
+    // RESTORING SECURITY + BRANDING: Using the library to handle sessions (PKCE)
+    // but forcing our branded domain through the custom client.
+    const brandedSupabase = createClient(
+      'https://auth.vinthem.com',
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
+    );
 
-    console.log("🏙️ LAUNCHING BRANDED AUTH HANDSHAKE:", authorizeUrl);
-    
-    // Direct browser redirect to bypass any library-injected parameters
-    window.location.href = authorizeUrl;
+    try {
+      // Step 1: Use the authorized branded callback (Verified in Google and Supabase)
+      const redirectTo = 'https://auth.vinthem.com/auth/v1/callback';
+      
+      const { error } = await brandedSupabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { 
+          redirectTo,
+          // ENSURE session persistence on the main domain
+          persistSession: true
+        },
+      });
+      if (error) throw error;
+    } catch (error: any) {
+      toast.error(error.message || 'Google login failed');
+    }
   };
 
   if (showOTP) {
