@@ -238,15 +238,19 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
                   <input type="checkbox" checked={acceptedPrivacy} onChange={(e) => setAcceptedPrivacy(e.target.checked)} className="mt-0.5 rounded-sm" required />
                   <span>Accept Privacy</span>
                 </label>
+                <label className="flex items-start gap-3 text-[10px] text-zinc-500 cursor-pointer uppercase font-bold tracking-tight">
+                  <input type="checkbox" checked={marketingOptIn} onChange={(e) => setMarketingOptIn(e.target.checked)} className="mt-0.5 rounded-sm" />
+                  <span>{settings.signUpMarketingConsentText?.[lang] || 'Subscribe to Newsletter'}</span>
+                </label>
               </div>
             )}
           </form>
 
-          {isLogin && !isForgotPassword && (
+          {!isForgotPassword && (
             <div className="mt-6 space-y-4">
               <div className="relative flex items-center py-2">
                 <div className="flex-grow border-t border-zinc-100"></div>
-                <span className="flex-shrink mx-4 text-[9px] font-black uppercase tracking-widest text-zinc-300">OR Secure Access</span>
+                <span className="flex-shrink mx-4 text-[9px] font-black uppercase tracking-widest text-zinc-300 pointer-events-none select-none">OR Secure Access</span>
                 <div className="flex-grow border-t border-zinc-100"></div>
               </div>
               
