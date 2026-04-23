@@ -35,6 +35,8 @@ export async function GET(req: NextRequest) {
     // Folders come from CommonPrefixes
     const folders = data.CommonPrefixes?.map(cp => cp.Prefix?.slice(prefix.length).replace(/\/$/, '')).filter(Boolean) || [];
     
+    const isPublicUrlMissing = !publicUrl && !process.env.R2_PUBLIC_URL;
+    
     // Files come from Contents
     const files = (data.Contents || [])
       .filter(obj => obj.Key && obj.Key !== prefix)
@@ -44,7 +46,6 @@ export async function GET(req: NextRequest) {
         
         if (publicUrl) {
            const baseUrl = publicUrl.replace(/\/$/, '');
-           // Ensure the key doesn't have a leading slash before joining
            const cleanKey = key.startsWith('/') ? key.slice(1) : key;
            const encodedKey = cleanKey.split('/').map(segment => encodeURIComponent(segment)).join('/');
            url = `${baseUrl}/${encodedKey}`;
@@ -54,11 +55,12 @@ export async function GET(req: NextRequest) {
              const cleanKey = key.startsWith('/') ? key.slice(1) : key;
              const encodedKey = cleanKey.split('/').map(segment => encodeURIComponent(segment)).join('/');
              url = `${envUrl}/${encodedKey}`;
+           } else {
+             // Fallback to S3 endpoint if absolutely no public URL is defined
+             const cleanKey = key.startsWith('/') ? key.slice(1) : key;
+             const encodedKey = cleanKey.split('/').map(segment => encodeURIComponent(segment)).join('/');
+             url = `https://${accountId}.r2.cloudflarestorage.com/${bucketName}/${encodedKey}`;
            }
-        }
-
-        if (process.env.NODE_ENV !== 'production') {
-          console.log(`[Media API Trace] Key: ${key} -> URL: ${url}`);
         }
 
         return {
@@ -73,7 +75,8 @@ export async function GET(req: NextRequest) {
     const statsResult = {
       totalSize: files.reduce((acc, f) => acc + (f.size || 0), 0),
       fileCount: files.length,
-      nextContinuationToken: data.NextContinuationToken
+      nextContinuationToken: data.NextContinuationToken,
+      publicUrlMissing: isPublicUrlMissing
     };
 
     return NextResponse.json({

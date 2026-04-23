@@ -8,8 +8,10 @@ import {
   FilePlus,
   HardDrive,
   FileText,
-  AlertCircle
+  AlertCircle,
+  ChevronRight
 } from 'lucide-react';
+import Link from 'next/link';
 import { toast } from 'sonner';
 import { Breadcrumbs } from './Breadcrumbs';
 import { FolderList } from './FolderList';
@@ -253,7 +255,30 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
          </label>
       </div>
 
-      {/* 3. Main Card Area - Unified with Overview Cards */}
+      {/* 3. Warning Banner if Public URL is missing */}
+      {stats.publicUrlMissing && (
+        <div className="bg-amber-50 border border-amber-200 rounded p-6 flex items-start gap-4 animate-in slide-in-from-top-4 duration-500">
+           <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center shrink-0">
+              <AlertCircle className="w-6 h-6 text-amber-600" />
+           </div>
+           <div className="space-y-1">
+              <h3 className="text-sm font-black text-amber-900 uppercase tracking-widest">Public Assets Restricted</h3>
+              <p className="text-[11px] text-amber-700 font-bold uppercase tracking-tight leading-relaxed max-w-2xl">
+                The <span className="underline decoration-amber-300">R2 Public URL</span> is missing in your Integrations settings. Images may appear as broken icons because they are being accessed via private storage endpoints.
+              </p>
+              <div className="pt-2">
+                <Link 
+                  href="/admin/integrations" 
+                  className="text-[10px] font-black uppercase tracking-widest text-amber-900 hover:underline inline-flex items-center gap-1"
+                >
+                  Configure Integrations <ChevronRight className="w-3 h-3" />
+                </Link>
+              </div>
+           </div>
+        </div>
+      )}
+
+      {/* 4. Main Card Area - Unified with Overview Cards */}
       <div className="bg-white border border-slate-300 rounded p-6 sm:p-8 min-h-[600px]">
          <Breadcrumbs currentPath={currentPath} onNavigate={handleNavigate} />
          
