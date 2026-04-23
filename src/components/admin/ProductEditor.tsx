@@ -775,7 +775,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                            const parent = target.parentElement;
                            if (parent && !parent.querySelector('.broken-indicator')) {
                              const diag = document.createElement('div');
-                             diag.className = 'broken-indicator absolute inset-0 flex flex-col items-center justify-center p-4 text-center bg-slate-50 border-2 border-dashed border-slate-200';
+                             diag.className = 'broken-indicator absolute inset-0 flex flex-col items-center justify-center p-4 text-center bg-slate-50 border-2 border-dashed border-slate-200 pointer-events-none';
                              diag.innerHTML = `
                                <svg class="w-6 h-6 text-slate-300 mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/><path d="m9 10 2 2 4-4"/><path d="M12 18v-4"/><path d="M12 8h.01"/></svg>
                                <p style="font-size: 8px; font-weight: 900; color: #64748b; text-transform: uppercase;">Image Private or Broken</p>

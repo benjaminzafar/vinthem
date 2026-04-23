@@ -187,8 +187,8 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
                                           <Image src={msg.imageUrl} alt="Attachment" fill className="object-cover" />
                                         </div>
                                       )}
-                                      <span className={`text-[9px] font-bold uppercase tracking-widest block mt-2 ${msg.sender === 'admin' ? 'text-slate-400' : 'text-slate-400'}`}>
-                                        {new Date(msg.createdAt).toLocaleString()}
+                                      <span className="text-[9px] font-bold uppercase tracking-widest block mt-2 text-slate-400">
+                                        {msg.createdAt && !isNaN(new Date(msg.createdAt).getTime()) ? new Date(msg.createdAt).toLocaleString() : 'Recent'}
                                       </span>
                                     </div>
                                   </div>

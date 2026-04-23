@@ -14,7 +14,8 @@ Permanent project memory and problem log. Read before each task and update after
 
 ## Problem Log
 
-| 2026-04-23 | **Support Infrastructure & Media Interaction Hardening** | **FIXED MISTAKE**: Resolved systemic "locked" upload triggers in Admin panel by applying `pointer-events-none` to interactive overlays; implemented end-to-end Support Image Upload for both customers and admins with secure path-based authorization. Fixed build regressions (missing Image imports, stale support states, and ProductManager icon mismatches) to restore zero-error production stability. |
+| 2026-04-23 | **Emergency Support & Media Recovery** | **FIXED MISTAKE**: Resolved a critical site-wide crash caused by illegal event handlers in Server Components; added `"use client"` to storefront list components. Standardized R2 URI encoding to fix broken asset paths and unlocked Admin upload triggers by neutralizing event-blocking error overlays with `pointer-events-none`. |
+| 2026-04-23 | **Support Infrastructure & Media Interaction Hardening** | **FIXED MISTAKE**: Resolved systemic "locked" upload triggers in Admin panel; implemented end-to-end Support Image Upload for both customers and admins with secure path-based authorization. |
 | 2026-04-23 | **Media Infrastructure Hardening & Upload Proxy Migration** | **FIXED MISTAKE**: ✅ Hardened media infrastructure with `/api/upload` proxy for all editors.
 - ✅ Fixed broken image URLs in proxy by adding URI encoding for paths.
 - ✅ Restoration of Product Gallery on storefront by fixing Supabase select queries.

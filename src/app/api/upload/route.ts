@@ -60,9 +60,9 @@ export async function POST(req: NextRequest) {
       );
 
       const baseUrl = publicUrl ? publicUrl.replace(/\/$/, '') : `https://${accountId}.r2.cloudflarestorage.com/${bucketName}`;
-      const encodedPath = path.split('/').map(segment => encodeURIComponent(segment)).join('/');
+      const cleanPath = path.replace(/^\//, '');
+      const encodedPath = cleanPath.split('/').map(segment => encodeURIComponent(segment)).join('/');
       const finalUrl = `${baseUrl}/${encodedPath}`;
-
       return NextResponse.json({ url: finalUrl });
     } catch (uploadError: unknown) {
       const message = uploadError instanceof Error ? uploadError.message : 'Upload failed';
