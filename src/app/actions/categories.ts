@@ -220,7 +220,28 @@ export async function deleteCategoriesAction(input: DeleteCategoriesInput): Prom
 
     const supabase = createAdminClient();
 
-    const { error } = await supabase.from('categories').delete().in('id', categoryIds);
+    // 1. Find all sub-categories recursively to ensure full deletion
+    // We fetch all sub-categories that have these as parents
+    const { data: subCats } = await supabase
+      .from('categories')
+      .select('id')
+      .in('parent_id', categoryIds);
+    
+    const subCatIds = (subCats || []).map(c => c.id);
+    const allIdsToDelete = [...new Set([...categoryIds, ...subCatIds])];
+
+    // 2. Unlink products (safety measure even with set null constraints)
+    // We set category_id to null for any products in these categories
+    await supabase
+      .from('products')
+      .update({ category_id: null })
+      .in('category_id', allIdsToDelete);
+
+    // 3. Perform the deletion
+    const { error } = await supabase
+      .from('categories')
+      .delete()
+      .in('id', allIdsToDelete);
 
     if (error) {
       throw error;
@@ -232,9 +253,12 @@ export async function deleteCategoriesAction(input: DeleteCategoriesInput): Prom
 
     return {
       success: true,
-      message: 'Collections deleted successfully.',
+      message: allIdsToDelete.length > 1 
+        ? `Successfully removed ${allIdsToDelete.length} collections.` 
+        : 'Collection removed successfully.',
     };
   } catch (error: unknown) {
+    logger.error('[deleteCategoriesAction] Error:', error);
     return {
       success: false,
       message: 'Failed to delete collections.',

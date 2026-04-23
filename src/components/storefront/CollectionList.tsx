@@ -15,61 +15,79 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
   const featuredCategories = categories.filter(c => c.isFeatured);
 
   return (
-    <section id="collection" className="py-24 md:py-32">
+    <section id="collection" className="py-20 md:py-32 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 md:mb-20">
-          <div className="text-center mx-auto">
-            <p className="text-xs font-medium tracking-widest uppercase mb-5 text-brand-muted">{settings.collectionTopSubtitle?.[lang]}</p>
-            <h2 className="text-4xl md:text-5xl font-sans mb-6 text-brand-ink tracking-tight">
+        <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-12 md:mb-20 gap-8">
+          <div className="text-center md:text-left flex-1">
+            <p className="text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase mb-4 text-slate-400">
+              {settings.collectionTopSubtitle?.[lang] || 'Curated Catalog'}
+            </p>
+            <h2 className="text-3xl md:text-5xl font-sans font-black mb-6 text-brand-ink tracking-tight leading-tight">
               {settings.collectionTitle?.[lang]}
             </h2>
-            <p className="text-brand-muted max-w-xl mx-auto text-sm md:text-base font-normal leading-relaxed">{settings.collectionSubtitle?.[lang]}</p>
+            <div className="w-12 h-1 bg-brand-ink mb-6 mx-auto md:mx-0"></div>
+            <p className="text-brand-muted max-w-xl mx-auto md:mx-0 text-sm md:text-base font-medium leading-relaxed">
+              {settings.collectionSubtitle?.[lang]}
+            </p>
           </div>
-          <div className="mt-10 md:mt-0">
-            <Link href="/products" className="inline-flex items-center text-xs font-medium uppercase tracking-wide text-brand-ink hover:opacity-80 transition-all">
-              {settings.viewAllText?.[lang]} <ArrowRight className="ml-3 w-3.5 h-3.5" />
+          <div className="shrink-0">
+            <Link 
+              href="/products" 
+              className="group inline-flex items-center text-[10px] font-black uppercase tracking-[0.2em] text-brand-ink hover:opacity-70 transition-all border-b-2 border-brand-ink pb-1"
+            >
+              {settings.viewAllText?.[lang] || 'Explore All'} 
+              <ArrowRight className="ml-3 w-4 h-4 transition-transform group-hover:translate-x-1" />
             </Link>
           </div>
         </div>
 
         {featuredCategories.length === 0 ? (
-          <div className="text-center py-24 md:py-32 bg-white/50 rounded-2xl border border-white/20">
-            <ShoppingBag className="w-12 h-12 md:w-16 md:h-16 text-gray-400 mx-auto mb-6" />
-            <h3 className="text-xl md:text-2xl font-sans mb-3">{settings.noCollectionsFoundText?.[lang]}</h3>
-            <p className="text-brand-muted text-base md:text-lg">{settings.checkBackLaterText?.[lang]}</p>
+          <div className="text-center py-24 bg-slate-50 rounded-2xl border border-slate-100">
+            <ShoppingBag className="w-12 h-12 text-slate-300 mx-auto mb-6" />
+            <h3 className="text-xl font-sans font-bold mb-3 text-slate-900">{settings.noCollectionsFoundText?.[lang]}</h3>
+            <p className="text-slate-500 text-sm">{settings.checkBackLaterText?.[lang]}</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 md:gap-x-8 gap-y-10 md:gap-y-16">
-            {featuredCategories.map((category, index) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8 lg:gap-10">
+            {featuredCategories.map((category) => (
               <div 
                 key={category.id} 
-                className="group relative"
+                className="group relative flex flex-col"
               >
-                <Link href={`/products?category=${encodeURIComponent(category.name)}`} className="block">
-                  <div className="relative aspect-[4/5] w-full overflow-hidden bg-gray-100 mb-4 md:mb-5 rounded-2xl">
+                <Link href={`/products?category=${encodeURIComponent(category.name)}`} className="block flex-1 group">
+                  <div className="relative aspect-[4/5] w-full overflow-hidden bg-slate-50 mb-6 rounded-xl border border-slate-100">
                     {category.imageUrl && category.imageUrl.trim() !== "" ? (
                       <Image
                         src={category.imageUrl}
                         alt={category.name}
                         fill
-                        sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                        className="object-cover object-center transition-transform duration-700 group-hover:scale-105"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                        className="object-cover object-center transition-transform duration-1000 group-hover:scale-110"
                       />
                     ) : (
-                      <div className="h-full w-full flex items-center justify-center text-gray-400 font-sans text-xl md:text-2xl bg-gray-200">
-                        {category.name}
+                      <div className="h-full w-full flex items-center justify-center text-slate-200 font-sans text-2xl bg-slate-50 uppercase tracking-tighter font-black">
+                        {category.name.substring(0, 2)}
                       </div>
                     )}
                     
-                    {/* Button Overlay */}
-                    <div className="absolute inset-x-0 bottom-0 p-4 md:p-6 flex justify-center opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 bg-gradient-to-t from-black/60 to-transparent">
-                      <span className="bg-white text-brand-ink w-full py-3 md:py-4 rounded-full text-xs md:text-sm font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors">
-                        {settings.shopNowText?.[lang] || 'Shop Now'} <ArrowRight className="w-4 h-4" />
+                    {/* Button Overlay - Refined for both mobile and desktop */}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-500 z-10" />
+                    
+                    <div className="absolute inset-x-0 bottom-0 p-4 md:p-6 flex justify-center translate-y-4 md:translate-y-10 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-500 z-20">
+                      <span className="bg-white text-brand-ink w-full py-4 rounded-full text-[10px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-2 shadow-2xl hover:bg-slate-50 active:scale-95 transition-all">
+                        {settings.shopNowText?.[lang] || 'Discover'} <ArrowRight className="w-3.5 h-3.5" />
                       </span>
                     </div>
                   </div>
-                  <div className="px-1">
-                    <h3 className="text-sm md:text-lg font-medium text-brand-ink mb-0.5 md:mb-1">{category.name}</h3>
+                  
+                  <div className="px-2 text-center md:text-left">
+                    <h3 className="text-base md:text-lg font-black text-brand-ink mb-1 tracking-tight group-hover:text-slate-600 transition-colors">
+                      {category.name}
+                    </h3>
+                    <div className="flex items-center justify-center md:justify-start gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                       <span>Explore Collection</span>
+                       <span className="w-4 h-[1px] bg-slate-200" />
+                    </div>
                   </div>
                 </Link>
               </div>
