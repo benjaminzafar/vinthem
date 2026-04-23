@@ -27,6 +27,7 @@ interface Asset {
 interface MediaStats {
   totalSize: number;
   fileCount: number;
+  publicUrlMissing?: boolean;
 }
 
 interface MediaContainerProps {
