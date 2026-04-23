@@ -124,28 +124,18 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
       return;
     }
     
-    // DEBUG LOG: Open your browser console (F12) to see this!
-    console.log("🚀 INITIATING BRANDED LOGIN VIA: https://auth.vinthem.com");
+    // THE ULTIMATE BYPASS: Construct the authorize URL manually to prevent library leakage
+    // This forces every part of the handshake to stay on YOUR branded domain.
+    const brandedUrl = 'https://auth.vinthem.com';
+    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!;
+    const redirectTo = encodeURIComponent(`${brandedUrl}/auth/v1/callback`);
+    
+    const authorizeUrl = `${brandedUrl}/auth/v1/authorize?provider=google&redirect_uri=${redirectTo}`;
 
-    const brandedSupabase = createClient(
-      'https://auth.vinthem.com',
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-    );
-
-    try {
-      const redirectTo = `https://auth.vinthem.com/auth/v1/callback`;
-      
-      const { error } = await brandedSupabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: { 
-          redirectTo,
-          skipBrowserRedirect: false
-        },
-      });
-      if (error) throw error;
-    } catch (error: any) {
-      toast.error(error.message || 'Google login failed');
-    }
+    console.log("🏙️ LAUNCHING BRANDED AUTH HANDSHAKE:", authorizeUrl);
+    
+    // Direct browser redirect to bypass any library-injected parameters
+    window.location.href = authorizeUrl;
   };
 
   if (showOTP) {
