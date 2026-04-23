@@ -9,6 +9,7 @@ import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { UserAvatar } from '../ui/UserAvatar';
+import { getClientLocale } from '@/lib/locale';
 
 import { User as UserType } from '@/types';
 import { User as SupabaseUser } from '@supabase/supabase-js';
@@ -43,10 +44,10 @@ export function AccountDropdown({ user, isAdmin, labels }: AccountDropdownProps)
   }, [isOpen]);
 
   const handleLogout = async () => {
+    setIsOpen(false);
     await supabase.auth.signOut();
     toast.success(labels.loggedOutSuccess);
-    navigate.refresh(); // Refresh the server components
-    setIsOpen(false);
+    window.location.href = `/${getClientLocale(window.location.pathname)}`;
   };
 
   return (

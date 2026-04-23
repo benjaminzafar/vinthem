@@ -63,15 +63,11 @@ export function ResetPasswordClient({ initialSettings }: ResetPasswordClientProp
 
       toast.success(settings.passwordResetSuccessText?.[lang] || 'Password updated successfully');
       
-      // Delay to show success toast before redirect
-      setTimeout(async () => {
-        // Clear session after password change for security
-        await supabase.auth.signOut();
-        navigate.push(`/${lang}/auth`);
-      }, 2000);
+      // Redirect directly to home or profile since password update already authenticates the session
+      navigate.push(`/${lang}/profile`);
     } catch (error: any) {
       toast.error(error.message || 'Failed to update password');
-      setLoading(false); // Make sure to unlock the button on error
+      setLoading(false);
     } 
   };
 

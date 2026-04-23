@@ -30,7 +30,25 @@ export async function syncCurrentUserProfileAction(name?: string): Promise<AuthA
     // Attempt to get language from user metadata or current URL context if available
     const lang = user.user_metadata?.lang || 'en';
 
-    await ensureUserProfile(user, name?.replace(/[<>]/g, '').trim() || user.user_metadata?.full_name, lang);
+    // Check if profile already exists with identical data to avoid unnecessary writes
+    const { data: existingProfile } = await supabase
+      .from('users')
+      .select('full_name, preferred_lang')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    const sanitizedName = name?.replace(/[<>]/g, '').trim() || user.user_metadata?.full_name;
+
+    if (existingProfile && 
+        existingProfile.full_name === sanitizedName && 
+        existingProfile.preferred_lang === lang) {
+      return {
+        success: true,
+        message: 'Profile already up to date.',
+      };
+    }
+
+    await ensureUserProfile(user, sanitizedName, lang);
 
     return {
       success: true,
