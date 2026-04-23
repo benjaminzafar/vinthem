@@ -9,7 +9,8 @@ import {
   Search, 
   Trash2,
   Check,
-  X
+  X,
+  FileText
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDebounce } from '@/hooks/useDebounce';

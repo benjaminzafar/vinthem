@@ -8,6 +8,7 @@ type SupportRequestInput = {
   orderId: string;
   type: 'help' | 'replacement' | 'refund' | 'chat';
   message: string;
+  imageUrl?: string;
 };
 
 type SupportActionResult = {
@@ -28,12 +29,14 @@ type SupportTicketStatus = 'open' | 'in-progress' | 'resolved' | 'Approved' | 'W
 type SupportTicketMessage = {
   sender: 'admin' | 'customer';
   text: string;
+  imageUrl?: string;
   createdAt: string;
 };
 
 type ReplySupportTicketInput = {
   ticketId: string;
   replyText?: string;
+  imageUrl?: string;
   status?: SupportTicketStatus;
   existingMessages?: SupportTicketMessage[];
 };
@@ -100,6 +103,7 @@ export async function submitSupportRequestAction(input: SupportRequestInput): Pr
           {
             sender: 'customer',
             text: safeMessage,
+            imageUrl: input.imageUrl,
             createdAt: new Date().toISOString(),
           }
         ],
@@ -197,6 +201,7 @@ export async function replySupportTicketAction(input: ReplySupportTicketInput): 
           {
             sender: 'admin' as const,
             text: replyText,
+            imageUrl: input.imageUrl,
             createdAt: new Date().toISOString(),
           },
         ]

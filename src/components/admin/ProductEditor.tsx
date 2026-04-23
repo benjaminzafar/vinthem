@@ -793,8 +793,8 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                      </div>
                    )}
                    <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
-                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-white border-white border px-4 py-2">Quick Change</span>
+                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all z-10 pointer-events-none">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-white border-white border px-4 py-2">Change Image</span>
                    </div>
                 </label>
 

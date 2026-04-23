@@ -372,7 +372,7 @@ Text to translate: "${sourceText}"`;
                         <ImageIcon className="w-8 h-8 text-zinc-200" />
                       )}
                       <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'logoImage')} className="absolute inset-0 opacity-0 cursor-pointer" title="Update Logo" />
-                      <div className="absolute inset-0 bg-zinc-900/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <div className="absolute inset-0 bg-zinc-900/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
                         <Upload className="w-6 h-6 text-zinc-400" />
                       </div>
                     </div>

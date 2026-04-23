@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { useAuthStore } from '@/store/useAuthStore';
 import { 
   Package, 
@@ -140,7 +141,9 @@ export function ProfileClient({
   const [supportOrder, setSupportOrder] = useState<ProfileOrder | null>(null);
   const [supportType, setSupportType] = useState<SupportType>(null);
   const [supportMessage, setSupportMessage] = useState('');
+  const [supportImageUrl, setSupportImageUrl] = useState('');
   const [isSubmittingSupport, setIsSubmittingSupport] = useState(false);
+  const [isUploadingSupportImage, setIsUploadingSupportImage] = useState(false);
 
   // Security UI State
   const [showPasswordForm, setShowPasswordForm] = useState(false);
@@ -198,6 +201,32 @@ export function ProfileClient({
     }
   };
 
+  const handleSupportFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploadingSupportImage(true);
+    const toastId = toast.loading('Uploading evidence asset...');
+    try {
+      const formDataUpload = new FormData();
+      formDataUpload.append('file', file);
+      formDataUpload.append('path', `support/${user?.id}/${Date.now()}_${file.name}`);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formDataUpload,
+      });
+
+      if (!res.ok) throw new Error('Upload failed');
+      const data = await res.json();
+      setSupportImageUrl(data.url);
+      toast.success('Asset attached to request', { id: toastId });
+    } catch (err: any) {
+      toast.error('Asset upload failed. Please try again.', { id: toastId });
+    } finally {
+      setIsUploadingSupportImage(false);
+    }
+  };
+
   const handleSupportSubmit = async () => {
     if (!supportOrder || !supportType) {
       toast.error('Support request is missing order context');
@@ -217,6 +246,7 @@ export function ProfileClient({
         orderId: supportOrder.orderId || supportOrder.id,
         type: supportType as 'help' | 'replacement' | 'refund' | 'chat',
         message: supportMessage,
+        imageUrl: supportImageUrl,
       });
       if (!result.success) throw new Error(result.message);
 
@@ -260,6 +290,7 @@ export function ProfileClient({
       setSupportOrder(null);
       setSupportType(null);
       setSupportMessage('');
+      setSupportImageUrl('');
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to send request';
       setSupportFeedback({ type: 'error', message });
@@ -1153,6 +1184,36 @@ export function ProfileClient({
                                 placeholder="Detail your requirement..."
                                 className="w-full bg-white border-2 border-slate-300 p-10 text-sm font-bold text-slate-900 focus:outline-none focus:border-slate-950 h-64 resize-none"
                              />
+                             
+                             <div className="mt-4 flex flex-col gap-4">
+                                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest block">Attachments & Visual Evidence</label>
+                                <div className="flex items-center gap-4">
+                                  {supportImageUrl ? (
+                                    <div className="relative w-24 h-24 border border-slate-300 bg-white group">
+                                      <Image src={supportImageUrl} alt="Support attachment" fill className="object-cover" />
+                                      <button 
+                                        onClick={() => setSupportImageUrl('')}
+                                        className="absolute -top-2 -right-2 w-6 h-6 bg-white border border-slate-300 rounded-full flex items-center justify-center shadow-sm hover:border-slate-900"
+                                      >
+                                        <X className="w-3 h-3" />
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <label className="w-24 h-24 border-2 border-dashed border-slate-200 hover:border-slate-900 bg-slate-50 flex items-center justify-center cursor-pointer transition-all">
+                                      <div className="flex flex-col items-center">
+                                        <Plus className="w-5 h-5 text-slate-300" />
+                                        <span className="text-[8px] font-bold uppercase text-slate-400 mt-1">Add Image</span>
+                                      </div>
+                                      <input type="file" className="hidden" accept="image/*" onChange={handleSupportFileUpload} />
+                                    </label>
+                                  )}
+                                  <div className="flex-1">
+                                    <p className="text-[10px] font-medium text-slate-400 leading-relaxed uppercase">
+                                       Upload a high-quality photo of the product or issue to expedite our technical audit.
+                                    </p>
+                                  </div>
+                                </div>
+                             </div>
                            </div>
                            <button 
                               onClick={handleSupportSubmit}

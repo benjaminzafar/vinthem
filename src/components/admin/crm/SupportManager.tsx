@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronDown, ChevronRight, MessageSquare, Clock, AlertCircle, Trash2, Truck, Globe } from 'lucide-react';
+import { ChevronDown, ChevronRight, MessageSquare, Clock, AlertCircle, Trash2, Truck, Globe, ImageIcon } from 'lucide-react';
 import { replySupportTicketAction, deleteSupportTicketAction } from '@/app/actions/support';
 import { toast } from 'sonner';
 import type { SupportTicket } from './types';
@@ -16,6 +16,7 @@ interface SupportManagerProps {
 export function SupportManager({ tickets, loading }: SupportManagerProps) {
   const [expandedTicketId, setExpandedTicketId] = useState<string | null>(null);
   const [draftReplies, setDraftReplies] = useState<Record<string, string>>({});
+  const [replyImages, setReplyImages] = useState<Record<string, string>>({});
   const [isUpdating, setIsUpdating] = useState(false);
 
   const getStatusStyle = (status: string) => {
@@ -39,6 +40,7 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
       const result = await replySupportTicketAction({
         ticketId,
         replyText,
+        imageUrl: replyImages[ticketId],
         status: 'in-progress',
         existingMessages: ticket?.messages ?? [],
       });
@@ -49,6 +51,7 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
 
       toast.success(result.message, { id: toastId });
       setDraftReplies((current) => ({ ...current, [ticketId]: '' }));
+      setReplyImages((current) => ({ ...current, [ticketId]: '' }));
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to update support ticket.';
       toast.error(message, { id: toastId });
@@ -179,6 +182,11 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
                                       <p className={`${msg.sender === 'admin' ? '' : 'font-medium'} ${msg.text.startsWith('[SYSTEM]') ? 'italic text-[11px]' : ''}`}>
                                         {msg.text.startsWith('[SYSTEM]') ? msg.text.replace('[SYSTEM]', '🤖') : msg.text}
                                       </p>
+                                      {msg.imageUrl && (
+                                        <div className="mt-3 relative aspect-video w-full rounded overflow-hidden border border-slate-200">
+                                          <Image src={msg.imageUrl} alt="Attachment" fill className="object-cover" />
+                                        </div>
+                                      )}
                                       <span className={`text-[9px] font-bold uppercase tracking-widest block mt-2 ${msg.sender === 'admin' ? 'text-slate-400' : 'text-slate-400'}`}>
                                         {new Date(msg.createdAt).toLocaleString()}
                                       </span>
@@ -200,7 +208,44 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
                                   placeholder="Type your official response..."
                                   className="w-full bg-white border border-slate-300 rounded p-4 text-sm font-medium min-h-[100px] focus:outline-none focus:border-slate-900 transition-all"
                                 />
-                                <div className="absolute bottom-4 right-4">
+                                <div className="absolute bottom-4 right-4 flex items-center gap-2">
+                                  {replyImages[ticket.id] ? (
+                                    <div className="relative w-10 h-10 border border-slate-300 bg-white">
+                                      <Image src={replyImages[ticket.id]} alt="Reply preview" fill className="object-cover" />
+                                      <button onClick={() => setReplyImages(prev => ({ ...prev, [ticket.id]: '' }))} className="absolute -top-1.5 -right-1.5 bg-white border border-slate-300 rounded-full p-0.5 text-slate-400">
+                                        <ChevronDown className="w-2.5 h-2.5 rotate-45" />
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <label className="p-2 text-slate-400 hover:text-slate-900 cursor-pointer transition-colors bg-white border border-slate-200 rounded">
+                                      <ImageIcon className="w-4 h-4" />
+                                      <input 
+                                        type="file" 
+                                        className="hidden" 
+                                        accept="image/*" 
+                                        onChange={async (e) => {
+                                          const file = e.target.files?.[0];
+                                          if (!file) return;
+                                          setIsUpdating(true);
+                                          const tId = toast.loading('Uploading clinical evidence...');
+                                          try {
+                                            const fd = new FormData();
+                                            fd.append('file', file);
+                                            fd.append('path', `support/admin/replies/${Date.now()}_${file.name}`);
+                                            const res = await fetch('/api/upload', { method: 'POST', body: fd });
+                                            if (!res.ok) throw new Error('Upload fail');
+                                            const { url } = await res.json();
+                                            setReplyImages(prev => ({ ...prev, [ticket.id]: url }));
+                                            toast.success('Asset synced', { id: tId });
+                                          } catch (err) {
+                                            toast.error('Upload failed', { id: tId });
+                                          } finally {
+                                            setIsUpdating(false);
+                                          }
+                                        }} 
+                                      />
+                                    </label>
+                                  )}
                                   <button 
                                     onClick={() => handleReplyTicket(ticket.id)}
                                     disabled={isUpdating || !(draftReplies[ticket.id] ?? '').trim()}

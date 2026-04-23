@@ -12,12 +12,29 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing file or path' }, { status: 400 });
     }
 
+    let userContext;
     try {
-      await requireAdminUser();
+      const { getSessionUserWithRole } = await import('@/lib/admin');
+      userContext = await getSessionUserWithRole();
+      
+      if (!userContext.user) {
+        return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+      }
+
+      // Authorization Logic:
+      // 1. Admins can upload anywhere.
+      // 2. Clients can ONLY upload to support/{userId}/...
+      if (!userContext.isAdmin) {
+        const isSupportPath = path.startsWith('support/');
+        const isOwnPath = path.startsWith(`support/${userContext.user.id}/`);
+        
+        if (!isSupportPath || !isOwnPath) {
+          return NextResponse.json({ error: 'Forbidden: Insufficient permissions for this path' }, { status: 403 });
+        }
+      }
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unauthorized';
-      const status = message === 'Admin access required.' ? 403 : 401;
-      return NextResponse.json({ error: message }, { status });
+      const message = error instanceof Error ? error.message : 'Auth error';
+      return NextResponse.json({ error: message }, { status: 401 });
     }
 
     const arrayBuffer = await file.arrayBuffer();

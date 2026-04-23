@@ -39,6 +39,7 @@ export type CRMCustomer = {
 export type SupportMessage = {
   sender: 'admin' | 'customer';
   text: string;
+  imageUrl?: string;
   createdAt: string;
 };
 
