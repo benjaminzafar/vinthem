@@ -150,11 +150,11 @@ export function ProductClient({
       <BackButton label={settings.backToStoreText?.[lang]} className="mb-8" />
 
       <div className="grid gap-10 lg:grid-cols-[1fr_450px] lg:gap-8">
-        <section className="space-y-4">
-          <div className="overflow-hidden border border-slate-200 bg-white rounded">
-            <div className="relative aspect-[4/5] bg-slate-50">
+        <section className="flex flex-col h-full">
+          <div className="overflow-hidden border border-slate-200 bg-white rounded flex-1">
+            <div className="relative h-full min-h-[500px] lg:min-h-0 bg-slate-50">
               {activeImage ? (
-                <button onClick={() => setIsLightboxOpen(true)} className="absolute inset-0">
+                <button onClick={() => setIsLightboxOpen(true)} className="absolute inset-0 w-full h-full">
                   <Image
                     src={activeImage}
                     alt={product.title}
@@ -173,12 +173,12 @@ export function ProductClient({
           </div>
 
           {allImages.length > 1 && (
-            <div className="grid grid-cols-4 gap-3 sm:grid-cols-5">
+            <div className="mt-4 grid grid-cols-4 gap-3 sm:grid-cols-5">
               {allImages.map((image, index) => (
                 <button
                   key={`${image}-${index}`}
                   onClick={() => setActiveImage(image)}
-                  className={`relative aspect-[4/5] overflow-hidden border transition-all rounded ${activeImage === image ? 'border-slate-900' : 'border-slate-200 hover:border-slate-400'}`}
+                  className={`relative aspect-square overflow-hidden border transition-all rounded ${activeImage === image ? 'border-slate-900' : 'border-slate-200 hover:border-slate-400'}`}
                 >
                   <Image src={image} alt={`${product.title} ${index + 1}`} fill sizes="120px" className="object-cover" />
                 </button>
@@ -318,11 +318,11 @@ export function ProductClient({
               </button>
             </div>
           </div>
-
-          <div className="mt-6 border border-slate-200 bg-white p-6 sm:p-8 rounded">
-            <Reviews productId={product.id!} initialSettings={initialSettings} lang={lang} />
-          </div>
         </section>
+      </div>
+
+      <div className="mt-8 border border-slate-200 bg-white p-6 sm:p-10 rounded">
+        <Reviews productId={product.id!} initialSettings={initialSettings} lang={lang} />
       </div>
 
       <div className="pointer-events-none fixed bottom-6 right-6 z-40 flex flex-col gap-3 md:hidden">
