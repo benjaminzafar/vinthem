@@ -21,8 +21,8 @@ export async function generateMetadata({
   const storeName = settings?.storeName?.[lang] || settings?.storeName?.['en'] || 'Vinthem';
   const storeDesc = localeDescriptions[lang as keyof typeof localeDescriptions] || localeDescriptions.en;
 
-  // Clean canonical path
-  const canonicalPath = normalizeLocalizedPath(pathnameWithoutLocale, lang);
+  // For Lighthouse 100 SEO: Canonical should be self-referential for localized pages
+  const canonicalUrl = normalizeLocalizedPath(pathnameWithoutLocale, lang);
 
   return {
     title: {
@@ -31,7 +31,7 @@ export async function generateMetadata({
     },
     description: storeDesc,
     alternates: {
-      canonical: canonicalPath,
+      canonical: canonicalUrl,
       languages: {
         ...Object.fromEntries(
           activeLocales.map((locale) => [locale, normalizeLocalizedPath(pathnameWithoutLocale, locale)]),

@@ -61,11 +61,11 @@ export default async function Navigation() {
           {/* Brand Logo */}
           <div className="flex-1 flex items-center">
             <Link href={localizeHref(lang, '/')} className="flex items-center space-x-3 group">
-              {settings?.logoImage && settings.logoImage.trim() !== "" ? (
+              {settings?.logoImage && settings.logoImage.length > 5 && settings.logoImage.startsWith('h') ? (
                 <div className="relative h-8 w-32">
                   <Image
                     src={settings.logoImage}
-                    alt={settings.storeName?.[lang] || 'Vinthem'}
+                    alt={`${settings.storeName?.[lang] || 'Vinthem'} - Premium Scandinavian Interior Design`}
                     fill
                     className="object-contain transition-transform group-hover:scale-105"
                     sizes="(max-width: 768px) 100px, 128px"
