@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
 import { Search, ChevronRight, ChevronLeft, Check, LayoutGrid } from 'lucide-react';
 import { StorefrontSettings } from '@/store/useSettingsStore';
 import { Category } from '@/types';
