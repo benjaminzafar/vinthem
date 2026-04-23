@@ -123,13 +123,23 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
       toast.error(settings.googleLoginUnavailableText?.[lang] || 'Google login disabled.');
       return;
     }
-    const supabase = createClient();
+    
+    // DEBUG LOG: Open your browser console (F12) to see this!
+    console.log("🚀 INITIATING BRANDED LOGIN VIA: https://auth.vinthem.com");
+
+    const brandedSupabase = createClient(
+      'https://auth.vinthem.com',
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
+    );
+
     try {
-      const redirectTo = `${window.location.origin}/auth/callback`;
-      const { error } = await supabase.auth.signInWithOAuth({
+      const redirectTo = `https://auth.vinthem.com/auth/v1/callback`;
+      
+      const { error } = await brandedSupabase.auth.signInWithOAuth({
         provider: 'google',
         options: { 
-          redirectTo
+          redirectTo,
+          skipBrowserRedirect: false
         },
       });
       if (error) throw error;

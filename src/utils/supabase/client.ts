@@ -19,19 +19,23 @@ declare global {
   var __supabase_client: ReturnType<typeof createBrowserClient> | undefined;
 }
 
-export function createClient() {
+export function createClient(customUrl?: string, customKey?: string) {
+  const url = customUrl || supabaseUrl;
+  const key = customKey || supabaseAnonKey;
+
   // Check globalThis first for persistence across HMR
+  // Only use singleton if no custom overrides are provided
   if (typeof window === 'undefined') {
-    return createBrowserClient(supabaseUrl, supabaseAnonKey);
+    return createBrowserClient(url, key);
   }
 
-  if (typeof window !== 'undefined' && globalThis.__supabase_client) {
+  if (!customUrl && globalThis.__supabase_client) {
     return globalThis.__supabase_client;
   }
 
   const client = createBrowserClient(
-    supabaseUrl,
-    supabaseAnonKey,
+    url,
+    key,
     {
       auth: {
         flowType: 'pkce',
@@ -42,8 +46,8 @@ export function createClient() {
     }
   );
 
-  // Store in globalThis for the next call
-  if (typeof window !== 'undefined') {
+  // Store in globalThis for the next call if no custom overrides
+  if (typeof window !== 'undefined' && !customUrl) {
     globalThis.__supabase_client = client;
   }
 
