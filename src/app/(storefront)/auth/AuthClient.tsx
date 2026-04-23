@@ -124,46 +124,16 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
       return;
     }
     
-    // DYNAMIC BRANDING: Determine the callback target based on the environment
-    // to ensure you stay logged in on localhost during development!
-    const isLocal = window.location.hostname === 'localhost';
-    const brandedUrl = 'https://auth.vinthem.com';
-    
-    // In production, we use branding; in localhost, we might need a direct callback for session matching
-    const redirectTo = isLocal 
-      ? `${window.location.origin}/auth/callback` 
-      : `${brandedUrl}/auth/v1/callback`;
-
-    const supabase = createClient(
-      !isLocal ? brandedUrl : undefined
-    );
+    const supabase = createClient();
 
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: { 
-          redirectTo,
-          skipBrowserRedirect: true
+          redirectTo: `${window.location.origin}/auth/callback` 
         },
       });
-
       if (error) throw error;
-
-      if (data?.url) {
-        // Rewrite the URL string for branding ONLY if we are NOT on localhost
-        // (to avoid branding breaking localhost sessions)
-        let finalUrl = data.url;
-        
-        if (!isLocal) {
-          finalUrl = data.url.replace(
-            /xeatyjjiywcrkuvifyhm\.supabase\.co/g, 
-            'auth.vinthem.com'
-          );
-        }
-        
-        console.log("🏙️ LAUNCHING ENVIRONMENT-AWARE AUTH:", finalUrl);
-        window.location.href = finalUrl;
-      }
     } catch (error: any) {
       toast.error(error.message || 'Google login failed');
     }

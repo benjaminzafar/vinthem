@@ -14,8 +14,6 @@ export async function GET(request: NextRequest) {
 
   if (code) {
     const supabase = await createClient();
-    
-    // Attempt to exchange the code for a session
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error && data.user) {
@@ -25,13 +23,9 @@ export async function GET(request: NextRequest) {
         console.error('[Auth Callback] Profile sync skipped:', profileError);
       }
 
-      const redirectResponse = NextResponse.redirect(`${origin}${next}`);
-      return redirectResponse;
-    } else {
-      console.error('[Auth Callback] Exchange Error:', error?.message);
+      return NextResponse.redirect(`${origin}${next}`);
     }
   }
 
-  // If something went wrong, redirect to auth with an error
-  return NextResponse.redirect(`${origin}/auth?error=oauth_callback_failed`);
+  return NextResponse.redirect(`${origin}/auth?error=oauth`);
 }

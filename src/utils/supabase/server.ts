@@ -4,13 +4,9 @@ import { cookies, headers } from 'next/headers';
 
 export async function createClient() {
   const cookieStore = await cookies();
-  const host = (await headers()).get('host') || '';
-  
-  // Site MUST use technical URL for data stability!
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 
   return createServerClient(
-    supabaseUrl,
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {
       cookies: {
@@ -32,9 +28,6 @@ export async function createClient() {
           }
         },
       },
-      auth: {
-        storageKey: 'vinthem-auth-token',
-      }
     }
   );
 }

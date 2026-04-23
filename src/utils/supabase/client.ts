@@ -24,18 +24,9 @@ export function createClient(customUrl?: string, customKey?: string) {
   const key = customKey || supabaseAnonKey;
 
   // Check globalThis first for persistence across HMR
-  // Only use singleton if no custom overrides are provided
-  if (typeof window === 'undefined') {
-    return createBrowserClient(url, key);
-  }
-
-  // In development, Next.js refreshes frequently. We use a singleton
-  // BUT we must bypass it if a custom URL is requested (like for branded auth)
-  if (!customUrl && typeof window !== 'undefined' && globalThis.__supabase_client) {
+  if (typeof window !== 'undefined' && globalThis.__supabase_client) {
     return globalThis.__supabase_client;
   }
-
-  const isLocal = typeof window !== 'undefined' && window.location.hostname === 'localhost';
 
   const client = createBrowserClient(
     url,
@@ -46,18 +37,12 @@ export function createClient(customUrl?: string, customKey?: string) {
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,
-        storageKey: 'vinthem-auth-token',
-        cookieOptions: {
-          path: '/',
-          sameSite: 'lax',
-          secure: typeof window !== 'undefined' && window.location.protocol === 'https:',
-        }
       },
     }
   );
 
-  // Store in globalThis for the next call if no custom overrides
-  if (typeof window !== 'undefined' && !customUrl) {
+  // Store in globalThis for the next call
+  if (typeof window !== 'undefined') {
     globalThis.__supabase_client = client;
   }
 
