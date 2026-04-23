@@ -89,7 +89,11 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
         setShowOTP(true);
         setOtpType('signup');
       } else {
-        toast.error(error.message || 'Auth failed');
+        let errorMessage = error.message || 'Auth failed';
+        if (errorMessage.toLowerCase().includes('invalid login credentials')) {
+          errorMessage = 'user or password is wrong';
+        }
+        toast.error(errorMessage);
       }
       setLoading(false);
     }
