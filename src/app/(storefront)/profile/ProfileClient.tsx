@@ -1,5 +1,15 @@
 "use client";
 
+const isValidUrl = (url: string) => {
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -731,6 +741,11 @@ export function ProfileClient({
                                     </span>
                                   </div>
                                   <p className="mt-2 text-sm leading-6 text-slate-700">{message.text || '-'}</p>
+                                  {message.imageUrl && isValidUrl(message.imageUrl) && (
+                                    <div className="mt-4 relative aspect-video w-full max-w-sm rounded-lg overflow-hidden border border-slate-200 shadow-sm">
+                                      <Image src={message.imageUrl} alt="Support inquiry attachment" fill className="object-cover" />
+                                    </div>
+                                  )}
                                 </div>
                               ))}
                             </div>

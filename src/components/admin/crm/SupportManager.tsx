@@ -1,5 +1,15 @@
 "use client";
 
+const isValidUrl = (url: string) => {
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'motion/react';
@@ -182,7 +192,7 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
                                       <p className={`${msg.sender === 'admin' ? '' : 'font-medium'} ${msg.text.startsWith('[SYSTEM]') ? 'italic text-[11px]' : ''}`}>
                                         {msg.text.startsWith('[SYSTEM]') ? msg.text.replace('[SYSTEM]', '🤖') : msg.text}
                                       </p>
-                                      {msg.imageUrl && (
+                                      {msg.imageUrl && isValidUrl(msg.imageUrl) && (
                                         <div className="mt-3 relative aspect-video w-full rounded overflow-hidden border border-slate-200">
                                           <Image src={msg.imageUrl} alt="Attachment" fill className="object-cover" />
                                         </div>
