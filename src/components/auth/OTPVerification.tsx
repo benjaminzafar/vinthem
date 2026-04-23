@@ -214,10 +214,10 @@ export function OTPVerification({ email, type = 'signup', onSuccess, labels }: O
           {loading ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin" />
-              Verifying...
+              {L.verifyButton}...
             </>
           ) : (
-            "Verify & Continue"
+            L.verifyButton
           )}
         </button>
 
@@ -230,7 +230,7 @@ export function OTPVerification({ email, type = 'signup', onSuccess, labels }: O
               inputRefs.current[0]?.focus();
             }}
           >
-            Clear and try again
+            {L.clearButton}
           </button>
         </div>
       </form>

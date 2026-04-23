@@ -69,6 +69,11 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
         });
         if (error) throw error;
 
+        // If identities is an empty array, the user already exists (security mitigation)
+        if (data.user && data.user.identities && data.user.identities.length === 0) {
+          throw new Error(settings.userAlreadyExistsErrorText?.[lang] || 'An account with this email already exists.');
+        }
+
         // If confirmation is required, there is NO session yet.
         // We cannot call server actions that require a session.
         if (!data.session) {
@@ -143,7 +148,8 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
       const timePassed = now - parseInt(lastRequest);
       if (timePassed < RATE_LIMIT_MS) {
         const minutesLeft = Math.ceil((RATE_LIMIT_MS - timePassed) / 60000);
-        toast.error(`Please wait ${minutesLeft} minute(s) before requesting another code.`);
+        const waitMsg = settings.rateLimitWaitErrorText?.[lang] || 'Please wait before requesting another code.';
+        toast.error(`${waitMsg} (${minutesLeft} min remaining)`);
         return;
       }
     }
@@ -239,7 +245,8 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
                 subtitle: settings.otpSubtitle?.[lang],
                 checkSpam: settings.otpCheckSpam?.[lang],
                 verifyButton: settings.otpVerifyButton?.[lang],
-                clearButton: settings.otpClearButton?.[lang]
+                clearButton: settings.otpClearButton?.[lang],
+                errorInvalid: settings.invalidOtpErrorText?.[lang]
               }}
             />
             <div className="mt-6 text-center">

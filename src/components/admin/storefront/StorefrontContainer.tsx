@@ -878,6 +878,41 @@ Text to translate: "${sourceText}"`;
 
                     <LocalizedSettingInput label="Link Sent Success Message" value={settings.resetPasswordSentSuccessText} onChange={v => handleUpdate('resetPasswordSentSuccessText', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('resetPasswordSentSuccessText', 'Reset Password Sent Success')} isGenerating={generatingId === 'resetPasswordSentSuccessText-fill'} isTranslating={generatingId === 'resetPasswordSentSuccessText-translate'} />
 
+                    <div className="pt-4 border-t border-slate-100">
+                      <h4 className="text-sm font-bold text-slate-900 mb-4 uppercase tracking-wider">Error & Security Messages</h4>
+                      <div className="space-y-6">
+                        <LocalizedSettingInput 
+                          label="Account Already Exists Error" 
+                          value={settings.userAlreadyExistsErrorText} 
+                          onChange={v => handleUpdate('userAlreadyExistsErrorText', v)} 
+                          languages={settings.languages} 
+                          onAITranslate={() => handleAITranslate('userAlreadyExistsErrorText', 'User Already Exists Error')} 
+                          isGenerating={generatingId === 'userAlreadyExistsErrorText-fill'} 
+                          isTranslating={generatingId === 'userAlreadyExistsErrorText-translate'} 
+                        />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                          <LocalizedSettingInput 
+                            label="Rate Limit Wait Message" 
+                            value={settings.rateLimitWaitErrorText} 
+                            onChange={v => handleUpdate('rateLimitWaitErrorText', v)} 
+                            languages={settings.languages} 
+                            onAITranslate={() => handleAITranslate('rateLimitWaitErrorText', 'Rate Limit Wait Error')} 
+                            isGenerating={generatingId === 'rateLimitWaitErrorText-fill'} 
+                            isTranslating={generatingId === 'rateLimitWaitErrorText-translate'} 
+                          />
+                          <LocalizedSettingInput 
+                            label="Invalid/Expired OTP Error" 
+                            value={settings.invalidOtpErrorText} 
+                            onChange={v => handleUpdate('invalidOtpErrorText', v)} 
+                            languages={settings.languages} 
+                            onAITranslate={() => handleAITranslate('invalidOtpErrorText', 'Invalid OTP Error')} 
+                            isGenerating={generatingId === 'invalidOtpErrorText-fill'} 
+                            isTranslating={generatingId === 'invalidOtpErrorText-translate'} 
+                          />
+                        </div>
+                      </div>
+                    </div>
+
                     <div className="border-t border-zinc-100 pt-8 mt-8">
                       <p className="text-[11px] font-black uppercase tracking-widest text-zinc-900 mb-6 flex items-center gap-2">
                         <Lock className="w-3.5 h-3.5" /> Set New Password Page

@@ -267,6 +267,9 @@ export interface StorefrontSettings {
   relatedProductsTitleText: LocalizedString;
   accessRestrictedText: LocalizedString;
   pleaseLoginText: LocalizedString;
+  userAlreadyExistsErrorText: LocalizedString;
+  rateLimitWaitErrorText: LocalizedString;
+  invalidOtpErrorText: LocalizedString;
   orderStatusProcessing: LocalizedString;
   orderStatusShipped: LocalizedString;
   orderStatusDelivered: LocalizedString;
@@ -634,6 +637,9 @@ export const defaultSettings: StorefrontSettings = {
   relatedProductsTitleText: { en: 'Related Products', sv: 'Relaterade produkter', fi: 'Liittyvät tuotteet', da: 'Relaterede produkter' },
   accessRestrictedText: { en: 'Access Restricted', sv: 'Åtkomst begränsad', fi: 'Pääsy rajoitettu', da: 'Adgang begrænset' },
   pleaseLoginText: { en: 'Please login to view your account details.', sv: 'Vänligen logga in för att se dina kontouppgifter.', fi: 'Kirjaudu sisään nähdäksesi tilitietosi.', da: 'Log venligst ind for at se dine kontooplysninger.' },
+  userAlreadyExistsErrorText: { en: 'An account with this email already exists. Please sign in instead.', sv: 'Ett konto med denna e-postadress finns redan. Vänligen logga in istället.', fi: 'Tämä sähköpostiosoite on jo käytössä. Kirjaudu sisään sen sijaan.', da: 'En konto med denne e-mail findes allerede. Log venligst ind i stedet.' },
+  rateLimitWaitErrorText: { en: 'Please wait before requesting another code.', sv: 'Vänligen vänta innan du begär en ny kod.', fi: 'Odota hetki ennen uuden koodین pyytämistä.', da: 'Vent venligst før du anmoder om en ny kode.' },
+  invalidOtpErrorText: { en: 'Invalid or expired code. Please try again.', sv: 'Ogiltig eller utgången kod. Vänligen försök igen.', fi: 'Virheellinen tai vanhentunut koodi. Yritä uudelleen.', da: 'Ugyldig eller udløbet kode. Prøv venligst igen.' },
   orderStatusProcessing: { en: 'Processing', sv: 'Bearbetar', fi: 'Käsitellään', da: 'Behandler' },
   orderStatusShipped: { en: 'Shipped', sv: 'Skickad', fi: 'Lähetetty', da: 'Afsendt' },
   orderStatusDelivered: { en: 'Delivered', sv: 'Levererad', fi: 'Toimitettu', da: 'Leveret' },
