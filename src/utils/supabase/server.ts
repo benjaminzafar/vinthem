@@ -1,12 +1,20 @@
 import { createServerClient } from '@supabase/ssr';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 
 export async function createClient() {
   const cookieStore = await cookies();
+  const host = (await headers()).get('host') || '';
+  
+  // CRITICAL: Detect production via host header
+  const isProd = host.includes('vinthem.com');
+  
+  const supabaseUrl = (isProd) 
+    ? 'https://auth.vinthem.com' 
+    : process.env.NEXT_PUBLIC_SUPABASE_URL!;
 
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    supabaseUrl,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {
       cookies: {
