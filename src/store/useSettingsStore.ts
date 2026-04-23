@@ -56,6 +56,7 @@ export interface StorefrontSettings {
   futureProduct1Title: LocalizedString;
   futureProduct2Date: LocalizedString;
   futureProduct2Title: LocalizedString;
+  futureViewAllText: LocalizedString;
   cartTitle: LocalizedString;
   cartEmptyMessage: LocalizedString;
   paymentTitle: LocalizedString;
@@ -427,6 +428,7 @@ export const defaultSettings: StorefrontSettings = {
   futureProduct1Title: { en: 'The Lounge Chair', sv: 'Loungestolen', fi: 'Lounge-tuoli', da: 'Lænestolen' },
   futureProduct2Date: { en: 'Dropping June 2026', sv: 'Släpps juni 2026', fi: 'Julkaistaan kesäkuussa 2026', da: 'Udgives juni 2026' },
   futureProduct2Title: { en: 'Minimalist Dining', sv: 'Minimalistisk matsal', fi: 'Minimalistinen ruokailu', da: 'Minimalistisk spisning' },
+  futureViewAllText: { en: 'View All Classics', sv: 'Visa Alla Klassiker', fi: 'Näytä Kaikki Klassikot', da: 'Vis Alle Klassikere' },
   cartTitle: { en: 'Your Cart', sv: 'Din Kundvagn', fi: 'Ostoskori', da: 'Din Indkøbskurv' },
   cartEmptyMessage: { en: 'Looks like you haven\'t added anything to your cart yet. Discover our latest arrivals.', sv: 'Det ser ut som att du inte har lagt till något i din kundvagn än. Upptäck våra senaste nyheter.', fi: 'Näyttää siltä, ettet ole vielä lisännyt mitään ostoskoriisi. Tutustu uusimpiin tulokkaisiimme.', da: 'Det ser ud til, at du ikke har tilføjet noget til din indkøbskurv endnu. Oplev vores nyeste ankomster.' },
   paymentTitle: { en: 'Payment', sv: 'Betalning', fi: 'Maksu', da: 'Betaling' },

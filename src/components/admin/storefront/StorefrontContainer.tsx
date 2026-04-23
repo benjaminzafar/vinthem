@@ -626,15 +626,26 @@ Text to translate: "${sourceText}"`;
                       isGenerating={generatingId === 'collectionSubtitle-fill'} 
                       isTranslating={generatingId === 'collectionSubtitle-translate'} 
                     />
-                    <LocalizedSettingInput 
-                      label="View All Button Label" 
-                      value={settings.shopNowText} 
-                      onChange={v => handleUpdate('shopNowText', v)} 
-                      languages={settings.languages} 
-                      onAITranslate={() => handleAITranslate('shopNowText', 'View All Label')} 
-                      isGenerating={generatingId === 'shopNowText-fill'} 
-                      isTranslating={generatingId === 'shopNowText-translate'} 
-                    />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <LocalizedSettingInput 
+                        label="Overlay Button Label (Discover)" 
+                        value={settings.shopNowText} 
+                        onChange={v => handleUpdate('shopNowText', v)} 
+                        languages={settings.languages} 
+                        onAITranslate={() => handleAITranslate('shopNowText', 'Shop Now Label')} 
+                        isGenerating={generatingId === 'shopNowText-fill'} 
+                        isTranslating={generatingId === 'shopNowText-translate'} 
+                      />
+                      <LocalizedSettingInput 
+                        label="Section View All Label" 
+                        value={settings.viewAllText} 
+                        onChange={v => handleUpdate('viewAllText', v)} 
+                        languages={settings.languages} 
+                        onAITranslate={() => handleAITranslate('viewAllText', 'View All Label')} 
+                        isGenerating={generatingId === 'viewAllText-fill'} 
+                        isTranslating={generatingId === 'viewAllText-translate'} 
+                      />
+                    </div>
                    </div>
                 </SettingCard>
 
@@ -661,6 +672,17 @@ Text to translate: "${sourceText}"`;
                         <LocalizedSettingInput label="Availability Date" value={settings.futureProduct2Date} onChange={v => handleUpdate('futureProduct2Date', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('futureProduct2Date', 'Availability Date')} onAIAutoComplete={() => handleAIAutoComplete('futureProduct2Date', 'Availability Date')} isGenerating={generatingId === 'futureProduct2Date-fill'} isTranslating={generatingId === 'futureProduct2Date-translate'} />
                      </div>
                    </div>
+                   <div className="mt-8 pt-6 border-t border-zinc-100">
+                      <LocalizedSettingInput 
+                        label="View All Button Label" 
+                        value={settings.futureViewAllText} 
+                        onChange={v => handleUpdate('futureViewAllText', v)} 
+                        languages={settings.languages} 
+                        onAITranslate={() => handleAITranslate('futureViewAllText', 'Future View All Label')} 
+                        isGenerating={generatingId === 'futureViewAllText-fill'} 
+                        isTranslating={generatingId === 'futureViewAllText-translate'} 
+                      />
+                    </div>
                 </SettingCard>
 
                 <SettingCard id="Featured" title="Featured Collection Section" icon={Package}>

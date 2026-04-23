@@ -1,4 +1,4 @@
-﻿
+
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -56,6 +56,16 @@ export function FutureSections({ lang, settings }: FutureSectionsProps) {
             <div className="absolute bottom-8 right-8 bg-white/20 backdrop-blur-md border border-white/30 p-4 rounded-full transition-transform duration-500 group-hover:scale-110 hover:bg-white/30">
               <ArrowRight className="w-6 h-6 text-white" />
             </div>
+          </Link>
+        </div>
+
+        <div className="mt-16 md:mt-24 text-center">
+          <Link 
+            href="/products" 
+            className="group inline-flex items-center text-[10px] font-black uppercase tracking-[0.2em] text-brand-ink hover:opacity-70 transition-all border-b-2 border-brand-ink pb-1"
+          >
+            {settings.futureViewAllText?.[lang] || 'View All Classics'} 
+            <ArrowRight className="ml-3 w-4 h-4 transition-transform group-hover:translate-x-1" />
           </Link>
         </div>
       </div>

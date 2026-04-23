@@ -28,15 +28,6 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
           <p className="text-brand-muted max-w-2xl text-lg font-light leading-relaxed">
             {settings.collectionSubtitle?.[lang]}
           </p>
-          <div className="mt-4">
-            <Link 
-              href="/products" 
-              className="group inline-flex items-center text-[10px] font-black uppercase tracking-[0.2em] text-brand-ink hover:opacity-70 transition-all border-b-2 border-brand-ink pb-1"
-            >
-              {settings.viewAllText?.[lang] || 'Explore All'} 
-              <ArrowRight className="ml-3 w-4 h-4 transition-transform group-hover:translate-x-1" />
-            </Link>
-          </div>
         </div>
 
         {featuredCategories.length === 0 ? (
@@ -92,6 +83,16 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
             ))}
           </div>
         )}
+        
+        <div className="mt-16 md:mt-24 text-center">
+          <Link 
+            href="/products" 
+            className="group inline-flex items-center text-[10px] font-black uppercase tracking-[0.2em] text-brand-ink hover:opacity-70 transition-all border-b-2 border-brand-ink pb-1"
+          >
+            {settings.viewAllText?.[lang] || 'Explore All'} 
+            <ArrowRight className="ml-3 w-4 h-4 transition-transform group-hover:translate-x-1" />
+          </Link>
+        </div>
       </div>
     </section>
   );
