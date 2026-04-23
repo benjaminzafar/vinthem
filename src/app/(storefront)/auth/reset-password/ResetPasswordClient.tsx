@@ -88,7 +88,7 @@ export function ResetPasswordClient({ initialSettings }: ResetPasswordClientProp
       )}
 
       <div className="relative z-10 max-w-md w-full">
-        <div className="bg-white/90 backdrop-blur-md p-10 rounded-2xl border border-zinc-100 shadow-2xl">
+        <div className="bg-white p-10 rounded border border-zinc-100 shadow-2xl">
           <div className="mb-12 text-center">
             <h2 className="text-3xl font-sans font-bold tracking-tight text-zinc-900">
               {settings.resetPasswordTitle?.[lang]}
@@ -104,7 +104,7 @@ export function ResetPasswordClient({ initialSettings }: ResetPasswordClientProp
               <input
                 type="password"
                 required
-                className="appearance-none rounded-xl relative block w-full pl-11 pr-4 py-4 bg-zinc-50/80 border border-zinc-200 placeholder-zinc-500 text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-400 focus:bg-white transition-all sm:text-sm font-medium"
+                className="appearance-none rounded relative block w-full pl-11 pr-4 py-4 bg-zinc-50/80 border border-zinc-200 placeholder-zinc-500 text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-400 focus:bg-white transition-all sm:text-sm font-medium"
                 placeholder={settings.newPasswordLabel?.[lang]}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -126,7 +126,7 @@ export function ResetPasswordClient({ initialSettings }: ResetPasswordClientProp
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex items-center justify-center py-4 px-6 bg-zinc-900 text-white text-[13px] font-bold rounded-2xl transition-all hover:bg-black hover:shadow-xl hover:shadow-zinc-200/50 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="group relative w-full flex items-center justify-center py-4 px-6 bg-zinc-900 text-white text-[13px] font-bold rounded transition-all hover:bg-black hover:shadow-xl hover:shadow-zinc-200/50 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span>
                 {loading ? (

@@ -219,7 +219,7 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
       {/* Main Content Card - Clean Minimalism */}
       <div className="relative z-10 max-w-md w-full">
         {showOTP ? (
-          <div className="bg-white/90 backdrop-blur-md p-2 rounded-3xl shadow-2xl">
+          <div className="bg-white p-2 rounded shadow-2xl">
             <OTPVerification 
               email={email}
               type={otpType}
@@ -266,7 +266,7 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
             </div>
           </div>
         ) : isForgotPassword ? (
-          <div className="bg-white/90 backdrop-blur-md p-10 rounded-2xl border border-zinc-100">
+          <div className="bg-white p-10 rounded border border-zinc-100">
             <div className="mb-12 text-center">
               <h2 className="text-3xl font-sans font-bold tracking-tight text-zinc-900">
                 {settings.forgotPasswordTitle?.[lang]}
@@ -318,7 +318,7 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
             </div>
           </div>
         ) : (
-          <div className="bg-white/90 backdrop-blur-md p-10 rounded-2xl border border-zinc-100">
+          <div className="bg-white p-10 rounded border border-zinc-100">
             <div className="mb-12 text-center">
               <h2 className="text-3xl font-sans font-bold tracking-tight text-zinc-900">
                 {isLogin ? settings.signInTitle?.[lang] : settings.signUpTitle?.[lang]}
@@ -335,7 +335,7 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
                   <input
                     type="text"
                     required
-                    className="appearance-none rounded-xl relative block w-full pl-11 pr-4 py-4 bg-zinc-50/80 border border-zinc-200 placeholder-zinc-500 text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-400 focus:bg-white transition-all sm:text-sm font-medium"
+                    className="appearance-none rounded relative block w-full pl-11 pr-4 py-4 bg-zinc-50/80 border border-zinc-200 placeholder-zinc-500 text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-400 focus:bg-white transition-all sm:text-sm font-medium"
                     placeholder={settings.fullNameLabelText?.[lang]}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -382,7 +382,7 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
               <button
                 type="submit"
                 disabled={loading}
-                className="group relative w-full flex items-center justify-center py-4 px-6 bg-zinc-900 text-white text-[13px] font-bold rounded-2xl transition-all hover:bg-black hover:shadow-xl hover:shadow-zinc-200/50 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="group relative w-full flex items-center justify-center py-4 px-6 bg-zinc-900 text-white text-[13px] font-bold rounded transition-all hover:bg-black hover:shadow-xl hover:shadow-zinc-200/50 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span>
                   {loading ? (
@@ -402,7 +402,7 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
               </button>
 
               {!isLogin && (
-                <div className="space-y-4 rounded-[1.5rem] border border-zinc-100 bg-zinc-50/30 p-6 mt-8">
+                <div className="space-y-4 rounded border border-zinc-100 bg-zinc-50/30 p-6 mt-8">
                   <label className="flex items-start gap-4 text-xs text-zinc-500 cursor-pointer group">
                     <input
                       type="checkbox"
@@ -467,7 +467,7 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
                 type="button"
                 onClick={handleGoogleLogin}
                 disabled={!settings.googleAuthEnabled}
-                className="w-full group flex items-center justify-center gap-3 py-4 border border-zinc-200 rounded-2xl text-[11px] font-black uppercase tracking-[0.15em] text-zinc-950 bg-white hover:bg-zinc-50 hover:border-zinc-300 transition-all active:scale-[0.98] disabled:opacity-50 disabled:grayscale"
+                className="w-full group flex items-center justify-center gap-3 py-4 border border-zinc-200 rounded text-[11px] font-black uppercase tracking-[0.15em] text-zinc-950 bg-white hover:bg-zinc-50 hover:border-zinc-300 transition-all active:scale-[0.98] disabled:opacity-50 disabled:grayscale"
               >
                 <svg className="w-4 h-4 transition-transform group-hover:scale-110" viewBox="0 0 24 24">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>

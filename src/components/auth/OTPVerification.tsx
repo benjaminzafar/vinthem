@@ -140,9 +140,9 @@ export function OTPVerification({
   }, [otp]);
 
   return (
-    <div className="w-full max-w-md mx-auto p-6 sm:p-8 bg-white border border-slate-100 rounded-3xl shadow-2xl shadow-slate-200/50">
+    <div className="w-full max-w-md mx-auto p-6 sm:p-8 bg-white border border-zinc-100 rounded shadow-2xl">
       <div className="text-center mb-8">
-        <div className="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-slate-900/20">
+        <div className="w-16 h-16 bg-zinc-900 rounded flex items-center justify-center mx-auto mb-6 shadow-xl shadow-zinc-900/20">
           <ShieldCheck className="w-8 h-8 text-white" strokeWidth={1.5} />
         </div>
         <h2 className="text-2xl font-bold text-slate-900 tracking-tight mb-2">{L.title}</h2>
@@ -184,8 +184,8 @@ export function OTPVerification({
               onChange={(e) => handleChange(e.target, index)}
               onKeyDown={(e) => handleKeyDown(e, index)}
               className={`
-                w-full h-12 sm:h-14 text-center text-lg font-bold bg-slate-50 border-2 rounded-xl transition-all duration-200 outline-none
-                ${data ? 'border-slate-900 bg-white ring-4 ring-slate-900/5' : 'border-slate-100 text-slate-300 focus:border-slate-400 focus:bg-white'}
+                w-full h-12 sm:h-14 text-center text-lg font-bold bg-zinc-50 border-2 rounded transition-all duration-200 outline-none
+                ${data ? 'border-zinc-900 bg-white ring-4 ring-zinc-900/5' : 'border-zinc-100 text-zinc-300 focus:border-zinc-400 focus:bg-white'}
                 ${error ? 'border-red-500 ring-red-500/5' : ''}
               `}
               disabled={loading}
@@ -199,7 +199,7 @@ export function OTPVerification({
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="flex items-center gap-2 p-4 bg-red-50 text-red-600 rounded-xl text-sm font-medium"
+              className="flex items-center gap-2 p-4 bg-red-50 text-red-600 rounded text-sm font-medium"
             >
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{error}</span>
@@ -211,11 +211,11 @@ export function OTPVerification({
           type="submit"
           disabled={loading || otp.join("").length !== 8}
           className={`
-            w-full py-4 rounded-xl font-bold tracking-tight transition-all active:scale-[0.98]
+            w-full py-4 rounded font-bold tracking-tight transition-all active:scale-[0.98]
             flex items-center justify-center gap-2
             ${loading || otp.join("").length !== 8
-              ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-              : 'bg-slate-900 text-white hover:bg-black shadow-lg shadow-slate-900/10'}
+              ? 'bg-zinc-100 text-zinc-400 cursor-not-allowed'
+              : 'bg-zinc-900 text-white hover:bg-black shadow-lg shadow-zinc-900/10'}
           `}
         >
           {loading ? (
