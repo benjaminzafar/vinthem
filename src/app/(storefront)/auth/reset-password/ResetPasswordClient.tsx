@@ -8,6 +8,7 @@ import { useStorefrontSettings } from '@/hooks/useStorefrontSettings';
 import { getClientLocale } from '@/lib/locale';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
+import { updatePasswordAction } from '@/app/actions/auth';
 
 interface ResetPasswordClientProps {
   initialSettings: Partial<StorefrontSettings>;
@@ -49,19 +50,19 @@ export function ResetPasswordClient({ initialSettings }: ResetPasswordClientProp
     }
 
     setLoading(true);
-    const supabase = createClient();
 
     try {
-      // 1. Update the password
-      const { error } = await supabase.auth.updateUser({ password });
-      if (error) throw error;
+      // 1. Update the password via Server Action
+      const result = await updatePasswordAction(password);
+      
+      if (!result.success) {
+        throw new Error(result.message);
+      }
 
       toast.success(settings.passwordResetSuccessText?.[lang] || 'Password updated! Redirecting...');
 
-      // 2. FORCE a hard redirect to clear all states and ensure session is picked up
-      setTimeout(() => {
-        window.location.href = `/${lang}/profile`;
-      }, 500);
+      // 2. IMMEDIATE hard redirect to clear all states and ensure session is picked up
+      window.location.href = `/${lang}/profile`;
 
     } catch (error: any) {
       toast.error(error.message || 'Failed to update password');

@@ -169,3 +169,17 @@ export async function checkEmailExistsAction(email: string): Promise<{ exists: b
   }
 }
 
+export async function updatePasswordAction(password: string) {
+  const supabase = await createClient();
+  
+  try {
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) throw error;
+    
+    return { success: true };
+  } catch (error: any) {
+    logger.error('[Action Error] updatePasswordAction:', error);
+    return { success: false, message: error.message || 'Failed to update password' };
+  }
+}
+
