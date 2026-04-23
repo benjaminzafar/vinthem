@@ -78,7 +78,7 @@ export function ResetPasswordClient({ initialSettings }: ResetPasswordClientProp
       )}
 
       <div className="relative z-10 w-full max-w-md">
-        <div className="bg-white p-10 border border-zinc-100 shadow-2xl rounded-none">
+        <div className="bg-white p-10 border border-zinc-100 shadow-2xl rounded">
           <div className="mb-10 text-center">
             <h2 className="text-3xl font-bold tracking-tight text-zinc-900 uppercase">
               {settings.resetPasswordTitle?.[lang] || 'New Password'}
@@ -89,7 +89,7 @@ export function ResetPasswordClient({ initialSettings }: ResetPasswordClientProp
             <input
               type="password"
               required
-              className="w-full px-4 py-4 bg-zinc-50 border border-zinc-200 text-zinc-900 focus:outline-none focus:border-zinc-900 rounded-none text-sm transition-all"
+              className="w-full px-4 py-4 bg-zinc-50 border border-zinc-200 text-zinc-900 focus:outline-none focus:border-zinc-900 rounded text-sm transition-all"
               placeholder={settings.newPasswordLabel?.[lang]}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -109,7 +109,7 @@ export function ResetPasswordClient({ initialSettings }: ResetPasswordClientProp
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.2em] transition-all hover:bg-black disabled:opacity-50 rounded-none"
+              className="w-full py-4 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.2em] transition-all hover:bg-black disabled:opacity-50 rounded"
             >
               {loading ? (
                 <div className="flex items-center justify-center gap-2">

@@ -98,9 +98,9 @@ export function OTPVerification({
   }, [otp]);
 
   return (
-    <div className="w-full bg-white border border-zinc-100 p-8 shadow-2xl rounded-none">
+    <div className="w-full bg-white border border-zinc-100 p-8 shadow-2xl rounded">
       <div className="text-center mb-8">
-        <div className="w-12 h-12 bg-zinc-900 flex items-center justify-center mx-auto mb-6">
+        <div className="w-12 h-12 bg-zinc-900 flex items-center justify-center mx-auto mb-6 rounded">
           <ShieldCheck className="w-6 h-6 text-white" strokeWidth={1} />
         </div>
         <h2 className="text-xl font-black uppercase tracking-widest text-zinc-900 mb-2">{L.title}</h2>
@@ -121,7 +121,7 @@ export function OTPVerification({
             value={data}
             onChange={(e) => handleChange(e.target, index)}
             onKeyDown={(e) => handleKeyDown(e, index)}
-            className="w-full h-12 text-center text-lg font-bold bg-zinc-50 border border-zinc-200 focus:border-zinc-900 transition-all outline-none rounded-none disabled:opacity-50"
+            className="w-full h-12 text-center text-lg font-bold bg-zinc-50 border border-zinc-200 focus:border-zinc-900 transition-all outline-none rounded disabled:opacity-50"
             disabled={loading}
           />
         ))}
@@ -139,7 +139,7 @@ export function OTPVerification({
       <button
         onClick={handleVerify}
         disabled={loading || otp.join("").length !== 8}
-        className="w-full py-4 bg-zinc-900 text-white text-[11px] font-black uppercase tracking-[0.25em] transition-all hover:bg-black disabled:opacity-50 rounded-none flex items-center justify-center gap-2"
+        className="w-full py-4 bg-zinc-900 text-white text-[11px] font-black uppercase tracking-[0.25em] transition-all hover:bg-black disabled:opacity-50 rounded flex items-center justify-center gap-2"
       >
         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : L.verifyButton}
       </button>
