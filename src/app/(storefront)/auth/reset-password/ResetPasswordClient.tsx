@@ -72,9 +72,15 @@ export function ResetPasswordClient({ initialSettings }: ResetPasswordClientProp
 
   return (
     <div className="relative min-h-screen flex items-center justify-center p-6 sm:p-12 bg-white overflow-hidden">
-      {settings.authBackgroundImage && (
+      {settings.authBackgroundImage && settings.authBackgroundImage.length > 5 && settings.authBackgroundImage.startsWith('h') && (
         <div className="absolute inset-0 z-0">
-          <Image src={settings.authBackgroundImage} alt="BG" fill className="object-cover opacity-100" priority />
+          <Image 
+            src={settings.authBackgroundImage} 
+            alt="Premium Scandinavian Design Restoration" 
+            fill 
+            className="object-cover opacity-100" 
+            priority 
+          />
         </div>
       )}
 

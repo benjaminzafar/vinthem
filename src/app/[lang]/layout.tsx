@@ -21,6 +21,9 @@ export async function generateMetadata({
   const storeName = settings?.storeName?.[lang] || settings?.storeName?.['en'] || 'Vinthem';
   const storeDesc = localeDescriptions[lang as keyof typeof localeDescriptions] || localeDescriptions.en;
 
+  // Clean canonical path
+  const canonicalPath = normalizeLocalizedPath(pathnameWithoutLocale, lang);
+
   return {
     title: {
       template: `%s | ${storeName}`,
@@ -28,7 +31,7 @@ export async function generateMetadata({
     },
     description: storeDesc,
     alternates: {
-      canonical: normalizeLocalizedPath(pathnameWithoutLocale, lang),
+      canonical: canonicalPath,
       languages: {
         ...Object.fromEntries(
           activeLocales.map((locale) => [locale, normalizeLocalizedPath(pathnameWithoutLocale, locale)]),
