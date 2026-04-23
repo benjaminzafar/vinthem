@@ -24,6 +24,19 @@ export function ResetPasswordClient({ initialSettings }: ResetPasswordClientProp
   const settings = useStorefrontSettings(initialSettings);
   const lang = getClientLocale(pathname);
 
+  // Security: If accessed directly without a recovery session, redirect to login
+  React.useEffect(() => {
+    const checkSession = async () => {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error('Session expired or invalid link. Please request a new reset link.');
+        navigate.push(`/${lang}/auth`);
+      }
+    };
+    checkSession();
+  }, [lang, navigate]);
+
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (loading) return;
@@ -50,17 +63,16 @@ export function ResetPasswordClient({ initialSettings }: ResetPasswordClientProp
 
       toast.success(settings.passwordResetSuccessText?.[lang] || 'Password updated successfully');
       
-      // Clear session after password change for security and force re-login
-      await supabase.auth.signOut();
-      
-      setTimeout(() => {
-        navigate.push('/auth');
+      // Delay to show success toast before redirect
+      setTimeout(async () => {
+        // Clear session after password change for security
+        await supabase.auth.signOut();
+        navigate.push(`/${lang}/auth`);
       }, 2000);
     } catch (error: any) {
       toast.error(error.message || 'Failed to update password');
-    } finally {
-      setLoading(false);
-    }
+      setLoading(false); // Make sure to unlock the button on error
+    } 
   };
 
   return (
@@ -124,7 +136,7 @@ export function ResetPasswordClient({ initialSettings }: ResetPasswordClientProp
                 {loading ? (
                   <div className="flex items-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Updating...
+                    {settings.processingText?.[lang] || 'Processing...'}
                   </div>
                 ) : (
                   settings.resetPasswordButtonText?.[lang]
