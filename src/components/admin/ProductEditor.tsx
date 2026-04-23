@@ -882,12 +882,6 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                             }
                           }}
                         />
-                        <button 
-                          onClick={() => setFormData(prev => ({ ...prev, additionalImages: prev.additionalImages?.filter((_, i) => i !== idx) }))}
-                          className="absolute -top-1 -right-1 bg-white border border-slate-200 text-slate-400 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
                       </div>
                     ))}
                    <label className="aspect-square border-2 border-dashed border-slate-200 rounded flex items-center justify-center hover:border-slate-400 transition-all cursor-pointer group">
