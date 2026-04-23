@@ -37,47 +37,38 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
             <p className="text-slate-500 text-sm">{settings.checkBackLaterText?.[lang]}</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 md:gap-8 lg:gap-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
             {featuredCategories.map((category) => (
               <div 
                 key={category.id} 
-                className="group relative flex flex-col"
+                className="group relative"
               >
-                <Link href={`/products?category=${encodeURIComponent(category.name)}`} className="block flex-1 group">
-                  <div className="relative aspect-[4/5] w-full overflow-hidden bg-slate-50 mb-6 rounded-xl border border-slate-100">
-                    {category.imageUrl && category.imageUrl.trim() !== "" ? (
-                      <Image
-                        src={category.imageUrl}
-                        alt={category.name}
-                        fill
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                        className="object-cover object-center transition-transform duration-1000 group-hover:scale-110"
-                      />
-                    ) : (
-                      <div className="h-full w-full flex items-center justify-center text-slate-200 font-sans text-2xl bg-slate-50 uppercase tracking-tighter font-black">
-                        {category.name.substring(0, 2)}
-                      </div>
-                    )}
-                    
-                    {/* Button Overlay - Refined for both mobile and desktop */}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-500 z-10" />
-                    
-                    <div className="absolute inset-x-0 bottom-0 p-4 md:p-6 flex justify-center translate-y-4 md:translate-y-10 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-500 z-20">
-                      <span className="bg-white text-brand-ink w-full py-4 rounded-full text-[10px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-2 shadow-2xl hover:bg-slate-50 active:scale-95 transition-all">
-                        {settings.shopNowText?.[lang] || 'Discover'} <ArrowRight className="w-3.5 h-3.5" />
-                      </span>
-                    </div>
+                <Link href={`/products?category=${encodeURIComponent(category.name)}`} className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-gray-100 group block">
+                {category.imageUrl && category.imageUrl.trim() !== "" ? (
+                  <Image
+                    src={category.imageUrl}
+                    alt={category.name}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="h-full w-full flex items-center justify-center text-slate-200 font-sans text-2xl bg-slate-50 uppercase tracking-tighter font-black">
+                    {category.name.substring(0, 2)}
                   </div>
-                  
-                  <div className="px-2 text-center md:text-left">
-                    <h3 className="text-base md:text-lg font-black text-brand-ink mb-1 tracking-tight group-hover:text-slate-600 transition-colors">
-                      {category.name}
-                    </h3>
-                    <div className="flex items-center justify-center md:justify-start gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                       <span>Explore Collection</span>
-                       <span className="w-4 h-[1px] bg-slate-200" />
-                    </div>
-                  </div>
+                )}
+                
+                {/* Visual Overlays matching FutureSections */}
+                <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-black/50 to-transparent opacity-80 pointer-events-none"></div>
+                
+                <div className="absolute top-8 left-8 right-8">
+                  <p className="text-white/90 font-medium text-sm tracking-widest uppercase mb-2">Collection</p>
+                  <h3 className="text-white text-3xl font-bold tracking-tight">{category.name}</h3>
+                </div>
+                
+                <div className="absolute bottom-8 right-8 bg-white/20 backdrop-blur-md border border-white/30 p-4 rounded-full transition-transform duration-500 group-hover:scale-110 hover:bg-white/30">
+                  <ArrowRight className="w-6 h-6 text-white" />
+                </div>
                 </Link>
               </div>
             ))}
