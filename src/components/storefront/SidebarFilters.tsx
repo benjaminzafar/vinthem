@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Search, ChevronRight, ChevronLeft, Check } from 'lucide-react';
+import { Search, ChevronRight, ChevronLeft, Check, LayoutGrid } from 'lucide-react';
 import { StorefrontSettings } from '@/store/useSettingsStore';
 import { Category } from '@/types';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
@@ -150,6 +150,8 @@ export function SidebarFilters({
 
 function CategoryItem({ cat, isActive, hasChildren, goForward, updateParams }: any) {
   const [imageError, setImageError] = React.useState(false);
+  const iconToUse = cat.iconUrl || cat.imageUrl;
+  const isRemoteIcon = iconToUse && (iconToUse.startsWith('http') || iconToUse.startsWith('/') || iconToUse.startsWith('blob:'));
 
   return (
     <button
@@ -160,21 +162,24 @@ function CategoryItem({ cat, isActive, hasChildren, goForward, updateParams }: a
       className={`w-full flex items-center justify-between py-3 px-4 transition-all border group ${isActive ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-transparent hover:bg-slate-50 text-slate-700 hover:text-slate-900'}`}
     >
       <div className="flex items-center space-x-3">
-        {cat.iconUrl && cat.iconUrl.trim() !== "" && !imageError ? (
-          <span className="w-4 h-4 flex items-center justify-center grayscale group-hover:grayscale-0 transition-all opacity-80 group-hover:opacity-100 shrink-0">
-            <img 
-              src={cat.iconUrl} 
-              alt="" 
-              className="w-full h-full object-contain" 
-              onError={() => setImageError(true)}
-            />
-          </span>
+        {iconToUse && !imageError ? (
+          <div className="relative w-5 h-5 flex items-center justify-center shrink-0">
+            {isRemoteIcon ? (
+              <Image 
+                src={iconToUse} 
+                alt={cat.name} 
+                fill 
+                className="object-cover rounded-[2px] grayscale group-hover:grayscale-0 transition-all opacity-80 group-hover:opacity-100" 
+                onError={() => setImageError(true)}
+              />
+            ) : (
+                <LayoutGrid className="w-4 h-4 opacity-40 shrink-0" strokeWidth={1.5} />
+            )}
+          </div>
         ) : (
-          <span className="w-4 h-4 flex items-center justify-center text-slate-300 shrink-0">
-             <div className="w-1 h-1 bg-current rounded-full" />
-          </span>
+          <LayoutGrid className="w-4 h-4 opacity-40 shrink-0" strokeWidth={1.5} />
         )}
-        <span className="text-[12px] font-bold uppercase tracking-[0.15em] text-left truncate">{cat.name}</span>
+        <span className="text-[12px] font-bold uppercase tracking-[0.15em] text-left truncate max-w-[140px]">{cat.name}</span>
       </div>
       {hasChildren ? (
         <ChevronRight className="w-4 h-4 opacity-80 group-hover:opacity-100 group-hover:translate-x-1 transition-all text-slate-500 group-hover:text-slate-900 shrink-0" strokeWidth={2} />
