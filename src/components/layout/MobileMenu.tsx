@@ -54,19 +54,13 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
     if (isMobileMenuOpen) {
       document.body.style.overflow = 'hidden';
       document.documentElement.style.overflow = 'hidden';
-      document.body.style.touchAction = 'none';
-      document.documentElement.style.touchAction = 'none';
     } else {
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
-      document.body.style.touchAction = '';
-      document.documentElement.style.touchAction = '';
     }
     return () => {
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
-      document.body.style.touchAction = '';
-      document.documentElement.style.touchAction = '';
     };
   }, [isMobileMenuOpen]);
 
@@ -82,15 +76,19 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isMobileMenuOpen, setMobileMenuOpen]);
 
-  const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut();
-      // Use location.replace for a hard clear of all states and cache
+  const handleLogout = (e: React.MouseEvent | React.PointerEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Explicit sign out with immediate fallback to ensure redirect even if signOut hangs
+    supabase.auth.signOut().finally(() => {
       window.location.replace(`/${lang}`);
-    } catch (error) {
-      console.error('Logout error:', error);
-      window.location.href = `/${lang}`;
-    }
+    });
+
+    // Forced fallback after 1.5s to ensure user isn't stuck
+    setTimeout(() => {
+      window.location.replace(`/${lang}`);
+    }, 1500);
   };
 
   if (isDesktop) return null;
@@ -194,10 +192,11 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
                       )}
                       <button
                         type="button"
+                        onPointerDown={(e) => e.stopPropagation()}
                         onClick={handleLogout}
-                        className="w-full flex items-center justify-center space-x-2 py-3 text-red-600 bg-red-50 rounded font-medium hover:bg-red-100 transition-colors"
+                        className="w-full h-12 flex items-center justify-center space-x-2 text-red-600 bg-red-50 rounded font-bold hover:bg-red-100 transition-colors cursor-pointer relative z-[220]"
                       >
-                        <LogOut className="w-4 h-4" />
+                        <LogOut className="w-5 h-5" />
                         <span>{labels.logout}</span>
                       </button>
                     </div>
