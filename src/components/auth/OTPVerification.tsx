@@ -52,6 +52,22 @@ export function OTPVerification({
     if (inputRefs.current[0]) inputRefs.current[0].focus();
   }, []);
 
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pasteData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 8);
+    if (!pasteData) return;
+
+    const newOtp = [...otp];
+    pasteData.split('').forEach((char, i) => {
+      newOtp[i] = char;
+    });
+    setOtp(newOtp);
+
+    // Focus last filled or next empty
+    const nextIndex = Math.min(pasteData.length, 7);
+    inputRefs.current[nextIndex]?.focus();
+  };
+
   const handleChange = (element: HTMLInputElement, index: number) => {
     if (isNaN(Number(element.value))) return;
     const newOtp = [...otp];
@@ -61,7 +77,9 @@ export function OTPVerification({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
-    if (e.key === 'Backspace' && !otp[index] && index > 0) inputRefs.current[index - 1]?.focus();
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
   };
 
   const handleVerify = async () => {
@@ -121,6 +139,7 @@ export function OTPVerification({
             value={data}
             onChange={(e) => handleChange(e.target, index)}
             onKeyDown={(e) => handleKeyDown(e, index)}
+            onPaste={handlePaste}
             className="w-full h-12 text-center text-lg font-bold bg-zinc-50 border border-zinc-200 focus:border-zinc-900 transition-all outline-none rounded disabled:opacity-50"
             disabled={loading}
           />
