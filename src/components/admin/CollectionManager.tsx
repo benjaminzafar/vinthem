@@ -248,10 +248,11 @@ export function CollectionManager({
           </div>
           <button 
             onClick={() => router.push('/admin/collections/new')}
-            className="h-11 px-8 bg-slate-900 text-white rounded text-sm font-bold hover:bg-slate-800 transition-all flex items-center gap-2 shadow-lg hover:shadow-xl shadow-slate-900/10 active:scale-[0.98]"
+            className="h-10 px-4 sm:px-8 bg-slate-900 text-white rounded text-sm font-bold hover:bg-slate-800 transition-all flex items-center gap-2 active:scale-[0.98]"
           >
             <Plus className="w-4 h-4" />
-            Add Collection
+            <span className="hidden sm:inline">Add Collection</span>
+            <span className="sm:hidden text-[11px]">Add</span>
           </button>
         </div>
       </div>
