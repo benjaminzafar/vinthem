@@ -890,7 +890,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                               additionalImages: prev.additionalImages?.filter((_, i) => i !== idx) 
                             }));
                           }}
-                          className="absolute top-1 right-1 bg-white/90 backdrop-blur-sm border border-slate-200 text-rose-600 rounded-full p-1 opacity-0 group-hover:opacity-100 hover:bg-rose-600 hover:text-white transition-all shadow-sm z-20"
+                          className="absolute top-1 right-1 bg-white/90 backdrop-blur-sm border border-slate-200 text-rose-600 rounded-full p-1 opacity-0 group-hover/img:opacity-100 hover:bg-rose-600 hover:text-white transition-all shadow-sm z-20"
                           title="Remove Image"
                         >
                           <X className="w-3 h-3" />
