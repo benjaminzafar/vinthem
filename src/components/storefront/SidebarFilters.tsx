@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Search, ChevronRight, ChevronLeft, Check, LayoutGrid } from 'lucide-react';
+import { IconRenderer } from '../IconRenderer';
 import { StorefrontSettings } from '@/store/useSettingsStore';
 import { Category } from '@/types';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
@@ -175,7 +176,7 @@ function CategoryItem({ cat, isActive, hasChildren, goForward, updateParams }: a
                 onError={() => setImageError(true)}
               />
             ) : (
-                <LayoutGrid className="w-4 h-4 opacity-40 shrink-0" strokeWidth={1.5} />
+                <IconRenderer iconName={iconToUse} className="w-5 h-5 opacity-40 group-hover:opacity-100 transition-all" />
             )}
           </div>
         ) : (
