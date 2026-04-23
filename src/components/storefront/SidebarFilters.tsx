@@ -71,13 +71,13 @@ export function SidebarFilters({
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder={settings.searchPlaceholder?.[lang] || 'Search...'}
-            className="w-full bg-slate-50 border border-slate-100 rounded-none py-3 px-11 text-[13px] font-medium outline-none transition-all placeholder:text-slate-300 focus:bg-white focus:border-slate-900"
+            className="w-full bg-slate-50 border border-slate-200 rounded-none py-3 px-11 text-[13px] font-medium outline-none transition-all placeholder:text-slate-500 focus:bg-white focus:border-slate-900"
           />
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-slate-900 transition-colors" strokeWidth={1.5} />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-slate-900 transition-colors" strokeWidth={2} />
         </div>
       </div>
 
-      <div className="p-5 space-y-10 flex-1">
+      <div className="p-5 space-y-10 flex-1 overflow-y-auto">
         {/* Navigation Section */}
         <div className="space-y-4">
           <AnimatePresence mode="wait">
@@ -87,7 +87,7 @@ export function SidebarFilters({
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -5 }}
                 onClick={goBack}
-                className="flex items-center space-x-2 text-slate-400 hover:text-brand-ink transition-colors pb-2"
+                className="flex items-center space-x-2 text-slate-500 hover:text-brand-ink transition-colors pb-2"
               >
                 <ChevronLeft className="w-4 h-4" />
                 <span className="text-[10px] font-black uppercase tracking-widest">{activeCategoryData?.name}</span>
@@ -99,7 +99,7 @@ export function SidebarFilters({
             {viewStack.length === 0 && (
               <button
                 onClick={() => updateParams({ category: 'All' })}
-                className={`w-full flex items-center justify-between py-3 px-4 transition-all border ${activeCategory === 'All' ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-transparent hover:bg-slate-50 text-slate-500 hover:text-slate-900'}`}
+                className={`w-full flex items-center justify-between py-3 px-4 transition-all border ${activeCategory === 'All' ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-transparent hover:bg-slate-50 text-slate-700 hover:text-slate-900'}`}
               >
                 <span className="text-[12px] font-bold uppercase tracking-[0.15em]">
                   {settings.allCategoriesText?.[lang] || 'All Products'}
@@ -121,15 +121,20 @@ export function SidebarFilters({
                   className={`w-full flex items-center justify-between py-3 px-4 transition-all border group ${isActive ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-transparent hover:bg-slate-50 text-slate-700 hover:text-slate-900'}`}
                 >
                   <div className="flex items-center space-x-3">
-                    {cat.iconUrl && (
-                      <span className="w-4 h-4 flex items-center justify-center grayscale group-hover:grayscale-0 transition-all opacity-60 group-hover:opacity-100">
+                    {cat.iconUrl && cat.iconUrl.trim() !== "" ? (
+                      <span className="w-4 h-4 flex items-center justify-center grayscale group-hover:grayscale-0 transition-all opacity-80 group-hover:opacity-100">
                         <img src={cat.iconUrl} alt="" className="w-full h-full object-contain" />
+                      </span>
+                    ) : (
+                      <span className="w-4 h-4 flex items-center justify-center text-slate-300">
+                         {/* Fallback to something clean or a simple dot if no icon */}
+                         <div className="w-1 h-1 bg-current rounded-full" />
                       </span>
                     )}
                     <span className="text-[12px] font-bold uppercase tracking-[0.15em] text-left">{cat.name}</span>
                   </div>
                   {hasChildren ? (
-                    <ChevronRight className="w-4 h-4 opacity-70 group-hover:opacity-100 group-hover:translate-x-1 transition-all text-slate-400 group-hover:text-slate-900" strokeWidth={2} />
+                    <ChevronRight className="w-4 h-4 opacity-80 group-hover:opacity-100 group-hover:translate-x-1 transition-all text-slate-500 group-hover:text-slate-900" strokeWidth={2} />
                   ) : (
                     isActive && <Check className="w-4 h-4" strokeWidth={2} />
                   )}
