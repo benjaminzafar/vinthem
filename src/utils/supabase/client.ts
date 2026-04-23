@@ -48,10 +48,9 @@ export function createClient(customUrl?: string, customKey?: string) {
         detectSessionInUrl: true,
         storageKey: 'vinthem-auth-token',
         cookieOptions: {
-          domain: isLocal ? 'localhost' : '.vinthem.com',
           path: '/',
           sameSite: 'lax',
-          secure: !isLocal,
+          secure: typeof window !== 'undefined' && window.location.protocol === 'https:',
         }
       },
     }
