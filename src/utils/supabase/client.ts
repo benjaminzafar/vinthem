@@ -35,6 +35,8 @@ export function createClient(customUrl?: string, customKey?: string) {
     return globalThis.__supabase_client;
   }
 
+  const isLocal = typeof window !== 'undefined' && window.location.hostname === 'localhost';
+
   const client = createBrowserClient(
     url,
     key,
@@ -44,6 +46,13 @@ export function createClient(customUrl?: string, customKey?: string) {
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,
+        storageKey: 'vinthem-auth-token',
+        cookieOptions: {
+          domain: isLocal ? 'localhost' : '.vinthem.com',
+          path: '/',
+          sameSite: 'lax',
+          secure: !isLocal,
+        }
       },
     }
   );

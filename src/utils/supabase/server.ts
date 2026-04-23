@@ -6,12 +6,8 @@ export async function createClient() {
   const cookieStore = await cookies();
   const host = (await headers()).get('host') || '';
   
-  // CRITICAL: Detect production via host header
-  const isProd = host.includes('vinthem.com');
-  
-  const supabaseUrl = (isProd) 
-    ? 'https://auth.vinthem.com' 
-    : process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  // Site MUST use technical URL for data stability!
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 
   return createServerClient(
     supabaseUrl,
@@ -36,6 +32,9 @@ export async function createClient() {
           }
         },
       },
+      auth: {
+        storageKey: 'vinthem-auth-token',
+      }
     }
   );
 }
