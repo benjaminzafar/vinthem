@@ -112,33 +112,14 @@ export function SidebarFilters({
               const hasChildren = categories.some(c => c.parentId === cat.id);
               const isActive = activeCategory === cat.slug;
               return (
-                <button
+                <CategoryItem 
                   key={cat.id}
-                  onClick={() => {
-                    if (hasChildren && cat.id) goForward(cat.id);
-                    else updateParams({ category: cat.slug });
-                  }}
-                  className={`w-full flex items-center justify-between py-3 px-4 transition-all border group ${isActive ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-transparent hover:bg-slate-50 text-slate-700 hover:text-slate-900'}`}
-                >
-                  <div className="flex items-center space-x-3">
-                    {cat.iconUrl && cat.iconUrl.trim() !== "" ? (
-                      <span className="w-4 h-4 flex items-center justify-center grayscale group-hover:grayscale-0 transition-all opacity-80 group-hover:opacity-100">
-                        <img src={cat.iconUrl} alt="" className="w-full h-full object-contain" />
-                      </span>
-                    ) : (
-                      <span className="w-4 h-4 flex items-center justify-center text-slate-300">
-                         {/* Fallback to something clean or a simple dot if no icon */}
-                         <div className="w-1 h-1 bg-current rounded-full" />
-                      </span>
-                    )}
-                    <span className="text-[12px] font-bold uppercase tracking-[0.15em] text-left">{cat.name}</span>
-                  </div>
-                  {hasChildren ? (
-                    <ChevronRight className="w-4 h-4 opacity-80 group-hover:opacity-100 group-hover:translate-x-1 transition-all text-slate-500 group-hover:text-slate-900" strokeWidth={2} />
-                  ) : (
-                    isActive && <Check className="w-4 h-4" strokeWidth={2} />
-                  )}
-                </button>
+                  cat={cat}
+                  isActive={isActive}
+                  hasChildren={hasChildren}
+                  goForward={goForward}
+                  updateParams={updateParams}
+                />
               );
             })}
           </div>
@@ -164,5 +145,42 @@ export function SidebarFilters({
         </div>
       </div>
     </div>
+  );
+}
+
+function CategoryItem({ cat, isActive, hasChildren, goForward, updateParams }: any) {
+  const [imageError, setImageError] = React.useState(false);
+
+  return (
+    <button
+      onClick={() => {
+        if (hasChildren && cat.id) goForward(cat.id);
+        else updateParams({ category: cat.slug });
+      }}
+      className={`w-full flex items-center justify-between py-3 px-4 transition-all border group ${isActive ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-transparent hover:bg-slate-50 text-slate-700 hover:text-slate-900'}`}
+    >
+      <div className="flex items-center space-x-3">
+        {cat.iconUrl && cat.iconUrl.trim() !== "" && !imageError ? (
+          <span className="w-4 h-4 flex items-center justify-center grayscale group-hover:grayscale-0 transition-all opacity-80 group-hover:opacity-100 shrink-0">
+            <img 
+              src={cat.iconUrl} 
+              alt="" 
+              className="w-full h-full object-contain" 
+              onError={() => setImageError(true)}
+            />
+          </span>
+        ) : (
+          <span className="w-4 h-4 flex items-center justify-center text-slate-300 shrink-0">
+             <div className="w-1 h-1 bg-current rounded-full" />
+          </span>
+        )}
+        <span className="text-[12px] font-bold uppercase tracking-[0.15em] text-left truncate">{cat.name}</span>
+      </div>
+      {hasChildren ? (
+        <ChevronRight className="w-4 h-4 opacity-80 group-hover:opacity-100 group-hover:translate-x-1 transition-all text-slate-500 group-hover:text-slate-900 shrink-0" strokeWidth={2} />
+      ) : (
+        isActive && <Check className="w-4 h-4 shrink-0" strokeWidth={2} />
+      )}
+    </button>
   );
 }
