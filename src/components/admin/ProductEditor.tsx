@@ -96,6 +96,7 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
   const [generating, setGenerating] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
+  const [mediaPickerTarget, setMediaPickerTarget] = useState<'main' | 'gallery'>('main');
   const [selectedLang, setSelectedLang] = useState('sv');
   const [aiChatInput, setAiChatInput] = useState('');
 
@@ -773,8 +774,11 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                      className="flex-1 h-10 border border-slate-200 rounded-[4px] px-3 text-xs"
                    />
                    <button 
-                     onClick={() => setIsMediaPickerOpen(true)}
-                     className="h-10 px-4 bg-slate-50 border border-slate-200 rounded text-[10px] font-black uppercase tracking-widest"
+                     onClick={() => {
+                        setMediaPickerTarget('main');
+                        setIsMediaPickerOpen(true);
+                     }}
+                     className="h-10 px-4 bg-slate-50 border border-slate-200 rounded text-[10px] font-black uppercase tracking-widest hover:border-slate-900 transition-all"
                    >
                      Lib
                    </button>
@@ -835,19 +839,42 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                       </div>
                     )
                    ))}
-                   <label className="aspect-square border-2 border-dashed border-slate-200 rounded flex items-center justify-center hover:border-slate-400 transition-all cursor-pointer">
-                      <Plus className="w-4 h-4 text-slate-400" />
+                   <label className="aspect-square border-2 border-dashed border-slate-200 rounded flex items-center justify-center hover:border-slate-400 transition-all cursor-pointer group">
+                      <Plus className="w-4 h-4 text-slate-400 group-hover:text-slate-900" />
                       <input type="file" className="hidden" multiple accept="image/*" onChange={async (e) => {
                         const files = Array.from(e.target.files || []);
-                        const toastId = toast.loading('Uploading gallery...');
+                        if (files.length === 0) return;
+                        const toastId = toast.loading(`Uploading ${files.length} images...`);
                         try {
                           const { uploadImageWithTimeout } = await import('@/lib/upload');
-                          const urls = await Promise.all(files.map(f => uploadImageWithTimeout(f, `gallery/${Date.now()}_${f.name}`)));
-                          setFormData(prev => ({ ...prev, additionalImages: [...(prev.additionalImages || []), ...urls] }));
-                          toast.success('Gallery updated', { id: toastId });
-                        } catch (err) { toast.error('Gallery failed', { id: toastId }); }
+                          const urls: string[] = [];
+                          for (const f of files) {
+                            try {
+                              const url = await uploadImageWithTimeout(f, `gallery/${Date.now()}_${f.name}`);
+                              urls.push(url);
+                            } catch (err) {
+                              logger.error(`Individual upload failed for ${f.name}`, err);
+                            }
+                          }
+                          if (urls.length > 0) {
+                            setFormData(prev => ({ ...prev, additionalImages: [...(prev.additionalImages || []), ...urls] }));
+                            toast.success(`Gallery updated (${urls.length} images added)`, { id: toastId });
+                          } else {
+                            toast.error('Gallery upload failed completely', { id: toastId });
+                          }
+                        } catch (err) { toast.error('Gallery processing error', { id: toastId }); }
                       }} />
                    </label>
+                   <button 
+                      onClick={() => {
+                        setMediaPickerTarget('gallery');
+                        setIsMediaPickerOpen(true);
+                      }}
+                      className="aspect-square border-2 border-dashed border-slate-200 rounded flex flex-col items-center justify-center hover:border-slate-400 transition-all bg-slate-50 group"
+                   >
+                      <ImageIcon className="w-4 h-4 text-slate-400 group-hover:text-slate-900" />
+                      <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 mt-1">Lib</span>
+                   </button>
                 </div>
               </div>
            </section>
@@ -857,7 +884,17 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
       <MediaPickerModal 
         isOpen={isMediaPickerOpen}
         onClose={() => setIsMediaPickerOpen(false)}
-        onSelect={(url) => { setFormData({ ...formData, imageUrl: url }); setIsMediaPickerOpen(false); }}
+        onSelect={(url) => { 
+          if (mediaPickerTarget === 'main') {
+            setFormData({ ...formData, imageUrl: url }); 
+          } else {
+            setFormData(prev => ({ 
+              ...prev, 
+              additionalImages: [...(prev.additionalImages || []), url] 
+            }));
+          }
+          setIsMediaPickerOpen(false); 
+        }}
       />
       </div>
     </div>
