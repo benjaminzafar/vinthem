@@ -29,11 +29,11 @@ export function createClient(customUrl?: string, customKey?: string) {
     return createBrowserClient(url, key);
   }
 
-  if (!customUrl && globalThis.__supabase_client) {
+  // In development, Next.js refreshes frequently. We use a singleton
+  // BUT we must bypass it if a custom URL is requested (like for branded auth)
+  if (!customUrl && typeof window !== 'undefined' && globalThis.__supabase_client) {
     return globalThis.__supabase_client;
   }
-
-  const isLocal = typeof window !== 'undefined' && window.location.hostname === 'localhost';
 
   const client = createBrowserClient(
     url,
@@ -44,13 +44,6 @@ export function createClient(customUrl?: string, customKey?: string) {
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,
-        storageKey: 'vinthem-auth-token',
-        cookieOptions: {
-          domain: isLocal ? 'localhost' : '.vinthem.com',
-          path: '/',
-          sameSite: 'lax',
-          secure: !isLocal,
-        }
       },
     }
   );

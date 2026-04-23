@@ -28,9 +28,6 @@ export async function createClient() {
           }
         },
       },
-      auth: {
-        storageKey: 'vinthem-auth-token',
-      }
     }
   );
 }
