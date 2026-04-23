@@ -359,14 +359,24 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
-    const toastId = toast.loading('Uploading...');
+    const toastId = toast.loading('Uploading main image...');
     try {
-      const { uploadImageWithTimeout } = await import('@/lib/upload');
-      const url = await uploadImageWithTimeout(file, `products/${Date.now()}_${file.name}`);
-      setFormData({ ...formData, imageUrl: url });
-      toast.success('Uploaded', { id: toastId });
+      const formDataUpload = new FormData();
+      formDataUpload.append('file', file);
+      formDataUpload.append('path', `products/${Date.now()}_${file.name}`);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formDataUpload,
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Upload failed');
+      
+      setFormData(prev => ({ ...prev, imageUrl: data.url }));
+      toast.success('Main image updated', { id: toastId });
     } catch (err: unknown) {
-      toast.error('Upload failed', { id: toastId });
+      toast.error('Main image upload failed. Check server logs.', { id: toastId });
     } finally {
       setUploading(false);
     }
@@ -844,25 +854,36 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                       <input type="file" className="hidden" multiple accept="image/*" onChange={async (e) => {
                         const files = Array.from(e.target.files || []);
                         if (files.length === 0) return;
-                        const toastId = toast.loading(`Uploading ${files.length} images...`);
+                        const toastId = toast.loading(`Targeting ${files.length} images for sequential secure upload...`);
                         try {
-                          const { uploadImageWithTimeout } = await import('@/lib/upload');
                           const urls: string[] = [];
                           for (const f of files) {
                             try {
-                              const url = await uploadImageWithTimeout(f, `gallery/${Date.now()}_${f.name}`);
-                              urls.push(url);
+                              const formDataUpload = new FormData();
+                              formDataUpload.append('file', f);
+                              formDataUpload.append('path', `gallery/${Date.now()}_${f.name}`);
+
+                              const res = await fetch('/api/upload', {
+                                method: 'POST',
+                                body: formDataUpload,
+                              });
+                              const data = await res.json();
+                              if (res.ok && data.url) {
+                                urls.push(data.url);
+                              } else {
+                                logger.error(`Proxy upload failed for ${f.name}: ${data.error}`);
+                              }
                             } catch (err) {
-                              logger.error(`Individual upload failed for ${f.name}`, err);
+                              logger.error(`Individual proxy upload error for ${f.name}`, err);
                             }
                           }
                           if (urls.length > 0) {
                             setFormData(prev => ({ ...prev, additionalImages: [...(prev.additionalImages || []), ...urls] }));
-                            toast.success(`Gallery updated (${urls.length} images added)`, { id: toastId });
+                            toast.success(`Gallery synchronized (${urls.length} images added via secure proxy)`, { id: toastId });
                           } else {
-                            toast.error('Gallery upload failed completely', { id: toastId });
+                            toast.error('Gallery synchronization failed. Connection or R2 issue.', { id: toastId });
                           }
-                        } catch (err) { toast.error('Gallery processing error', { id: toastId }); }
+                        } catch (err) { toast.error('Gallery sequential logic failed', { id: toastId }); }
                       }} />
                    </label>
                    <button 
