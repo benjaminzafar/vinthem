@@ -21,11 +21,11 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
           <p className="text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase text-slate-400">
             {settings.collectionTopSubtitle?.[lang] || 'Curated Catalog'}
           </p>
-          <h2 className="text-3xl md:text-5xl font-sans font-black text-brand-ink tracking-tight leading-tight max-w-4xl">
+          <h2 className="text-3xl md:text-5xl font-sans text-brand-ink tracking-tight mb-6 max-w-4xl leading-tight">
             {settings.collectionTitle?.[lang]}
           </h2>
           <div className="w-12 h-1 bg-brand-ink"></div>
-          <p className="text-brand-muted max-w-2xl text-sm md:text-base font-medium leading-relaxed">
+          <p className="text-brand-muted max-w-2xl text-lg font-light leading-relaxed">
             {settings.collectionSubtitle?.[lang]}
           </p>
           <div className="mt-4">
