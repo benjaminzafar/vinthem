@@ -83,9 +83,9 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
   }, [isMobileMenuOpen, setMobileMenuOpen]);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate.refresh();
     setMobileMenuOpen(false);
+    await supabase.auth.signOut();
+    window.location.href = `/${lang}`;
   };
 
   if (isDesktop) return null;
@@ -157,7 +157,7 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
                   {user ? (
                     <div className="space-y-4">
                       <span className="text-xs font-medium uppercase tracking-wider text-gray-500">{labels.account}</span>
-                      <div className="flex items-center justify-between bg-gray-50 p-4 rounded-none">
+                      <div className="flex items-center justify-between bg-gray-50 p-4 rounded">
                         <div className="flex items-center space-x-3">
                           <UserAvatar 
                             name={user.user_metadata?.full_name || user.email}
@@ -172,7 +172,7 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
                         <Link
                           href="/profile"
                           onClick={() => setMobileMenuOpen(false)}
-                          className="p-2 bg-white rounded-none border border-gray-100 text-brand-ink hover:bg-gray-100 transition-colors"
+                          className="p-2 bg-white rounded border border-gray-100 text-brand-ink hover:bg-gray-100 transition-colors"
                         >
                           <User className="w-4 h-4" />
                         </Link>
@@ -181,7 +181,7 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
                         <Link
                           href="/admin"
                           onClick={() => setMobileMenuOpen(false)}
-                          className="w-full flex items-center justify-center space-x-2 py-3 bg-indigo-50 text-indigo-700 rounded-none font-medium hover:bg-indigo-100 transition-colors"
+                          className="w-full flex items-center justify-center space-x-2 py-3 bg-indigo-50 text-indigo-700 rounded font-medium hover:bg-indigo-100 transition-colors"
                         >
                           <Settings className="w-4 h-4" />
                           <span>{labels.adminDashboard}</span>
@@ -189,7 +189,7 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
                       )}
                       <button
                         onClick={handleLogout}
-                        className="w-full flex items-center justify-center space-x-2 py-3 text-red-600 bg-red-50 rounded-none font-medium hover:bg-red-100 transition-colors"
+                        className="w-full flex items-center justify-center space-x-2 py-3 text-red-600 bg-red-50 rounded font-medium hover:bg-red-100 transition-colors"
                       >
                         <LogOut className="w-4 h-4" />
                         <span>{labels.logout}</span>
@@ -199,7 +199,7 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
                     <Link
                       href="/auth"
                       onClick={() => setMobileMenuOpen(false)}
-                      className="w-full py-4 text-sm font-medium text-white bg-brand-ink rounded-none hover:bg-gray-800 transition-all active:scale-95 text-center block"
+                      className="w-full py-4 text-sm font-medium text-white bg-brand-ink rounded hover:bg-gray-800 transition-all active:scale-95 text-center block"
                     >
                       {labels.login}
                     </Link>
