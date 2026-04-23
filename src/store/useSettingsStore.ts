@@ -370,6 +370,7 @@ export interface StorefrontSettings {
   initialStockText: LocalizedString;
   weightKgText: LocalizedString;
   shippingClassText: LocalizedString;
+  invalidLoginErrorText: LocalizedString;
   otpTitle: LocalizedString;
   otpSubtitle: LocalizedString;
   otpCheckSpam: LocalizedString;
@@ -762,6 +763,12 @@ export const defaultSettings: StorefrontSettings = {
   initialStockText: { en: 'Initial Stock', sv: 'Initialt lager', fi: 'Alkuvarasto', da: 'Startlager' },
   weightKgText: { en: 'Weight (kg)', sv: 'Vikt (kg)', fi: 'Paino (kg)', da: 'Vægt (kg)' },
   shippingClassText: { en: 'Shipping Class', sv: 'Fraktklass', fi: 'Toimitusluokka', da: 'Forsendelsesklasse' },
+  invalidLoginErrorText: { 
+    en: 'Invalid email or password.', 
+    sv: 'Ogiltig e-post eller lösenord.', 
+    fi: 'Virheellinen sähköposti tai salasana.', 
+    da: 'Ugyldig e-mail eller adgangskode.' 
+  },
   otpTitle: { en: 'Verify your email', sv: 'Bekräfta din e-post', fi: 'Vahvista sähköpostisi', da: 'Bekræft din e-mail' },
   otpSubtitle: { en: "We've sent an 8-digit code to", sv: 'Vi har skickat en 8-siffrig kod till', fi: 'Olemme lähettäneet 8-numeroisen koodin osoitteeseen', da: 'Vi har sendt en 8-cifret kode til' },
   otpCheckSpam: { en: "Don't see it? Please check your spam folder.", sv: 'Ser du det inte? Kontrollera din skräppostmapp.', fi: 'Etkö näe sitä? Tarkista roskapostikansiosi.', da: 'Kan du ikke se den? Tjek venligst din spam-mappe.' },
