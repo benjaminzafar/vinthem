@@ -33,7 +33,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   // Fetch product with cleaned up naming for frontend
   const { data: productData, error } = await supabase
     .from('products')
-    .select('*, imageUrl:image_url, isFeatured:is_featured, categoryId:category_id, createdAt:created_at, prices, stripe_tax_code, categories(name)')
+    .select('*, imageUrl:image_url, additionalImages:additional_images, isFeatured:is_featured, categoryId:category_id, createdAt:created_at, prices, stripe_tax_code, categories(name)')
     .eq('id', id)
     .or(PUBLIC_PRODUCT_STATUS_FILTER)
     .single();
@@ -50,7 +50,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   // Fetch related products
   const { data: relatedData } = await supabase
     .from('products')
-    .select('*, imageUrl:image_url, isFeatured:is_featured, categoryId:category_id, createdAt:created_at, prices, stripe_tax_code, categories(name)')
+    .select('*, imageUrl:image_url, additionalImages:additional_images, isFeatured:is_featured, categoryId:category_id, createdAt:created_at, prices, stripe_tax_code, categories(name)')
     .eq('category_id', product.categoryId)
     .neq('id', product.id)
     .or(PUBLIC_PRODUCT_STATUS_FILTER)
@@ -64,7 +64,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   if (relatedProducts.length === 0) {
     const { data: fallbackData } = await supabase
       .from('products')
-      .select('*, imageUrl:image_url, isFeatured:is_featured, categoryId:category_id, createdAt:created_at, prices, stripe_tax_code, categories(name)')
+      .select('*, imageUrl:image_url, additionalImages:additional_images, isFeatured:is_featured, categoryId:category_id, createdAt:created_at, prices, stripe_tax_code, categories(name)')
       .neq('id', product.id)
       .or(PUBLIC_PRODUCT_STATUS_FILTER)
       .limit(4);

@@ -643,7 +643,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                 </button>
               </div>
               <div className="p-6">
-                 <div className="group relative mb-4 h-64 cursor-pointer overflow-hidden rounded-[4px] border-2 border-dashed border-slate-200 bg-slate-50 transition-all hover:border-slate-900">
+                  <label className="group relative mb-4 h-64 cursor-pointer overflow-hidden rounded-[4px] border-2 border-dashed border-slate-200 bg-slate-50 transition-all hover:border-slate-900 flex items-center justify-center">
                     {isValidUrl(formData.imageUrl) ? (
                       <Image 
                         src={formData.imageUrl} 
@@ -676,7 +676,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
                        <span className="text-[10px] font-black uppercase tracking-widest text-white border-white border px-4 py-2">Change Image</span>
                     </div>
-                 </div>
+                  </label>
                  <div className="flex gap-2">
                     <input 
                       type="text" 

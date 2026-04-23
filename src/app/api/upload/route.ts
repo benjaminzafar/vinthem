@@ -43,7 +43,8 @@ export async function POST(req: NextRequest) {
       );
 
       const baseUrl = publicUrl ? publicUrl.replace(/\/$/, '') : `https://${accountId}.r2.cloudflarestorage.com/${bucketName}`;
-      const finalUrl = `${baseUrl}/${path}`;
+      const encodedPath = path.split('/').map(segment => encodeURIComponent(segment)).join('/');
+      const finalUrl = `${baseUrl}/${encodedPath}`;
 
       return NextResponse.json({ url: finalUrl });
     } catch (uploadError: unknown) {

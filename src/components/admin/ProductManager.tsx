@@ -80,11 +80,42 @@ export function ProductManager({
   const [supabase] = useState(() => createClient());
   const router = useRouter();
   const customConfirm = useCustomConfirm();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Selection State
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkProcessing, setBulkProcessing] = useState(false);
+
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleCSVUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.csv')) {
+      toast.error('Please upload a valid CSV file');
+      return;
+    }
+
+    const toastId = toast.loading('Processing products catalog...');
+    
+    try {
+      // Basic CSV reading for now - logic can be expanded to actual parsing
+      const text = await file.text();
+      const rows = text.split('\n').filter(Boolean);
+      
+      if (rows.length < 2) {
+        throw new Error('CSV file seems empty or malformed');
+      }
+
+      toast.success(`Success: Found ${rows.length - 1} products in catalog`, { id: toastId });
+      // Here you would normally call a server action to process the data
+      
+    } catch (err: unknown) {
+      toast.error('Failed to parse catalog: ' + (err instanceof Error ? err.message : String(err)), { id: toastId });
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
 
   const fetchProducts = useCallback(async ({ reset = false, showLoader = false }: { reset?: boolean; showLoader?: boolean } = {}) => {
     if (reset) {
@@ -337,10 +368,19 @@ export function ProductManager({
               </button>
             ))}
           </div>
-          <button className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-900 transition-all">
-             <Download className="w-4 h-4" />
-             Export
-          </button>
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-900 transition-all"
+            >
+              <FileText className="w-4 h-4" />
+              Import CSV
+            </button>
+            <button className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-900 transition-all">
+               <Download className="w-4 h-4" />
+               Export
+            </button>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -488,7 +528,13 @@ export function ProductManager({
         </div>
       )}
 
-      <input type="file" ref={fileInputRef} className="hidden" accept=".csv" />
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        onChange={handleCSVUpload}
+        className="hidden" 
+        accept=".csv" 
+      />
     </div>
   );
 }

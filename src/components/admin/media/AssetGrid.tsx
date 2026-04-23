@@ -2,6 +2,7 @@ import React from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'motion/react';
 import { Trash2, Copy, Check, ImageIcon, RefreshCcw } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface Asset {
   key: string;
@@ -118,11 +119,21 @@ export function AssetGrid({
                     if (parent && !parent.querySelector('.broken-indicator')) {
                       const diag = document.createElement('div');
                       diag.className = 'broken-indicator absolute inset-0 flex flex-col items-center justify-center p-4 text-center bg-slate-50 border-2 border-dashed border-slate-200';
-                      diag.innerHTML = `
-                        <svg class="w-6 h-6 text-slate-300 mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/><path d="m9 10 2 2 4-4"/><path d="M12 18v-4"/><path d="M12 8h.01"/></svg>
-                        <p style="font-size: 10px; font-weight: 900; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em;">Link Broken</p>
-                        <button onclick="navigator.clipboard.writeText('${obj.url}'); alert('Path copied to clipboard')" style="margin-top: 8px; font-size: 8px; font-weight: 800; background: #0f172a; color: white; padding: 4px 8px; border-radius: 2px; text-transform: uppercase;">Copy Path</button>
-                      `;
+                      diag.style.zIndex = '5';
+                      
+                      const icon = '<svg class="w-6 h-6 text-slate-300 mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/><path d="m9 10 2 2 4-4"/><path d="M12 18v-4"/><path d="M12 8h.01"/></svg>';
+                      const text = '<p style="font-size: 10px; font-weight: 900; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em;">Link Broken</p>';
+                      const button = document.createElement('button');
+                      button.innerText = 'Copy Path';
+                      button.style.cssText = 'margin-top: 8px; font-size: 8px; font-weight: 800; background: #0f172a; color: white; padding: 4px 8px; border-radius: 2px; text-transform: uppercase; cursor: pointer;';
+                      button.onclick = (event) => {
+                        event.stopPropagation();
+                        navigator.clipboard.writeText(obj.url);
+                        toast.success('Path captured');
+                      };
+                      
+                      diag.innerHTML = icon + text;
+                      diag.appendChild(button);
                       parent.appendChild(diag);
                     }
                   }}

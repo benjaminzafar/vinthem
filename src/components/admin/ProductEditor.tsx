@@ -779,7 +779,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                              diag.innerHTML = `
                                <svg class="w-6 h-6 text-slate-300 mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/><path d="m9 10 2 2 4-4"/><path d="M12 18v-4"/><path d="M12 8h.01"/></svg>
                                <p style="font-size: 8px; font-weight: 900; color: #64748b; text-transform: uppercase;">Image Private or Broken</p>
-                               <p style="font-size: 7px; color: #94a3b8; margin-top: 4px;">Path: ${formData.imageUrl.slice(0, 30)}...</p>
+                               <p style="font-size: 7px; color: #94a3b8; margin-top: 4px;">Path: ${formData.imageUrl ? formData.imageUrl.slice(0, 30) : 'None'}...</p>
                              `;
                              parent.appendChild(diag);
                            }
@@ -884,13 +884,12 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                         />
                         <button 
                           onClick={() => setFormData(prev => ({ ...prev, additionalImages: prev.additionalImages?.filter((_, i) => i !== idx) }))}
-                          className="absolute -top-1 -right-1 bg-white border border-slate-200 text-slate-400 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-all"
+                          className="absolute -top-1 -right-1 bg-white border border-slate-200 text-slate-400 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
                         >
                           <X className="w-3 h-3" />
                         </button>
                       </div>
-                    )
-                   ))}
+                    ))}
                    <label className="aspect-square border-2 border-dashed border-slate-200 rounded flex items-center justify-center hover:border-slate-400 transition-all cursor-pointer group">
                       <Plus className="w-4 h-4 text-slate-400 group-hover:text-slate-900" />
                       <input type="file" className="hidden" multiple accept="image/*" onChange={async (e) => {
