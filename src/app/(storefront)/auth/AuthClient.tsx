@@ -124,26 +124,39 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
       return;
     }
     
-    // RESTORING SECURITY + BRANDING: Using the library to handle sessions (PKCE)
-    // but forcing our branded domain through the custom client.
+    // THE STEALTH REDIRECT: We use the library for security (PKCE) 
+    // but MANUALLY rewrite the URL to force the branded domain.
     const brandedSupabase = createClient(
       'https://auth.vinthem.com',
       process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
     );
 
     try {
-      // Step 1: Use the authorized branded callback (Verified in Google and Supabase)
       const redirectTo = 'https://auth.vinthem.com/auth/v1/callback';
       
-      const { error } = await brandedSupabase.auth.signInWithOAuth({
+      const { data, error } = await brandedSupabase.auth.signInWithOAuth({
         provider: 'google',
         options: { 
           redirectTo,
-          // ENSURE session persistence on the main domain
-          persistSession: true
+          // We tell the library NOT to redirect yet
+          skipBrowserRedirect: true
         },
       });
+
       if (error) throw error;
+
+      // Now we have the secure URL from the library, but we rewrite it!
+      if (data?.url) {
+        // Force the branded domain into the library's URL string (GLOBAL replacement)
+        // We use a regex to catch EVERY instance of the technical host
+        const brandedUrl = data.url.replace(
+          /xeatyjjiywcrkuvifyhm\.supabase\.co/g, 
+          'auth.vinthem.com'
+        );
+        
+        console.log("🏙️ LAUNCHING STEALTH BRANDED OAUTH:", brandedUrl);
+        window.location.href = brandedUrl;
+      }
     } catch (error: any) {
       toast.error(error.message || 'Google login failed');
     }
