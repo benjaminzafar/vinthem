@@ -91,7 +91,7 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
       } else {
         let errorMessage = error.message || 'Auth failed';
         if (errorMessage.toLowerCase().includes('invalid login credentials')) {
-          errorMessage = 'user or password is wrong';
+          errorMessage = 'The email or password provided is incorrect. Please try again.';
         }
         toast.error(errorMessage);
       }
