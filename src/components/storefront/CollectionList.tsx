@@ -17,20 +17,18 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
   return (
     <section id="collection" className="py-20 md:py-32 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-12 md:mb-20 gap-8">
-          <div className="text-center md:text-left flex-1">
-            <p className="text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase mb-4 text-slate-400">
-              {settings.collectionTopSubtitle?.[lang] || 'Curated Catalog'}
-            </p>
-            <h2 className="text-3xl md:text-5xl font-sans font-black mb-6 text-brand-ink tracking-tight leading-tight">
-              {settings.collectionTitle?.[lang]}
-            </h2>
-            <div className="w-12 h-1 bg-brand-ink mb-6 mx-auto md:mx-0"></div>
-            <p className="text-brand-muted max-w-xl mx-auto md:mx-0 text-sm md:text-base font-medium leading-relaxed">
-              {settings.collectionSubtitle?.[lang]}
-            </p>
-          </div>
-          <div className="shrink-0">
+        <div className="flex flex-col items-center mb-12 md:mb-20 text-center gap-4">
+          <p className="text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase text-slate-400">
+            {settings.collectionTopSubtitle?.[lang] || 'Curated Catalog'}
+          </p>
+          <h2 className="text-3xl md:text-5xl font-sans font-black text-brand-ink tracking-tight leading-tight max-w-4xl">
+            {settings.collectionTitle?.[lang]}
+          </h2>
+          <div className="w-12 h-1 bg-brand-ink"></div>
+          <p className="text-brand-muted max-w-2xl text-sm md:text-base font-medium leading-relaxed">
+            {settings.collectionSubtitle?.[lang]}
+          </p>
+          <div className="mt-4">
             <Link 
               href="/products" 
               className="group inline-flex items-center text-[10px] font-black uppercase tracking-[0.2em] text-brand-ink hover:opacity-70 transition-all border-b-2 border-brand-ink pb-1"
