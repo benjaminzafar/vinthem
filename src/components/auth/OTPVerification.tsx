@@ -12,6 +12,7 @@ interface OTPVerificationProps {
   email: string;
   type?: 'signup' | 'magiclink' | 'recovery' | 'email_change';
   onSuccess?: () => void;
+  lang?: string;
   labels?: {
     title?: string;
     subtitle?: string;
@@ -24,7 +25,13 @@ interface OTPVerificationProps {
   };
 }
 
-export function OTPVerification({ email, type = 'signup', onSuccess, labels }: OTPVerificationProps) {
+export function OTPVerification({ 
+  email, 
+  type = 'signup', 
+  onSuccess,
+  lang,
+  labels 
+}: OTPVerificationProps) {
   const [otp, setOtp] = useState<string[]>(new Array(8).fill(""));
   const [loading, setLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -114,7 +121,7 @@ export function OTPVerification({ email, type = 'signup', onSuccess, labels }: O
         if (onSuccess) {
           onSuccess();
         } else {
-          router.push('/');
+          router.push(`/${lang || 'en'}`);
           router.refresh();
         }
       }, 800);

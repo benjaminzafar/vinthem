@@ -10,6 +10,9 @@ export function UnsubscribeClient() {
   const searchParams = useSearchParams();
   const [email, setEmail] = useState(searchParams.get("email") ?? "");
   const [isPending, startTransition] = useTransition();
+  const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
+  const lang = pathname.split('/')[1] || 'en';
+  
   const message = useMemo(
     () => searchParams.get("email") ? "We prefilled your email from the unsubscribe link." : null,
     [searchParams]
@@ -72,11 +75,11 @@ export function UnsubscribeClient() {
 
         <div className="mt-8 rounded-3xl border border-stone-200 bg-stone-50 px-5 py-4 text-sm text-stone-600">
           Looking for privacy details instead? Read our{" "}
-          <Link href="/p/privacy-policy" className="font-medium underline underline-offset-4">
+          <Link href={`/${lang}/p/privacy-policy`} className="font-medium underline underline-offset-4">
             Privacy Policy
           </Link>{" "}
           and{" "}
-          <Link href="/p/cookie-policy" className="font-medium underline underline-offset-4">
+          <Link href={`/${lang}/p/cookie-policy`} className="font-medium underline underline-offset-4">
             Cookie Policy
           </Link>
           .

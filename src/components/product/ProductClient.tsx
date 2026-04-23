@@ -141,7 +141,7 @@ export function ProductClient({
     Object.entries(newParams).forEach(([key, value]) => {
       if (value) params.set(key, value);
     });
-    router.push(`/products?${params.toString()}`);
+    router.push(`/${lang}/products?${params.toString()}`);
     setIsFilterDrawerOpen(false);
   };
 
@@ -268,7 +268,7 @@ export function ProductClient({
                 {currentStock > 0 ? (settings.addToCartButtonText?.[lang] || 'Add to Cart') : (settings.outOfStockText?.[lang] || 'Out of Stock')}
               </button>
               <Link
-                href="/cart"
+                href={`/${lang}/cart`}
                 className="flex min-h-[54px] items-center justify-center border border-slate-200 px-6 text-[11px] font-black uppercase tracking-[0.22em] text-slate-700 transition-all hover:border-slate-900 hover:text-slate-900 rounded"
               >
                 {settings.cartTitle?.[lang] || 'View Cart'}
@@ -342,13 +342,13 @@ export function ProductClient({
             <h2 className="text-2xl font-medium tracking-tight text-slate-900">
               {settings.relatedProductsTitleText?.[lang] || 'Related Products'}
             </h2>
-            <Link href="/products" className="inline-flex items-center text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 transition-all hover:text-slate-900">
+            <Link href={`/${lang}/products`} className="inline-flex items-center text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 transition-all hover:text-slate-900">
               Explore more <ChevronRight className="ml-1 h-4 w-4" strokeWidth={1.5} />
             </Link>
           </div>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-8">
             {relatedProducts.filter((item) => Boolean(item?.id)).map((item) => (
-              <Link key={item.id} href={`/product/${item.id}`} className="group">
+              <Link key={item.id} href={`/${lang}/product/${item.id}`} className="group">
                 <div className="relative aspect-[4/5] overflow-hidden border border-slate-200 bg-slate-50 rounded">
                   {item.imageUrl ? (
                     <Image src={item.imageUrl} alt={item.title} fill sizes="(max-width: 768px) 50vw, 25vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />

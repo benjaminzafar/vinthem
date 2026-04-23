@@ -332,8 +332,8 @@ export async function startCheckout(
         },
       },
     })),
-    success_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/profile?checkout=success&order=${orderData.id}`,
-    cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/payment?checkout=cancelled`,
+    success_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}${locale ? `/${locale}` : ''}/profile?checkout=success&order=${orderData.id}`,
+    cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}${locale ? `/${locale}` : ''}/payment?checkout=cancelled`,
   });
 
   await adminClient

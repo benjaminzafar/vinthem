@@ -166,7 +166,7 @@ export function ProfileClient({
     await supabase.auth.signOut();
     setUser(null);
     setIsAdmin(false);
-    router.push('/');
+    router.push(`/${lang}`);
     toast.success('Signed out successfully');
   };
 
@@ -524,7 +524,7 @@ export function ProfileClient({
                   <div className="border border-slate-300 bg-white py-24 text-center">
                     <Package className="w-10 h-10 mx-auto text-slate-200 mb-4" />
                     <p className="text-sm font-bold text-slate-900 uppercase tracking-widest">No order records found</p>
-                    <button onClick={() => router.push('/')} className="mt-4 text-[11px] font-bold text-slate-400 hover:text-slate-900 transition-all uppercase underline underline-offset-4 tracking-widest">
+                    <button onClick={() => router.push(`/${lang}`)} className="mt-4 text-[11px] font-bold text-slate-400 hover:text-slate-900 transition-all uppercase underline underline-offset-4 tracking-widest">
                        Return to Storefront
                     </button>
                   </div>

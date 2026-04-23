@@ -148,13 +148,13 @@ export default function CartClient({ initialSettings }: CartClientProps) {
                 </div>
               </div>
 
-              <Link href="/payment" className="w-full bg-brand-ink text-white px-8 py-4 rounded-2xl font-medium text-sm uppercase tracking-wide hover:bg-gray-800 transition-all flex items-center justify-center group">
+              <Link href={`/${lang}/payment`} className="w-full bg-brand-ink text-white px-8 py-4 rounded-2xl font-medium text-sm uppercase tracking-wide hover:bg-gray-800 transition-all flex items-center justify-center group">
                 {settings.proceedToPaymentText?.[lang] || 'Proceed to Checkout'}
                 <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
               </Link>
               
               <div className="mt-6 text-center">
-                <Link href="/products" className="text-sm text-brand-muted hover:text-brand-ink transition-colors underline underline-offset-4">
+                <Link href={`/${lang}/products`} className="text-sm text-brand-muted hover:text-brand-ink transition-colors underline underline-offset-4">
                   {settings.continueShoppingText?.[lang] || 'Continue Shopping'}
                 </Link>
               </div>

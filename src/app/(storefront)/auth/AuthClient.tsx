@@ -217,6 +217,7 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
             <OTPVerification 
               email={email}
               type={otpType}
+              lang={lang}
               onSuccess={async () => {
                 // Ensure the session is fully synced to the client before redirecting
                 const supabase = createClient();

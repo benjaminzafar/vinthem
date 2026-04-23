@@ -113,7 +113,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      navigate.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+      navigate.push(`/${lang}/products?search=${encodeURIComponent(searchQuery.trim())}`);
       setIsOverlayOpen(false);
     }
   };
@@ -214,7 +214,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                                 {discoveryCategories.map((cat) => (
                                   <Link
                                     key={cat.id}
-                                    href={`/products?category=${encodeURIComponent(cat.slug)}`}
+                                    href={`/${lang}/products?category=${encodeURIComponent(cat.slug)}`}
                                     onClick={() => setIsOverlayOpen(false)}
                                     className="group block relative aspect-square overflow-hidden bg-slate-50 border border-slate-100 rounded-xl"
                                   >
@@ -257,7 +257,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                               {filteredResults.categories.map(cat => (
                                 <Link
                                   key={cat.id}
-                                  href={`/products?category=${encodeURIComponent(cat.slug)}`}
+                                  href={`/${lang}/products?category=${encodeURIComponent(cat.slug)}`}
                                   onClick={() => setIsOverlayOpen(false)}
                                   className="px-4 py-3 border border-slate-100 hover:border-slate-900 transition-all flex items-center gap-3 bg-slate-50 hover:bg-white group rounded-lg"
                                 >
@@ -275,7 +275,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                             <p className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-400">
                               {settings?.searchProductsResultsText?.[lang] || 'Products'} ({filteredResults.products.length})
                             </p>
-                            <Link href={`/products?search=${encodeURIComponent(searchQuery)}`} onClick={() => setIsOverlayOpen(false)} className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-900 hover:opacity-70">
+                            <Link href={`/${lang}/products?search=${encodeURIComponent(searchQuery)}`} onClick={() => setIsOverlayOpen(false)} className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-900 hover:opacity-70">
                               {settings?.viewAllResultsText?.[lang] || 'View all results'}
                             </Link>
                           </div>
@@ -291,7 +291,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                                   className="group"
                                 >
                                   <Link 
-                                    href={`/product/${product.id}`} 
+                                    href={`/${lang}/product/${product.id}`} 
                                     onClick={() => setIsOverlayOpen(false)}
                                     className="block relative aspect-[4/5] overflow-hidden bg-slate-50 border border-slate-100 mb-3 rounded-lg"
                                   >
