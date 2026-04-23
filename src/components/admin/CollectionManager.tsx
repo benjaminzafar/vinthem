@@ -243,7 +243,7 @@ export function CollectionManager({
               placeholder="Search collections..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-4 h-11 bg-white border border-slate-300 rounded text-sm focus:outline-none focus:border-slate-900 transition-all w-full md:w-64 text-slate-900 shadow-sm"
+              className="pl-10 pr-4 h-10 bg-white border border-slate-300 rounded text-sm focus:outline-none focus:border-slate-900 transition-all w-full md:w-64 text-slate-900"
             />
           </div>
           <button 
@@ -257,8 +257,8 @@ export function CollectionManager({
         </div>
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm">
-        <div className="px-6 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between h-14">
+      <div className="bg-white border border-slate-300 rounded overflow-hidden shadow-none">
+        <div className="px-6 border-b border-slate-300 bg-white flex items-center justify-between h-14">
           <div className="flex items-center gap-3">
              <Layers className="w-4 h-4 text-slate-400" />
              <h3 className="text-[11px] font-bold uppercase tracking-[0.1em] text-slate-900">Structure & Hierarchy</h3>
@@ -268,7 +268,7 @@ export function CollectionManager({
         <div className="overflow-x-auto overflow-y-hidden">
           <table className="w-full text-left border-collapse min-w-[800px] lg:min-w-0">
             <thead>
-              <tr className="border-b border-slate-200 text-[11px] font-bold uppercase tracking-widest text-slate-500 bg-slate-50/80">
+              <tr className="border-b border-slate-300 text-[11px] font-bold uppercase tracking-widest text-slate-500 bg-slate-50/80">
                 <th className="px-6 py-4 w-12 text-center">
                    <div 
                      onClick={toggleAll}
@@ -288,7 +288,7 @@ export function CollectionManager({
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-300">
               {loading && categories.length === 0 ? (
                 <tr><td colSpan={6} className="py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-xs">Retrieving Catalog Structure...</td></tr>
               ) : sortedData.length === 0 ? (
