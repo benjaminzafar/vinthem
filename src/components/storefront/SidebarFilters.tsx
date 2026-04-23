@@ -121,10 +121,9 @@ export function SidebarFilters({
                   className={`w-full flex items-center justify-between py-3 px-4 transition-all border group ${isActive ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-transparent hover:bg-slate-50 text-slate-700 hover:text-slate-900'}`}
                 >
                   <div className="flex items-center space-x-3">
-                    {cat.icon && (
+                    {cat.iconUrl && (
                       <span className="w-4 h-4 flex items-center justify-center grayscale group-hover:grayscale-0 transition-all opacity-60 group-hover:opacity-100">
-                        {/* Assuming icon is a name or simple generic holder if URL not valid yet, but let's just use it as string/emoji first or image if URL */}
-                        {cat.icon.startsWith('http') ? <img src={cat.icon} alt="" className="w-full h-full object-contain" /> : <span>{cat.icon}</span>}
+                        <img src={cat.iconUrl} alt="" className="w-full h-full object-contain" />
                       </span>
                     )}
                     <span className="text-[12px] font-bold uppercase tracking-[0.15em] text-left">{cat.name}</span>
