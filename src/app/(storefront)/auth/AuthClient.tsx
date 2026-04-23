@@ -124,14 +124,19 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
       return;
     }
     
-    // THE UNIFIED SOLUTION: Use the STANDARD client for security (cookie naming consistency)
-    // but MANUALLY rewrite the URL to force the branded auth.vinthem.com domain.
+    // DYNAMIC BRANDING: Determine the callback target based on the environment
+    // to ensure you stay logged in on localhost during development!
+    const isLocal = window.location.hostname === 'localhost';
+    const brandedUrl = 'https://auth.vinthem.com';
+    
+    // In production, we use branding; in localhost, we might need a direct callback for session matching
+    const redirectTo = isLocal 
+      ? `${window.location.origin}/auth/callback` 
+      : `${brandedUrl}/auth/v1/callback`;
+
     const supabase = createClient();
 
     try {
-      // Use the branded callback as the target
-      const redirectTo = 'https://auth.vinthem.com/auth/v1/callback';
-      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: { 
@@ -143,14 +148,19 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
       if (error) throw error;
 
       if (data?.url) {
-        // Rewrite the URL string to use our branded domain
-        const brandedUrl = data.url.replace(
-          /xeatyjjiywcrkuvifyhm\.supabase\.co/g, 
-          'auth.vinthem.com'
-        );
+        // Rewrite the URL string for branding ONLY if we are NOT on localhost
+        // (to avoid branding breaking localhost sessions)
+        let finalUrl = data.url;
         
-        console.log("🏙️ LAUNCHING UNIFIED BRANDED AUTH:", brandedUrl);
-        window.location.href = brandedUrl;
+        if (!isLocal) {
+          finalUrl = data.url.replace(
+            /xeatyjjiywcrkuvifyhm\.supabase\.co/g, 
+            'auth.vinthem.com'
+          );
+        }
+        
+        console.log("🏙️ LAUNCHING ENVIRONMENT-AWARE AUTH:", finalUrl);
+        window.location.href = finalUrl;
       }
     } catch (error: any) {
       toast.error(error.message || 'Google login failed');
