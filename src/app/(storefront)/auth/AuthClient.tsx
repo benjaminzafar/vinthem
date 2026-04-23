@@ -124,37 +124,32 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
       return;
     }
     
-    // THE STEALTH REDIRECT: We use the library for security (PKCE) 
-    // but MANUALLY rewrite the URL to force the branded domain.
-    const brandedSupabase = createClient(
-      'https://auth.vinthem.com',
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-    );
+    // THE UNIFIED SOLUTION: Use the STANDARD client for security (cookie naming consistency)
+    // but MANUALLY rewrite the URL to force the branded auth.vinthem.com domain.
+    const supabase = createClient();
 
     try {
+      // Use the branded callback as the target
       const redirectTo = 'https://auth.vinthem.com/auth/v1/callback';
       
-      const { data, error } = await brandedSupabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: { 
           redirectTo,
-          // We tell the library NOT to redirect yet
           skipBrowserRedirect: true
         },
       });
 
       if (error) throw error;
 
-      // Now we have the secure URL from the library, but we rewrite it!
       if (data?.url) {
-        // Force the branded domain into the library's URL string (GLOBAL replacement)
-        // We use a regex to catch EVERY instance of the technical host
+        // Rewrite the URL string to use our branded domain
         const brandedUrl = data.url.replace(
           /xeatyjjiywcrkuvifyhm\.supabase\.co/g, 
           'auth.vinthem.com'
         );
         
-        console.log("🏙️ LAUNCHING STEALTH BRANDED OAUTH:", brandedUrl);
+        console.log("🏙️ LAUNCHING UNIFIED BRANDED AUTH:", brandedUrl);
         window.location.href = brandedUrl;
       }
     } catch (error: any) {
