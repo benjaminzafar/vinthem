@@ -5,20 +5,28 @@ import { createClient } from '@/utils/supabase/server';
 import { getSettings } from '@/lib/data';
 import type { StorefrontSettings } from '@/store/useSettingsStore';
 
-export async function generateMetadata(): Promise<Metadata> {
-  const supabase = await createClient();
-  const { data: settingsData } = await supabase
-    .from('settings')
-    .select('data')
-    .eq('id', 'primary')
-    .single();
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
+  const { lang } = await params;
+  const settings = await getSettings();
+  const storeName = settings?.storeName?.[lang] || settings?.storeName?.en || 'Vinthem';
 
-  const settings = settingsData?.data || {};
-  const storeName = settings.storeName?.en || 'Vinthem';
+  const titles = {
+    en: 'Authentication',
+    sv: 'Autentisering',
+    fi: 'Tunnistautuminen',
+    da: 'Autentificering'
+  };
+
+  const descriptions = {
+    en: 'Sign in or create an account to manage your orders and profile.',
+    sv: 'Logga in eller skapa ett konto för att hantera dina beställningar och din profil.',
+    fi: 'Kirjaudu sisään tai luo tili hallinnoidaksesi tilauksiasi ja profiiliasi.',
+    da: 'Log ind eller opret en konto for at administrere dine ordrer og din profil.'
+  };
 
   return {
-    title: `Authentication | ${storeName}`,
-    description: 'Sign in or create an account to manage your orders and profile.',
+    title: `${titles[lang as keyof typeof titles] || titles.en} | ${storeName}`,
+    description: descriptions[lang as keyof typeof descriptions] || descriptions.en,
   };
 }
 
