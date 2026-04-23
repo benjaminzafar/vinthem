@@ -882,6 +882,19 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                             }
                           }}
                         />
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setFormData(prev => ({ 
+                              ...prev, 
+                              additionalImages: prev.additionalImages?.filter((_, i) => i !== idx) 
+                            }));
+                          }}
+                          className="absolute top-1 right-1 bg-white/90 backdrop-blur-sm border border-slate-200 text-rose-600 rounded-full p-1 opacity-0 group-hover:opacity-100 hover:bg-rose-600 hover:text-white transition-all shadow-sm z-20"
+                          title="Remove Image"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
                       </div>
                     ))}
                    <label className="aspect-square border-2 border-dashed border-slate-200 rounded flex items-center justify-center hover:border-slate-400 transition-all cursor-pointer group">

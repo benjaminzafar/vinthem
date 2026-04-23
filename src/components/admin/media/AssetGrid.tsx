@@ -149,6 +149,13 @@ export function AssetGrid({
                      >
                        {copyingKeys.has(obj.key) ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                      </button>
+                     <button 
+                       onClick={(e) => { e.stopPropagation(); onDelete(obj); }}
+                       className="w-10 h-10 bg-white rounded flex items-center justify-center text-rose-600 hover:bg-rose-600 hover:text-white transition-all"
+                       title="Delete"
+                     >
+                       <Trash2 className="w-4 h-4" />
+                     </button>
                   </div>
                 )}
 
