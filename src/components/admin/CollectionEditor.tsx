@@ -272,8 +272,18 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
     setUploading(true);
     const toastId = toast.loading('Uploading banner...');
     try {
-      const { uploadImageWithTimeout } = await import('@/lib/upload');
-      const url = await uploadImageWithTimeout(file, `categories/${Date.now()}_${file.name}`);
+      const formDataUpload = new FormData();
+      formDataUpload.append('file', file);
+      formDataUpload.append('path', `categories/${Date.now()}_${file.name}`);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formDataUpload
+      });
+
+      if (!res.ok) throw new Error('Upload failed');
+      const { url } = await res.json();
+      
       setFormData(prev => ({ ...prev, imageUrl: url }));
       toast.success('Banner uploaded', { id: toastId });
     } catch (error: unknown) {
@@ -290,8 +300,18 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
     setUploading(true);
     const toastId = toast.loading('Uploading icon...');
     try {
-      const { uploadImageWithTimeout } = await import('@/lib/upload');
-      const url = await uploadImageWithTimeout(file, `categories/${Date.now()}_${file.name}`);
+      const formDataUpload = new FormData();
+      formDataUpload.append('file', file);
+      formDataUpload.append('path', `categories/icons/${Date.now()}_${file.name}`);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formDataUpload
+      });
+
+      if (!res.ok) throw new Error('Upload failed');
+      const { url } = await res.json();
+
       setFormData(prev => ({ ...prev, iconUrl: url }));
       toast.success('Icon uploaded', { id: toastId });
     } catch (error: unknown) {
@@ -623,9 +643,29 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                 </button>
               </div>
               <div className="p-6">
-                 <div className="relative aspect-[16/9] bg-slate-50 border-2 border-dashed border-slate-200 rounded-[4px] flex items-center justify-center overflow-hidden hover:border-slate-900 transition-all cursor-pointer group mb-4">
+                 <div className="group relative mb-4 h-64 cursor-pointer overflow-hidden rounded-[4px] border-2 border-dashed border-slate-200 bg-slate-50 transition-all hover:border-slate-900">
                     {isValidUrl(formData.imageUrl) ? (
-                      <Image src={formData.imageUrl} alt="" fill sizes="(max-width: 768px) 100vw, 600px" className="object-cover" />
+                      <Image 
+                        src={formData.imageUrl} 
+                        alt="" 
+                        fill 
+                        sizes="(max-width: 768px) 100vw, 800px" 
+                        className="object-cover" 
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const parent = target.parentElement;
+                          if (parent && !parent.querySelector('.broken-indicator')) {
+                            const diag = document.createElement('div');
+                            diag.className = 'broken-indicator absolute inset-0 flex flex-col items-center justify-center p-4 text-center bg-slate-50 border-2 border-dashed border-slate-200';
+                            diag.innerHTML = `
+                              <svg class="w-6 h-6 text-slate-300 mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/><path d="m9 10 2 2 4-4"/><path d="M12 18v-4"/><path d="M12 8h.01"/></svg>
+                              <p style="font-size: 8px; font-weight: 900; color: #64748b; text-transform: uppercase;">Banner Private or Broken</p>
+                            `;
+                            parent.appendChild(diag);
+                          }
+                        }}
+                      />
                     ) : (
                       <div className="text-center p-6">
                          <ImageIcon className="w-8 h-8 text-slate-300 mx-auto mb-2" />
@@ -685,6 +725,13 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                         Custom
                         <input type="file" className="hidden" onChange={handleIconUpload} accept="image/*" />
                       </label>
+                      <button 
+                        type="button"
+                        onClick={() => { setPickerTarget('icon'); setIsMediaPickerOpen(true); }}
+                        className="h-9 px-4 bg-slate-50 border border-slate-200 rounded-[4px] text-[10px] font-black uppercase tracking-widest hover:border-slate-900 transition-all"
+                      >
+                        Lib
+                      </button>
                     </div>
                   </div>
                </div>
@@ -696,7 +743,14 @@ Collection Description (Swedish): "${formData.description || ''}"`;
       <MediaPickerModal 
         isOpen={isMediaPickerOpen}
         onClose={() => setIsMediaPickerOpen(false)}
-        onSelect={(url) => { setFormData({ ...formData, imageUrl: url }); setIsMediaPickerOpen(false); }}
+        onSelect={(url) => { 
+          if (pickerTarget === 'image') {
+            setFormData({ ...formData, imageUrl: url }); 
+          } else {
+            setFormData({ ...formData, iconUrl: url });
+          }
+          setIsMediaPickerOpen(false); 
+        }}
       />
       {isIconSelectorOpen && (
         <IconSelector

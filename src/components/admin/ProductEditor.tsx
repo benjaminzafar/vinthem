@@ -762,7 +762,30 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                 <label className="relative aspect-square bg-slate-50 border-2 border-dashed border-slate-200 rounded-[4px] flex items-center justify-center overflow-hidden hover:border-slate-900 transition-all cursor-pointer group mb-4">
 
                    {isValidUrl(formData.imageUrl) ? (
-                     <Image src={formData.imageUrl} alt="" fill sizes="(max-width: 768px) 100vw, 600px" className="object-cover" />
+                     <div className="relative w-full h-full">
+                       <Image 
+                         src={formData.imageUrl} 
+                         alt="Main product asset" 
+                         fill 
+                         sizes="(max-width: 768px) 100vw, 400px" 
+                         className="object-cover" 
+                         onError={(e) => {
+                           const target = e.target as HTMLImageElement;
+                           target.style.display = 'none';
+                           const parent = target.parentElement;
+                           if (parent && !parent.querySelector('.broken-indicator')) {
+                             const diag = document.createElement('div');
+                             diag.className = 'broken-indicator absolute inset-0 flex flex-col items-center justify-center p-4 text-center bg-slate-50 border-2 border-dashed border-slate-200';
+                             diag.innerHTML = `
+                               <svg class="w-6 h-6 text-slate-300 mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/><path d="m9 10 2 2 4-4"/><path d="M12 18v-4"/><path d="M12 8h.01"/></svg>
+                               <p style="font-size: 8px; font-weight: 900; color: #64748b; text-transform: uppercase;">Image Private or Broken</p>
+                               <p style="font-size: 7px; color: #94a3b8; margin-top: 4px;">Path: ${formData.imageUrl.slice(0, 30)}...</p>
+                             `;
+                             parent.appendChild(diag);
+                           }
+                         }}
+                       />
+                     </div>
                    ) : (
                      <div className="text-center p-6">
                         <ImageIcon className="w-8 h-8 text-slate-300 mx-auto mb-2" />
@@ -836,12 +859,31 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
               </div>
               <div className="p-6">
                 <div className="grid grid-cols-4 gap-2 mb-4">
-                   {formData.additionalImages?.map((img, i) => (
-                     isValidUrl(img) && (
-                       <div key={i} className="relative aspect-square border border-slate-100 rounded group">
-                          <Image src={img} alt="" fill sizes="200px" className="object-cover" />
+                   {formData.additionalImages?.map((url, idx) => (
+                     <div key={idx} className="relative aspect-square bg-slate-50 border border-slate-100 rounded-md overflow-hidden group/img">
+                        <Image 
+                          src={url} 
+                          alt={`Gallery asset ${idx + 2}`} 
+                          fill 
+                          sizes="120px" 
+                          className="object-cover transition-transform group-hover/img:scale-110" 
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            const parent = target.parentElement;
+                            if (parent && !parent.querySelector('.broken-indicator')) {
+                              const diag = document.createElement('div');
+                              diag.className = 'broken-indicator absolute inset-0 flex flex-col items-center justify-center text-center bg-slate-100';
+                              diag.innerHTML = `
+                                <svg class="w-4 h-4 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/><path d="m9 10 2 2 4-4"/></svg>
+                                <span style="font-size: 6px; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-top: 2px;">Error</span>
+                              `;
+                              parent.appendChild(diag);
+                            }
+                          }}
+                        />
                         <button 
-                          onClick={() => setFormData(prev => ({ ...prev, additionalImages: prev.additionalImages?.filter((_, idx) => idx !== i) }))}
+                          onClick={() => setFormData(prev => ({ ...prev, additionalImages: prev.additionalImages?.filter((_, i) => i !== idx) }))}
                           className="absolute -top-1 -right-1 bg-white border border-slate-200 text-slate-400 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-all"
                         >
                           <X className="w-3 h-3" />

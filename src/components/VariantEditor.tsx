@@ -184,14 +184,22 @@ export function VariantEditor({ formData, setFormData }: VariantEditorProps) {
                                 accept="image/*"
                                 onChange={async (e) => {
                                   const file = e.target.files?.[0];
-                                  if (!file) {
-                                    return;
-                                  }
+                                  if (!file) return;
 
                                   const toastId = toast.loading(`Uploading image for ${colorVal}...`);
                                   try {
-                                    const { uploadImageWithTimeout } = await import('@/lib/upload');
-                                    const url = await uploadImageWithTimeout(file, `variants/${Date.now()}_${file.name}`);
+                                    const formDataUpload = new FormData();
+                                    formDataUpload.append('file', file);
+                                    formDataUpload.append('path', `variants/${Date.now()}_${file.name}`);
+
+                                    const res = await fetch('/api/upload', {
+                                      method: 'POST',
+                                      body: formDataUpload
+                                    });
+
+                                    if (!res.ok) throw new Error('Upload failed');
+                                    const { url } = await res.json();
+                                    
                                     handleColorImageUpload(colorVal, url);
                                     toast.success(`Applied to all ${colorVal} variants`, { id: toastId });
                                   } catch (error) {
@@ -260,14 +268,22 @@ export function VariantEditor({ formData, setFormData }: VariantEditorProps) {
                                 accept="image/*"
                                 onChange={async (e) => {
                                   const file = e.target.files?.[0];
-                                  if (!file) {
-                                    return;
-                                  }
+                                  if (!file) return;
 
                                   const toastId = toast.loading('Uploading...');
                                   try {
-                                    const { uploadImageWithTimeout } = await import('@/lib/upload');
-                                    const url = await uploadImageWithTimeout(file, `variants/${Date.now()}_${file.name}`);
+                                    const formDataUpload = new FormData();
+                                    formDataUpload.append('file', file);
+                                    formDataUpload.append('path', `variants/${Date.now()}_${file.name}`);
+
+                                    const res = await fetch('/api/upload', {
+                                      method: 'POST',
+                                      body: formDataUpload
+                                    });
+
+                                    if (!res.ok) throw new Error('Upload failed');
+                                    const { url } = await res.json();
+
                                     handleVariantChange(index, 'imageUrl', url);
                                     toast.success('Done', { id: toastId });
                                   } catch (error) {

@@ -89,15 +89,28 @@ export function StorefrontContainer() {
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: keyof StorefrontSettingsType) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setUploadingImage(field as string);
     const toastId = toast.loading('Synchronizing asset to cloud...');
     try {
-      const { uploadImageWithTimeout } = await import('@/lib/upload');
-      const url = await uploadImageWithTimeout(file, `storefront/${Date.now()}_${file.name}`);
+      const formDataUpload = new FormData();
+      formDataUpload.append('file', file);
+      formDataUpload.append('path', `storefront/${Date.now()}_${file.name}`);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formDataUpload
+      });
+
+      if (!res.ok) throw new Error('Upload failed');
+      const { url } = await res.json();
+
       handleUpdate(field as string, url);
       toast.success('Asset synchronized', { id: toastId });
     } catch (error: unknown) {
       const err = error as Error;
       toast.error('Sync failed: ' + err.message, { id: toastId });
+    } finally {
+      setUploadingImage(null);
     }
   };
 

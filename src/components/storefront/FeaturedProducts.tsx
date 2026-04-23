@@ -48,20 +48,27 @@ export function FeaturedProducts({ products, lang, settings }: FeaturedProductsP
             return (
               <Link key={product.id} href={`/product/${product.id}`} className="group">
                 <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-gray-100 mb-4">
-                  {product.imageUrl && product.imageUrl.trim() !== "" ? (
-                    <Image 
-                      src={product.imageUrl} 
-                      alt={title} 
-                      fill 
-                      sizes="(max-width: 768px) 50vw, 25vw"
-                      className="object-cover transition-transform duration-700 group-hover:scale-105" 
-                      priority={index < 2}
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-zinc-100 text-zinc-300">
+                  <div className="h-full w-full">
+                    {product.imageUrl && product.imageUrl.trim() !== "" ? (
+                      <Image 
+                        src={product.imageUrl} 
+                        alt={title} 
+                        fill 
+                        sizes="(max-width: 768px) 50vw, 25vw"
+                        className="object-cover transition-transform duration-700 group-hover:scale-105" 
+                        priority={index < 2}
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.classList.add('hidden');
+                          const fallback = target.parentElement?.querySelector('.product-fallback');
+                          if (fallback) fallback.classList.remove('hidden');
+                        }}
+                      />
+                    ) : null}
+                    <div className={`product-fallback w-full h-full flex items-center justify-center bg-zinc-50 text-zinc-200 ${product.imageUrl && product.imageUrl.trim() !== "" ? 'hidden' : ''}`}>
                       <Package className="w-8 h-8" />
                     </div>
-                  )}
+                  </div>
                   <div className="absolute bottom-3 right-3 bg-brand-ink/90 backdrop-blur-md border border-white/10 w-10 h-10 md:w-12 md:h-12 rounded-full opacity-100 md:opacity-0 group-hover:opacity-100 transition-all duration-300 z-20 flex items-center justify-center hover:scale-110">
                     <ArrowRight className="w-4 h-4 md:w-5 md:h-5 text-white" />
                   </div>

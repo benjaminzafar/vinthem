@@ -63,16 +63,24 @@ export function BlogEditor({ initialPost }: BlogEditorProps) {
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file) {
-      return;
-    }
+    if (!file) return;
 
     setUploading(true);
     const toastId = toast.loading('Uploading journal banner...');
 
     try {
-      const { uploadImageWithTimeout } = await import('@/lib/upload');
-      const url = await uploadImageWithTimeout(file, `blogs/${Date.now()}_${file.name}`);
+      const formDataUpload = new FormData();
+      formDataUpload.append('file', file);
+      formDataUpload.append('path', `blogs/${Date.now()}_${file.name}`);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formDataUpload
+      });
+
+      if (!res.ok) throw new Error('Upload failed');
+      const { url } = await res.json();
+      
       setFormData((current) => ({ ...current, imageUrl: url }));
       toast.success('Banner uploaded.', { id: toastId });
     } catch (error) {
