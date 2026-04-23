@@ -134,7 +134,9 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
       ? `${window.location.origin}/auth/callback` 
       : `${brandedUrl}/auth/v1/callback`;
 
-    const supabase = createClient();
+    const supabase = createClient(
+      !isLocal ? brandedUrl : undefined
+    );
 
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
