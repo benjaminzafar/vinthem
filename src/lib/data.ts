@@ -54,10 +54,5 @@ export const getSettings = async () => {
   }
 
   const settings = (settingsData.data || {}) as StorefrontSettings;
-  console.log('SERVER-SIDE FETCH SUCCESS:', { 
-    storeName: settings.storeName?.en,
-    seoTitle: settings.seoTitle?.en,
-    langs: settings.languages 
-  });
   return settings;
 };
