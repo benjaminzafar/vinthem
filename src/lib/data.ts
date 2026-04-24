@@ -36,10 +36,13 @@ export const getSettings = async () => {
 
   if (error || !settingsData) {
     if (error) {
+      console.error('SERVER-SIDE FETCH ERROR:', error);
       logger.error(`Error fetching settings: [${error.code}] ${error.message}`, {
         details: error.details,
         hint: error.hint
       });
+    } else {
+      console.warn('SERVER-SIDE: No settings record found in Supabase.');
     }
     // Return minimal defaults so the UI doesn't crash
     return ({
@@ -50,5 +53,11 @@ export const getSettings = async () => {
     } as unknown) as StorefrontSettings;
   }
 
-  return (settingsData.data || {}) as StorefrontSettings;
+  const settings = (settingsData.data || {}) as StorefrontSettings;
+  console.log('SERVER-SIDE FETCH SUCCESS:', { 
+    storeName: settings.storeName?.en,
+    seoTitle: settings.seoTitle?.en,
+    langs: settings.languages 
+  });
+  return settings;
 };

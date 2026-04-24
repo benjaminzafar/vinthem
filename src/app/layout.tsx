@@ -18,6 +18,7 @@ export const revalidate = 0;
 export async function generateMetadata(): Promise<Metadata> {
   const lang = await getServerLocale();
   const settings = await getSettings();
+  console.log('--- GENERATING METADATA ---', { lang, seoTitle: settings?.seoTitle?.en, timestamp: new Date().toISOString() });
   
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.vinthem.com';
   const title = settings?.seoTitle?.[lang] || settings?.seoTitle?.en || "Vinthem | Premium Scandinavian Interior Design";
@@ -71,6 +72,7 @@ export default async function RootLayout({
   const lang = await getServerLocale();
   // Fetch settings on the server for hydration (cached)
   const settings = await getSettings() || {};
+  console.log('--- RENDERING ROOT LAYOUT ---', { lang, storeName: settings?.storeName?.en, timestamp: new Date().toISOString() });
   const integrations = await getIntegrations() || {};
   const cookieBannerCopy = {
     eyebrow: settings.consentBannerEyebrowText?.[lang] || "Privacy Controls",

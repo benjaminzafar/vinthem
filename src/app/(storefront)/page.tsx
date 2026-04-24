@@ -17,13 +17,17 @@ export async function generateMetadata() {
   const settings = await getSettings();
   const lang = await getServerLocale();
   
+  const title = settings.seoTitle?.[lang] || settings.seoTitle?.['en'] || (settings.storeName?.[lang] || 'Vinthem') + ' | Premium Scandinavian Design';
+  const description = settings.seoDescription?.[lang] || settings.seoDescription?.['en'] || 'Handpicked premium Scandinavian interior design.';
+  const ogImage = settings.seoImage || '/og-image.jpg';
+
   return {
-    title: settings.storeName?.[lang] || 'Vinthem | Modern Scandinavian Design',
-    description: settings.seoDescription?.[lang] || 'Premium furniture and home accessories with a minimalist Scandinavian aesthetic.',
+    title: title,
+    description: description,
     openGraph: {
-      title: settings.storeName?.[lang] || 'Vinthem',
-      description: settings.seoDescription?.[lang],
-      images: ['/og-image.jpg'],
+      title: title,
+      description: description,
+      images: [ogImage],
     },
   };
 }

@@ -19,7 +19,8 @@ export async function generateMetadata({
   const pathnameWithoutLocale = headerStore.get('x-pathname-no-locale') || '/';
 
   const storeName = settings?.storeName?.[lang] || settings?.storeName?.['en'] || 'Vinthem';
-  const storeDesc = localeDescriptions[lang as keyof typeof localeDescriptions] || localeDescriptions.en;
+  const seoTitle = settings?.seoTitle?.[lang] || settings?.seoTitle?.['en'] || (lang === 'sv' ? 'Exklusiv skandinavisk design' : 'Premium Scandinavian Design');
+  const seoDesc = settings?.seoDescription?.[lang] || settings?.seoDescription?.['en'] || "Handpicked premium Scandinavian interior design.";
 
   // For Lighthouse 100 SEO: Canonical should be self-referential for localized pages
   const canonicalUrl = normalizeLocalizedPath(pathnameWithoutLocale, lang);
@@ -27,9 +28,9 @@ export async function generateMetadata({
   return {
     title: {
       template: `%s | ${storeName}`,
-      default: `${storeName} | ${lang === 'sv' ? 'Exklusiv skandinavisk design' : 'Premium Scandinavian Design'}`,
+      default: seoTitle,
     },
-    description: storeDesc,
+    description: seoDesc,
     alternates: {
       canonical: canonicalUrl,
       languages: {
@@ -41,13 +42,6 @@ export async function generateMetadata({
     },
   };
 }
-
-const localeDescriptions = {
-  en: "Handpicked premium Scandinavian interior design. Ethical, sustainable, and timeless pieces for your home.",
-  sv: "Handplockad premium skandinavisk inredning. Etiska, hållbara och tidlösa möbler för ditt hem.",
-  fi: "Käsin poimittua ensiluokkaista skandinaavista sisustusta. Eettisiä, kestäviä ja ajattomia esineitä kotiisi.",
-  da: "Håndplukket premium skandinavisk indretning. Etiske, bæredygtige og tidløse genstande til dit hjem."
-};
 
 export default async function LocalizedLayout({
   children,
