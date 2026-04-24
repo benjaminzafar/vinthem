@@ -1,4 +1,4 @@
-export const SUPPORTED_LANGUAGES = ['en', 'sv', 'fi', 'da'] as const;
+export const SUPPORTED_LANGUAGES = ['en', 'sv', 'fi', 'da', 'de', 'no', 'nb', 'nn', 'is'] as string[];
 export const DEFAULT_LANGUAGE = 'en';
 
 export type SupportedLanguage = string;
