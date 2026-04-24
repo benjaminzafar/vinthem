@@ -17,8 +17,8 @@ export async function generateMetadata() {
   const settings = await getSettings();
   const lang = await getServerLocale();
   
-  const title = settings.seoTitle?.[lang] || settings.seoTitle?.['en'] || (settings.storeName?.[lang] || 'Vinthem') + ' | Premium Scandinavian Design';
-  const description = settings.seoDescription?.[lang] || settings.seoDescription?.['en'] || 'Handpicked premium Scandinavian interior design.';
+  const title = settings.seoTitle?.[lang] || settings.seoTitle?.['en'] || (settings.storeName?.[lang] || 'Vinthem');
+  const description = settings.seoDescription?.[lang] || settings.seoDescription?.['en'] || "";
   const ogImage = settings.seoImage || '/og-image.jpg';
 
   return {

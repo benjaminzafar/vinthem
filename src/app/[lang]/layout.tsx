@@ -19,8 +19,8 @@ export async function generateMetadata({
   const pathnameWithoutLocale = headerStore.get('x-pathname-no-locale') || '/';
 
   const storeName = settings?.storeName?.[lang] || settings?.storeName?.['en'] || 'Vinthem';
-  const seoTitle = settings?.seoTitle?.[lang] || settings?.seoTitle?.['en'] || (lang === 'sv' ? 'Exklusiv skandinavisk design' : 'Premium Scandinavian Design');
-  const seoDesc = settings?.seoDescription?.[lang] || settings?.seoDescription?.['en'] || "Handpicked premium Scandinavian interior design.";
+  const seoTitle = settings?.seoTitle?.[lang] || settings?.seoTitle?.['en'] || storeName;
+  const seoDesc = settings?.seoDescription?.[lang] || settings?.seoDescription?.['en'] || "";
 
   // For Lighthouse 100 SEO: Canonical should be self-referential for localized pages
   const canonicalUrl = normalizeLocalizedPath(pathnameWithoutLocale, lang);

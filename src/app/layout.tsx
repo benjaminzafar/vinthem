@@ -20,8 +20,10 @@ export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSettings();
   
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.vinthem.com';
-  const title = settings?.seoTitle?.[lang] || settings?.seoTitle?.en || "Vinthem | Premium Scandinavian Interior Design";
-  const description = settings?.seoDescription?.[lang] || settings?.seoDescription?.en || "Handpicked premium Scandinavian interior design. Ethical, sustainable, and timeless pieces for your home.";
+  const storeName = settings?.storeName?.[lang] || settings?.storeName?.en || 'Vinthem';
+  
+  const title = settings?.seoTitle?.[lang] || settings?.seoTitle?.en || storeName;
+  const description = settings?.seoDescription?.[lang] || settings?.seoDescription?.en || '';
   const keywords = settings?.seoKeywords?.[lang] || settings?.seoKeywords?.en || "";
   const ogImage = settings?.seoImage || `${siteUrl}/og-image.jpg`;
 
