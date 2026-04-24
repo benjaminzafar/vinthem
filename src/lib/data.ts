@@ -1,4 +1,4 @@
-import { createClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/server';
 import { cache } from 'react';
 import { StorefrontSettings } from '@/store/useSettingsStore';
 import { logger } from '@/lib/logger';
@@ -6,11 +6,8 @@ import {
   maybeDecryptStoredValue,
 } from '@/lib/integrations';
 
-// We use react cache to deduplicate requests within a single render cycle (request)
-// Next.js also automatically caches data fetched via the Supabase client if configured,
-// but explicitly caching here is more robust for Server Components.
 export const getIntegrations = cache(async () => {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { data: integrations, error } = await supabase
     .from('integrations')
     .select('key, value')
@@ -29,8 +26,8 @@ export const getIntegrations = cache(async () => {
   return config;
 });
 
-export const getSettings = cache(async () => {
-  const supabase = await createClient();
+export const getSettings = async () => {
+  const supabase = createAdminClient();
   const { data: settingsData, error } = await supabase
     .from('settings')
     .select('data')
