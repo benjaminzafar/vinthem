@@ -18,6 +18,8 @@ export interface LocalizedString {
 export interface StorefrontSettings {
   seoTitle: LocalizedString;
   seoDescription: LocalizedString;
+  seoKeywords: LocalizedString;
+  seoImage: string;
   storeName: LocalizedString;
   heroTitle: LocalizedString;
   heroSubtitle: LocalizedString;
@@ -390,6 +392,8 @@ interface SettingsStore {
 export const defaultSettings: StorefrontSettings = {
   seoTitle: { en: 'Nordic Webshop - Premium Goods', sv: 'Nordic Webshop - Premiumvaror', fi: 'Nordic Webshop - Premium-tuotteet', da: 'Nordic Webshop - Premium Varer' },
   seoDescription: { en: 'Discover premium quality goods inspired by Scandinavian minimalism.', sv: 'Upptäck premiumvaror inspirerade av skandinavisk minimalism.', fi: 'Löydä skandinaavisen minimalismin inspiroimia premium-tuotteita.', da: 'Opdag premium varer inspireret af skandinavisk minimalisme.' },
+  seoKeywords: { en: 'scandinavian design, minimalist furniture, nordic interior', sv: 'skandinavisk design, minimalistiska möbler, nordisk inredning', fi: 'skandinaavinen muotoilu, minimalistiset huonekalut, pohjoismainen sisustus', da: 'skandinavisk design, minimalistiske møbler, nordisk indretning' },
+  seoImage: '',
   storeName: { en: 'Nordic', sv: 'Nordisk', fi: 'Pohjoismainen', da: 'Nordisk' },
   heroTitle: { en: 'Elevate Your Space', sv: 'Lyft ditt utrymme', fi: 'Nosta tilaasi', da: 'Løft dit rum' },
   heroSubtitle: { en: 'Discover our new collection of minimalist furniture and decor.', sv: 'Upptäck vår nya kollektion av minimalistiska möbler och inredning.', fi: 'Tutustu uuteen minimalististen huonekalujen ja sisustuksen kokoelmaamme.', da: 'Opdag vores nye kollektion af minimalistiske möbler och indretning.' },
@@ -754,7 +758,7 @@ export const defaultSettings: StorefrontSettings = {
     }
   ],
   trackingTags: '',
-  languages: ['en', 'sv', 'fi', 'da'],
+  languages: ['en', 'sv', 'fi', 'da', 'de'],
   quickAddText: { en: 'Quick Add', sv: 'Snabbköp', fi: 'Pikaostos', da: 'Hurtigkøb' },
   noPagesYetText: { en: 'No pages yet', sv: 'Inga sidor ännu', fi: 'Ei sivuja vielä', da: 'Ingen sider endnu' },
   noPagesDescriptionText: { en: 'Add a page manually or seed default pages to get started.', sv: 'Lägg till en sida manuellt eller fyll på med standardsidor för att komma igång.', fi: 'Lisää sivu manuaalisesti tai siemenellä oletussivuja aloittaaksesi.', da: 'Tilføj en side manuelt eller så standardsider for at komme i gang.' },

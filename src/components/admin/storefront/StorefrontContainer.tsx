@@ -38,6 +38,7 @@ export function StorefrontContainer() {
   const [settings, setSettings] = useState<StorefrontSettingsType>(initialSettings);
   const [activeCategory, setActiveCategory] = useState('branding');
   const [isPending, startTransition] = useTransition();
+  const [hasHydrated, setHasHydrated] = useState(false);
   const [generatingId, setGeneratingId] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -65,13 +66,13 @@ export function StorefrontContainer() {
     fetchCategories();
   }, [supabase]);
 
-  // Hydrate local state from props (Once only to avoid overwriting during async AI operations)
+  // Hydrate local state from store when settings are loaded
   useEffect(() => {
-    if (initialSettings && Object.keys(initialSettings).length > 0 && !settingsLoaded) {
+    if (settingsLoaded && !hasHydrated) {
       setSettings(initialSettings);
-      setSettingsLoaded(true);
+      setHasHydrated(true);
     }
-  }, [initialSettings, settingsLoaded]);
+  }, [initialSettings, settingsLoaded, hasHydrated]);
 
   const handleUpdate = (path: string, value: string | string[] | LocalizedString | boolean | Record<string, unknown> | unknown[]) => {
     setSettings(prev => {
@@ -329,6 +330,17 @@ Text to translate: "${sourceText}"`;
     });
   };
 
+  if (!settingsLoaded) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+        <Loader2 className="w-8 h-8 text-zinc-900 animate-spin" />
+        <p className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest animate-pulse">
+          Hydrating Neural Storefront...
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4 pb-12">
       <AdminHeader 
@@ -337,7 +349,8 @@ Text to translate: "${sourceText}"`;
         primaryAction={{
           label: isPending ? "Syncing..." : "Publish Config",
           icon: isPending ? Loader2 : Save,
-          onClick: handleSave
+          onClick: handleSave,
+          disabled: !settingsLoaded
         }}
         secondaryActions={[
           { label: 'View Store', icon: Globe, onClick: () => window.open('/', '_blank') }
@@ -394,6 +407,30 @@ Text to translate: "${sourceText}"`;
                         description="Direct cloud storage link"
                       />
                     </div>
+
+                    <div className="pt-6 border-t border-zinc-100 flex flex-col gap-6">
+                      <LocalizedSettingInput 
+                        label="Footer Description" 
+                        value={settings.footerDescription} 
+                        onChange={v => handleUpdate('footerDescription', v)}
+                        languages={settings.languages}
+                        type="textarea"
+                        onAITranslate={() => handleAITranslate('footerDescription', 'Footer Description')}
+                        onAIAutoComplete={() => handleAIAutoComplete('footerDescription', 'Footer Description')}
+                        isGenerating={generatingId === 'footerDescription-fill'}
+                        isTranslating={generatingId === 'footerDescription-translate'}
+                      />
+                      <LocalizedSettingInput 
+                        label="Footer Copyright Text" 
+                        value={settings.footerCopyright} 
+                        onChange={v => handleUpdate('footerCopyright', v)}
+                        languages={settings.languages}
+                        onAITranslate={() => handleAITranslate('footerCopyright', 'Footer Copyright Text')}
+                        onAIAutoComplete={() => handleAIAutoComplete('footerCopyright', 'Footer Copyright Text')}
+                        isGenerating={generatingId === 'footerCopyright-fill'}
+                        isTranslating={generatingId === 'footerCopyright-translate'}
+                      />
+                    </div>
                   </div>
                 </SettingCard>
 
@@ -408,18 +445,64 @@ Text to translate: "${sourceText}"`;
                       isGenerating={generatingId === 'seoTitle-fill'}
                       isTranslating={generatingId === 'seoTitle-translate'}
                     />
-                  <LocalizedSettingInput 
-                    label="Search Description" 
-                    value={settings.seoDescription} 
-                    onChange={v => handleUpdate('seoDescription', v)}
-                    languages={settings.languages}
-                    type="textarea"
-                    onAIAutoComplete={() => handleAIAutoComplete('seoDescription', 'SEO Description')}
-                    onAITranslate={() => handleAITranslate('seoDescription', 'SEO Description')}
-                    isGenerating={generatingId === 'seoDescription-fill'}
-                    isTranslating={generatingId === 'seoDescription-translate'}
-                  />
-                </SettingCard>
+                    <LocalizedSettingInput 
+                      label="Search Description" 
+                      value={settings.seoDescription} 
+                      onChange={v => handleUpdate('seoDescription', v)}
+                      languages={settings.languages}
+                      type="textarea"
+                      onAIAutoComplete={() => handleAIAutoComplete('seoDescription', 'SEO Description')}
+                      onAITranslate={() => handleAITranslate('seoDescription', 'SEO Description')}
+                      isGenerating={generatingId === 'seoDescription-fill'}
+                      isTranslating={generatingId === 'seoDescription-translate'}
+                    />
+                    <LocalizedSettingInput 
+                      label="Search Keywords" 
+                      value={settings.seoKeywords} 
+                      onChange={v => handleUpdate('seoKeywords', v)}
+                      languages={settings.languages}
+                      description="Comma-separated keywords for search engines"
+                      onAITranslate={() => handleAITranslate('seoKeywords', 'SEO Keywords')}
+                      onAIAutoComplete={() => handleAIAutoComplete('seoKeywords', 'SEO Keywords')}
+                      isGenerating={generatingId === 'seoKeywords-fill'}
+                      isTranslating={generatingId === 'seoKeywords-translate'}
+                    />
+
+                    <div className="pt-4 border-t border-zinc-100">
+                      <label className="text-[11px] font-black text-zinc-500 uppercase tracking-widest leading-none block mb-3">
+                        Social Share Asset (OG Image)
+                      </label>
+                      <div className="flex items-start gap-4">
+                        <div className="relative w-40 aspect-video bg-zinc-50 border border-zinc-200 rounded overflow-hidden flex-shrink-0 group">
+                           {settings.seoImage ? (
+                             <Image src={settings.seoImage} alt="Social Share Preview" fill className="object-cover" />
+                           ) : (
+                             <div className="w-full h-full flex items-center justify-center text-zinc-300">
+                               <ImageIcon className="w-8 h-8" />
+                             </div>
+                           )}
+                           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <label className="cursor-pointer p-2 bg-white rounded-full text-zinc-900 shadow-xl scale-75 group-hover:scale-100 transition-transform">
+                                <Plus className="w-4 h-4" />
+                                <input type="file" className="hidden" onChange={(e) => handleImageUpload(e, 'seoImage')} accept="image/*" />
+                              </label>
+                           </div>
+                        </div>
+                        <div className="flex-1 space-y-2">
+                           <input 
+                             type="text" 
+                             value={settings.seoImage} 
+                             onChange={e => handleUpdate('seoImage', e.target.value)}
+                             className="w-full h-11 px-4 bg-zinc-50 border border-zinc-200 text-sm font-bold focus:ring-1 focus:ring-zinc-900 focus:outline-none rounded-sm"
+                             placeholder="Asset URL (https://...)" 
+                           />
+                           <p className="text-[10px] text-zinc-400 font-medium italic leading-relaxed">
+                             Recommended size: 1200x630. This image appears when you share the store link on WhatsApp, Telegram, or Facebook.
+                           </p>
+                        </div>
+                      </div>
+                    </div>
+                  </SettingCard>
 
                 <SettingCard id="Social" title="Social Connectivity" icon={LinkIcon}>
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

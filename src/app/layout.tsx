@@ -12,14 +12,53 @@ import { CartDrawer } from "@/components/layout/CartDrawer";
 import { getServerLocale } from "@/lib/server-locale";
 import { Toaster } from "sonner";
 
-export const metadata: Metadata = {
-  title: {
-    template: "%s | Vinthem",
-    default: "Vinthem | Premium Scandinavian Interior Design",
-  },
-  description: "Handpicked premium Scandinavian interior design. Ethical, sustainable, and timeless pieces for your home.",
-  metadataBase: new URL('https://www.vinthem.com'),
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const lang = await getServerLocale();
+  const settings = await getSettings();
+  
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.vinthem.com';
+  const title = settings?.seoTitle?.[lang] || settings?.seoTitle?.en || "Vinthem | Premium Scandinavian Interior Design";
+  const description = settings?.seoDescription?.[lang] || settings?.seoDescription?.en || "Handpicked premium Scandinavian interior design. Ethical, sustainable, and timeless pieces for your home.";
+  const keywords = settings?.seoKeywords?.[lang] || settings?.seoKeywords?.en || "";
+  const ogImage = settings?.seoImage || `${siteUrl}/og-image.jpg`;
+
+  return {
+    title: {
+      template: `%s | ${settings?.storeName?.[lang] || settings?.storeName?.en || 'Vinthem'}`,
+      default: title,
+    },
+    description: description,
+    keywords: keywords,
+    metadataBase: new URL(siteUrl),
+    alternates: {
+      canonical: '/',
+      languages: {
+        'en-US': '/en',
+        'sv-SE': '/sv',
+        'fi-FI': '/fi',
+        'da-DK': '/da',
+        'de-DE': '/de',
+      },
+    },
+    openGraph: {
+      title: title,
+      description: description,
+      url: siteUrl,
+      siteName: settings?.storeName?.[lang] || settings?.storeName?.en || 'Vinthem',
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
+      locale: lang,
+      type: 'website',
+    },
+  };
+}
+
 
 export default async function RootLayout({
   children,

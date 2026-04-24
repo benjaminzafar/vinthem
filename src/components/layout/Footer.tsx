@@ -35,19 +35,19 @@ export default async function Footer({ settings }: FooterProps) {
               )}
             </Link>
             <p className="text-gray-500 text-sm leading-relaxed max-w-sm">
-              {settings.footerDescription?.[lang]}
+              {settings.footerDescription?.[lang] || settings.footerDescription?.en || settings.footerDescription?.sv}
             </p>
           </div>
           
           <div className="col-span-1 md:col-span-8 lg:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-8">
             {(settings.footerSections || []).map((section, index) => (
               <div key={index}>
-                <h3 className="text-sm font-bold text-brand-ink mb-6">{section.title?.[lang]}</h3>
+                <h3 className="text-sm font-bold text-brand-ink mb-6">{section.title?.[lang] || section.title?.en}</h3>
                 <ul className="space-y-4 text-sm text-gray-500">
                   {(section.links || []).map((link, lIndex) => (
                     <li key={lIndex}>
                       <Link href={link.href ? localizeHref(lang, link.href) : '#'} className="hover:text-brand-ink transition-colors">
-                        {link.label?.[lang]}
+                        {link.label?.[lang] || link.label?.en}
                       </Link>
                     </li>
                   ))}
@@ -59,7 +59,7 @@ export default async function Footer({ settings }: FooterProps) {
         
         <div className="pt-8 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6">
           <p className="text-sm text-gray-600">
-            &copy; {new Date().getFullYear()} {settings.storeName?.[lang]}. {settings.footerCopyright?.[lang]}
+            &copy; {new Date().getFullYear()} {settings.storeName?.[lang] || settings.storeName?.en}. {settings.footerCopyright?.[lang] || settings.footerCopyright?.en}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-500">
             <CookiePreferencesButton label={settings.cookiePreferencesButtonText?.[lang] || 'Cookie Preferences'} />
