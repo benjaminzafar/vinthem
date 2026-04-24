@@ -51,4 +51,4 @@ export const getSettings = async () => {
   }
 
   return (settingsData.data || {}) as StorefrontSettings;
-});
+};
