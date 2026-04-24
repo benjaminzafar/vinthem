@@ -24,7 +24,7 @@ export default async function Footer({ settings }: FooterProps) {
                 <div className="relative h-10 w-40">
                   <Image 
                     src={settings.logoImage} 
-                    alt={settings.storeName?.[lang] || 'Mavren'} 
+                    alt={settings.storeName?.[lang] || 'Vinthem'} 
                     fill
                     className="object-contain transition-transform group-hover:scale-105" 
                     sizes="(max-width: 768px) 120px, 160px"
