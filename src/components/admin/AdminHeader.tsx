@@ -8,6 +8,7 @@ interface SecondaryAction {
   icon: LucideIcon;
   onClick: () => void;
   variant?: 'default' | 'danger';
+  disabled?: boolean;
 }
 
 interface AdminHeaderProps {
@@ -17,6 +18,7 @@ interface AdminHeaderProps {
     label: string;
     icon: LucideIcon;
     onClick: () => void;
+    disabled?: boolean;
   };
   secondaryActions?: SecondaryAction[];
   search?: {
@@ -76,7 +78,8 @@ export function AdminHeader({
           {primaryAction && (
             <button 
               onClick={primaryAction.onClick}
-              className="flex items-center justify-center bg-slate-900 text-white hover:bg-slate-800 border border-transparent px-6 h-10 text-sm font-medium rounded transition-colors whitespace-nowrap"
+              disabled={primaryAction.disabled}
+              className="flex items-center justify-center bg-slate-900 text-white hover:bg-slate-800 border border-transparent px-6 h-10 text-sm font-medium rounded transition-colors whitespace-nowrap disabled:bg-slate-300 disabled:cursor-not-allowed"
             >
               <primaryAction.icon className="w-4 h-4 sm:mr-2" />
               <span className="hidden sm:inline">{primaryAction.label}</span>
@@ -110,8 +113,9 @@ export function AdminHeader({
                     {secondaryActions.map((action, index) => (
                       <button
                         key={index}
-                        onClick={() => { action.onClick(); setIsActionsOpen(false); }}
-                        className={`w-full text-left px-4 py-3 text-sm flex items-center gap-3 transition-colors ${
+                        onClick={() => { if (!action.disabled) { action.onClick(); setIsActionsOpen(false); } }}
+                        disabled={action.disabled}
+                        className={`w-full text-left px-4 py-3 text-sm flex items-center gap-3 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                           action.variant === 'danger' 
                             ? 'text-red-600 hover:bg-red-50' 
                             : 'text-slate-600 hover:bg-slate-50'

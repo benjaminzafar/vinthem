@@ -101,6 +101,7 @@ type SupportTicketMessage = {
   sender?: 'admin' | 'customer' | null;
   text?: string | null;
   createdAt?: string | null;
+  imageUrl?: string | null;
 };
 
 type SupportTicketRecord = {

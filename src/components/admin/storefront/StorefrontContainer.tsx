@@ -407,30 +407,30 @@ Text to translate: "${sourceText}"`;
                         description="Direct cloud storage link"
                       />
                     </div>
+                  </div>
 
-                    <div className="pt-6 border-t border-zinc-100 flex flex-col gap-6">
-                      <LocalizedSettingInput 
-                        label="Footer Description" 
-                        value={settings.footerDescription} 
-                        onChange={v => handleUpdate('footerDescription', v)}
-                        languages={settings.languages}
-                        type="textarea"
-                        onAITranslate={() => handleAITranslate('footerDescription', 'Footer Description')}
-                        onAIAutoComplete={() => handleAIAutoComplete('footerDescription', 'Footer Description')}
-                        isGenerating={generatingId === 'footerDescription-fill'}
-                        isTranslating={generatingId === 'footerDescription-translate'}
-                      />
-                      <LocalizedSettingInput 
-                        label="Footer Copyright Text" 
-                        value={settings.footerCopyright} 
-                        onChange={v => handleUpdate('footerCopyright', v)}
-                        languages={settings.languages}
-                        onAITranslate={() => handleAITranslate('footerCopyright', 'Footer Copyright Text')}
-                        onAIAutoComplete={() => handleAIAutoComplete('footerCopyright', 'Footer Copyright Text')}
-                        isGenerating={generatingId === 'footerCopyright-fill'}
-                        isTranslating={generatingId === 'footerCopyright-translate'}
-                      />
-                    </div>
+                  <div className="pt-6 border-t border-zinc-100 flex flex-col gap-6">
+                    <LocalizedSettingInput 
+                      label="Footer Description" 
+                      value={settings.footerDescription} 
+                      onChange={v => handleUpdate('footerDescription', v)}
+                      languages={settings.languages}
+                      type="textarea"
+                      onAITranslate={() => handleAITranslate('footerDescription', 'Footer Description')}
+                      onAIAutoComplete={() => handleAIAutoComplete('footerDescription', 'Footer Description')}
+                      isGenerating={generatingId === 'footerDescription-fill'}
+                      isTranslating={generatingId === 'footerDescription-translate'}
+                    />
+                    <LocalizedSettingInput 
+                      label="Footer Copyright Text" 
+                      value={settings.footerCopyright} 
+                      onChange={v => handleUpdate('footerCopyright', v)}
+                      languages={settings.languages}
+                      onAITranslate={() => handleAITranslate('footerCopyright', 'Footer Copyright Text')}
+                      onAIAutoComplete={() => handleAIAutoComplete('footerCopyright', 'Footer Copyright Text')}
+                      isGenerating={generatingId === 'footerCopyright-fill'}
+                      isTranslating={generatingId === 'footerCopyright-translate'}
+                    />
                   </div>
                 </SettingCard>
 
