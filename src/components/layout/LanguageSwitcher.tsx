@@ -69,7 +69,7 @@ export function LanguageSwitcher({ availableLanguages, variant = 'dropdown' }: L
               )}
               {currentLocale === lng && !isPending && (
                  <div className="absolute top-0 right-0 p-0.5">
-                    <div className="w-1 h-1 bg-white rounded-full" />
+                    <div className="w-1 h-1 bg-white rounded" />
                  </div>
               )}
             </button>
@@ -84,7 +84,7 @@ export function LanguageSwitcher({ availableLanguages, variant = 'dropdown' }: L
       <button 
         disabled={isPending}
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center space-x-1.5 p-2 px-3 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all text-xs font-bold uppercase tracking-widest border border-transparent hover:border-slate-100 rounded-none ${isPending ? 'opacity-50' : ''}`}
+        className={`flex items-center space-x-1.5 p-2 px-3 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all text-xs font-bold uppercase tracking-widest border border-transparent hover:border-slate-100 rounded ${isPending ? 'opacity-50' : ''}`}
       >
         {isPending ? <Loader2 className="w-3 h-3 animate-spin text-slate-400" /> : <span>{currentLocale}</span>}
         <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} strokeWidth={2} />
@@ -96,7 +96,7 @@ export function LanguageSwitcher({ availableLanguages, variant = 'dropdown' }: L
             initial={{ opacity: 0, y: 0 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 0 }}
-            className="absolute right-0 top-[calc(100%+1px)] mt-0 w-32 bg-white shadow-2xl shadow-slate-900/10 border border-slate-100 z-[100] py-2 overflow-hidden rounded-none"
+            className="absolute right-0 top-[calc(100%+1px)] mt-0 w-32 bg-white shadow-2xl shadow-slate-900/10 border border-slate-100 z-[100] py-2 overflow-hidden rounded"
           >
             {availableLanguages.map((lng) => (
               <button
@@ -107,7 +107,7 @@ export function LanguageSwitcher({ availableLanguages, variant = 'dropdown' }: L
               >
                 <span>{lng}</span>
                 {isPending && targetLang === lng && <Loader2 className="w-3 h-3 animate-spin text-slate-400" />}
-                {currentLocale === lng && !isPending && <div className="w-1 h-1 bg-slate-900 rounded-full" />}
+                {currentLocale === lng && !isPending && <div className="w-1 h-1 bg-slate-900 rounded" />}
               </button>
             ))}
           </motion.div>

@@ -151,7 +151,7 @@ export function MobileFilters({
                         <div className="space-y-1">
                           <button
                             onClick={() => updateParams({ category: 'All' })}
-                            className={`w-full flex items-center justify-between h-[48px] px-4 border transition-all rounded-sm ${activeCategory === 'All' ? 'bg-slate-50 border-slate-900 border-2 text-slate-900 font-bold' : 'bg-white border-slate-100 text-slate-600'}`}
+                            className={`w-full flex items-center justify-between h-[48px] px-4 border transition-all rounded ${activeCategory === 'All' ? 'bg-slate-50 border-slate-900 border-2 text-slate-900 font-bold' : 'bg-white border-slate-100 text-slate-600'}`}
                           >
                             <div className="flex items-center gap-3">
                               <LayoutGrid className="w-4 h-4" strokeWidth={1.5} />
@@ -173,7 +173,7 @@ export function MobileFilters({
                                   if (hasChildren && cat.id) goForward(cat.id);
                                   else { updateParams({ category: cat.slug }); onClose(); }
                                 }}
-                                className={`w-full flex items-center justify-between h-[48px] px-4 border transition-all rounded-sm ${activeCategory === cat.slug ? 'bg-slate-50 border-slate-900 border-2 text-slate-900 font-bold' : 'bg-white border-slate-100 text-slate-600'}`}
+                                className={`w-full flex items-center justify-between h-[48px] px-4 border transition-all rounded ${activeCategory === cat.slug ? 'bg-slate-50 border-slate-900 border-2 text-slate-900 font-bold' : 'bg-white border-slate-100 text-slate-600'}`}
                               >
                                 <div className="flex items-center gap-3">
                                   {iconToUse ? (
@@ -214,7 +214,7 @@ export function MobileFilters({
                             <button
                               key={option.id}
                               onClick={() => updateParams({ sort: option.id })}
-                              className={`w-full flex items-center h-[48px] px-4 border transition-all rounded-sm ${sortBy === option.id ? 'bg-slate-50 border-slate-900 border-2 text-slate-900 font-black' : 'bg-white border-slate-100 text-slate-600'}`}
+                              className={`w-full flex items-center h-[48px] px-4 border transition-all rounded ${sortBy === option.id ? 'bg-slate-50 border-slate-900 border-2 text-slate-900 font-black' : 'bg-white border-slate-100 text-slate-600'}`}
                             >
                               <span className="text-[14px] font-normal tracking-tight">{option.label}</span>
                             </button>
@@ -227,7 +227,7 @@ export function MobileFilters({
                     <div className="space-y-8 pt-2">
                        <button
                          onClick={() => { updateParams({ category: activeCategoryData?.slug || 'All' }); onClose(); }}
-                         className={`w-full flex items-center justify-between h-[48px] px-4 border transition-all rounded-sm ${activeCategory === activeCategoryData?.slug ? 'bg-slate-50 border-slate-900 border-2 text-slate-900 font-bold' : 'bg-slate-50 border-slate-100 text-slate-400 font-medium'}`}>
+                         className={`w-full flex items-center justify-between h-[48px] px-4 border transition-all rounded ${activeCategory === activeCategoryData?.slug ? 'bg-slate-50 border-slate-900 border-2 text-slate-900 font-bold' : 'bg-slate-50 border-slate-100 text-slate-400 font-medium'}`}>
                           <span className="text-[14px] font-semibold tracking-tight">View all {activeCategoryData?.name}</span>
                           {activeCategory === activeCategoryData?.slug ? <Check className="w-4 h-4 text-slate-900" strokeWidth={2.5} /> : <ArrowRight className="w-4 h-4" />}
                         </button>
@@ -245,7 +245,7 @@ export function MobileFilters({
                                  if (hasChildren && sub.id) goForward(sub.id);
                                  else { updateParams({ category: sub.slug }); onClose(); }
                                }}
-                               className={`flex items-center justify-between h-[48px] px-4 border transition-colors rounded-sm ${activeCategory === sub.slug ? 'bg-slate-50 border-slate-900 border-2 text-slate-900 font-bold' : 'bg-white border-slate-100 text-slate-600'}`}
+                               className={`flex items-center justify-between h-[48px] px-4 border transition-colors rounded ${activeCategory === sub.slug ? 'bg-slate-50 border-slate-900 border-2 text-slate-900 font-bold' : 'bg-white border-slate-100 text-slate-600'}`}
                              >
                                <div className="flex items-center gap-3">
                                  {iconToUse ? (
@@ -283,13 +283,13 @@ export function MobileFilters({
                     updateParams({ search: null, category: 'All', sort: 'newest' });
                     onClose();
                   }}
-                  className="flex-1 h-11 border border-slate-200 text-[14px] font-semibold uppercase tracking-wider text-slate-600 hover:text-slate-900 hover:border-slate-400 transition-all rounded-none flex items-center justify-center"
+                  className="flex-1 h-11 border border-slate-200 text-[12px] font-bold uppercase tracking-wider text-slate-600 hover:text-slate-900 hover:border-slate-400 transition-all rounded flex items-center justify-center"
                 >
                   {settings.clearFiltersText?.[lang] || 'Clear'}
                 </button>
                 <button
                   onClick={onClose}
-                  className="flex-1 h-11 bg-slate-900 text-white text-[14px] font-semibold uppercase tracking-wider hover:bg-slate-800 transition-all rounded-none active:scale-[0.98] flex items-center justify-center"
+                  className="flex-1 h-11 bg-slate-900 text-white text-[12px] font-bold uppercase tracking-wider hover:bg-slate-800 transition-all rounded active:scale-[0.98] flex items-center justify-center"
                 >
                    {settings.applyFiltersText?.[lang] || 'Apply'} ({productCount})
                 </button>

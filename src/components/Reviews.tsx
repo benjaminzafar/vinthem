@@ -141,7 +141,7 @@ export default function Reviews({ productId, initialSettings, lang }: ReviewsPro
       
       {currentUser ? (
         hasPurchased === true ? (
-          <form onSubmit={handleSubmit} className="mb-12 bg-zinc-50/50 p-6 sm:p-8 rounded-3xl border border-zinc-100">
+          <form onSubmit={handleSubmit} className="mb-12 bg-zinc-50/50 p-6 sm:p-8 rounded border border-zinc-100">
             <div className="flex items-center gap-2 mb-6">
               <CheckCircle2 className="w-4 h-4 text-emerald-500" />
               <span className="text-xs font-black uppercase tracking-widest text-emerald-600">Verified Purchase</span>
@@ -159,7 +159,7 @@ export default function Reviews({ productId, initialSettings, lang }: ReviewsPro
             <textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              className="w-full p-5 bg-white border border-zinc-200 rounded-2xl mb-6 focus:ring-2 focus:ring-brand-ink/5 focus:border-brand-ink transition-all text-sm font-medium placeholder:text-zinc-300"
+              className="w-full p-5 bg-white border border-zinc-200 rounded mb-6 focus:ring-2 focus:ring-brand-ink/5 focus:border-brand-ink transition-all text-sm font-medium placeholder:text-zinc-300"
               placeholder={settings.shareThoughtsPlaceholder?.[lang] || "Share your thoughts..."}
               rows={4}
               required
@@ -167,13 +167,13 @@ export default function Reviews({ productId, initialSettings, lang }: ReviewsPro
             <button
               type="submit"
               disabled={submitting}
-              className="bg-brand-ink text-white px-10 py-4 rounded-full font-black text-sm uppercase tracking-[0.2em] hover:opacity-90 transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+              className="bg-brand-ink text-white px-10 py-4 rounded font-black text-sm uppercase tracking-[0.2em] hover:opacity-90 transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submitting ? 'Submitting...' : (settings.submitReviewButtonText?.[lang] || 'Submit Review')}
             </button>
           </form>
         ) : hasPurchased === false ? (
-          <div className="mb-12 p-8 rounded-3xl border border-dashed border-zinc-200 bg-zinc-50/30 text-center">
+          <div className="mb-12 p-8 rounded border border-dashed border-zinc-200 bg-zinc-50/30 text-center">
             <AlertCircle className="w-8 h-8 text-zinc-300 mx-auto mb-4" />
             <h3 className="text-sm font-black text-zinc-900 uppercase tracking-widest mb-2">Verified Reviews Only</h3>
             <p className="text-sm text-zinc-500 font-medium max-w-xs mx-auto leading-relaxed">
@@ -182,7 +182,7 @@ export default function Reviews({ productId, initialSettings, lang }: ReviewsPro
           </div>
         ) : (
           <div className="mb-12 h-32 flex items-center justify-center">
-            <div className="w-6 h-6 border-2 border-zinc-200 border-t-zinc-900 rounded-full animate-spin" />
+            <div className="w-6 h-6 border-2 border-zinc-200 border-t-zinc-900 rounded animate-spin" />
           </div>
         )
       ) : (
@@ -219,7 +219,7 @@ export default function Reviews({ productId, initialSettings, lang }: ReviewsPro
               <p className="text-gray-600 leading-relaxed text-sm font-light">{review.comment}</p>
               
               {review.adminReply && (
-                <div className="mt-4 ml-6 p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
+                <div className="mt-4 ml-6 p-4 bg-zinc-50 rounded border border-zinc-100">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-black uppercase tracking-widest text-zinc-900">Admin Response</span>
                     <span className="text-xs text-zinc-400 font-mono">{review.adminReplyAt ? new Date(review.adminReplyAt).toLocaleDateString() : ''}</span>

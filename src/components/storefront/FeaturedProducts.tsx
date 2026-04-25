@@ -48,7 +48,7 @@ export function FeaturedProducts({ products, lang, settings }: FeaturedProductsP
             
             return (
               <Link key={product.id} href={`/product/${product.id}`} className="group">
-                <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-gray-100 mb-4">
+                <div className="relative aspect-[3/4] overflow-hidden rounded bg-gray-100 mb-4">
                   <div className="h-full w-full">
                     {product.imageUrl && product.imageUrl.trim() !== "" ? (
                       <Image 
@@ -70,11 +70,11 @@ export function FeaturedProducts({ products, lang, settings }: FeaturedProductsP
                       <Package className="w-8 h-8" />
                     </div>
                   </div>
-                  <div className="absolute bottom-3 right-3 bg-brand-ink/90 backdrop-blur-md border border-white/10 w-10 h-10 md:w-12 md:h-12 rounded-full opacity-100 md:opacity-0 group-hover:opacity-100 transition-all duration-300 z-20 flex items-center justify-center hover:scale-110">
+                  <div className="absolute bottom-3 right-3 bg-brand-ink/90 backdrop-blur-md border border-white/10 w-10 h-10 md:w-12 md:h-12 rounded opacity-100 md:opacity-0 group-hover:opacity-100 transition-all duration-300 z-20 flex items-center justify-center hover:scale-110">
                     <ArrowRight className="w-4 h-4 md:w-5 md:h-5 text-white" />
                   </div>
                 </div>
-                <h3 className="text-[14px] font-semibold text-brand-ink truncate">{title}</h3>
+                <h3 className="text-[12px] font-bold uppercase tracking-widest text-brand-ink truncate">{title}</h3>
                 <p className="text-[14px] font-medium text-brand-muted">{formatPrice(price, lang, product.prices)}</p>
               </Link>
             );

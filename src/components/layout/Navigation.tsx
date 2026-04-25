@@ -88,7 +88,7 @@ export default async function Navigation() {
               <Link
                 key={index}
                 href={localizeHref(lang, link.href)}
-                className="text-[17px] font-semibold text-brand-muted hover:text-brand-ink transition-colors tracking-tight"
+                className="text-[12px] font-bold uppercase text-brand-muted hover:text-brand-ink transition-colors tracking-widest"
               >
                 {link.label[lang] || link.label['en']}
               </Link>
@@ -135,7 +135,7 @@ export default async function Navigation() {
                 ) : (
                   <Link
                     href={localizeHref(lang, '/auth')}
-                    className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all rounded-none flex items-center justify-center"
+                    className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all rounded flex items-center justify-center"
                     aria-label={settings?.loginText?.[lang] || 'Login'}
                   >
                     <User className="w-5 h-5" strokeWidth={1.5} />

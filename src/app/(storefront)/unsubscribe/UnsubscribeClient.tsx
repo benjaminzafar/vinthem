@@ -31,7 +31,7 @@ export function UnsubscribeClient() {
 
   return (
     <div className="min-h-screen bg-[#f4f1ea] px-4 py-20">
-      <div className="mx-auto max-w-2xl rounded-[36px] border border-stone-200 bg-white px-6 py-10 shadow-[0_24px_90px_rgba(15,23,42,0.08)] sm:px-10">
+      <div className="mx-auto max-w-2xl rounded border border-stone-200 bg-white px-6 py-10 shadow-[0_24px_90px_rgba(15,23,42,0.08)] sm:px-10">
         <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-stone-500">Email preferences</p>
         <h1 className="mt-3 text-4xl font-semibold tracking-tight text-stone-900">Unsubscribe in one step.</h1>
         <p className="mt-4 text-sm leading-7 text-stone-600">
@@ -40,7 +40,7 @@ export function UnsubscribeClient() {
         </p>
 
         {message && (
-          <div className="mt-6 rounded-3xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+          <div className="mt-6 rounded border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
             {message}
           </div>
         )}
@@ -59,7 +59,7 @@ export function UnsubscribeClient() {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               disabled={isPending}
-              className="w-full rounded-2xl border border-stone-300 px-4 py-3 text-sm text-stone-900 outline-none transition focus:border-stone-900"
+              className="w-full rounded border border-stone-300 px-4 py-3 text-sm text-stone-900 outline-none transition focus:border-stone-900"
               placeholder="you@example.com"
             />
           </div>
@@ -67,13 +67,13 @@ export function UnsubscribeClient() {
           <button
             type="submit"
             disabled={isPending}
-            className="w-full rounded-full bg-stone-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-stone-800 disabled:opacity-60"
+            className="w-full rounded bg-stone-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-stone-800 disabled:opacity-60"
           >
             {isPending ? "Updating..." : "Unsubscribe from marketing emails"}
           </button>
         </form>
 
-        <div className="mt-8 rounded-3xl border border-stone-200 bg-stone-50 px-5 py-4 text-sm text-stone-600">
+        <div className="mt-8 rounded border border-stone-200 bg-stone-50 px-5 py-4 text-sm text-stone-600">
           Looking for privacy details instead? Read our{" "}
           <Link href={`/${lang}/p/privacy-policy`} className="font-medium underline underline-offset-4">
             Privacy Policy

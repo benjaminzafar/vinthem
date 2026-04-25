@@ -66,7 +66,7 @@ export function CartDrawer({ initialSettings }: CartDrawerProps) {
                   <h2 className="text-[12px] font-bold uppercase tracking-widest text-brand-ink">
                     {settings?.cartTitle?.[lang] || 'Shopping Bag'}
                   </h2>
-                  <span className="bg-slate-100 text-slate-500 text-xs font-bold px-2 py-0.5 rounded-full">
+                  <span className="bg-slate-100 text-slate-500 text-xs font-bold px-2 py-0.5 rounded">
                     {items.length}
                   </span>
                 </div>
@@ -83,7 +83,7 @@ export function CartDrawer({ initialSettings }: CartDrawerProps) {
               <div className="flex-1 overflow-y-auto px-6 py-6 custom-scrollbar bg-white">
                 {items.length === 0 ? (
                   <div className="h-full flex flex-col items-center justify-center text-center py-20 px-4">
-                    <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-6">
+                    <div className="w-16 h-16 bg-slate-50 rounded flex items-center justify-center mb-6">
                       <ShoppingCart className="w-6 h-6 text-slate-300" strokeWidth={1.5} />
                     </div>
                     <p className="text-slate-900 text-sm font-medium mb-2">
@@ -110,7 +110,7 @@ export function CartDrawer({ initialSettings }: CartDrawerProps) {
                         className="flex gap-5 group"
                       >
                         {/* Image */}
-                        <div className="relative w-24 aspect-[4/5] bg-slate-50 border border-slate-100 rounded-lg overflow-hidden shrink-0">
+                        <div className="relative w-24 aspect-[4/5] bg-slate-50 border border-slate-100 rounded overflow-hidden shrink-0">
                           {item.imageUrl ? (
                             <Image
                               src={item.imageUrl}
@@ -130,7 +130,7 @@ export function CartDrawer({ initialSettings }: CartDrawerProps) {
                         <div className="flex-1 flex flex-col justify-between py-0.5">
                           <div className="space-y-1">
                             <div className="flex justify-between items-start gap-2">
-                              <h3 className="text-[14px] font-semibold text-brand-ink leading-snug line-clamp-2">
+                              <h3 className="text-[12px] font-bold uppercase tracking-widest text-brand-ink leading-snug line-clamp-2">
                                 {item.translations?.[lang]?.title || item.title}
                               </h3>
                               <button
@@ -148,7 +148,7 @@ export function CartDrawer({ initialSettings }: CartDrawerProps) {
 
                           {/* Control */}
                           <div className="flex items-center justify-between mt-4">
-                            <div className="flex items-center border border-slate-200 rounded-lg bg-slate-50/50 backdrop-blur-sm">
+                            <div className="flex items-center border border-slate-200 rounded bg-slate-50/50 backdrop-blur-sm">
                               <button
                                 onClick={() => updateQuantity(item.id, item.quantity - 1)}
                                 className="px-2.5 py-1.5 text-slate-600 hover:text-slate-900 transition-colors"
@@ -211,7 +211,7 @@ export function CartDrawer({ initialSettings }: CartDrawerProps) {
                   <Link
                     href={localizeHref(lang, '/payment')}
                     onClick={handleClose}
-                    className="flex h-11 w-full items-center justify-center bg-zinc-900 text-[14px] font-bold uppercase tracking-wider text-white transition-all hover:bg-black rounded-none shadow-none active:scale-[0.98] group"
+                    className="flex h-11 w-full items-center justify-center bg-zinc-900 text-[12px] font-bold uppercase tracking-wider text-white transition-all hover:bg-black rounded shadow-none active:scale-[0.98] group"
                   >
                     {settings?.proceedToPaymentText?.[lang] || 'Review Bag'}
                     <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" strokeWidth={1.5} />

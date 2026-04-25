@@ -19,7 +19,7 @@ export function FutureSections({ lang, settings }: FutureSectionsProps) {
           <p className="text-brand-muted max-w-2xl mx-auto text-lg font-light">{settings.futureSubtitle?.[lang]}</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-          <Link href={settings.futureProduct1Link || '/products'} className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-gray-100 group block">
+          <Link href={settings.futureProduct1Link || '/products'} className="relative aspect-[4/3] overflow-hidden rounded bg-gray-100 group block">
             {settings.futureImage1 && (
               <Image 
                 src={settings.futureImage1} 
@@ -34,11 +34,11 @@ export function FutureSections({ lang, settings }: FutureSectionsProps) {
               <p className="text-white/90 font-medium text-sm tracking-widest uppercase mb-2">{settings.futureProduct1Date?.[lang]}</p>
               <h3 className="text-white text-3xl font-bold tracking-tight">{settings.futureProduct1Title?.[lang]}</h3>
             </div>
-            <div className="absolute bottom-8 right-8 bg-white/20 backdrop-blur-md border border-white/30 p-4 rounded-full transition-transform duration-500 group-hover:scale-110 hover:bg-white/30">
+            <div className="absolute bottom-8 right-8 bg-white/20 backdrop-blur-md border border-white/30 p-4 rounded transition-transform duration-500 group-hover:scale-110 hover:bg-white/30">
               <ArrowRight className="w-6 h-6 text-white" />
             </div>
           </Link>
-          <Link href={settings.futureProduct2Link || '/products'} className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-gray-100 group block">
+          <Link href={settings.futureProduct2Link || '/products'} className="relative aspect-[4/3] overflow-hidden rounded bg-gray-100 group block">
             {settings.futureImage2 && (
               <Image 
                 src={settings.futureImage2} 
@@ -53,7 +53,7 @@ export function FutureSections({ lang, settings }: FutureSectionsProps) {
               <p className="text-white/90 font-medium text-sm tracking-widest uppercase mb-2">{settings.futureProduct2Date?.[lang]}</p>
               <h3 className="text-white text-3xl font-bold tracking-tight">{settings.futureProduct2Title?.[lang]}</h3>
             </div>
-            <div className="absolute bottom-8 right-8 bg-white/20 backdrop-blur-md border border-white/30 p-4 rounded-full transition-transform duration-500 group-hover:scale-110 hover:bg-white/30">
+            <div className="absolute bottom-8 right-8 bg-white/20 backdrop-blur-md border border-white/30 p-4 rounded transition-transform duration-500 group-hover:scale-110 hover:bg-white/30">
               <ArrowRight className="w-6 h-6 text-white" />
             </div>
           </Link>

@@ -213,7 +213,7 @@ export function ProductClient({
               )}
             </div>
 
-            <h1 className="mt-6 font-medium leading-tight tracking-tight text-slate-900">
+            <h1 className="mt-6 text-[12px] font-bold uppercase tracking-[0.24em] text-slate-900">
               {product.translations?.[lang]?.title || product.title}
             </h1>
 
@@ -234,7 +234,7 @@ export function ProductClient({
               <p className="text-[24px] md:text-[28px] font-medium tracking-tight text-brand-ink">
                 {formatPrice(currentPrice, lang, product.prices)}
               </p>
-              <div className={`inline-flex items-center gap-2 border px-4 py-1.5 text-[12px] font-semibold uppercase tracking-[0.05em] rounded-md ${currentStock > 0 ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-rose-200 bg-rose-50 text-rose-700'}`}>
+              <div className={`inline-flex items-center gap-2 border px-4 py-1.5 text-[12px] font-semibold uppercase tracking-[0.05em] rounded ${currentStock > 0 ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-rose-200 bg-rose-50 text-rose-700'}`}>
                 <CheckCircle2 className="h-4 w-4" strokeWidth={1.5} />
                 {currentStock > 0 ? (settings.inStockText?.[lang] || 'In stock') : (settings.outOfStockText?.[lang] || 'Out of stock')}
               </div>
@@ -261,7 +261,7 @@ export function ProductClient({
                             <button
                               key={value}
                               onClick={() => handleOptionChange(primaryOptionName, primaryValue)}
-                              className={`border px-6 h-11 text-[14px] font-semibold transition-all rounded-none ${selectedOptions[primaryOptionName] === primaryValue ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-brand-ink hover:border-slate-400 hover:bg-slate-50'}`}
+                              className={`border px-6 h-11 text-[14px] font-semibold transition-all rounded ${selectedOptions[primaryOptionName] === primaryValue ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-brand-ink hover:border-slate-400 hover:bg-slate-50'}`}
                             >
                               {value}
                             </button>
@@ -278,14 +278,14 @@ export function ProductClient({
               <button
                 onClick={handleAddToCart}
                 disabled={currentStock <= 0}
-                className="flex h-11 flex-1 items-center justify-center gap-2 bg-slate-900 px-10 text-[14px] font-semibold text-white transition-all hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 rounded-none"
+                className="flex h-11 flex-1 items-center justify-center gap-2 bg-slate-900 px-10 text-[14px] font-semibold text-white transition-all hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 rounded"
               >
                 <ShoppingBag className="h-4 w-4" strokeWidth={1.5} />
                 {currentStock > 0 ? (settings.addToCartButtonText?.[lang] || 'Add to cart') : (settings.outOfStockText?.[lang] || 'Out of stock')}
               </button>
               <Link
-                href={`/${lang}/cart`}
-                className="flex h-11 items-center justify-center border border-slate-200 px-8 text-[14px] font-semibold text-brand-ink transition-all hover:border-slate-900 hover:text-slate-900 rounded-none"
+                href="/cart"
+                className="flex h-11 items-center justify-center border border-slate-200 px-8 text-[14px] font-semibold text-brand-ink transition-all hover:border-slate-900 hover:text-slate-900 rounded"
               >
                 {settings.cartTitle?.[lang] || 'View bag'}
               </Link>
@@ -301,32 +301,32 @@ export function ProductClient({
                 {settings.shareProductText?.[lang] || 'Share'}
               </span>
               <button 
-                className="flex h-10 w-10 items-center justify-center border border-slate-200 text-brand-ink transition-all hover:border-brand-ink rounded-full shadow-none"
+                className="flex h-10 w-10 items-center justify-center border border-slate-200 text-brand-ink transition-all hover:border-brand-ink rounded shadow-none"
               >
                 <FaWhatsapp className="w-5 h-5" />
               </button>
               <button 
                 onClick={() => handleShare('Telegram')} 
-                className="flex h-10 w-10 items-center justify-center border border-slate-200 text-brand-ink transition-all hover:border-brand-ink rounded-full shadow-none"
+                className="flex h-10 w-10 items-center justify-center border border-slate-200 text-brand-ink transition-all hover:border-brand-ink rounded shadow-none"
               >
                 <FaTelegramPlane className="w-5 h-5" />
               </button>
               <button 
                 onClick={() => handleShare('Threads')} 
-                className="flex h-10 w-10 items-center justify-center border border-slate-200 text-brand-ink transition-all hover:border-brand-ink rounded-full shadow-none"
+                className="flex h-10 w-10 items-center justify-center border border-slate-200 text-brand-ink transition-all hover:border-brand-ink rounded shadow-none"
               >
                 <FaThreads className="w-5 h-5" />
               </button>
               <button 
                 onClick={() => handleShare('Facebook')} 
-                className="flex h-10 w-10 items-center justify-center border border-slate-200 text-brand-ink transition-all hover:border-brand-ink rounded-full shadow-none"
+                className="flex h-10 w-10 items-center justify-center border border-slate-200 text-brand-ink transition-all hover:border-brand-ink rounded shadow-none"
               >
                 <FaFacebook className="w-5 h-5" />
               </button>
               
               <button 
                 onClick={handleCopyLink} 
-                className={`flex h-10 w-10 items-center justify-center border transition-all rounded-full shadow-none ${isCopied ? 'bg-emerald-50 border-emerald-200 text-emerald-600' : 'border-slate-200 text-slate-700 hover:border-slate-900 hover:text-slate-900'}`}
+                className={`flex h-10 w-10 items-center justify-center border transition-all rounded shadow-none ${isCopied ? 'bg-emerald-50 border-emerald-200 text-emerald-600' : 'border-slate-200 text-slate-700 hover:border-slate-900 hover:text-slate-900'}`}
                 title="Copy product link"
               >
                 {isCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
@@ -344,7 +344,7 @@ export function ProductClient({
         <button
           type="button"
           onClick={handleOpenProductFilters}
-          className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full border border-slate-800 bg-slate-900 text-white transition-all hover:-translate-y-0.5 active:scale-95 shadow-lg"
+          className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded border border-slate-800 bg-slate-900 text-white transition-all hover:-translate-y-0.5 active:scale-95 shadow-lg"
           aria-label={settings.filterAndSortText?.[lang] || 'Filter and Sort'}
         >
           <SlidersHorizontal className="h-6 w-6" strokeWidth={1.5} />

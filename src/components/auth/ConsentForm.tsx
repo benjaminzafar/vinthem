@@ -68,10 +68,10 @@ export function ConsentForm({ lang }: { lang: string }) {
   return (
     <div className="bg-white p-10 border border-slate-200 rounded !shadow-none max-w-md w-full">
       <div className="mb-8 text-center">
-        <div className="mx-auto w-12 h-12 bg-zinc-50 flex items-center justify-center rounded-full mb-4">
+        <div className="mx-auto w-12 h-12 bg-zinc-50 flex items-center justify-center rounded mb-4">
           <ShieldCheck className="w-6 h-6 text-zinc-900" />
         </div>
-        <h2 className="text-2xl font-black tracking-tighter text-zinc-900 uppercase">
+        <h2 className="text-[12px] font-bold tracking-widest text-zinc-900 uppercase">
           {t(settings.finalizeAccountTitle, 'Finalize Account')}
         </h2>
         <p className="mt-2 text-xs text-zinc-500 font-bold uppercase tracking-widest leading-relaxed">

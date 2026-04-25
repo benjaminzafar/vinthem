@@ -230,7 +230,7 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full h-11 bg-zinc-900 text-white text-[14px] font-semibold uppercase tracking-wider transition-all hover:bg-black disabled:opacity-50 rounded-none flex items-center justify-center border-none shadow-none"
+              className="w-full h-11 bg-zinc-900 text-white text-[14px] font-semibold uppercase tracking-wider transition-all hover:bg-black disabled:opacity-50 rounded flex items-center justify-center border-none shadow-none"
             >
               {loading ? (
                 <div className="flex items-center justify-center gap-2">
@@ -276,7 +276,7 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
                 type="button"
                 onClick={handleGoogleLogin}
                 disabled={!settings.googleAuthEnabled}
-                className="w-full group flex items-center justify-center gap-3 h-11 border border-slate-200 rounded-none text-[14px] font-semibold uppercase tracking-wider text-zinc-950 bg-white hover:bg-zinc-50 transition-all active:scale-[0.98] disabled:opacity-30 disabled:grayscale shadow-none"
+                className="w-full group flex items-center justify-center gap-3 h-11 border border-slate-200 rounded text-[14px] font-semibold uppercase tracking-wider text-zinc-950 bg-white hover:bg-zinc-50 transition-all active:scale-[0.98] disabled:opacity-30 disabled:grayscale shadow-none"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>

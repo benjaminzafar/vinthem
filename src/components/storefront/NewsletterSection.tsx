@@ -54,7 +54,7 @@ export function NewsletterSection({ settings, lang }: NewsletterSectionProps) {
               type="email" 
               name="email"
               placeholder="Enter your email address" 
-              className="w-full bg-white border border-brand-ink/10 rounded-full px-6 py-4 text-brand-ink placeholder:text-brand-muted focus:outline-none focus:border-brand-ink/30 focus:bg-white/50 transition-all text-sm font-sans"
+              className="w-full bg-white border border-brand-ink/10 rounded px-6 py-4 text-brand-ink placeholder:text-brand-muted focus:outline-none focus:border-brand-ink/30 focus:bg-white/50 transition-all text-sm font-sans"
               required
               disabled={isPending}
               aria-label="Email address for newsletter"
@@ -62,7 +62,7 @@ export function NewsletterSection({ settings, lang }: NewsletterSectionProps) {
             <button 
               type="submit" 
               disabled={isPending}
-              className="absolute right-2 top-2 bottom-2 bg-brand-ink text-white px-6 rounded-full text-xs font-bold uppercase tracking-wider hover:bg-brand-ink/90 transition-colors flex items-center justify-center disabled:opacity-50"
+              className="absolute right-2 top-2 bottom-2 bg-brand-ink text-white px-6 rounded text-xs font-bold uppercase tracking-wider hover:bg-brand-ink/90 transition-colors flex items-center justify-center disabled:opacity-50"
             >
               {isPending ? '...' : (settings.newsletterButtonText?.[lang])}
             </button>
@@ -99,7 +99,7 @@ export function NewsletterSection({ settings, lang }: NewsletterSectionProps) {
 
           {feedback && (
             <div
-              className={`rounded-3xl border px-4 py-3 text-sm ${
+              className={`rounded border px-4 py-3 text-sm ${
                 feedback.type === 'success'
                   ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
                   : 'border-rose-200 bg-rose-50 text-rose-700'

@@ -120,7 +120,7 @@ export default function ProductsClient({
           <main className="min-w-0 flex-1">
             {products.length === 0 ? (
               <div className="border border-slate-200 bg-white px-6 py-20 text-center">
-                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-slate-200 bg-slate-50">
+                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded border border-slate-200 bg-slate-50">
                   <Search className="h-8 w-8 text-slate-300" />
                 </div>
                 <h3 className="mt-8 text-2xl font-medium text-slate-900">
@@ -170,7 +170,7 @@ export default function ProductsClient({
       <div className="pointer-events-none fixed bottom-8 right-8 z-40 md:hidden flex flex-col gap-3">
         <button
           onClick={openFilters}
-          className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-ink text-white active:scale-95 transition-all outline-none border-none shadow-none"
+          className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded bg-brand-ink text-white active:scale-95 transition-all outline-none border-none shadow-none"
           aria-label={settings.filterAndSortText?.[lang] || 'Filter and Sort'}
         >
           <SlidersHorizontal className="h-6 w-6" strokeWidth={1.5} />

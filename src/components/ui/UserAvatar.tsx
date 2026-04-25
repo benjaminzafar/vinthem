@@ -14,7 +14,7 @@ export function UserAvatar({ name, imageUrl, size = 28, className = "" }: UserAv
   if (imageUrl && imageUrl.trim() !== "") {
     return (
       <div 
-        className={`relative rounded-full overflow-hidden border border-slate-100 shrink-0 ${className}`}
+        className={`relative rounded overflow-hidden border border-slate-100 shrink-0 ${className}`}
         style={{ width: size, height: size }}
       >
         <Image
@@ -35,7 +35,7 @@ export function UserAvatar({ name, imageUrl, size = 28, className = "" }: UserAv
   return (
     <div 
       className={`
-        flex items-center justify-center rounded-full shrink-0
+        flex items-center justify-center rounded shrink-0
         bg-slate-900 text-white font-bold tracking-tighter
         border border-slate-800 shadow-sm
         ${className}
