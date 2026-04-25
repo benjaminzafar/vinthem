@@ -91,6 +91,21 @@ export function VariantEditor({ formData, setFormData }: VariantEditorProps) {
     setFormData({ ...formData, variants: newVariants });
   };
 
+  const handleRemoveColorImage = (colorName: string) => {
+    if (!colorOption) return;
+    const newVariants = variants.map((variant) => {
+      if (variant.options && variant.options[colorOption.name] === colorName) {
+        const { imageUrl, ...rest } = variant;
+        // Also remove snake_case if present
+        const { image_url, ...rest2 } = rest as any;
+        return { ...rest2, imageUrl: '' };
+      }
+      return variant;
+    });
+    setFormData({ ...formData, variants: newVariants });
+    toast.success(`Removed image for all ${colorName} variants`);
+  };
+
   return (
     <div className="space-y-5">
       <div className="flex justify-between items-center">
@@ -157,8 +172,8 @@ export function VariantEditor({ formData, setFormData }: VariantEditorProps) {
               <p className="text-xs text-zinc-500 mb-4">Upload an image for each color. This image will automatically be applied to all variants of this color, and will be used on the product page.</p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {colorOption.values.map((colorVal) => {
-                  const variantWithColor = variants.find((variant) => variant.options && variant.options[colorOption.name] === colorVal);
-                  const imageUrl = variantWithColor?.imageUrl;
+                  const variantWithColor = variants.find((variant) => variant.options && variant.options[colorOption.name] === colorVal && (variant.imageUrl || (variant as any).image_url));
+                  const imageUrl = variantWithColor ? (variantWithColor.imageUrl || (variantWithColor as any).image_url) : '';
 
                   return (
                     <div key={colorVal} className="flex flex-col items-center gap-2">
@@ -217,8 +232,20 @@ export function VariantEditor({ formData, setFormData }: VariantEditorProps) {
                             >
                               <ImageIcon className="w-4 h-4" />
                             </button>
+                            {imageUrl && (
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveColorImage(colorVal)}
+                                className="p-2 bg-white rounded-full text-rose-500 hover:bg-rose-50 transition-colors"
+                                title="Remove Image"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            )}
                           </div>
-                          <span className="text-[8px] font-black text-white uppercase tracking-widest text-center px-2">Change Image</span>
+                          <span className="text-[8px] font-black text-white uppercase tracking-widest text-center px-2">
+                            {imageUrl ? 'Change Image' : 'Add Image'}
+                          </span>
                         </div>
                       </div>
                       <span className="text-xs font-bold text-zinc-700">{colorVal}</span>
@@ -248,9 +275,9 @@ export function VariantEditor({ formData, setFormData }: VariantEditorProps) {
                     <tr key={variant.id} className="hover:bg-zinc-50">
                       <td className="py-3 px-4">
                         <div className="relative w-12 h-12 rounded-lg border border-gray-200/60 overflow-hidden flex items-center justify-center group bg-white">
-                          {variant.imageUrl ? (
+                          {variant.imageUrl || (variant as any).image_url ? (
                             <Image 
-                              src={variant.imageUrl} 
+                              src={variant.imageUrl || (variant as any).image_url} 
                               alt="Variant" 
                               width={48}
                               height={48}
@@ -301,6 +328,16 @@ export function VariantEditor({ formData, setFormData }: VariantEditorProps) {
                             >
                               <ImageIcon className="w-2.5 h-2.5" />
                             </button>
+                            {(variant.imageUrl || (variant as any).image_url) && (
+                              <button
+                                type="button"
+                                onClick={() => handleVariantChange(index, 'imageUrl', '')}
+                                className="p-1 px-1.5 bg-white/90 rounded text-rose-500 hover:bg-rose-50"
+                                title="Remove"
+                              >
+                                <X className="w-2.5 h-2.5" />
+                              </button>
+                            )}
                           </div>
                         </div>
                       </td>

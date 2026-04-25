@@ -70,6 +70,7 @@ type ProductRecord = Product & {
 export function ProductEditor({ initialProduct, categories, settings }: ProductEditorProps) {
   const router = useRouter();
   const supabase = createClient();
+  const languages = settings.languages || ['sv'];
   const [formData, setFormData] = useState<Partial<Product>>({
     title: '',
     description: '',
@@ -87,9 +88,9 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
     isSale: false,
     discountPrice: 0,
     weight: 0,
-      shippingClass: '',
-      additionalImages: [],
-      stripeTaxCode: ''
+    shippingClass: '',
+    additionalImages: [],
+    stripeTaxCode: ''
   });
 
   const [loading, setLoading] = useState(false);
@@ -107,6 +108,10 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
       imageUrl: p.image_url || p.imageUrl || '',
       additionalImages: p.additional_images || p.additionalImages || [],
       categoryId: p.category_id || p.categoryId || '',
+      variants: (p.variants || []).map((v: any) => ({
+        ...v,
+        imageUrl: v.imageUrl || v.image_url || v.image || v.url || ''
+      })),
       isFeatured: p.is_featured ?? p.isFeatured ?? false,
       isNewArrival: p.is_new ?? p.isNewArrival ?? false,
       isSale: p.is_sale ?? p.isSale ?? false,
@@ -153,6 +158,7 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
           price: Number(variant.price || 0),
           stock: Number(variant.stock || 0),
           sku: variant.sku || '',
+          imageUrl: variant.imageUrl || (variant as any).image_url || '',
         })) as ProductVariantInput[],
         translations: formData.translations,
         tags: formData.tags,
@@ -382,9 +388,6 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
     }
   };
 
-  // Respect global languages from storefront settings
-  const languages = settings.languages || ['sv', 'en'];
-
   const getLabel = (localized: Record<string, string> | undefined, fallback: string) => {
     if (!localized) return fallback;
     return localized[selectedLang] || localized.en || fallback;
@@ -609,8 +612,8 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
           <section className="bg-white border border-slate-200 rounded-[4px] overflow-hidden shadow-sm">
              <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Tag className="w-4 h-4 text-slate-400" />
-                  <h3 className="text-xs font-black uppercase tracking-widest text-slate-900">Advanced Variants</h3>
+                   <Tag className="w-4 h-4 text-slate-400" />
+                   <h3 className="text-xs font-black uppercase tracking-widest text-slate-900">Advanced Variants</h3>
                 </div>
              </div>
              <div className="p-6">
@@ -969,4 +972,3 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
     </div>
   );
 }
-

@@ -10,6 +10,7 @@ export type ProductVariantInput = {
   price: number;
   stock: number;
   sku: string;
+  imageUrl?: string;
 };
 
 export type ProductOptionInput = {
@@ -76,7 +77,10 @@ export async function saveProductAction(input: SaveProductInput) {
     image_url: sanitizeText(input.imageUrl, 1000),
     category_id: input.categoryId || null,
     options: input.options || [],
-    variants: input.variants || [],
+    variants: (input.variants || []).map((variant) => ({
+      ...variant,
+      image_url: sanitizeText(variant.imageUrl || (variant as any).image_url, 1000) || '',
+    })),
     tags: sanitizeTags(input.tags),
     is_featured: input.isFeatured || false,
     is_new: input.isNewArrival || false,

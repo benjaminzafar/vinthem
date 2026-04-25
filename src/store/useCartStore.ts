@@ -14,6 +14,9 @@ export interface ProductVariant {
   stock: number;
   sku?: string;
   imageUrl?: string;
+  image_url?: string;
+  image?: string;
+  url?: string;
   color?: string;
   size?: string;
 }
@@ -33,6 +36,10 @@ export interface Product {
   features?: string[];
   tags?: string[];
   additionalImages?: string[];
+  additional_images?: string[];
+  galleryImages?: string[];
+  gallery_images?: string[];
+  images?: string[];
   sizes?: string[];
   colors?: string[];
   options?: ProductOption[];
@@ -81,13 +88,15 @@ export const useCartStore = create<CartStore>()(
     (set, get) => ({
   items: [],
   addItem: (product) => set((state) => {
+    const requestedQuantity = (product as any).quantity || 1;
     const existing = state.items.find(i => i.id === product.id);
     if (existing) {
-      if (existing.quantity >= product.stock) return state; // Don't add more than stock
-      return { items: state.items.map(i => i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i) };
+      const newQuantity = Math.min(existing.quantity + requestedQuantity, product.stock);
+      if (existing.quantity >= product.stock) return state;
+      return { items: state.items.map(i => i.id === product.id ? { ...i, quantity: newQuantity } : i) };
     }
-    if (product.stock <= 0) return state; // Don't add if out of stock
-    return { items: [...state.items, { ...product, quantity: 1 }] };
+    if (product.stock <= 0) return state;
+    return { items: [...state.items, { ...product, quantity: Math.min(requestedQuantity, product.stock) }] };
   }),
   removeItem: (productId) => set((state) => ({
     items: state.items.filter(i => i.id !== productId)

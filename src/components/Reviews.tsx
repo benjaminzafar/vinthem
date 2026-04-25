@@ -144,9 +144,9 @@ export default function Reviews({ productId, initialSettings, lang }: ReviewsPro
           <form onSubmit={handleSubmit} className="mb-12 bg-zinc-50/50 p-6 sm:p-8 rounded border border-zinc-100">
             <div className="flex items-center gap-2 mb-6">
               <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-              <span className="text-xs font-black uppercase tracking-widest text-emerald-600">Verified Purchase</span>
+              <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-600">Verified Purchase</span>
             </div>
-            <h3 className="font-black text-xs mb-4 text-brand-ink uppercase tracking-[0.2em]">{settings.leaveReviewText?.[lang] || 'Leave a Review'}</h3>
+            <h3 className="text-[12px] font-bold mb-4 text-slate-950 uppercase tracking-[0.2em]">{settings.leaveReviewText?.[lang] || 'Leave a Review'}</h3>
             <div className="flex gap-1 mb-6">
               {[1, 2, 3, 4, 5].map((r) => (
                 <Star 
@@ -167,16 +167,16 @@ export default function Reviews({ productId, initialSettings, lang }: ReviewsPro
             <button
               type="submit"
               disabled={submitting}
-              className="bg-brand-ink text-white px-10 py-4 rounded !font-black !text-[12px] !uppercase !tracking-[0.2em] hover:opacity-90 transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+              className="bg-slate-950 text-white px-10 py-4 rounded text-[12px] font-bold uppercase tracking-[0.2em] hover:bg-slate-800 transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submitting ? 'Submitting...' : (settings.submitReviewButtonText?.[lang] || 'Submit Review')}
             </button>
           </form>
         ) : hasPurchased === false ? (
-          <div className="mb-12 p-8 rounded border border-dashed border-zinc-200 bg-zinc-50/30 text-center">
-            <AlertCircle className="w-8 h-8 text-zinc-300 mx-auto mb-4" />
-            <h3 className="text-sm font-black text-zinc-900 uppercase tracking-widest mb-2">Verified Reviews Only</h3>
-            <p className="text-sm text-zinc-500 font-medium max-w-xs mx-auto leading-relaxed">
+          <div className="mb-12 p-8 rounded border border-dashed border-slate-200 bg-slate-50/30 text-center">
+            <AlertCircle className="w-8 h-8 text-slate-300 mx-auto mb-4" />
+            <h3 className="text-[12px] font-bold text-slate-900 uppercase tracking-[0.2em] mb-2">Verified Reviews Only</h3>
+            <p className="text-[14px] text-slate-500 font-medium max-w-xs mx-auto leading-relaxed">
               To ensure the highest quality of feedback, only customers who have purchased this product can leave a review.
             </p>
           </div>
@@ -186,11 +186,11 @@ export default function Reviews({ productId, initialSettings, lang }: ReviewsPro
           </div>
         )
       ) : (
-        <div className="mb-12 p-8 rounded-3xl border border-dashed border-zinc-200 bg-zinc-50/30 text-center">
-          <p className="text-xs text-zinc-500 font-medium mb-4">Please log in to leave a review.</p>
+        <div className="mb-12 p-8 rounded border border-dashed border-slate-200 bg-slate-50/30 text-center">
+          <p className="text-[12px] text-slate-500 font-bold uppercase tracking-wider mb-4">Please log in to leave a review.</p>
           <button 
             onClick={() => window.location.href = '/auth'}
-            className="text-xs font-black uppercase tracking-widest text-brand-ink border-b-2 border-brand-ink pb-1 hover:opacity-70 transition-opacity"
+            className="text-[12px] font-bold uppercase tracking-[0.2em] text-slate-950 border-b-2 border-slate-950 pb-1 hover:opacity-70 transition-opacity"
           >
             Sign In Now
           </button>
@@ -212,19 +212,19 @@ export default function Reviews({ productId, initialSettings, lang }: ReviewsPro
                       <Star key={i} className={`w-3 h-3 ${i < review.rating ? 'fill-current' : 'text-gray-200'}`} />
                     ))}
                   </div>
-                  <span className="font-medium text-sm text-brand-ink">{review.userName}</span>
+                  <span className="font-bold text-[12px] uppercase tracking-wider text-slate-950">{review.userName}</span>
                 </div>
-                <span className="text-xs text-gray-400 font-mono">{review.createdAt ? new Date(review.createdAt).toLocaleDateString() : ''}</span>
+                <span className="text-[11px] text-slate-400 font-bold uppercase tracking-widest">{review.createdAt ? new Date(review.createdAt).toLocaleDateString() : ''}</span>
               </div>
               <p className="text-gray-600 leading-relaxed text-sm font-light">{review.comment}</p>
               
               {review.adminReply && (
-                <div className="mt-4 ml-6 p-4 bg-zinc-50 rounded border border-zinc-100">
+                <div className="mt-4 ml-6 p-4 bg-slate-50 rounded border border-slate-100">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-black uppercase tracking-widest text-zinc-900">Admin Response</span>
-                    <span className="text-xs text-zinc-400 font-mono">{review.adminReplyAt ? new Date(review.adminReplyAt).toLocaleDateString() : ''}</span>
+                    <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-900">Admin Response</span>
+                    <span className="text-[11px] text-slate-400 font-bold uppercase tracking-widest">{review.adminReplyAt ? new Date(review.adminReplyAt).toLocaleDateString() : ''}</span>
                   </div>
-                  <p className="text-zinc-600 text-sm font-medium italic">"{review.adminReply}"</p>
+                  <p className="text-slate-600 text-[14px] font-medium italic">"{review.adminReply}"</p>
                 </div>
               )}
             </div>
