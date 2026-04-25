@@ -19,14 +19,14 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
     <section id="collection" className="py-20 md:py-32 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center mb-12 md:mb-20 text-center gap-4">
-          <p className="text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase text-slate-400">
+          <p className="text-xs font-bold tracking-[0.2em] uppercase text-slate-400">
             {settings.collectionTopSubtitle?.[lang] || 'Curated Catalog'}
           </p>
-          <h2 className="text-2xl md:text-3xl font-sans text-brand-ink tracking-tight mb-6 max-w-4xl leading-tight">
+          <h2 className="font-sans text-brand-ink tracking-tight mb-6 max-w-4xl leading-tight">
             {settings.collectionTitle?.[lang]}
           </h2>
           <div className="w-12 h-1 bg-brand-ink"></div>
-          <p className="text-brand-muted max-w-2xl text-lg font-light leading-relaxed">
+          <p className="text-brand-muted max-w-2xl text-base font-normal leading-relaxed">
             {settings.collectionSubtitle?.[lang]}
           </p>
         </div>
@@ -77,7 +77,7 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
                     <h3 className="text-sm font-medium text-brand-ink truncate group-hover:text-brand-muted transition-colors">
                       {category.name}
                     </h3>
-                    <p className="text-xs text-brand-muted font-medium uppercase tracking-[0.1em] mt-0.5 opacity-70">
+                    <p className="text-xs text-brand-muted font-medium uppercase tracking-[0.2em] mt-0.5 opacity-60">
                       Collection
                     </p>
                   </div>

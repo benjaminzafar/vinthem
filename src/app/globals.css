@@ -46,9 +46,9 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-h1 { @apply text-[28px] md:text-[32px] font-bold leading-tight tracking-tight; }
-h2 { @apply text-[22px] md:text-[24px] font-bold leading-tight tracking-tight; }
-h3 { @apply text-[18px] md:text-[20px] font-bold leading-tight; }
+h1 { @apply text-[32px] md:text-[40px] font-bold leading-tight tracking-tight; }
+h2 { @apply text-[24px] md:text-[30px] font-bold leading-tight tracking-tight; }
+h3 { @apply text-[18px] md:text-[22px] font-bold leading-tight; }
 h4 { @apply text-[16px] md:text-[18px] font-bold leading-snug; }
 h5 { @apply text-[14px] md:text-[16px] font-bold uppercase tracking-wider; }
 h6 { @apply text-[12px] md:text-[14px] font-bold uppercase tracking-widest text-zinc-500; }
