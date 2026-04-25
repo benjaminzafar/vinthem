@@ -259,7 +259,7 @@ export function ProductClient({
           <aside className="relative pt-0 lg:pt-0">
             {(product.isSale || comparePrice) ? (
               <span className="absolute right-0 top-0 hidden h-14 w-14 items-center justify-center rounded-full bg-[#ef3b2d] text-[10px] font-semibold uppercase tracking-[0.16em] text-white sm:flex">
-                Sale
+                {settings.featuredBadgeText?.[lang] || 'Sale'}
               </span>
             ) : null}
 
@@ -288,10 +288,10 @@ export function ProductClient({
                     />
                   ))}
                 </div>
-                <span>({product.reviewCount || 0} reviews)</span>
+                <span>({product.reviewCount || 0} {settings.reviewsText?.[lang] || 'reviews'})</span>
                 <span className={`ml-1 inline-flex items-center gap-1.5 font-medium ${currentStock > 0 ? 'text-emerald-700' : 'text-rose-600'}`}>
                   <Check className="h-3.5 w-3.5" />
-                  {currentStock > 0 ? 'In stock' : 'Out of stock'}
+                  {currentStock > 0 ? (settings.inStockText?.[lang] || 'In stock') : (settings.outOfStockText?.[lang] || 'Out of stock')}
                 </span>
               </div>
 
@@ -416,13 +416,13 @@ export function ProductClient({
                   className="flex h-12 min-w-0 items-center justify-center gap-2 bg-slate-950 px-5 text-[12px] font-semibold uppercase tracking-[0.12em] text-white transition-colors hover:bg-slate-800 disabled:bg-slate-200 disabled:text-slate-500 sm:flex-1 sm:px-6 sm:tracking-[0.14em]"
                 >
                   <ShoppingBag className="h-4 w-4" />
-                  {currentStock > 0 ? 'Add to cart' : 'Out of stock'}
+                  {currentStock > 0 ? (settings.addToCartButtonText?.[lang] || 'Add to cart') : (settings.outOfStockText?.[lang] || 'Out of stock')}
                 </button>
               </div>
 
               <div className="mt-6 border-b border-t border-slate-100 py-4">
                 <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-                  Share
+                  {settings.shareProductText?.[lang] || 'Share'}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <button
@@ -487,7 +487,7 @@ export function ProductClient({
                 onClick={() => setActiveDetailsTab('reviews')}
                 className={`h-12 border-r border-slate-200 px-4 text-[12px] font-medium transition-colors sm:px-6 ${activeDetailsTab === 'reviews' ? 'bg-white text-slate-950' : 'bg-[#fafafa] text-slate-400 hover:text-slate-950'}`}
               >
-                Reviews ({product.reviewCount || 0})
+                {settings.customerReviewsText?.[lang] || 'Reviews'} ({product.reviewCount || 0})
               </button>
             </div>
 
@@ -522,7 +522,7 @@ export function ProductClient({
         {relatedProducts.length > 0 ? (
           <section className="mt-12 sm:mt-14">
             <h2 className="mb-6 text-[20px] font-medium tracking-[-0.02em] text-slate-950">
-              Related Products
+              {settings.relatedProductsTitleText?.[lang] || 'Related Products'}
             </h2>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6">
               {relatedProducts.filter((item) => Boolean(item?.id)).slice(0, 4).map((item) => (
