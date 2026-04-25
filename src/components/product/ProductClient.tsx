@@ -159,7 +159,10 @@ export function ProductClient({
   };
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
+    <div 
+      suppressHydrationWarning
+      className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14"
+    >
       <BackButton label={settings.backToStoreText?.[lang]} className="mb-8" />
 
       <div className="grid gap-10 lg:grid-cols-[1fr_450px] lg:gap-8">
@@ -210,7 +213,7 @@ export function ProductClient({
               )}
             </div>
 
-            <h1 className="mt-6 font-medium leading-tight tracking-tight text-slate-900 uppercase">
+            <h1 className="mt-6 font-medium leading-tight tracking-tight text-slate-900">
               {product.translations?.[lang]?.title || product.title}
             </h1>
 
@@ -352,7 +355,7 @@ export function ProductClient({
       {relatedProducts.length > 0 && (
         <section className="mt-16 border-t border-slate-200 pt-12">
           <div className="mb-8 flex items-center justify-between">
-            <h2 className="font-medium tracking-tight text-slate-900 uppercase">
+            <h2 className="font-medium tracking-tight text-slate-900">
               {settings.relatedProductsTitleText?.[lang] || 'Related Products'}
             </h2>
             <Link href={`/${lang}/products`} className="inline-flex items-center text-xs font-black uppercase tracking-[0.2em] text-slate-500 transition-all hover:text-slate-900">

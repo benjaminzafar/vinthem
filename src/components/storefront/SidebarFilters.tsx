@@ -65,7 +65,10 @@ export function SidebarFilters({
   };
 
   return (
-    <div className="flex flex-col bg-white border border-slate-200 shadow-none overflow-hidden min-h-[500px]">
+    <div 
+      suppressHydrationWarning
+      className="flex flex-col bg-white border border-slate-200 shadow-none overflow-hidden min-h-[500px]"
+    >
       {/* Search Bar - Integrated Flat */}
       <div className="p-5 border-b border-slate-100">
         <div className="relative group">
