@@ -207,7 +207,7 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
                     <Link
                       href="/auth"
                       onClick={() => setMobileMenuOpen(false)}
-                      className="w-full py-4 text-[17px] font-semibold text-white bg-brand-ink rounded-lg hover:bg-gray-800 transition-all active:scale-95 text-center block"
+                      className="w-full h-11 flex items-center justify-center text-[15px] font-semibold text-white bg-brand-ink rounded-lg hover:bg-gray-800 transition-all active:scale-95 text-center"
                     >
                       {labels.login}
                     </Link>

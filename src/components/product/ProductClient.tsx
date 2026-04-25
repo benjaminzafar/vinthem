@@ -231,7 +231,7 @@ export function ProductClient({
             </div>
 
             <div className="mt-8 flex flex-wrap items-end gap-4 border-b border-slate-100 pb-8">
-              <p className="text-[28px] md:text-[32px] font-medium tracking-tight text-brand-ink">
+              <p className="text-[24px] md:text-[28px] font-medium tracking-tight text-brand-ink">
                 {formatPrice(currentPrice, lang, product.prices)}
               </p>
               <div className={`inline-flex items-center gap-2 border px-4 py-1.5 text-[12px] font-semibold uppercase tracking-[0.05em] rounded-md ${currentStock > 0 ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-rose-200 bg-rose-50 text-rose-700'}`}>
@@ -261,7 +261,7 @@ export function ProductClient({
                             <button
                               key={value}
                               onClick={() => handleOptionChange(primaryOptionName, primaryValue)}
-                              className={`border px-6 h-11 text-[14px] font-semibold transition-all rounded-lg ${selectedOptions[primaryOptionName] === primaryValue ? 'border-slate-900 bg-slate-900 text-white shadow-md' : 'border-slate-200 bg-white text-brand-ink hover:border-slate-400 hover:bg-slate-50'}`}
+                              className={`border px-6 h-11 text-[14px] font-semibold transition-all rounded-lg ${selectedOptions[primaryOptionName] === primaryValue ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-brand-ink hover:border-slate-400 hover:bg-slate-50'}`}
                             >
                               {value}
                             </button>
@@ -278,14 +278,14 @@ export function ProductClient({
               <button
                 onClick={handleAddToCart}
                 disabled={currentStock <= 0}
-                className="flex h-11 flex-1 items-center justify-center gap-2 bg-slate-900 px-10 text-[14px] font-semibold text-white transition-all hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 rounded-lg shadow-lg shadow-slate-900/10"
+                className="flex h-11 flex-1 items-center justify-center gap-2 bg-slate-900 px-10 text-[14px] font-semibold text-white transition-all hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 rounded-lg"
               >
                 <ShoppingBag className="h-4 w-4" strokeWidth={1.5} />
                 {currentStock > 0 ? (settings.addToCartButtonText?.[lang] || 'Add to cart') : (settings.outOfStockText?.[lang] || 'Out of stock')}
               </button>
               <Link
                 href={`/${lang}/cart`}
-                className="flex h-11 items-center justify-center border border-slate-200 px-8 text-[14px] font-semibold text-brand-ink transition-all hover:border-slate-900 hover:text-slate-900 rounded-lg shadow-sm"
+                className="flex h-11 items-center justify-center border border-slate-200 px-8 text-[14px] font-semibold text-brand-ink transition-all hover:border-slate-900 hover:text-slate-900 rounded-lg"
               >
                 {settings.cartTitle?.[lang] || 'View bag'}
               </Link>
@@ -369,10 +369,10 @@ export function ProductClient({
                     <Image src={item.imageUrl} alt={item.title} fill sizes="(max-width: 768px) 50vw, 25vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
                   ) : null}
                 </div>
-                <h3 className="mt-4 text-[16px] md:text-[17px] font-semibold text-brand-ink transition-colors group-hover:text-brand-muted">
+                <h3 className="mt-4 text-[15px] md:text-[16px] font-semibold text-brand-ink transition-colors group-hover:text-brand-muted">
                   {item.translations?.[lang]?.title || item.title}
                 </h3>
-                <p className="mt-1 text-[16px] md:text-[17px] font-medium text-brand-muted">{formatPrice(item.price || 0, lang, item.prices)}</p>
+                <p className="mt-1 text-[15px] md:text-[16px] font-medium text-brand-muted">{formatPrice(item.price || 0, lang, item.prices)}</p>
               </Link>
             ))}
           </div>
