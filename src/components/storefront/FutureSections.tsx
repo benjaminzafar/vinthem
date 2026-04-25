@@ -62,7 +62,7 @@ export function FutureSections({ lang, settings }: FutureSectionsProps) {
         <div className="mt-16 md:mt-24 text-center">
           <Link 
             href="/products" 
-            className="group inline-flex items-center text-[10px] font-black uppercase tracking-[0.2em] text-brand-ink hover:opacity-70 transition-all border-b-2 border-brand-ink pb-1"
+            className="group inline-flex items-center text-[12px] font-bold uppercase tracking-[0.2em] text-brand-ink hover:opacity-70 transition-all border-b-2 border-brand-ink pb-1"
           >
             {settings.futureViewAllText?.[lang] || 'View All Classics'} 
           </Link>

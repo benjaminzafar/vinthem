@@ -36,7 +36,7 @@ export function NewsletterSection({ settings, lang }: NewsletterSectionProps) {
         <div className="absolute inset-0 bg-gradient-to-b from-brand-ink/10 to-transparent"></div>
       </div>
       <div className="max-w-2xl mx-auto px-4 text-center relative z-10">
-        <h2 className="text-[20px] md:text-[24px] font-bold text-brand-ink mb-6 tracking-tight">
+        <h2 className="text-[24px] md:text-[32px] font-bold text-brand-ink mb-6 tracking-tight">
           {settings.newsletterPlaceholder?.[lang]}
         </h2>
         <p className="text-brand-ink/70 mb-12 text-sm md:text-base max-w-md mx-auto font-normal leading-relaxed">
@@ -62,7 +62,7 @@ export function NewsletterSection({ settings, lang }: NewsletterSectionProps) {
             <button 
               type="submit" 
               disabled={isPending}
-              className="absolute right-2 top-2 bottom-2 bg-brand-ink text-white px-6 rounded text-xs font-bold uppercase tracking-wider hover:bg-brand-ink/90 transition-colors flex items-center justify-center disabled:opacity-50"
+              className="absolute right-2 top-2 bottom-2 bg-brand-ink text-white px-6 rounded-[4px] text-[12px] font-bold uppercase tracking-[0.2em] hover:bg-brand-ink/90 transition-colors flex items-center justify-center disabled:opacity-50"
             >
               {isPending ? '...' : (settings.newsletterButtonText?.[lang])}
             </button>

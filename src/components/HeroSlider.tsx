@@ -61,16 +61,13 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
         >
           {/* Text Content */}
           <div className="w-full lg:w-[45%] flex flex-col justify-center order-1 text-center lg:text-left z-10 flex-shrink-0">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: 80 }}
-              transition={{ delay: 0.3, duration: 0.8 }}
-              className="h-[3px] bg-black mb-3 lg:mb-6 mx-auto lg:mx-0"
-            />
-            <h2 className="!text-[12px] !font-bold !uppercase !tracking-widest text-black leading-[1.1] mb-2 lg:mb-4 break-words">
+            <span className="text-[12px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-4 block">
+              {settings.featuredTopSubtitle?.[lang] || 'Featured Category'}
+            </span>
+            <h2 className="text-[36px] md:text-[56px] lg:text-[64px] font-bold text-black leading-[1.1] mb-4 lg:mb-6 tracking-tight">
               {category.translations?.[lang]?.name || category.name}
             </h2>
-            <p className="text-gray-600 text-sm sm:text-base lg:text-lg font-medium leading-relaxed mb-4 lg:mb-6 max-w-md mx-auto lg:mx-0">
+            <p className="text-slate-600 text-[15px] md:text-[17px] font-normal leading-relaxed mb-6 lg:mb-10 max-w-md mx-auto lg:mx-0">
               {category.translations?.[lang]?.description || category.description}
             </p>
             
@@ -78,16 +75,16 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
             <div className="hidden lg:block">
               <Link 
                 href={localizeHref(lang, `/products?category=${encodeURIComponent(category.name)}`)}
-                className="inline-flex items-center bg-black text-white px-12 py-5 rounded font-bold hover:bg-gray-800 transition-all duration-300 uppercase tracking-widest text-sm"
+                className="inline-flex items-center bg-black text-white px-10 py-4 rounded-[4px] text-[12px] font-bold uppercase tracking-[0.2em] hover:bg-gray-800 transition-all duration-300"
               >
-                {settings.shopNowText?.[lang] || 'Explore'} <ArrowRight className="ml-3 w-5 h-5" />
+                {settings.shopNowText?.[lang] || 'Explore'} <ArrowRight className="ml-3 w-4 h-4" />
               </Link>
             </div>
           </div>
  
           {/* Image Content */}
           <div className="w-full lg:w-[55%] order-2 z-0 flex-shrink-0 flex items-center justify-center mt-4 lg:mt-0">
-            <div className="relative w-full max-h-[50vh] lg:max-h-none aspect-[16/10] sm:aspect-[16/9] lg:aspect-[4/3] xl:aspect-[16/10] overflow-hidden rounded shadow-sm">
+            <div className="relative w-full max-h-[50vh] lg:max-h-none aspect-[16/10] sm:aspect-[16/9] lg:aspect-[4/3] xl:aspect-[16/10] overflow-hidden rounded-[4px] shadow-sm">
               {category.imageUrl && (
                 <Image 
                   src={imageToShow || ''} 
@@ -97,19 +94,19 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
                   fetchPriority="high"
                   quality={60}
                   sizes="(max-width: 768px) 100vw, 60vw"
-                  className="object-cover"
+                  className="object-cover transition-transform duration-[20s] ease-linear group-hover:scale-110"
                 />
               )}
             </div>
           </div>
  
           {/* Mobile Button */}
-          <div className="w-full flex justify-center order-3 mt-6 lg:hidden z-10 flex-shrink-0 pb-10">
+          <div className="w-full flex justify-center order-3 mt-8 lg:hidden z-10 flex-shrink-0 pb-10">
             <Link 
               href={localizeHref(lang, `/products?category=${encodeURIComponent(category.name)}`)}
-              className="flex items-center justify-center bg-black text-white px-10 py-4 rounded font-bold hover:bg-gray-800 transition-all duration-300 uppercase tracking-[0.2em] text-sm w-full"
+              className="flex items-center justify-center bg-black text-white px-8 py-4 rounded-[4px] text-[12px] font-bold uppercase tracking-[0.2em] w-full"
             >
-              {settings.shopNowText?.[lang] || 'Explore'} <ArrowRight className="ml-3 w-5 h-5" />
+              {settings.shopNowText?.[lang] || 'Explore'} <ArrowRight className="ml-3 w-4 h-4" />
             </Link>
           </div>
         </motion.div>
