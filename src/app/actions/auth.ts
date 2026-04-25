@@ -91,59 +91,51 @@ export async function recordSignupConsentAction({
 
     if (error) {
       throw error;
+}: SignupConsentInput) {
+  try {
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return { success: false, error: 'User session not found.' };
     }
 
-    if (!user) {
-      throw new Error('Authentication required.');
-    }
+    // 1. Force ensure profile exists first to avoid foreign key issues
+    await ensureUserProfile(user, fullName ?? user.user_metadata?.full_name);
 
-    const sanitizedName = fullName?.replace(/[<>]/g, '').trim() || user.user_metadata?.full_name || '';
-    await ensureUserProfile(user, sanitizedName);
-
-    const now = new Date().toISOString();
-    const admin = createAdminClient();
-    const { error: updateError } = await admin
+    // 2. Update the consent flags in the DB
+    const { error: dbError } = await supabase
       .from('users')
       .update({
-        full_name: sanitizedName || null,
-        accepted_terms_at: now,
-        accepted_privacy_at: now,
+        full_name: fullName ?? user.user_metadata?.full_name ?? '',
+        accepted_terms_at: acceptedTerms ? new Date().toISOString() : null,
+        accepted_privacy_at: acceptedPrivacy ? new Date().toISOString() : null,
         marketing_consent: marketingOptIn,
-        marketing_consent_at: marketingOptIn ? now : null,
-        consent_version: '2026-04-16',
-        updated_at: now,
+        marketing_consent_at: marketingOptIn ? new Date().toISOString() : null,
+        updated_at: new Date().toISOString()
       })
       .eq('id', user.id);
 
-    if (updateError) {
-      throw updateError;
+    if (dbError) {
+      console.error('[recordSignupConsentAction] DB Error:', dbError);
+      return { success: false, error: `Database error: ${dbError.message}` };
     }
 
+    // 3. Background Sync to Brevo (Non-blocking)
     if (marketingOptIn && user.email) {
-      const newsletterResult = await upsertNewsletterSubscriber({
+      void upsertNewsletterSubscriber({
         email: user.email,
         source: 'account_signup',
         marketingConsent: true,
         userId: user.id,
-      });
-
-      if (!newsletterResult.success) {
-        throw new Error(newsletterResult.message);
-      }
+      }).catch(e => console.error('[Brevo Background Sync Error]:', e));
     }
 
-    return {
-      success: true,
-      message: 'Signup consent preferences saved.',
-    };
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to save signup consent.';
-    logger.error('[Action Error] recordSignupConsentAction:', error);
-    return {
-      success: false,
-      message,
-      error: message,
-    };
+    revalidatePath('/', 'layout');
+    return { success: true, message: 'Signup consent preferences saved.' };
+  } catch (err: any) {
+    console.error('[recordSignupConsentAction] General Error:', err);
+    return { success: false, error: err.message || 'Failed to save signup consent.', message: err.message };
   }
 }
 
