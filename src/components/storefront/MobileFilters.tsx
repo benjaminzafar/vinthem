@@ -111,7 +111,7 @@ export function MobileFilters({
                       key="filter-title"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      className="text-[20px] font-bold tracking-tight text-brand-ink mr-auto"
+                      className="text-[17px] font-semibold text-brand-ink mr-auto"
                     >
                       {settings.filterAndSortText?.[lang] || 'Filter & Sort'}
                     </motion.h2>
@@ -148,7 +148,7 @@ export function MobileFilters({
                     <>
                       {/* Collections */}
                       <div className="space-y-6">
-                        <h3 className="text-[12px] font-semibold uppercase tracking-[0.05em] text-brand-muted">
+                        <h3 className="text-[12px] font-semibold text-brand-muted">
                           {settings.searchCollectionsResultsText?.[lang] || settings.categoriesText?.[lang] || 'Collections'}
                         </h3>
                         <div className="space-y-1">
@@ -205,8 +205,8 @@ export function MobileFilters({
 
                       {/* Sort By */}
                       <div className="space-y-6">
-                        <h3 className="text-[12px] font-semibold uppercase tracking-[0.05em] text-brand-muted">
-                          {settings.sortByText?.[lang] || 'Sort By'}
+                        <h3 className="text-[12px] font-semibold text-brand-muted">
+                          {settings.sortByText?.[lang] || 'Sort by'}
                         </h3>
                         <div className="space-y-1">
                           {[
@@ -286,15 +286,15 @@ export function MobileFilters({
                    updateParams({ search: null, category: 'All', sort: 'newest' });
                    onClose();
                  }}
-                 className="flex-1 h-9 bg-white border border-slate-200 text-brand-muted rounded-lg transition-all hover:bg-slate-50 flex items-center justify-center shadow-sm"
+                 className="flex-1 h-11 bg-white border border-slate-200 text-brand-muted rounded-lg transition-all hover:bg-slate-50 flex items-center justify-center shadow-sm"
                >
-                 <span className="text-[14px] font-medium">{settings.clearFiltersText?.[lang] || 'Clear'}</span>
+                 <span className="text-[17px] font-semibold">{settings.clearFiltersText?.[lang] || 'Clear'}</span>
                </button>
                <button
                  onClick={onClose}
-                 className="flex-1 h-9 bg-slate-900 text-white transition-all hover:bg-slate-800 rounded-lg active:scale-[0.98] flex items-center justify-center shadow-sm"
+                 className="flex-1 h-11 bg-slate-900 text-white transition-all hover:bg-slate-800 rounded-lg active:scale-[0.98] flex items-center justify-center shadow-lg shadow-slate-900/10"
                >
-                  <span className="text-[14px] font-semibold">{settings.applyFiltersText?.[lang] || 'Apply'} ({productCount})</span>
+                  <span className="text-[17px] font-semibold">{settings.applyFiltersText?.[lang] || 'Apply'} ({productCount})</span>
                 </button>
              </div>
           </motion.div>

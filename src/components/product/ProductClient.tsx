@@ -261,7 +261,7 @@ export function ProductClient({
                             <button
                               key={value}
                               onClick={() => handleOptionChange(primaryOptionName, primaryValue)}
-                              className={`border px-6 py-2.5 text-[16px] md:text-[17px] font-medium transition-all rounded-lg ${selectedOptions[primaryOptionName] === primaryValue ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-brand-ink hover:border-slate-400'}`}
+                              className={`border px-6 h-11 text-[14px] font-semibold transition-all rounded-lg ${selectedOptions[primaryOptionName] === primaryValue ? 'border-slate-900 bg-slate-900 text-white shadow-md' : 'border-slate-200 bg-white text-brand-ink hover:border-slate-400 hover:bg-slate-50'}`}
                             >
                               {value}
                             </button>
@@ -278,16 +278,16 @@ export function ProductClient({
               <button
                 onClick={handleAddToCart}
                 disabled={currentStock <= 0}
-                className="flex h-9 flex-1 items-center justify-center gap-2 bg-slate-900 px-10 text-[14px] font-semibold text-white transition-all hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 rounded-lg shadow-lg shadow-slate-900/10"
+                className="flex h-11 flex-1 items-center justify-center gap-2 bg-slate-900 px-10 text-[14px] font-semibold text-white transition-all hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 rounded-lg shadow-lg shadow-slate-900/10"
               >
                 <ShoppingBag className="h-4 w-4" strokeWidth={1.5} />
                 {currentStock > 0 ? (settings.addToCartButtonText?.[lang] || 'Add to cart') : (settings.outOfStockText?.[lang] || 'Out of stock')}
               </button>
               <Link
                 href={`/${lang}/cart`}
-                className="flex h-9 items-center justify-center border border-slate-200 px-8 text-[14px] font-semibold text-brand-ink transition-all hover:border-slate-900 hover:text-slate-900 rounded-lg"
+                className="flex h-11 items-center justify-center border border-slate-200 px-8 text-[14px] font-semibold text-brand-ink transition-all hover:border-slate-900 hover:text-slate-900 rounded-lg shadow-sm"
               >
-                {settings.cartTitle?.[lang] || 'View cart'}
+                {settings.cartTitle?.[lang] || 'View bag'}
               </Link>
             </div>
 

@@ -63,8 +63,8 @@ export function CartDrawer({ initialSettings }: CartDrawerProps) {
               <div className="flex items-center justify-between px-4 sm:px-6 h-16 border-b border-slate-100 shrink-0 bg-white z-10">
                 <div className="flex items-center gap-3">
                   <ShoppingBag className="w-5 h-5 text-slate-900" strokeWidth={1.5} />
-                  <h2 className="text-[20px] font-bold tracking-tight text-brand-ink">
-                    {settings?.cartTitle?.[lang] || 'Shopping Cart'}
+                  <h2 className="text-[17px] font-semibold text-brand-ink">
+                    {settings?.cartTitle?.[lang] || 'Shopping Bag'}
                   </h2>
                   <span className="bg-slate-100 text-slate-500 text-xs font-bold px-2 py-0.5 rounded-full">
                     {items.length}
@@ -183,7 +183,7 @@ export function CartDrawer({ initialSettings }: CartDrawerProps) {
                 <div className="p-6 bg-slate-50 border-t border-slate-100 shrink-0 space-y-6">
                   <div className="space-y-3">
                     <div className="flex justify-between items-center text-slate-500">
-                      <span className="text-[12px] font-semibold uppercase tracking-[0.05em] text-brand-muted">
+                      <span className="text-[12px] font-semibold text-brand-muted">
                         {settings?.subtotalText?.[lang] || 'Subtotal'}
                       </span>
                       <span className="text-sm font-medium text-slate-900">
@@ -199,7 +199,7 @@ export function CartDrawer({ initialSettings }: CartDrawerProps) {
                       </span>
                     </div>
                     <div className="pt-3 border-t border-slate-200 mt-3 flex justify-between items-end">
-                      <span className="text-[12px] font-semibold uppercase tracking-[0.05em] text-brand-ink">
+                      <span className="text-[12px] font-semibold text-brand-ink">
                         {settings?.totalText?.[lang] || 'Total'}
                       </span>
                       <span className="text-2xl font-bold tracking-tighter text-brand-ink">
@@ -211,9 +211,9 @@ export function CartDrawer({ initialSettings }: CartDrawerProps) {
                   <Link
                     href={localizeHref(lang, '/payment')}
                     onClick={handleClose}
-                    className="w-full h-9 bg-slate-900 text-white flex items-center justify-center gap-2 text-[14px] font-semibold transition-all hover:bg-slate-800 rounded-lg group active:scale-[0.98]"
+                    className="w-full h-11 bg-slate-900 text-white flex items-center justify-center gap-3 text-[17px] font-semibold transition-all hover:bg-slate-800 rounded-lg group shadow-lg shadow-slate-900/10 active:scale-[0.98]"
                   >
-                    {settings?.proceedToPaymentText?.[lang] || 'Proceed to Payment'}
+                    {settings?.proceedToPaymentText?.[lang] || 'Review Bag'}
                     <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" strokeWidth={1.5} />
                   </Link>
                   

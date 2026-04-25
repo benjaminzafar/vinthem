@@ -42,7 +42,7 @@ export default async function Footer({ settings }: FooterProps) {
           <div className="col-span-1 md:col-span-8 lg:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-8">
             {(settings.footerSections || []).map((section, index) => (
               <div key={index}>
-                <h3 className="text-sm font-medium text-gray-900 mb-6">{section.title?.[lang] || section.title?.en}</h3>
+                <h3 className="text-[12px] font-semibold text-gray-900 mb-6">{section.title?.[lang] || section.title?.en}</h3>
                 <ul className="space-y-4 text-sm text-gray-600">
                   {(section.links || []).map((link, lIndex) => (
                     <li key={lIndex}>
