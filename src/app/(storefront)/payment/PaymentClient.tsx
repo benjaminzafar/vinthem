@@ -172,16 +172,10 @@ export default function PaymentClient({ initialSettings }: PaymentClientProps) {
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-4 text-4xl tracking-tight text-brand-ink md:text-5xl"
+          className="mb-8 text-[32px] font-semibold tracking-tight text-brand-ink"
         >
-          {settings.paymentTitle?.[lang] || 'Checkout'}.
+          {settings.paymentTitle?.[lang] || 'Checkout'}
         </motion.h1>
-        <motion.div
-          initial={{ opacity: 0, width: 0 }}
-          animate={{ opacity: 1, width: 96 }}
-          transition={{ delay: 0.2, duration: 0.8 }}
-          className="mb-6 h-1 bg-brand-ink"
-        />
       </div>
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -191,54 +185,54 @@ export default function PaymentClient({ initialSettings }: PaymentClientProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="rounded-2xl border border-gray-200 bg-white p-8"
+              className="rounded-lg border border-slate-200 bg-white p-8"
             >
-              <h2 className="mb-8 flex items-center text-2xl tracking-tight text-brand-ink">
-                <Truck className="mr-3 h-5 w-5 text-brand-ink" />
+              <h2 className="mb-8 flex items-center text-[17px] font-semibold text-brand-ink">
+                <Truck className="mr-3 h-5 w-5 text-brand-ink" strokeWidth={1.5} />
                 {settings.shippingInformationText?.[lang] || 'Shipping Information'}
               </h2>
 
               <div className="grid grid-cols-1 gap-x-8 gap-y-6 md:grid-cols-2">
                 <div className="col-span-2 md:col-span-1">
-                  <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-brand-muted">
-                    {settings.fullNameLabel?.[lang] || 'Full Name'}
+                  <label className="mb-2 block text-[12px] font-semibold text-brand-muted">
+                    {settings.fullNameLabel?.[lang] || 'Full name'}
                   </label>
-                  <input required type="text" name="name" value={shippingDetails.name} onChange={handleShippingChange} className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-brand-ink focus:border-brand-ink focus:ring-1 focus:ring-brand-ink" />
+                  <input required type="text" name="name" value={shippingDetails.name} onChange={handleShippingChange} className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 h-11 text-brand-ink focus:border-brand-ink focus:ring-1 focus:ring-brand-ink" />
                 </div>
 
                 <div className="col-span-2 md:col-span-1">
-                  <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-brand-muted">
-                    {settings.emailLabel?.[lang] || 'Email Address'}
+                  <label className="mb-2 block text-[12px] font-semibold text-brand-muted">
+                    {settings.emailLabel?.[lang] || 'Email address'}
                   </label>
-                  <input required type="email" name="email" value={shippingDetails.email} onChange={handleShippingChange} className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-brand-ink focus:border-brand-ink focus:ring-1 focus:ring-brand-ink" />
+                  <input required type="email" name="email" value={shippingDetails.email} onChange={handleShippingChange} className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 h-11 text-brand-ink focus:border-brand-ink focus:ring-1 focus:ring-brand-ink" />
                 </div>
 
                 <div className="col-span-2">
-                  <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-brand-muted">
-                    {settings.addressLabel?.[lang] || 'Street Address'}
+                  <label className="mb-2 block text-[12px] font-semibold text-brand-muted">
+                    {settings.addressLabel?.[lang] || 'Street address'}
                   </label>
-                  <input required type="text" name="address" value={shippingDetails.address} onChange={handleShippingChange} className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-brand-ink focus:border-brand-ink focus:ring-1 focus:ring-brand-ink" />
+                  <input required type="text" name="address" value={shippingDetails.address} onChange={handleShippingChange} className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 h-11 text-brand-ink focus:border-brand-ink focus:ring-1 focus:ring-brand-ink" />
                 </div>
 
                 <div className="col-span-2 md:col-span-1">
-                  <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-brand-muted">
+                  <label className="mb-2 block text-[12px] font-semibold text-brand-muted">
                     {settings.cityLabel?.[lang] || 'City'}
                   </label>
-                  <input required type="text" name="city" value={shippingDetails.city} onChange={handleShippingChange} className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-brand-ink focus:border-brand-ink focus:ring-1 focus:ring-brand-ink" />
+                  <input required type="text" name="city" value={shippingDetails.city} onChange={handleShippingChange} className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 h-11 text-brand-ink focus:border-brand-ink focus:ring-1 focus:ring-brand-ink" />
                 </div>
 
                 <div className="col-span-1">
-                  <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-brand-muted">
-                    {settings.postalCodeLabel?.[lang] || 'Postal Code'}
+                  <label className="mb-2 block text-[12px] font-semibold text-brand-muted">
+                    {settings.postalCodeLabel?.[lang] || 'Postal code'}
                   </label>
-                  <input required type="text" name="postalCode" value={shippingDetails.postalCode} onChange={handleShippingChange} className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-brand-ink focus:border-brand-ink focus:ring-1 focus:ring-brand-ink" />
+                  <input required type="text" name="postalCode" value={shippingDetails.postalCode} onChange={handleShippingChange} className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 h-11 text-brand-ink focus:border-brand-ink focus:ring-1 focus:ring-brand-ink" />
                 </div>
 
                 <div className="col-span-2">
-                  <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-brand-muted">
+                  <label className="mb-2 block text-[12px] font-semibold text-brand-muted">
                     {settings.countryLabelText?.[lang] || 'Country'}
                   </label>
-                  <select required name="country" value={shippingDetails.country} onChange={handleShippingChange} className="w-full appearance-none rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-brand-ink focus:border-brand-ink focus:ring-1 focus:ring-brand-ink">
+                  <select required name="country" value={shippingDetails.country} onChange={handleShippingChange} className="w-full appearance-none rounded-lg border border-slate-200 bg-slate-50 px-4 h-11 text-brand-ink focus:border-brand-ink focus:ring-1 focus:ring-brand-ink">
                     {settings.shippingCountries?.map((c) => (
                       <option key={c.code} value={c.code}>{typeof c.name === 'string' ? c.name : c.name?.[lang] || c.name?.en || c.code}</option>
                     )) || (
@@ -259,14 +253,14 @@ export default function PaymentClient({ initialSettings }: PaymentClientProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="rounded-2xl border border-gray-200 bg-white p-8"
+              className="rounded-lg border border-slate-200 bg-white p-8"
             >
-              <h2 className="mb-8 flex items-center text-2xl tracking-tight text-brand-ink">
-                <Lock className="mr-3 h-5 w-5 text-brand-ink" />
+              <h2 className="mb-8 flex items-center text-[17px] font-semibold text-brand-ink">
+                <Lock className="mr-3 h-5 w-5 text-brand-ink" strokeWidth={1.5} />
                 {settings.paymentDetailsText?.[lang] || 'Payment Details'}
               </h2>
 
-              <div className="space-y-4 rounded-2xl border border-gray-200 bg-gray-50 px-5 py-5 text-sm text-brand-muted">
+              <div className="space-y-4 rounded-lg border border-slate-200 bg-slate-50 px-5 py-5 text-[14px] text-brand-muted">
                 <p className="font-medium text-brand-ink">
                   Taxes are estimated before redirect and finalized inside Stripe Checkout from the billing and shipping address.
                 </p>
@@ -285,16 +279,16 @@ export default function PaymentClient({ initialSettings }: PaymentClientProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="sticky top-32 rounded-2xl border border-gray-200 bg-white p-8"
+              className="sticky top-32 rounded-lg border border-slate-200 bg-white p-8"
             >
-              <h3 className="mb-8 text-2xl text-brand-ink">
+              <h3 className="mb-8 text-[17px] font-semibold text-brand-ink">
                 {settings.orderSummaryText?.[lang] || 'Order Summary'}
               </h3>
 
               <div className="mb-8 max-h-60 space-y-4 overflow-y-auto pr-2">
                 {items.map((item) => (
                   <div key={item.id} className="flex gap-4">
-                    <div className="relative h-20 w-16 shrink-0 overflow-hidden rounded-2xl border border-gray-100 bg-gray-50">
+                    <div className="relative h-20 w-16 shrink-0 overflow-hidden rounded-lg border border-slate-100 bg-slate-50">
                       {item.imageUrl && item.imageUrl.trim() !== '' ? (
                         <Image src={item.imageUrl} alt={item.title} fill className="object-cover" sizes="64px" />
                       ) : (
@@ -323,25 +317,25 @@ export default function PaymentClient({ initialSettings }: PaymentClientProps) {
               </div>
 
               <div className="mb-8 space-y-4 border-t border-gray-100 pt-6">
-                <div className="flex justify-between text-brand-muted">
+                <div className="flex justify-between text-[12px] font-semibold text-brand-muted">
                   <span>{settings.subtotalText?.[lang] || 'Subtotal'}</span>
-                  <span className="font-medium text-brand-ink">{formatPrice(effectiveEstimate.subtotal, lang)}</span>
+                  <span className="font-semibold text-brand-ink">{formatPrice(effectiveEstimate.subtotal, lang)}</span>
                 </div>
-                <div className="flex justify-between text-brand-muted">
+                <div className="flex justify-between text-[12px] font-semibold text-brand-muted">
                   <span className="flex items-center">
                     {settings.shippingText?.[lang] || 'Shipping'}
-                    <span className="ml-2 rounded-2xl bg-blue-50 px-2 py-0.5 text-xs font-medium text-[#00529C]">PostNord</span>
+                    <span className="ml-2 rounded-lg bg-blue-50 px-2 py-0.5 text-xs font-semibold text-[#00529C]">PostNord</span>
                   </span>
-                  <span className="font-medium text-brand-ink">{formatPrice(effectiveEstimate.shipping, lang)}</span>
+                  <span className="font-semibold text-brand-ink">{formatPrice(effectiveEstimate.shipping, lang)}</span>
                 </div>
-                <div className="flex justify-between text-brand-muted">
+                <div className="flex justify-between text-[12px] font-semibold text-brand-muted">
                   <span>Estimated tax</span>
-                  <span className="font-medium text-brand-ink">
+                  <span className="font-semibold text-brand-ink">
                     {isEstimating ? 'Calculating...' : formatPrice(effectiveEstimate.tax, lang)}
                   </span>
                 </div>
                 {effectiveEstimate.taxBreakdown.length > 0 && (
-                  <div className="rounded-2xl border border-gray-100 bg-gray-50 px-4 py-3 text-xs text-brand-muted">
+                  <div className="rounded-lg border border-slate-100 bg-slate-50 px-4 py-3 text-xs text-brand-muted">
                     {effectiveEstimate.taxBreakdown.map((entry, index) => (
                       <p key={`${entry.jurisdiction || 'tax'}-${index}`}>
                         {entry.jurisdiction || 'Tax'}{typeof entry.rate === 'number' ? ` (${entry.rate}%)` : ''}: {formatPrice(entry.amount, lang)}
@@ -353,10 +347,10 @@ export default function PaymentClient({ initialSettings }: PaymentClientProps) {
 
               <div className="mb-3 border-t border-gray-100 pt-6">
                 <div className="flex items-end justify-between">
-                  <span className="text-sm font-bold uppercase tracking-wider text-brand-muted">
+                  <span className="text-[12px] font-semibold text-brand-muted">
                     {settings.totalText?.[lang] || 'Total'}
                   </span>
-                  <span className="text-4xl text-brand-ink">
+                  <span className="text-[32px] font-semibold tracking-tight text-brand-ink">
                     {isEstimating ? '...' : formatPrice(effectiveEstimate.total, lang)}
                   </span>
                 </div>
@@ -366,7 +360,7 @@ export default function PaymentClient({ initialSettings }: PaymentClientProps) {
                 The tax-exclusive catalog price is recalculated for the destination country before redirect, so the amount shown here stays aligned with Stripe Checkout.
               </p>
 
-              <button type="submit" disabled={isSubmitting || isEstimating || items.length === 0} className="group flex w-full items-center justify-center rounded-2xl bg-brand-ink px-8 py-4 text-sm font-medium uppercase tracking-wide text-white transition-all hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400">
+              <button type="submit" disabled={isSubmitting || isEstimating || items.length === 0} className="group flex h-11 w-full items-center justify-center rounded-lg bg-brand-ink px-8 text-[17px] font-semibold text-white transition-all hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400 active:scale-[0.98]">
                 {isSubmitting ? (
                   <span className="flex items-center">
                     <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
@@ -374,8 +368,8 @@ export default function PaymentClient({ initialSettings }: PaymentClientProps) {
                   </span>
                 ) : (
                   <>
-                    Continue to Stripe
-                    <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    {settings.continueToStripeText?.[lang] || 'Continue to Checkout'}
+                    <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" strokeWidth={1.5} />
                   </>
                 )}
               </button>
