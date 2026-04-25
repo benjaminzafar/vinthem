@@ -131,7 +131,7 @@ export default function ProductsClient({
                     setSearchInput('');
                     updateParams({ search: null, category: null, sort: null });
                   }}
-                  className="mt-8 border border-slate-900 px-6 py-3 text-[11px] font-black uppercase tracking-[0.2em] text-slate-900 transition-all hover:bg-slate-900 hover:text-white"
+                  className="mt-8 border border-slate-900 px-6 py-3 text-xs font-black uppercase tracking-[0.2em] text-slate-900 transition-all hover:bg-slate-900 hover:text-white"
                 >
                   {settings.clearFiltersText?.[lang] || 'Clear Filters'}
                 </button>
@@ -154,7 +154,7 @@ export default function ProductsClient({
               <div className="mt-14 flex justify-center">
                 <button
                   onClick={() => setVisibleCount((current) => Math.min(current + 18, products.length))}
-                  className="border border-slate-900 px-8 py-3 text-[11px] font-black uppercase tracking-[0.2em] text-slate-900 transition-all hover:bg-slate-900 hover:text-white"
+                  className="border border-slate-900 px-8 py-3 text-xs font-black uppercase tracking-[0.2em] text-slate-900 transition-all hover:bg-slate-900 hover:text-white"
                 >
                   Show More
                 </button>

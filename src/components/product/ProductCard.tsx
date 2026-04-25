@@ -137,13 +137,13 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
              <span className="text-xs font-black uppercase tracking-widest px-1.5 py-0.5 bg-slate-100 text-slate-400 border border-slate-200 rounded">Draft</span>
           )}
         </div>
-        <h3 className="text-base font-medium tracking-tight text-slate-900 group-hover:text-slate-600 transition-colors line-clamp-2 mb-3">
+        <h3 className="text-sm font-medium tracking-tight text-slate-900 group-hover:text-slate-600 transition-colors line-clamp-2 mb-3">
           <Link href={href}>
             {product.title}
           </Link>
         </h3>
         <div className="mt-auto">
-          <p className="text-base font-medium text-slate-900">
+          <p className="text-sm font-medium text-slate-900">
             {formatPrice(product.price || 0, lang, product.prices)}
           </p>
         </div>

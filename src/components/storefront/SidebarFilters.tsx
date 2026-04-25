@@ -74,7 +74,7 @@ export function SidebarFilters({
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder={settings.searchPlaceholder?.[lang] || 'Search...'}
-            className="w-full bg-slate-50 border border-slate-200 rounded-none py-3 px-11 text-[13px] font-medium outline-none transition-all placeholder:text-slate-500 focus:bg-white focus:border-slate-900"
+            className="w-full bg-slate-50 border border-slate-200 rounded-none py-3 px-11 text-sm font-medium outline-none transition-all placeholder:text-slate-500 focus:bg-white focus:border-slate-900"
           />
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-slate-900 transition-colors" strokeWidth={2} />
         </div>
@@ -93,7 +93,7 @@ export function SidebarFilters({
                 className="flex items-center space-x-2 text-slate-500 hover:text-brand-ink transition-colors pb-2"
               >
                 <ChevronLeft className="w-4 h-4" />
-                <span className="text-[10px] font-black uppercase tracking-widest">{activeCategoryData?.name}</span>
+                <span className="text-xs font-black uppercase tracking-widest">{activeCategoryData?.name}</span>
               </motion.button>
             )}
           </AnimatePresence>
@@ -104,7 +104,7 @@ export function SidebarFilters({
                 onClick={() => updateParams({ category: 'All' })}
                 className={`w-full flex items-center justify-between py-3 px-4 transition-all border ${activeCategory === 'All' ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-transparent hover:bg-slate-50 text-slate-700 hover:text-slate-900'}`}
               >
-                <span className="text-[12px] font-bold uppercase tracking-[0.15em]">
+                <span className="text-sm font-bold uppercase tracking-[0.15em]">
                   {settings.allCategoriesText?.[lang] || 'All Products'}
                 </span>
                 {activeCategory === 'All' && <Check className="w-4 h-4" strokeWidth={1.5} />}
@@ -139,7 +139,7 @@ export function SidebarFilters({
               <button
                 key={option.id}
                 onClick={() => updateParams({ sort: option.id })}
-                className={`w-full text-left py-2 px-4 transition-all text-[11px] uppercase font-bold tracking-[0.12em] ${sortBy === option.id ? 'text-slate-900' : 'text-slate-600 hover:text-slate-900'}`}
+                className={`w-full text-left py-2 px-4 transition-all text-xs uppercase font-bold tracking-[0.12em] ${sortBy === option.id ? 'text-slate-900' : 'text-slate-600 hover:text-slate-900'}`}
               >
                 {option.label}
               </button>
@@ -182,7 +182,7 @@ function CategoryItem({ cat, isActive, hasChildren, goForward, updateParams }: a
         ) : (
           <LayoutGrid className="w-4 h-4 opacity-40 shrink-0" strokeWidth={1.5} />
         )}
-        <span className="text-[12px] font-bold uppercase tracking-[0.15em] text-left truncate max-w-[140px]">{cat.name}</span>
+        <span className="text-sm font-bold uppercase tracking-[0.15em] text-left truncate max-w-[140px]">{cat.name}</span>
       </div>
       {hasChildren ? (
         <ChevronRight className="w-4 h-4 opacity-80 group-hover:opacity-100 group-hover:translate-x-1 transition-all text-slate-500 group-hover:text-slate-900 shrink-0" strokeWidth={2} />
