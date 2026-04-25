@@ -187,7 +187,7 @@ export default function PaymentClient({ initialSettings }: PaymentClientProps) {
               transition={{ delay: 0.1 }}
               className="rounded-none border border-slate-200 bg-white p-8"
             >
-              <h2 className="mb-8 flex items-center text-[14px] font-bold uppercase tracking-widest text-brand-ink">
+              <h2 className="mb-8 flex items-center text-[12px] font-bold uppercase tracking-widest text-brand-ink">
                 <Truck className="mr-3 h-5 w-5 text-brand-ink" strokeWidth={1.5} />
                 {settings.shippingInformationText?.[lang] || 'Shipping Information'}
               </h2>
@@ -255,7 +255,7 @@ export default function PaymentClient({ initialSettings }: PaymentClientProps) {
               transition={{ delay: 0.2 }}
               className="rounded-none border border-slate-200 bg-white p-8"
             >
-              <h2 className="mb-8 flex items-center text-[14px] font-bold uppercase tracking-widest text-brand-ink">
+              <h2 className="mb-8 flex items-center text-[12px] font-bold uppercase tracking-widest text-brand-ink">
                 <Lock className="mr-3 h-5 w-5 text-brand-ink" strokeWidth={1.5} />
                 {settings.paymentDetailsText?.[lang] || 'Payment Details'}
               </h2>
@@ -281,7 +281,7 @@ export default function PaymentClient({ initialSettings }: PaymentClientProps) {
               transition={{ delay: 0.3 }}
               className="sticky top-32 rounded-none border border-slate-200 bg-white p-8"
             >
-              <h3 className="mb-8 text-[14px] font-bold uppercase tracking-widest text-brand-ink">
+              <h3 className="mb-8 text-[12px] font-bold uppercase tracking-widest text-brand-ink">
                 {settings.orderSummaryText?.[lang] || 'Order Summary'}
               </h3>
 

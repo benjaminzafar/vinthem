@@ -63,7 +63,7 @@ export function CartDrawer({ initialSettings }: CartDrawerProps) {
               <div className="flex items-center justify-between px-4 sm:px-6 h-16 border-b border-slate-100 shrink-0 bg-white z-10">
                 <div className="flex items-center gap-3">
                   <ShoppingBag className="w-5 h-5 text-slate-900" strokeWidth={1.5} />
-                  <h2 className="text-[14px] font-bold uppercase tracking-widest text-brand-ink">
+                  <h2 className="text-[12px] font-bold uppercase tracking-widest text-brand-ink">
                     {settings?.cartTitle?.[lang] || 'Shopping Bag'}
                   </h2>
                   <span className="bg-slate-100 text-slate-500 text-xs font-bold px-2 py-0.5 rounded-full">
