@@ -122,7 +122,7 @@ export function OTPVerification({
           <ShieldCheck className="w-6 h-6 text-white" strokeWidth={1} />
         </div>
         <h2 className="text-xl font-black uppercase tracking-widest text-zinc-900 mb-2">{L.title}</h2>
-        <div className="text-zinc-600 text-[10px] space-y-1 uppercase font-black tracking-tight">
+        <div className="text-zinc-600 text-xs space-y-1 uppercase font-black tracking-tight">
           <p>{L.subtitle}</p>
           <p className="text-zinc-900 break-all">{email}</p>
         </div>
@@ -148,7 +148,7 @@ export function OTPVerification({
 
       <AnimatePresence>
         {error && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2 mb-6 text-red-600 text-[10px] font-bold uppercase tracking-widest">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2 mb-6 text-red-600 text-xs font-bold uppercase tracking-widest">
             <AlertCircle className="w-3 h-3" />
             <span>{error}</span>
           </motion.div>
@@ -158,13 +158,13 @@ export function OTPVerification({
       <button
         onClick={handleVerify}
         disabled={loading || otp.join("").length !== 8}
-        className="w-full py-4 bg-zinc-900 text-white text-[11px] font-black uppercase tracking-[0.25em] transition-all hover:bg-black disabled:opacity-50 rounded flex items-center justify-center gap-2"
+        className="w-full py-4 bg-zinc-900 text-white text-sm font-black uppercase tracking-[0.25em] transition-all hover:bg-black disabled:opacity-50 rounded flex items-center justify-center gap-2"
       >
         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : L.verifyButton}
       </button>
 
       <div className="mt-6 text-center">
-        <button onClick={() => setOtp(new Array(8).fill(""))} className="text-[10px] font-bold text-zinc-400 hover:text-zinc-900 uppercase tracking-widest">
+        <button onClick={() => setOtp(new Array(8).fill(""))} className="text-xs font-bold text-zinc-400 hover:text-zinc-900 uppercase tracking-widest">
           {L.clearButton}
         </button>
       </div>

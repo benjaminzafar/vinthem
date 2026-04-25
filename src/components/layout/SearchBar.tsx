@@ -182,7 +182,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                     </form>
                   </div>
                   <div className="flex items-center gap-4">
-                    <kbd className="hidden sm:flex h-6 items-center gap-1.5 px-2 font-mono text-[10px] font-medium text-slate-500 border border-slate-100 rounded">ESC</kbd>
+                    <kbd className="hidden sm:flex h-6 items-center gap-1.5 px-2 font-mono text-xs font-medium text-slate-500 border border-slate-100 rounded">ESC</kbd>
                     <button 
                       onClick={() => setIsOverlayOpen(false)}
                       className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-lg"
@@ -206,7 +206,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                         {/* 4 Featured Elements Logic */}
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
                           <div className="lg:col-span-12">
-                            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-slate-400 mb-8 px-1 text-center">
+                            <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-400 mb-8 px-1 text-center">
                               {settings?.searchDiscoverCollectionsText?.[lang] || 'Discover'}
                             </p>
                             {discoveryCategories.length > 0 ? (
@@ -250,7 +250,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                         {/* Matching Collections Badges */}
                         {filteredResults.categories.length > 0 && (
                           <div>
-                            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-400 mb-6">
+                            <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-400 mb-6">
                               {settings?.searchCollectionsResultsText?.[lang] || 'Collections'}
                             </p>
                             <div className="flex flex-wrap gap-2">
@@ -261,7 +261,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                                   onClick={() => setIsOverlayOpen(false)}
                                   className="px-4 py-3 border border-slate-100 hover:border-slate-900 transition-all flex items-center gap-3 bg-slate-50 hover:bg-white group rounded-lg"
                                 >
-                                  <span className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-900"><Highlight text={cat.name} query={searchQuery} /></span>
+                                  <span className="text-sm font-black uppercase tracking-[0.12em] text-slate-900"><Highlight text={cat.name} query={searchInput} /></span>
                                   <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-slate-900 transition-all group-hover:translate-x-1" />
                                 </Link>
                               ))}
@@ -272,10 +272,10 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                         {/* High-Density 4-Column Grid: Correct Popup Spacing */}
                         <div>
                           <div className="flex items-center justify-between mb-8">
-                            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-400">
+                            <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-400">
                               {settings?.searchProductsResultsText?.[lang] || 'Products'} ({filteredResults.products.length})
                             </p>
-                            <Link href={`/${lang}/products?search=${encodeURIComponent(searchQuery)}`} onClick={() => setIsOverlayOpen(false)} className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-900 hover:opacity-70">
+                            <Link href={`/${lang}/products?search=${encodeURIComponent(searchInput)}`} onClick={() => setIsOverlayOpen(false)} className="text-xs font-black uppercase tracking-[0.2em] text-slate-900 hover:opacity-70">
                               {settings?.viewAllResultsText?.[lang] || 'View all results'}
                             </Link>
                           </div>
@@ -305,10 +305,10 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                                     <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/5 transition-colors" />
                                   </Link>
                                   <div className="px-0.5">
-                                    <h4 className="text-[12px] font-medium text-slate-900 line-clamp-1 mb-1">
+                                    <h4 className="text-sm font-medium text-slate-900 line-clamp-1 mb-1">
                                       <Highlight text={product.translations?.[lang]?.title || product.title} query={searchQuery} />
                                     </h4>
-                                    <p className="text-[12px] font-semibold text-slate-900">{formatPrice(product.price, lang)}</p>
+                                    <p className="text-sm font-semibold text-slate-900">{formatPrice(product.price, lang)}</p>
                                   </div>
                                 </motion.div>
                               ))}
@@ -353,7 +353,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                     </Link>
                   )}
                   {!settings?.socialInstagram && !settings?.socialFacebook && !settings?.socialTwitter && !settings?.socialTikTok && (
-                    <p className="text-[9px] font-black uppercase tracking-[0.22em] text-slate-300">Scandinavian Interior Design Standard</p>
+                    <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-300">Scandinavian Interior Design Standard</p>
                   )}
                 </div>
               </motion.div>

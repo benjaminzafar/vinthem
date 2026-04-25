@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React from 'react';
 import Link from 'next/link';
@@ -104,14 +104,14 @@ export function MobileFilters({
                       className="flex items-center space-x-2 text-slate-400 hover:text-slate-900 transition-colors mr-auto"
                     >
                       <ChevronLeft className="w-5 h-5" strokeWidth={1.5} />
-                      <span className="text-[13px] font-black uppercase tracking-[0.2em]">{activeCategoryData?.name}</span>
+                      <span className="text-sm font-black uppercase tracking-[0.2em]">{activeCategoryData?.name}</span>
                     </motion.button>
                   ) : (
                     <motion.h2 
                       key="filter-title"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      className="text-[13px] font-black uppercase tracking-[0.22em] text-slate-900 mr-auto"
+                      className="text-sm font-black uppercase tracking-[0.22em] text-slate-900 mr-auto"
                     >
                       {settings.filterAndSortText?.[lang] || 'Filter & Sort'}
                     </motion.h2>
@@ -148,7 +148,7 @@ export function MobileFilters({
                     <>
                       {/* Collections */}
                       <div className="space-y-6">
-                        <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
+                        <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">
                           {settings.searchCollectionsResultsText?.[lang] || settings.categoriesText?.[lang] || 'Collections'}
                         </h3>
                         <div className="space-y-1">
@@ -158,7 +158,7 @@ export function MobileFilters({
                           >
                             <div className="flex items-center gap-3">
                               <LayoutGrid className="w-4 h-4" strokeWidth={1.5} />
-                              <span className="text-[11px] font-black uppercase tracking-widest">
+                              <span className="text-xs font-black uppercase tracking-widest">
                                 {settings.allCategoriesText?.[lang] || 'All Categories'}
                               </span>
                             </div>
@@ -190,7 +190,7 @@ export function MobileFilters({
                                   ) : (
                                     <LayoutGrid className="w-4 h-4 opacity-40 shrink-0" strokeWidth={1.5} />
                                   )}
-                                  <span className="text-[11px] font-black uppercase tracking-widest truncate max-w-[180px]">{cat.name}</span>
+                                  <span className="text-sm font-black uppercase tracking-widest truncate max-w-[180px]">{cat.name}</span>
                                 </div>
                                 {hasChildren ? (
                                   <ChevronRight className="w-4 h-4 text-slate-300" strokeWidth={1.5} />
@@ -205,7 +205,7 @@ export function MobileFilters({
 
                       {/* Sort By */}
                       <div className="space-y-6">
-                        <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
+                        <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">
                           {settings.sortByText?.[lang] || 'Sort By'}
                         </h3>
                         <div className="space-y-1">
@@ -219,7 +219,7 @@ export function MobileFilters({
                               onClick={() => updateParams({ sort: option.id })}
                               className={`w-full flex items-center h-[48px] px-4 border transition-all rounded-sm ${sortBy === option.id ? 'bg-slate-50 border-slate-900 border-2 text-slate-900 font-black' : 'bg-white border-slate-100 text-slate-600'}`}
                             >
-                              <span className="text-[11px] font-black uppercase tracking-widest">{option.label}</span>
+                              <span className="text-sm font-black uppercase tracking-widest">{option.label}</span>
                             </button>
                           ))}
                         </div>
@@ -231,7 +231,7 @@ export function MobileFilters({
                        <button
                          onClick={() => { updateParams({ category: activeCategoryData?.slug || 'All' }); onClose(); }}
                          className={`w-full flex items-center justify-between h-[48px] px-4 border transition-all rounded-sm ${activeCategory === activeCategoryData?.slug ? 'bg-slate-50 border-slate-900 border-2 text-slate-900 font-bold' : 'bg-slate-50 border-slate-100 text-slate-400 font-medium'}`}>
-                          <span className="text-[11px] font-black uppercase tracking-widest">View All {activeCategoryData?.name}</span>
+                          <span className="text-sm font-black uppercase tracking-widest">View All {activeCategoryData?.name}</span>
                           {activeCategory === activeCategoryData?.slug ? <Check className="w-4 h-4 text-slate-900" strokeWidth={2.5} /> : <ArrowRight className="w-4 h-4" />}
                         </button>
 
@@ -262,7 +262,7 @@ export function MobileFilters({
                                  ) : (
                                    <LayoutGrid className="w-4 h-4 opacity-40 shrink-0" strokeWidth={1.5} />
                                  )}
-                                 <span className="text-[11px] font-black uppercase tracking-widest truncate max-w-[180px]">{sub.name}</span>
+                                 <span className="text-sm font-black uppercase tracking-widest truncate max-w-[180px]">{sub.name}</span>
                                </div>
                                {hasChildren ? (
                                  <ChevronRight className="w-4 h-4 text-slate-300" />
@@ -286,13 +286,13 @@ export function MobileFilters({
                    updateParams({ search: null, category: 'All', sort: 'newest' });
                    onClose();
                  }}
-                 className="flex-1 bg-white border border-slate-200 text-slate-400 py-3.5 text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:text-slate-900 rounded-sm"
+                 className="flex-1 bg-white border border-slate-200 text-slate-400 py-3.5 text-xs font-black uppercase tracking-[0.2em] transition-all hover:text-slate-900 rounded-sm"
                >
                  {settings.clearFiltersText?.[lang] || 'Clear'}
                </button>
                <button
                  onClick={onClose}
-                 className="flex-1 bg-slate-900 text-white py-3.5 text-[11px] font-black uppercase tracking-[0.22em] transition-all hover:bg-slate-800 rounded-sm active:scale-[0.98]">
+                 className="flex-1 bg-slate-900 text-white py-3.5 text-sm font-black uppercase tracking-[0.22em] transition-all hover:bg-slate-800 rounded-sm active:scale-[0.98]">
                   {settings.applyFiltersText?.[lang] || 'Apply'} ({productCount})
                 </button>
              </div>

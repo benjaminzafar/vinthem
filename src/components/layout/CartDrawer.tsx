@@ -66,7 +66,7 @@ export function CartDrawer({ initialSettings }: CartDrawerProps) {
                   <h2 className="text-sm font-black uppercase tracking-[0.2em] text-slate-900">
                     {settings?.cartTitle?.[lang] || 'Shopping Cart'}
                   </h2>
-                  <span className="bg-slate-100 text-slate-500 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  <span className="bg-slate-100 text-slate-500 text-xs font-bold px-2 py-0.5 rounded-full">
                     {items.length}
                   </span>
                 </div>
@@ -94,7 +94,7 @@ export function CartDrawer({ initialSettings }: CartDrawerProps) {
                     </p>
                     <button
                       onClick={handleClose}
-                      className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-900 border-b border-slate-900 pb-0.5 hover:opacity-70 transition-opacity"
+                      className="text-xs font-black uppercase tracking-[0.2em] text-slate-900 border-b border-slate-900 pb-0.5 hover:opacity-70 transition-opacity"
                     >
                       {settings?.continueShoppingText?.[lang] || 'Go back to shopping'}
                     </button>
@@ -130,7 +130,7 @@ export function CartDrawer({ initialSettings }: CartDrawerProps) {
                         <div className="flex-1 flex flex-col justify-between py-0.5">
                           <div className="space-y-1">
                             <div className="flex justify-between items-start gap-2">
-                              <h3 className="text-[13px] font-medium text-slate-900 leading-snug line-clamp-2">
+                              <h3 className="text-sm font-medium text-slate-900 leading-snug line-clamp-2">
                                 {item.translations?.[lang]?.title || item.title}
                               </h3>
                               <button
@@ -141,7 +141,7 @@ export function CartDrawer({ initialSettings }: CartDrawerProps) {
                                 <Trash2 className="w-3.5 h-3.5" strokeWidth={1.5} />
                               </button>
                             </div>
-                            <p className="text-[12px] font-bold text-slate-900">
+                            <p className="text-sm font-bold text-slate-900">
                                 {formatPrice(item.price || 0, lang, item.prices)}
                             </p>
                           </div>
@@ -156,7 +156,7 @@ export function CartDrawer({ initialSettings }: CartDrawerProps) {
                               >
                                 <Minus className="w-3 h-3" strokeWidth={1.5} />
                               </button>
-                              <span className="w-8 text-center text-[11px] font-bold text-slate-900 tabular-nums">
+                              <span className="w-8 text-center text-xs font-bold text-slate-900 tabular-nums">
                                 {item.quantity}
                               </span>
                               <button
@@ -167,7 +167,7 @@ export function CartDrawer({ initialSettings }: CartDrawerProps) {
                                 <Plus className="w-3 h-3" strokeWidth={1.5} />
                               </button>
                             </div>
-                            <p className="text-[12px] font-black text-slate-900 tracking-tight">
+                            <p className="text-sm font-black text-slate-900 tracking-tight">
                               {formatPrice((item.price || 0) * item.quantity, lang)}
                             </p>
                           </div>
@@ -183,7 +183,7 @@ export function CartDrawer({ initialSettings }: CartDrawerProps) {
                 <div className="p-6 bg-slate-50 border-t border-slate-100 shrink-0 space-y-6">
                   <div className="space-y-3">
                     <div className="flex justify-between items-center text-slate-500">
-                      <span className="text-[11px] font-bold uppercase tracking-wider">
+                      <span className="text-xs font-bold uppercase tracking-wider">
                         {settings?.subtotalText?.[lang] || 'Subtotal'}
                       </span>
                       <span className="text-sm font-medium text-slate-900">
