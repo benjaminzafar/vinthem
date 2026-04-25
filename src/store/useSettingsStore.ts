@@ -380,6 +380,8 @@ export interface StorefrontSettings {
   otpVerifyButton: LocalizedString;
   otpClearButton: LocalizedString;
   shippingCountries: Array<{ code: string; name: LocalizedString }>;
+  finalizeAccountTitle: LocalizedString;
+  finalizeAccountSubtitle: LocalizedString;
 }
 
 interface SettingsStore {
@@ -787,6 +789,18 @@ export const defaultSettings: StorefrontSettings = {
     { code: 'NO', name: { en: 'Norway', sv: 'Norge', fi: 'Norja', da: 'Norge' } },
     { code: 'IS', name: { en: 'Iceland', sv: 'Island', fi: 'Islanti', da: 'Island' } },
   ],
+  finalizeAccountTitle: { 
+    en: 'Finalize Account', 
+    sv: 'Slutför konto', 
+    fi: 'Viimeistele tili', 
+    da: 'Færdiggør konto' 
+  },
+  finalizeAccountSubtitle: { 
+    en: 'Please confirm your legal preferences to continue.', 
+    sv: 'Vänligen bekräfta dina juridiska inställningar för att fortsätta.', 
+    fi: 'Vahvista oikeudelliset asetuksesi jatkaaksesi.', 
+    da: 'Bekræft venligst dine juridiske præferencer for at fortsætte.' 
+  },
 };
 
 export const useSettingsStore = create<SettingsStore>((set) => ({

@@ -5,16 +5,23 @@ import { toast } from 'sonner';
 import { Loader2, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import { recordSignupConsentAction } from '@/app/actions/auth';
+import { useSettingsStore } from '@/store/useSettingsStore';
 
 export function ConsentForm({ lang }: { lang: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { settings } = useSettingsStore();
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
   const [marketingOptIn, setMarketingOptIn] = useState(false);
   const [loading, setLoading] = useState(false);
   
   const next = searchParams.get('next') || '/';
+
+  const t = (obj: any, fallback: string) => {
+    if (!obj) return fallback;
+    return obj[lang] || obj['en'] || fallback;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +40,20 @@ export function ConsentForm({ lang }: { lang: string }) {
 
       if (result.success) {
         toast.success('Preferences saved!');
-        router.push(`/${lang}${next === '/' ? '' : next}`);
+        
+        // 1. Prevent double-locale (/en/en)
+        let targetPath = next;
+        const langPrefix = `/${lang}`;
+        
+        if (lang && !targetPath.startsWith(langPrefix + '/') && targetPath !== langPrefix) {
+          if (targetPath.startsWith('/')) {
+             targetPath = `${langPrefix}${targetPath}`;
+          } else {
+             targetPath = `${langPrefix}/${targetPath}`;
+          }
+        }
+        
+        router.push(targetPath);
         router.refresh();
       } else {
         throw new Error(result.error);
@@ -52,10 +72,10 @@ export function ConsentForm({ lang }: { lang: string }) {
           <ShieldCheck className="w-6 h-6 text-zinc-900" />
         </div>
         <h2 className="text-2xl font-black tracking-tighter text-zinc-900 uppercase">
-          Finalize Account
+          {t(settings.finalizeAccountTitle, 'Finalize Account')}
         </h2>
-        <p className="mt-2 text-xs text-zinc-500 font-bold uppercase tracking-widest leading-relaxed">
-          Please confirm your legal preferences to continue.
+        <p className="mt-2 text-[10px] text-zinc-500 font-bold uppercase tracking-[0.1em] leading-relaxed">
+          {t(settings.finalizeAccountSubtitle, 'Please confirm your legal preferences to continue.')}
         </p>
       </div>
 

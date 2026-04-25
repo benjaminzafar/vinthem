@@ -903,6 +903,14 @@ Text to translate: "${sourceText}"`;
                       </label>
                     </div>
 
+                    <div className="pt-6 border-t border-zinc-100">
+                      <p className="text-[11px] font-black uppercase tracking-widest text-zinc-900 mb-4">Account Finalization Wall</p>
+                      <div className="space-y-6">
+                        <LocalizedSettingInput label="Finalization Header" value={settings.finalizeAccountTitle} onChange={v => handleUpdate('finalizeAccountTitle', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('finalizeAccountTitle', 'Finalization Header')} isGenerating={generatingId === 'finalizeAccountTitle-fill'} isTranslating={generatingId === 'finalizeAccountTitle-translate'} />
+                        <LocalizedSettingInput label="Finalization Instruction" value={settings.finalizeAccountSubtitle} onChange={v => handleUpdate('finalizeAccountSubtitle', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('finalizeAccountSubtitle', 'Finalization Instruction')} isGenerating={generatingId === 'finalizeAccountSubtitle-fill'} isTranslating={generatingId === 'finalizeAccountSubtitle-translate'} />
+                      </div>
+                    </div>
+
                     <LocalizedSettingInput label="Google Login Unavailable Message" value={settings.googleLoginUnavailableText} onChange={v => handleUpdate('googleLoginUnavailableText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('googleLoginUnavailableText', 'Google Login Unavailable Message')} isGenerating={generatingId === 'googleLoginUnavailableText-fill'} isTranslating={generatingId === 'googleLoginUnavailableText-translate'} />
                     <LocalizedSettingInput label="Invalid Login Error Message" value={settings.invalidLoginErrorText} onChange={v => handleUpdate('invalidLoginErrorText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('invalidLoginErrorText', 'Invalid Login Error Message')} isGenerating={generatingId === 'invalidLoginErrorText-fill'} isTranslating={generatingId === 'invalidLoginErrorText-translate'} />
                     <LocalizedSettingInput label="Cookie Preferences Footer Button" value={settings.cookiePreferencesButtonText} onChange={v => handleUpdate('cookiePreferencesButtonText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('cookiePreferencesButtonText', 'Cookie Preferences Footer Button')} isGenerating={generatingId === 'cookiePreferencesButtonText-fill'} isTranslating={generatingId === 'cookiePreferencesButtonText-translate'} />
