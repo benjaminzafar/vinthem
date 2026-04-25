@@ -97,7 +97,7 @@ export function MobileFilters({
             className="fixed inset-y-0 right-0 z-[210] w-full bg-white lg:hidden flex flex-col h-dvh"
           >
             {/* Header with Title and Dynamic Back Button */}
-            <div className="flex items-center h-16 px-6 border-b border-slate-100 shrink-0">
+            <div className="flex items-center h-14 px-6 border-b border-slate-100 shrink-0">
                <AnimatePresence mode="wait">
                   {viewStack.length > 0 ? (
                     <motion.button
