@@ -56,7 +56,7 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
       <Link href={href} className="block relative aspect-[4/5] mb-5 overflow-hidden bg-slate-50 border border-slate-200 rounded transition-all duration-500">
         {product.isFeatured && (
           <div className="absolute top-4 left-4 z-20">
-            <span className="bg-white/90 backdrop-blur-sm border border-slate-100 text-brand-ink text-[12px] font-semibold px-4 py-1.5 rounded-full shadow-sm">
+            <span className="bg-white/90 backdrop-blur-sm border border-slate-100 text-brand-ink text-[12px] font-semibold px-4 py-1.5 rounded shadow-sm">
               {settings.featuredBadgeText?.[lang] || 'Featured'}
             </span>
           </div>
@@ -97,15 +97,15 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
                 addItem(product);
                 setCartOpen(true);
                 toast.success(`${product.title} added to cart!`, {
-                  className: 'rounded-full bg-slate-900 text-white text-[17px] font-medium border-none px-6 py-3',
+                  className: 'rounded-lg bg-slate-900 text-white text-[17px] font-medium border-none px-6 py-3',
                   duration: 2000,
                   icon: <Check className="w-5 h-5" strokeWidth={1.5} />
                 });
               }}
-              className="w-full bg-white text-slate-900 border border-slate-200 px-5 py-3.5 text-sm font-black uppercase tracking-[0.22em] transition-all duration-300 hover:bg-slate-900 hover:text-white hover:border-slate-900 flex items-center justify-center gap-3 active:scale-[0.98] rounded"
+              className="w-full h-12 bg-white text-brand-ink border border-slate-200 px-6 text-[17px] font-semibold transition-all duration-300 hover:bg-slate-900 hover:text-white hover:border-slate-900 flex items-center justify-center gap-3 active:scale-[0.98] rounded-lg"
             >
-              <ShoppingBag className="w-3.5 h-3.5" strokeWidth={1.5} />
-              {settings.quickAddText?.[lang] || 'Quick Add'}
+              <ShoppingBag className="w-4 h-4" strokeWidth={1.5} />
+              {settings.quickAddText?.[lang] || 'Quick add'}
             </button>
           </div>
         </div>
@@ -119,12 +119,12 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
             addItem(product);
             setCartOpen(true);
             toast.success(`${product.title} added to cart!`, {
-              className: 'rounded-full bg-slate-900 text-white text-[17px] font-medium border-none px-6 py-3',
+              className: 'rounded-lg bg-slate-900 text-white text-[16px] font-medium border-none px-6 py-3',
               duration: 2000,
               icon: <Check className="w-5 h-5" strokeWidth={1.5} />
             });
           }}
-          className="w-full h-12 bg-slate-50 text-brand-ink border border-slate-200 px-6 text-[17px] font-semibold flex items-center justify-center gap-3 active:scale-[0.98] rounded-full"
+          className="w-full h-12 bg-slate-50 text-brand-ink border border-slate-200 px-6 text-[16px] font-semibold flex items-center justify-center gap-3 active:scale-[0.98] rounded-lg"
         >
           <ShoppingBag className="w-4 h-4" strokeWidth={1.5} />
           {settings.quickAddText?.[lang] || 'Quick add'}
@@ -137,13 +137,13 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
              <span className="text-xs font-black uppercase tracking-widest px-1.5 py-0.5 bg-slate-100 text-slate-400 border border-slate-200 rounded">Draft</span>
           )}
         </div>
-        <h3 className="text-[17px] font-semibold tracking-tight text-brand-ink group-hover:text-brand-muted transition-colors line-clamp-2 mb-2">
+        <h3 className="text-[16px] md:text-[17px] font-semibold tracking-tight text-brand-ink group-hover:text-brand-muted transition-colors line-clamp-2 mb-2">
           <Link href={href}>
             {product.title}
           </Link>
         </h3>
         <div className="mt-auto">
-          <p className="text-[17px] font-medium text-brand-ink">
+          <p className="text-[16px] md:text-[17px] font-medium text-brand-ink">
             {formatPrice(product.price || 0, lang, product.prices)}
           </p>
         </div>

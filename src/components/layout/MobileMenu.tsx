@@ -146,7 +146,7 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
                       onClick={() => setMobileMenuOpen(false)}
                       className="group flex items-center justify-between"
                     >
-                      <span className="text-[20px] font-semibold tracking-tight text-brand-ink group-hover:text-brand-ink transition-all duration-300">
+                      <span className="text-[18px] font-semibold tracking-tight text-brand-ink group-hover:text-brand-ink transition-all duration-300">
                         {link.label[lang] || link.label['en']}
                       </span>
                       <ChevronRight className="w-5 h-5 text-brand-muted opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -207,7 +207,7 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
                     <Link
                       href="/auth"
                       onClick={() => setMobileMenuOpen(false)}
-                      className="w-full py-4 text-[17px] font-semibold text-white bg-brand-ink rounded hover:bg-gray-800 transition-all active:scale-95 text-center block"
+                      className="w-full py-4 text-[17px] font-semibold text-white bg-brand-ink rounded-lg hover:bg-gray-800 transition-all active:scale-95 text-center block"
                     >
                       {labels.login}
                     </Link>

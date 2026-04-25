@@ -104,14 +104,14 @@ export function MobileFilters({
                       className="flex items-center space-x-2 text-slate-400 hover:text-slate-900 transition-colors mr-auto"
                     >
                       <ChevronLeft className="w-5 h-5" strokeWidth={1.5} />
-                      <span className="text-[17px] font-semibold tracking-tight">{activeCategoryData?.name}</span>
+                      <span className="text-[16px] font-semibold tracking-tight">{activeCategoryData?.name}</span>
                     </motion.button>
                   ) : (
                     <motion.h2 
                       key="filter-title"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      className="text-[20px] font-semibold tracking-tight text-brand-ink mr-auto"
+                      className="text-[20px] font-bold tracking-tight text-brand-ink mr-auto"
                     >
                       {settings.filterAndSortText?.[lang] || 'Filter & Sort'}
                     </motion.h2>
@@ -158,7 +158,7 @@ export function MobileFilters({
                           >
                             <div className="flex items-center gap-3">
                               <LayoutGrid className="w-4 h-4" strokeWidth={1.5} />
-                              <span className="text-[17px] font-normal tracking-tight">
+                              <span className="text-[16px] font-normal tracking-tight">
                                 {settings.allCategoriesText?.[lang] || 'All Categories'}
                               </span>
                             </div>
@@ -190,7 +190,7 @@ export function MobileFilters({
                                   ) : (
                                     <LayoutGrid className="w-4 h-4 opacity-40 shrink-0" strokeWidth={1.5} />
                                   )}
-                                  <span className="text-[17px] font-normal tracking-tight truncate max-w-[180px]">{cat.name}</span>
+                                  <span className="text-[16px] font-normal tracking-tight truncate max-w-[180px]">{cat.name}</span>
                                 </div>
                                 {hasChildren ? (
                                   <ChevronRight className="w-4 h-4 text-slate-300" strokeWidth={1.5} />
@@ -219,7 +219,7 @@ export function MobileFilters({
                               onClick={() => updateParams({ sort: option.id })}
                               className={`w-full flex items-center h-[48px] px-4 border transition-all rounded-sm ${sortBy === option.id ? 'bg-slate-50 border-slate-900 border-2 text-slate-900 font-black' : 'bg-white border-slate-100 text-slate-600'}`}
                             >
-                              <span className="text-[17px] font-normal tracking-tight">{option.label}</span>
+                              <span className="text-[16px] font-normal tracking-tight">{option.label}</span>
                             </button>
                           ))}
                         </div>
@@ -231,7 +231,7 @@ export function MobileFilters({
                        <button
                          onClick={() => { updateParams({ category: activeCategoryData?.slug || 'All' }); onClose(); }}
                          className={`w-full flex items-center justify-between h-[48px] px-4 border transition-all rounded-sm ${activeCategory === activeCategoryData?.slug ? 'bg-slate-50 border-slate-900 border-2 text-slate-900 font-bold' : 'bg-slate-50 border-slate-100 text-slate-400 font-medium'}`}>
-                          <span className="text-[17px] font-semibold tracking-tight">View all {activeCategoryData?.name}</span>
+                          <span className="text-[16px] font-semibold tracking-tight">View all {activeCategoryData?.name}</span>
                           {activeCategory === activeCategoryData?.slug ? <Check className="w-4 h-4 text-slate-900" strokeWidth={2.5} /> : <ArrowRight className="w-4 h-4" />}
                         </button>
 
@@ -262,7 +262,7 @@ export function MobileFilters({
                                  ) : (
                                    <LayoutGrid className="w-4 h-4 opacity-40 shrink-0" strokeWidth={1.5} />
                                  )}
-                                 <span className="text-[17px] font-normal tracking-tight truncate max-w-[180px]">{sub.name}</span>
+                                 <span className="text-[16px] font-normal tracking-tight truncate max-w-[180px]">{sub.name}</span>
                                </div>
                                {hasChildren ? (
                                  <ChevronRight className="w-4 h-4 text-slate-300" />
@@ -286,15 +286,15 @@ export function MobileFilters({
                    updateParams({ search: null, category: 'All', sort: 'newest' });
                    onClose();
                  }}
-                 className="flex-1 bg-white border border-slate-200 text-brand-muted py-3.5 rounded-full transition-all hover:bg-slate-50"
+                 className="flex-1 bg-white border border-slate-200 text-brand-muted py-3.5 rounded-lg transition-all hover:bg-slate-50"
                >
-                 <span className="text-[17px] font-medium">{settings.clearFiltersText?.[lang] || 'Clear'}</span>
+                 <span className="text-[16px] font-medium">{settings.clearFiltersText?.[lang] || 'Clear'}</span>
                </button>
                <button
                  onClick={onClose}
-                 className="flex-1 bg-slate-900 text-white py-3.5 transition-all hover:bg-slate-800 rounded-full active:scale-[0.98]"
+                 className="flex-1 bg-slate-900 text-white py-3.5 transition-all hover:bg-slate-800 rounded-lg active:scale-[0.98]"
                >
-                  <span className="text-[17px] font-semibold">{settings.applyFiltersText?.[lang] || 'Apply'} ({productCount})</span>
+                  <span className="text-[16px] font-semibold">{settings.applyFiltersText?.[lang] || 'Apply'} ({productCount})</span>
                 </button>
              </div>
           </motion.div>
