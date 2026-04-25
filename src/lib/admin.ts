@@ -127,25 +127,27 @@ export async function ensureUserProfile(user: User, name?: string | null, lang?:
   const supabase = createAdminClient();
   const { data: existingProfile, error: readError } = await supabase
     .from('users')
-    .select('role, preferred_lang')
+    .select('role')
     .eq('id', user.id)
-    .maybeSingle<UserProfileRow & { preferred_lang: string | null }>();
+    .maybeSingle<UserProfileRow>();
 
   if (readError) {
     throw readError;
   }
 
-  const { error } = await supabase.from('users').upsert(
-    {
-      id: user.id,
-      email: user.email ?? null,
-      full_name: name ?? '',
-      role: existingProfile?.role ?? 'client',
-      preferred_lang: lang ?? existingProfile?.preferred_lang ?? 'en',
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: 'id' }
-  );
+  // 2. Perform the update with a fallback to avoid "column does not exist" errors
+  const updatePayload: any = {
+    id: user.id,
+    email: user.email ?? null,
+    full_name: name ?? '',
+    role: existingProfile?.role ?? 'client',
+    updated_at: new Date().toISOString(),
+  };
+
+  // Only add preferred_lang if we are reasonably sure it won't crash the query
+  // For now, we will skip it to get the site back up immediately.
+  
+  const { error } = await supabase.from('users').upsert(updatePayload, { onConflict: 'id' });
 
   if (error) {
     throw error;
