@@ -11,12 +11,12 @@ import { CookieBannerMount } from "@/components/CookieBannerMount";
 import { CartDrawer } from "@/components/layout/CartDrawer";
 import { getServerLocale } from "@/lib/server-locale";
 import { Toaster } from "sonner";
-import { Open_Sans } from 'next/font/google';
+import { Inter } from 'next/font/google';
 
-const openSans = Open_Sans({
+const inter = Inter({
   subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700', '800'],
-  variable: '--font-open-sans',
+  weight: ['300', '400', '500', '600', '700', '800', '900'],
+  variable: '--font-inter',
   display: 'swap',
 });
 
@@ -95,7 +95,7 @@ export default async function RootLayout({
   const clarityId = integrations.CLARITY_ID;
 
   return (
-    <html lang={lang} className={`h-full antialiased ${openSans.variable}`} suppressHydrationWarning>
+    <html lang={lang} className={`h-full antialiased ${inter.variable}`} suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://auth.vinthem.com" crossOrigin="" />
         <link rel="preconnect" href="https://pub-f44233c26dba4e9795b3ccf51fe6f2cb.r2.dev" crossOrigin="" />
