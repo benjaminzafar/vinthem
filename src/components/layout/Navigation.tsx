@@ -88,7 +88,7 @@ export default async function Navigation() {
               <Link
                 key={index}
                 href={localizeHref(lang, link.href)}
-                className="text-sm font-medium text-slate-600 hover:text-brand-ink transition-colors tracking-wide"
+                className="text-[17px] font-semibold text-brand-muted hover:text-brand-ink transition-colors tracking-tight"
               >
                 {link.label[lang] || link.label['en']}
               </Link>

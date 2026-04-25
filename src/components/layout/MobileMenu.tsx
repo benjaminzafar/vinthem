@@ -127,7 +127,7 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
               className="lg:hidden fixed top-0 right-0 h-[100dvh] w-full sm:w-[85vw] sm:max-w-sm bg-white border-l border-gray-100 z-[201] flex flex-col shadow-2xl"
             >
               <div className="flex items-center justify-between h-16 px-6 border-b border-gray-100">
-                <span className="text-xl font-sans font-medium tracking-tight uppercase tracking-[0.1em]">{labels.menu}</span>
+                <span className="text-[20px] font-semibold tracking-tight text-brand-ink">{labels.menu}</span>
                 <button
                   onClick={() => setMobileMenuOpen(false)}
                   className="p-2 -mr-2 text-gray-400 hover:text-brand-ink transition-colors"
@@ -146,7 +146,7 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
                       onClick={() => setMobileMenuOpen(false)}
                       className="group flex items-center justify-between"
                     >
-                      <span className="text-2xl font-sans font-normal tracking-tight text-brand-ink group-hover:text-brand-ink transition-all duration-300">
+                      <span className="text-[20px] font-semibold tracking-tight text-brand-ink group-hover:text-brand-ink transition-all duration-300">
                         {link.label[lang] || link.label['en']}
                       </span>
                       <ChevronRight className="w-5 h-5 text-brand-muted opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -156,13 +156,13 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
 
                 <div className="pt-8 border-t border-gray-100 space-y-8">
                   <div className="space-y-4">
-                    <span className="text-xs font-medium uppercase tracking-wider text-gray-500">{labels.language}</span>
+                    <span className="text-[12px] font-semibold uppercase tracking-[0.05em] text-brand-muted">{labels.language}</span>
                     <LanguageSwitcher availableLanguages={availableLanguages} variant="boxes" />
                   </div>
 
                   {user ? (
                     <div className="space-y-4">
-                      <span className="text-xs font-medium uppercase tracking-wider text-gray-500">{labels.account}</span>
+                      <span className="text-[12px] font-semibold uppercase tracking-[0.05em] text-brand-muted">{labels.account}</span>
                       <div className="flex items-center justify-between bg-gray-50 p-4 rounded">
                         <div className="flex items-center space-x-3">
                           <UserAvatar 
@@ -207,7 +207,7 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
                     <Link
                       href="/auth"
                       onClick={() => setMobileMenuOpen(false)}
-                      className="w-full py-4 text-sm font-medium text-white bg-brand-ink rounded hover:bg-gray-800 transition-all active:scale-95 text-center block"
+                      className="w-full py-4 text-[17px] font-semibold text-white bg-brand-ink rounded hover:bg-gray-800 transition-all active:scale-95 text-center block"
                     >
                       {labels.login}
                     </Link>

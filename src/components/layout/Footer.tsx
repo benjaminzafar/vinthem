@@ -34,7 +34,7 @@ export default async function Footer({ settings }: FooterProps) {
                 <span className="text-xl font-normal text-gray-900">{settings.storeName?.[lang]}</span>
               )}
             </Link>
-            <p className="text-gray-500 text-sm leading-relaxed max-w-sm">
+            <p className="text-brand-muted text-[17px] leading-relaxed max-w-sm">
               {settings.footerDescription?.[lang] || settings.footerDescription?.en || settings.footerDescription?.sv}
             </p>
           </div>
@@ -42,8 +42,8 @@ export default async function Footer({ settings }: FooterProps) {
           <div className="col-span-1 md:col-span-8 lg:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-8">
             {(settings.footerSections || []).map((section, index) => (
               <div key={index}>
-                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-brand-ink mb-6">{section.title?.[lang] || section.title?.en}</h3>
-                <ul className="space-y-4 text-sm text-gray-500">
+                <h3 className="text-sm font-medium text-gray-900 mb-6">{section.title?.[lang] || section.title?.en}</h3>
+                <ul className="space-y-4 text-sm text-gray-600">
                   {(section.links || []).map((link, lIndex) => (
                     <li key={lIndex}>
                       <Link href={link.href ? localizeHref(lang, link.href) : '#'} className="hover:text-brand-ink transition-colors">
