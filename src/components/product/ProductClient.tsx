@@ -92,12 +92,6 @@ export function ProductClient({
       if (image && typeof image === 'string') uniqueImages.add(image);
     });
 
-    const variants = Array.isArray(product.variants) ? product.variants : [];
-    variants.forEach((variant) => {
-      const variantImage = getVariantImage(variant);
-      if (variantImage) uniqueImages.add(variantImage);
-    });
-
     return [...uniqueImages];
   }, [product]);
 
@@ -254,60 +248,6 @@ export function ProductClient({
                 ))}
               </div>
             ) : null}
-
-            {colorOptionEntries.length > 0 ? (
-              <div className="mt-4 space-y-3">
-                {colorOptionEntries.map(({ option, optionIndex, primaryOptionName }) => {
-                  const selectedValue = selectedOptions[primaryOptionName] || '';
-
-                  return (
-                    <div key={option.name}>
-                      <div className="mb-3 flex items-center justify-between gap-3">
-                        <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-                          {option.name}
-                        </span>
-                        <span className="text-[12px] font-medium text-slate-500">
-                          {selectedValue}
-                        </span>
-                      </div>
-                      <div className="flex flex-wrap gap-2.5">
-                        {option.values.map((value, valueIndex) => {
-                          const primaryValue = getPrimaryOptionValue(optionIndex, valueIndex, value);
-                          const variantImage = getOptionVariantImage(primaryOptionName, primaryValue);
-                          const isActive = selectedValue === primaryValue;
-
-                          return (
-                            <button
-                              key={value}
-                              type="button"
-                              onClick={() => handleOptionChange(primaryOptionName, primaryValue)}
-                              className={`group relative flex h-[58px] min-w-[92px] items-center justify-center overflow-hidden bg-white text-[12px] font-semibold transition-all ${isActive ? 'text-slate-950 opacity-100' : 'text-slate-400 opacity-70 hover:text-slate-950 hover:opacity-100'}`}
-                              aria-pressed={isActive}
-                              aria-label={`${option.name} ${value}`}
-                            >
-                              {variantImage ? (
-                                <Image
-                                  src={variantImage}
-                                  alt={`${option.name} ${value}`}
-                                  fill
-                                  sizes="112px"
-                                  className="object-contain transition-transform duration-300 group-hover:scale-[1.04]"
-                                />
-                              ) : (
-                                <span className="relative flex h-full items-center justify-center px-4 text-center">
-                                  {value}
-                                </span>
-                              )}
-                              <span className={`absolute inset-x-3 bottom-1 h-px bg-slate-950 transition-opacity ${isActive ? 'opacity-100' : 'opacity-0'}`} />
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : null}
           </section>
 
           <aside className="relative pt-0 lg:pt-0">
@@ -348,6 +288,59 @@ export function ProductClient({
                   {currentStock > 0 ? 'In stock' : 'Out of stock'}
                 </span>
               </div>
+
+              {colorOptionEntries.length > 0 ? (
+                <div className="mt-7 space-y-5">
+                  {colorOptionEntries.map(({ option, optionIndex, primaryOptionName }) => {
+                    const selectedValue = selectedOptions[primaryOptionName] || '';
+
+                    return (
+                      <div key={option.name}>
+                        <div className="mb-3 flex items-center justify-between gap-3">
+                          <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                            {option.name}
+                          </span>
+                          <span className="text-[12px] font-medium text-slate-500">
+                            {selectedValue}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-2.5">
+                          {option.values.map((value, valueIndex) => {
+                            const primaryValue = getPrimaryOptionValue(optionIndex, valueIndex, value);
+                            const variantImage = getOptionVariantImage(primaryOptionName, primaryValue);
+                            const isActive = selectedValue === primaryValue;
+
+                            return (
+                              <button
+                                key={value}
+                                type="button"
+                                onClick={() => handleOptionChange(primaryOptionName, primaryValue)}
+                                className={`group relative flex h-14 w-14 items-center justify-center overflow-hidden bg-white text-[11px] font-semibold transition-all ${isActive ? 'ring-2 ring-slate-950 ring-offset-2' : 'opacity-70 hover:opacity-100'}`}
+                                aria-pressed={isActive}
+                                aria-label={`${option.name} ${value}`}
+                              >
+                                {variantImage ? (
+                                  <Image
+                                    src={variantImage}
+                                    alt={`${option.name} ${value}`}
+                                    fill
+                                    sizes="56px"
+                                    className="object-cover transition-transform duration-300 group-hover:scale-110"
+                                  />
+                                ) : (
+                                  <span className="relative flex h-full items-center justify-center px-1 text-center">
+                                    {value}
+                                  </span>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : null}
 
               {introText ? (
                 <p className="mt-5 max-w-[440px] text-[14px] leading-6 text-slate-600">
