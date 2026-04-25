@@ -225,8 +225,8 @@ export function CollectionManager({
     <div className="space-y-8 animate-in fade-in duration-500 pb-20">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight leading-none">Collections</h1>
-          <p className="text-sm text-slate-500 mt-2 font-medium">Manage your catalog hierarchy and structure</p>
+          <h1 className="text-[18px] font-bold text-slate-900 tracking-tight leading-none">Collections</h1>
+          <p className="text-[12px] text-slate-500 mt-2 font-medium">Manage your catalog hierarchy and structure</p>
         </div>
         
         <div className="flex flex-wrap items-center gap-4">
@@ -243,7 +243,7 @@ export function CollectionManager({
               placeholder="Search collections..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-4 h-10 bg-white border border-slate-300 rounded text-sm focus:outline-none focus:border-slate-900 transition-all w-full md:w-64 text-slate-900"
+              className="pl-10 pr-4 h-10 bg-white border border-slate-300 rounded text-[13px] focus:outline-none focus:border-slate-900 transition-all w-full md:w-64 text-slate-900"
             />
           </div>
           <button 
@@ -316,7 +316,7 @@ export function CollectionManager({
                         {isValidUrl(parent.imageUrl) ? <Image src={parent.imageUrl} alt={parent.name} fill sizes="48px" className="object-cover" /> : <Package className="w-5 h-5 text-slate-300" />}
                       </div>
                       <div className="min-w-0">
-                         <p className="font-bold text-slate-900 text-sm tracking-tight truncate">{parent.name}</p>
+                         <p className="font-bold text-slate-900 text-[13px] tracking-tight truncate">{parent.name}</p>
                          <p className="text-[10px] text-slate-500 font-medium uppercase tracking-widest mt-0.5">
                             {level === 0 ? 'Home Depth' : `Depth Level ${level}`}
                          </p>

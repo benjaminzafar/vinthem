@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { logger } from '@/lib/logger';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createClient } from '@/utils/supabase/client';
@@ -205,17 +205,17 @@ export function OrderManager({
                     className="hover:bg-slate-50 transition-colors cursor-pointer group"
                     onClick={() => setExpandedOrderId(expandedOrderId === order.id ? null : order.id)}
                   >
-                    <td className="px-6 py-4 font-bold text-slate-900 text-sm flex items-center">
+                    <td className="px-6 py-4 font-bold text-slate-900 text-[13px] flex items-center">
                       <div className="w-6 flex items-center shrink-0">
                         {expandedOrderId === order.id ? <ChevronDown className="w-4 h-4 text-slate-400" /> : <ChevronRight className="w-4 h-4 text-slate-400" />}
                       </div>
                       <span className="truncate">#{order.orderId || order.id.slice(0, 8)}</span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-slate-500 whitespace-nowrap">
+                    <td className="px-6 py-4 text-[13px] text-slate-500 whitespace-nowrap">
                       {order.createdAt ? new Date(order.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'}
                     </td>
-                    <td className="px-6 py-4 text-sm text-slate-900 font-medium truncate max-w-[200px]">{order.customerEmail || 'Guest'}</td>
-                    <td className="px-6 py-4 font-bold text-slate-900 whitespace-nowrap">{order.total?.toLocaleString()} SEK</td>
+                    <td className="px-6 py-4 text-[13px] text-slate-900 font-medium truncate max-w-[200px]">{order.customerEmail || 'Guest'}</td>
+                    <td className="px-6 py-4 font-bold text-slate-900 whitespace-nowrap text-[13px]">{order.total?.toLocaleString()} SEK</td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest border ${
                         order.status === 'Delivered' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 
@@ -239,8 +239,8 @@ export function OrderManager({
                                     {item.image ? <Image src={item.image} alt="" fill sizes="48px" className="object-cover" /> : <Package className="w-5 h-5 text-slate-300" />}
                                   </div>
                                   <div>
-                                    <p className="font-bold text-slate-900 text-sm">{item.name}</p>
-                                    <p className="text-xs text-slate-500 mt-0.5">Quantity: {item.quantity} × {item.price} SEK</p>
+                                    <p className="font-bold text-slate-900 text-[13px]">{item.name}</p>
+                                    <p className="text-[11px] text-slate-500 mt-0.5 font-medium">Quantity: {item.quantity} × {item.price} SEK</p>
                                   </div>
                                 </div>
                                 <div className="text-sm font-bold text-slate-900">

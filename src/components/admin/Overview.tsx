@@ -426,8 +426,8 @@ export function Overview({ initialStats, onProductClick, onSeedClick }: Overview
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Store Overview</h1>
-          <p className="mt-1 text-sm text-slate-500">Real-time performance metrics and inventory insights</p>
+          <h1 className="text-[18px] font-bold tracking-tight text-slate-900">Store Overview</h1>
+          <p className="mt-0.5 text-[12px] text-slate-500">Real-time performance metrics and inventory insights</p>
         </div>
         <div className="flex items-center gap-3">
           {refreshing && (
@@ -452,8 +452,8 @@ export function Overview({ initialStats, onProductClick, onSeedClick }: Overview
       <div className="rounded border border-slate-300 bg-white p-6 sm:p-8">
         <div className="mb-8 flex flex-col justify-between gap-6 lg:flex-row lg:items-center">
           <div>
-            <h3 className="text-lg font-bold tracking-tight text-slate-900">Revenue & Growth</h3>
-            <p className="mt-1 text-xs text-slate-500">Visualizing your store&apos;s financial trajectory</p>
+            <h3 className="text-[14px] font-bold tracking-tight text-slate-900">Revenue & Growth</h3>
+            <p className="mt-0.5 text-[11px] text-slate-500">Visualizing your store&apos;s financial trajectory</p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <select
@@ -543,7 +543,7 @@ export function Overview({ initialStats, onProductClick, onSeedClick }: Overview
               </div>
               <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-500">{stat.name}</h3>
             </div>
-            <p className="text-2xl font-bold tracking-tight text-slate-900">{stat.value}</p>
+            <p className="text-[20px] font-bold tracking-tight text-slate-900">{stat.value}</p>
             <div
               className={`mt-2 inline-flex items-center rounded border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
                 stat.changeType === 'positive'

@@ -320,8 +320,8 @@ export function ProductManager({
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Products</h1>
-          <p className="text-sm text-slate-500 mt-1">Manage your store's inventory and details</p>
+          <h1 className="text-[18px] font-bold text-slate-900 tracking-tight">Products</h1>
+          <p className="text-[12px] text-slate-500 mt-0.5">Manage your store's inventory and details</p>
         </div>
         
         <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full md:w-auto">
@@ -446,8 +446,8 @@ export function ProductManager({
                         )}
                       </div>
                       <div className="min-w-0">
-                        <p className="font-bold text-slate-900 text-sm truncate">{product.title}</p>
-                        <p className="text-[11px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">{product.sku || 'SKU-000'}</p>
+                        <p className="font-bold text-slate-900 text-[13px] truncate">{product.title}</p>
+                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">{product.sku || 'SKU-000'}</p>
                       </div>
                     </div>
                   </td>
