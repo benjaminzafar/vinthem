@@ -74,8 +74,8 @@ export function FeaturedProducts({ products, lang, settings }: FeaturedProductsP
                     <ArrowRight className="w-4 h-4 md:w-5 md:h-5 text-white" />
                   </div>
                 </div>
-                <h3 className="text-[15px] md:text-[17px] font-semibold text-brand-ink truncate">{title}</h3>
-                <p className="text-[15px] md:text-[17px] font-medium text-brand-muted">{formatPrice(price, lang, product.prices)}</p>
+                <h3 className="text-[14px] font-semibold text-brand-ink truncate">{title}</h3>
+                <p className="text-[14px] font-medium text-brand-muted">{formatPrice(price, lang, product.prices)}</p>
               </Link>
             );
           })}

@@ -74,7 +74,7 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
                   </div>
                   
                   <div className="px-1">
-                    <h3 className="text-[17px] md:text-[19px] font-semibold text-brand-ink truncate group-hover:text-brand-muted transition-colors">
+                    <h3 className="text-[14px] font-semibold text-brand-ink truncate group-hover:text-brand-muted transition-colors">
                       {category.name}
                     </h3>
                   </div>

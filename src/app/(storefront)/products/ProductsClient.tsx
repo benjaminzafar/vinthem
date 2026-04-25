@@ -167,13 +167,15 @@ export default function ProductsClient({
         </div>
       </div>
 
-      <div className="pointer-events-none fixed bottom-6 right-6 z-40 flex flex-col gap-3 md:hidden">
+      <div className="pointer-events-none fixed bottom-8 left-1/2 -translate-x-1/2 z-40 md:hidden flex justify-center w-full px-6">
         <button
           onClick={openFilters}
-          className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full bg-slate-900 text-white transition-all hover:-translate-y-0.5 active:scale-95 border border-slate-800"
-          aria-label={settings.filterAndSortText?.[lang] || 'Filter and Sort'}
+          className="pointer-events-auto h-11 px-8 rounded-full bg-brand-ink text-white flex items-center gap-3 active:scale-95 transition-all outline-none border-none shadow-none"
         >
-          <SlidersHorizontal className="h-6 w-6" strokeWidth={1.5} />
+          <SlidersHorizontal className="h-4 w-4" strokeWidth={2} />
+          <span className="text-[14px] font-semibold uppercase tracking-wider">
+            {settings.filterAndSortText?.[lang] || 'Filter'}
+          </span>
         </button>
       </div>
 

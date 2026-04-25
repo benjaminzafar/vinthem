@@ -63,7 +63,7 @@ export function CartDrawer({ initialSettings }: CartDrawerProps) {
               <div className="flex items-center justify-between px-4 sm:px-6 h-16 border-b border-slate-100 shrink-0 bg-white z-10">
                 <div className="flex items-center gap-3">
                   <ShoppingBag className="w-5 h-5 text-slate-900" strokeWidth={1.5} />
-                  <h2 className="text-[16px] font-semibold text-brand-ink">
+                  <h2 className="text-[14px] font-semibold text-brand-ink">
                     {settings?.cartTitle?.[lang] || 'Shopping Bag'}
                   </h2>
                   <span className="bg-slate-100 text-slate-500 text-xs font-bold px-2 py-0.5 rounded-full">
@@ -94,7 +94,7 @@ export function CartDrawer({ initialSettings }: CartDrawerProps) {
                     </p>
                     <button
                       onClick={handleClose}
-                      className="text-[16px] font-semibold text-brand-ink border-b border-brand-ink pb-0.5 hover:opacity-70 transition-opacity"
+                      className="text-[14px] font-semibold text-brand-ink border-b border-brand-ink pb-0.5 hover:opacity-70 transition-opacity"
                     >
                       {settings?.continueShoppingText?.[lang] || 'Go back to shopping'}
                     </button>
@@ -130,7 +130,7 @@ export function CartDrawer({ initialSettings }: CartDrawerProps) {
                         <div className="flex-1 flex flex-col justify-between py-0.5">
                           <div className="space-y-1">
                             <div className="flex justify-between items-start gap-2">
-                              <h3 className="text-[16px] font-semibold text-brand-ink leading-snug line-clamp-2">
+                              <h3 className="text-[14px] font-semibold text-brand-ink leading-snug line-clamp-2">
                                 {item.translations?.[lang]?.title || item.title}
                               </h3>
                               <button
@@ -141,7 +141,7 @@ export function CartDrawer({ initialSettings }: CartDrawerProps) {
                                 <Trash2 className="w-3.5 h-3.5" strokeWidth={1.5} />
                               </button>
                             </div>
-                            <p className="text-[16px] font-medium text-brand-muted">
+                            <p className="text-[14px] font-medium text-brand-muted">
                                 {formatPrice(item.price || 0, lang, item.prices)}
                             </p>
                           </div>
@@ -167,7 +167,7 @@ export function CartDrawer({ initialSettings }: CartDrawerProps) {
                                 <Plus className="w-3 h-3" strokeWidth={1.5} />
                               </button>
                             </div>
-                            <p className="text-[16px] font-semibold text-brand-ink tracking-tight">
+                            <p className="text-[14px] font-semibold text-brand-ink tracking-tight">
                               {formatPrice((item.price || 0) * item.quantity, lang)}
                             </p>
                           </div>
@@ -211,7 +211,7 @@ export function CartDrawer({ initialSettings }: CartDrawerProps) {
                   <Link
                     href={localizeHref(lang, '/payment')}
                     onClick={handleClose}
-                    className="w-full h-11 bg-slate-900 text-white flex items-center justify-center gap-3 text-[17px] font-semibold transition-all hover:bg-slate-800 rounded-lg group shadow-lg shadow-slate-900/10 active:scale-[0.98]"
+                    className="w-full h-11 bg-slate-900 text-white flex items-center justify-center gap-3 text-[17px] font-semibold transition-all hover:bg-slate-800 rounded-lg group shadow-none active:scale-[0.98]"
                   >
                     {settings?.proceedToPaymentText?.[lang] || 'Review Bag'}
                     <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" strokeWidth={1.5} />
