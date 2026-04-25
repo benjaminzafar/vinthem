@@ -10,6 +10,7 @@ const BREVO_API_URL = 'https://api.brevo.com/v3';
 async function getBrevoApiKey(): Promise<string | null> {
   // First check .env.local for local development convenience
   if (process.env.BREVO_API_KEY) {
+    console.log('[Brevo Debug] Using API Key from environment variables.');
     return process.env.BREVO_API_KEY;
   }
 
@@ -21,8 +22,17 @@ async function getBrevoApiKey(): Promise<string | null> {
       .eq('key', 'BREVO_API_KEY')
       .single();
 
-    if (!row) return null;
-    return maybeDecryptStoredValue(row.value);
+    if (!row) {
+      console.warn('[Brevo Debug] BREVO_API_KEY not found in integrations table.');
+      return null;
+    }
+    const key = maybeDecryptStoredValue(row.value);
+    if (!key) {
+      console.warn('[Brevo Debug] BREVO_API_KEY found but is empty after decryption.');
+    } else {
+      console.log('[Brevo Debug] BREVO_API_KEY successfully retrieved from DB.');
+    }
+    return key;
   } catch (error) {
     logger.error('Failed to get Brevo API Key from DB:', error);
     return null;

@@ -26,8 +26,9 @@ export function ConsentGuardian() {
         .eq('id', user.id)
         .maybeSingle();
 
-      // 4. If logged in but no terms -> redirect
-      if (profile && !profile.accepted_terms_at) {
+      // 4. If logged in but no terms (or no profile yet) -> redirect
+      // Strict EU Standard: Assume NO CONSENT until proven otherwise.
+      if (!profile || !profile.accepted_terms_at) {
         // Extract language or default to root
         const langMatch = pathname.match(/^\/([a-z]{2})(\/|$)/);
         const lang = langMatch ? langMatch[1] : '';
