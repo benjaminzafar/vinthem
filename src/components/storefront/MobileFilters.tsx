@@ -286,13 +286,13 @@ export function MobileFilters({
                    updateParams({ search: null, category: 'All', sort: 'newest' });
                    onClose();
                  }}
-                 className="px-4 py-3.5"
+                 className="flex-1 bg-white border border-slate-200 text-brand-muted py-3.5 rounded-full transition-all hover:bg-slate-50"
                >
-                 <span className="text-[17px] font-medium text-brand-muted">{settings.clearFiltersText?.[lang] || 'Clear'}</span>
+                 <span className="text-[17px] font-medium">{settings.clearFiltersText?.[lang] || 'Clear'}</span>
                </button>
                <button
                  onClick={onClose}
-                 className="flex-1 bg-slate-900 text-white py-3.5 text-sm font-black uppercase tracking-[0.22em] transition-all hover:bg-slate-800 rounded-sm active:scale-[0.98]"
+                 className="flex-1 bg-slate-900 text-white py-3.5 transition-all hover:bg-slate-800 rounded-full active:scale-[0.98]"
                >
                   <span className="text-[17px] font-semibold">{settings.applyFiltersText?.[lang] || 'Apply'} ({productCount})</span>
                 </button>

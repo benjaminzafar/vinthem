@@ -207,7 +207,7 @@ export function ProductClient({
           <div className="border border-slate-200 bg-white p-6 sm:p-8 rounded">
             <div className="flex flex-wrap items-center gap-3">
               {product.sku && (
-                <span className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
+                <span className="text-[12px] font-semibold uppercase tracking-[0.05em] text-brand-muted">
                   SKU {product.sku}
                 </span>
               )}
@@ -234,9 +234,9 @@ export function ProductClient({
               <p className="text-[28px] md:text-[32px] font-medium tracking-tight text-brand-ink">
                 {formatPrice(currentPrice, lang, product.prices)}
               </p>
-              <div className={`inline-flex items-center gap-2 border px-3 py-2 text-xs font-black uppercase tracking-[0.18em] rounded ${currentStock > 0 ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-rose-200 bg-rose-50 text-rose-700'}`}>
-                <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={1.5} />
-                {currentStock > 0 ? (settings.inStockText?.[lang] || 'In Stock') : (settings.outOfStockText?.[lang] || 'Out of stock')}
+              <div className={`inline-flex items-center gap-2 border px-4 py-1.5 text-[12px] font-semibold uppercase tracking-[0.05em] rounded-full ${currentStock > 0 ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-rose-200 bg-rose-50 text-rose-700'}`}>
+                <CheckCircle2 className="h-4 w-4" strokeWidth={1.5} />
+                {currentStock > 0 ? (settings.inStockText?.[lang] || 'In stock') : (settings.outOfStockText?.[lang] || 'Out of stock')}
               </div>
             </div>
 
@@ -248,7 +248,7 @@ export function ProductClient({
                 <div className="mt-8 space-y-6">
                   {displayOptions.map((option, optIdx) => (
                     <div key={option.name}>
-                      <p className="mb-3 text-xs font-black uppercase tracking-[0.2em] text-slate-500">
+                      <p className="mb-4 text-[12px] font-semibold uppercase tracking-[0.05em] text-brand-muted">
                         {option.name}
                       </p>
                       <div className="flex flex-wrap gap-2">
@@ -261,7 +261,7 @@ export function ProductClient({
                             <button
                               key={value}
                               onClick={() => handleOptionChange(primaryOptionName, primaryValue)}
-                              className={`border px-4 py-3 text-xs font-black uppercase tracking-[0.18em] transition-all rounded ${selectedOptions[primaryOptionName] === primaryValue ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-400'}`}
+                              className={`border px-6 py-2.5 text-[17px] font-medium transition-all rounded-full ${selectedOptions[primaryOptionName] === primaryValue ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-brand-ink hover:border-slate-400'}`}
                             >
                               {value}
                             </button>
@@ -274,20 +274,20 @@ export function ProductClient({
               );
             })()}
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-10 flex flex-col gap-4 sm:flex-row">
               <button
                 onClick={handleAddToCart}
                 disabled={currentStock <= 0}
-                className="flex min-h-[54px] flex-1 items-center justify-center gap-3 bg-slate-900 px-8 text-sm font-black uppercase tracking-[0.22em] text-white transition-all hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 rounded"
+                className="flex h-14 flex-1 items-center justify-center gap-3 bg-slate-900 px-10 text-[17px] font-semibold text-white transition-all hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 rounded-full shadow-lg shadow-slate-900/10"
               >
-                <ShoppingBag className="h-4 w-4" strokeWidth={1.5} />
-                {currentStock > 0 ? (settings.addToCartButtonText?.[lang] || 'Add to Cart') : (settings.outOfStockText?.[lang] || 'Out of Stock')}
+                <ShoppingBag className="h-5 w-5" strokeWidth={1.5} />
+                {currentStock > 0 ? (settings.addToCartButtonText?.[lang] || 'Add to cart') : (settings.outOfStockText?.[lang] || 'Out of stock')}
               </button>
               <Link
                 href={`/${lang}/cart`}
-                className="flex min-h-[54px] items-center justify-center border border-slate-200 px-6 text-sm font-black uppercase tracking-[0.22em] text-slate-700 transition-all hover:border-slate-900 hover:text-slate-900 rounded"
+                className="flex h-14 items-center justify-center border border-slate-200 px-8 text-[17px] font-semibold text-brand-ink transition-all hover:border-slate-900 hover:text-slate-900 rounded-full"
               >
-                {settings.cartTitle?.[lang] || 'View Cart'}
+                {settings.cartTitle?.[lang] || 'View cart'}
               </Link>
             </div>
 
@@ -296,33 +296,32 @@ export function ProductClient({
             </div>
 
             <div className="mt-8 flex items-center gap-1.5 border-t border-slate-100 pt-6">
-              <span className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">
+              <span className="text-[12px] font-semibold uppercase tracking-[0.05em] text-brand-muted">
                 <Share2 className="mr-2 inline h-4 w-4" strokeWidth={1.5} />
                 {settings.shareProductText?.[lang] || 'Share'}
               </span>
               <button 
-                onClick={() => handleShare('WhatsApp')} 
-                className="flex h-10 w-10 items-center justify-center border border-slate-200 text-slate-700 transition-all hover:border-slate-900 hover:text-slate-900 rounded"
+                className="flex h-11 w-11 items-center justify-center border border-slate-200 text-brand-ink transition-all hover:border-brand-ink rounded-full"
               >
-                <FaWhatsapp />
+                <FaWhatsapp className="w-5 h-5" />
               </button>
               <button 
                 onClick={() => handleShare('Telegram')} 
-                className="flex h-10 w-10 items-center justify-center border border-slate-200 text-slate-700 transition-all hover:border-slate-900 hover:text-slate-900 rounded"
+                className="flex h-11 w-11 items-center justify-center border border-slate-200 text-brand-ink transition-all hover:border-brand-ink rounded-full"
               >
-                <FaTelegramPlane />
+                <FaTelegramPlane className="w-5 h-5" />
               </button>
               <button 
                 onClick={() => handleShare('Threads')} 
-                className="flex h-10 w-10 items-center justify-center border border-slate-200 text-slate-700 transition-all hover:border-slate-900 hover:text-slate-900 rounded"
+                className="flex h-11 w-11 items-center justify-center border border-slate-200 text-brand-ink transition-all hover:border-brand-ink rounded-full"
               >
-                <FaThreads />
+                <FaThreads className="w-5 h-5" />
               </button>
               <button 
                 onClick={() => handleShare('Facebook')} 
-                className="flex h-10 w-10 items-center justify-center border border-slate-200 text-slate-700 transition-all hover:border-slate-900 hover:text-slate-900 rounded"
+                className="flex h-11 w-11 items-center justify-center border border-slate-200 text-brand-ink transition-all hover:border-brand-ink rounded-full"
               >
-                <FaFacebook />
+                <FaFacebook className="w-5 h-5" />
               </button>
               
               <button 
