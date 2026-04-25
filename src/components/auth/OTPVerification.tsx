@@ -116,13 +116,13 @@ export function OTPVerification({
   }, [otp]);
 
   return (
-    <div className="w-full bg-white border border-zinc-100 p-8 rounded">
+    <div className="w-full bg-white border border-slate-200 p-8 !shadow-none rounded">
       <div className="text-center mb-8">
         <div className="w-12 h-12 bg-zinc-900 flex items-center justify-center mx-auto mb-6 rounded">
           <ShieldCheck className="w-6 h-6 text-white" strokeWidth={1} />
         </div>
         <h2 className="text-xl font-black uppercase tracking-widest text-zinc-900 mb-2">{L.title}</h2>
-        <div className="text-zinc-500 text-[10px] space-y-1 uppercase font-bold tracking-tight">
+        <div className="text-zinc-600 text-[10px] space-y-1 uppercase font-black tracking-tight">
           <p>{L.subtitle}</p>
           <p className="text-zinc-900 break-all">{email}</p>
         </div>

@@ -180,7 +180,7 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
       )}
 
       <div className="relative z-10 w-full max-w-md">
-        <div className="bg-white p-10 border border-zinc-100 rounded">
+        <div className="bg-white p-10 border border-slate-200 rounded !shadow-none">
           <div className="mb-10 text-center">
             <h2 className="text-3xl font-black tracking-tighter text-zinc-900 uppercase">
               {isForgotPassword ? 'Reset' : (isLogin ? settings.signInTitle?.[lang] : settings.signUpTitle?.[lang])}
@@ -244,19 +244,19 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
 
             {!isLogin && !isForgotPassword && (
               <div className="mt-8 space-y-3 bg-zinc-50/50 p-4 border border-zinc-100 rounded">
-                <label className="flex items-start gap-3 text-[10px] text-zinc-500 cursor-pointer uppercase font-bold tracking-tight">
+                <label className="flex items-start gap-3 text-[10px] text-zinc-900 cursor-pointer uppercase font-black tracking-tight">
                   <input type="checkbox" checked={acceptedTerms} onChange={(e) => setAcceptedTerms(e.target.checked)} className="mt-0.5 rounded-sm" required />
                   <span>
-                    Accept <Link href={`/${lang}/terms-of-service`} target="_blank" className="underline hover:text-zinc-900 transition-colors">Terms</Link>
+                    Accept <Link href={`/${lang}/terms-of-service`} target="_blank" className="underline hover:text-zinc-600 transition-colors">Terms</Link>
                   </span>
                 </label>
-                <label className="flex items-start gap-3 text-[10px] text-zinc-500 cursor-pointer uppercase font-bold tracking-tight">
+                <label className="flex items-start gap-3 text-[10px] text-zinc-900 cursor-pointer uppercase font-black tracking-tight">
                   <input type="checkbox" checked={acceptedPrivacy} onChange={(e) => setAcceptedPrivacy(e.target.checked)} className="mt-0.5 rounded-sm" required />
                   <span>
-                    Accept <Link href={`/${lang}/privacy-policy`} target="_blank" className="underline hover:text-zinc-900 transition-colors">Privacy</Link>
+                    Accept <Link href={`/${lang}/privacy-policy`} target="_blank" className="underline hover:text-zinc-600 transition-colors">Privacy</Link>
                   </span>
                 </label>
-                <label className="flex items-start gap-3 text-[10px] text-zinc-500 cursor-pointer uppercase font-bold tracking-tight">
+                <label className="flex items-start gap-3 text-[10px] text-zinc-900 cursor-pointer uppercase font-black tracking-tight">
                   <input type="checkbox" checked={marketingOptIn} onChange={(e) => setMarketingOptIn(e.target.checked)} className="mt-0.5 rounded-sm" />
                   <span>{settings.signUpMarketingConsentText?.[lang] || 'Subscribe to Newsletter'}</span>
                 </label>
@@ -268,7 +268,7 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
             <div className="mt-6 space-y-4">
               <div className="relative flex items-center py-2">
                 <div className="flex-grow border-t border-zinc-100"></div>
-                <span className="flex-shrink mx-4 text-[9px] font-black uppercase tracking-widest text-zinc-300 pointer-events-none select-none">OR Secure Access</span>
+                <span className="flex-shrink mx-4 text-[9px] font-black uppercase tracking-widest text-zinc-900 pointer-events-none select-none">OR Secure Access</span>
                 <div className="flex-grow border-t border-zinc-100"></div>
               </div>
               
@@ -296,7 +296,7 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
                 if (isForgotPassword) setIsForgotPassword(false);
                 else setIsLogin(!isLogin);
               }}
-              className="text-[10px] font-black uppercase tracking-widest text-zinc-950 underline underline-offset-8 decoration-zinc-200 hover:decoration-zinc-900 transition-all"
+              className="text-[10px] font-black uppercase tracking-widest text-zinc-951 underline underline-offset-8 decoration-zinc-200 hover:decoration-zinc-900 transition-all"
             >
               {isForgotPassword ? 'Back to Login' : (isLogin ? settings.dontHaveAccountText?.[lang] : settings.alreadyHaveAccountText?.[lang])}
             </button>

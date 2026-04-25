@@ -46,7 +46,7 @@ export function ConsentForm({ lang }: { lang: string }) {
   };
 
   return (
-    <div className="bg-white p-10 border border-zinc-100 rounded max-w-md w-full">
+    <div className="bg-white p-10 border border-slate-200 rounded !shadow-none max-w-md w-full">
       <div className="mb-8 text-center">
         <div className="mx-auto w-12 h-12 bg-zinc-50 flex items-center justify-center rounded-full mb-4">
           <ShieldCheck className="w-6 h-6 text-zinc-900" />
@@ -61,7 +61,7 @@ export function ConsentForm({ lang }: { lang: string }) {
 
       <form className="space-y-6" onSubmit={handleSubmit}>
         <div className="space-y-4 bg-zinc-50/50 p-6 border border-zinc-100 rounded">
-          <label className="flex items-start gap-4 text-[10px] text-zinc-500 cursor-pointer uppercase font-black tracking-tight group">
+          <label className="flex items-start gap-4 text-[10px] text-zinc-900 cursor-pointer uppercase font-black tracking-tight group">
             <input 
               type="checkbox" 
               checked={acceptedTerms} 
@@ -74,7 +74,7 @@ export function ConsentForm({ lang }: { lang: string }) {
             </span>
           </label>
 
-          <label className="flex items-start gap-4 text-[10px] text-zinc-500 cursor-pointer uppercase font-black tracking-tight group">
+          <label className="flex items-start gap-4 text-[10px] text-zinc-900 cursor-pointer uppercase font-black tracking-tight group">
             <input 
               type="checkbox" 
               checked={acceptedPrivacy} 
@@ -87,7 +87,7 @@ export function ConsentForm({ lang }: { lang: string }) {
             </span>
           </label>
 
-          <label className="flex items-start gap-4 text-[10px] text-zinc-500 cursor-pointer uppercase font-black tracking-tight group">
+          <label className="flex items-start gap-4 text-[10px] text-zinc-900 cursor-pointer uppercase font-black tracking-tight group">
             <input 
               type="checkbox" 
               checked={marketingOptIn} 
