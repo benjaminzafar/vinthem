@@ -12,6 +12,7 @@ import { MobileMenu } from './MobileMenu';
 import { CartToggle } from './CartToggle';
 import { cookies } from 'next/headers';
 import { localizeHref } from '@/lib/i18n-routing';
+import { ConsentGuardian } from '../auth/ConsentGuardian';
 
 export default async function Navigation() {
   const supabase = await createClient();
@@ -55,6 +56,7 @@ export default async function Navigation() {
 
   return (
     <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
+      <ConsentGuardian />
       <h1 className="sr-only">{settings?.seoTitle?.[lang] || settings?.seoTitle?.en || 'Vinthem - Premium Scandinavian Interior Design'}</h1>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center relative">
