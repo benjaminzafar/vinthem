@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { logger } from '@/lib/logger';
 import React, { useEffect, useState } from 'react';
 import { submitProductReviewAction } from '@/app/actions/reviews';
@@ -144,7 +144,7 @@ export default function Reviews({ productId, initialSettings, lang }: ReviewsPro
           <form onSubmit={handleSubmit} className="mb-12 bg-zinc-50/50 p-6 sm:p-8 rounded-3xl border border-zinc-100">
             <div className="flex items-center gap-2 mb-6">
               <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600">Verified Purchase</span>
+              <span className="text-xs font-black uppercase tracking-widest text-emerald-600">Verified Purchase</span>
             </div>
             <h3 className="font-black text-xs mb-4 text-brand-ink uppercase tracking-[0.2em]">{settings.leaveReviewText?.[lang] || 'Leave a Review'}</h3>
             <div className="flex gap-1 mb-6">
@@ -167,7 +167,7 @@ export default function Reviews({ productId, initialSettings, lang }: ReviewsPro
             <button
               type="submit"
               disabled={submitting}
-              className="bg-brand-ink text-white px-10 py-4 rounded-full font-black text-[10px] uppercase tracking-[0.2em] hover:opacity-90 transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+              className="bg-brand-ink text-white px-10 py-4 rounded-full font-black text-sm uppercase tracking-[0.2em] hover:opacity-90 transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submitting ? 'Submitting...' : (settings.submitReviewButtonText?.[lang] || 'Submit Review')}
             </button>
@@ -176,7 +176,7 @@ export default function Reviews({ productId, initialSettings, lang }: ReviewsPro
           <div className="mb-12 p-8 rounded-3xl border border-dashed border-zinc-200 bg-zinc-50/30 text-center">
             <AlertCircle className="w-8 h-8 text-zinc-300 mx-auto mb-4" />
             <h3 className="text-sm font-black text-zinc-900 uppercase tracking-widest mb-2">Verified Reviews Only</h3>
-            <p className="text-xs text-zinc-500 font-medium max-w-xs mx-auto leading-relaxed">
+            <p className="text-sm text-zinc-500 font-medium max-w-xs mx-auto leading-relaxed">
               To ensure the highest quality of feedback, only customers who have purchased this product can leave a review.
             </p>
           </div>
@@ -190,7 +190,7 @@ export default function Reviews({ productId, initialSettings, lang }: ReviewsPro
           <p className="text-xs text-zinc-500 font-medium mb-4">Please log in to leave a review.</p>
           <button 
             onClick={() => window.location.href = '/auth'}
-            className="text-[10px] font-black uppercase tracking-widest text-brand-ink border-b-2 border-brand-ink pb-1 hover:opacity-70 transition-opacity"
+            className="text-xs font-black uppercase tracking-widest text-brand-ink border-b-2 border-brand-ink pb-1 hover:opacity-70 transition-opacity"
           >
             Sign In Now
           </button>
@@ -221,8 +221,8 @@ export default function Reviews({ productId, initialSettings, lang }: ReviewsPro
               {review.adminReply && (
                 <div className="mt-4 ml-6 p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-900">Admin Response</span>
-                    <span className="text-[10px] text-zinc-400 font-mono">{review.adminReplyAt ? new Date(review.adminReplyAt).toLocaleDateString() : ''}</span>
+                    <span className="text-xs font-black uppercase tracking-widest text-zinc-900">Admin Response</span>
+                    <span className="text-xs text-zinc-400 font-mono">{review.adminReplyAt ? new Date(review.adminReplyAt).toLocaleDateString() : ''}</span>
                   </div>
                   <p className="text-zinc-600 text-sm font-medium italic">"{review.adminReply}"</p>
                 </div>

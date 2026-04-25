@@ -204,13 +204,13 @@ export function ProductClient({
           <div className="border border-slate-200 bg-white p-6 sm:p-8 rounded">
             <div className="flex flex-wrap items-center gap-3">
               {product.sku && (
-                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
+                <span className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
                   SKU {product.sku}
                 </span>
               )}
             </div>
 
-            <h1 className="mt-6 text-4xl font-medium leading-tight tracking-tight text-slate-900 sm:text-5xl">
+            <h1 className="mt-6 text-3xl font-medium leading-tight tracking-tight text-slate-900 sm:text-4xl">
               {product.translations?.[lang]?.title || product.title}
             </h1>
 
@@ -231,7 +231,7 @@ export function ProductClient({
               <p className="text-4xl font-medium tracking-tight text-slate-900">
                 {formatPrice(currentPrice, lang, product.prices)}
               </p>
-              <div className={`inline-flex items-center gap-2 border px-3 py-2 text-[11px] font-black uppercase tracking-[0.18em] rounded ${currentStock > 0 ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-rose-200 bg-rose-50 text-rose-700'}`}>
+              <div className={`inline-flex items-center gap-2 border px-3 py-2 text-xs font-black uppercase tracking-[0.18em] rounded ${currentStock > 0 ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-rose-200 bg-rose-50 text-rose-700'}`}>
                 <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={1.5} />
                 {currentStock > 0 ? (settings.inStockText?.[lang] || 'In Stock') : (settings.outOfStockText?.[lang] || 'Out of stock')}
               </div>
@@ -245,7 +245,7 @@ export function ProductClient({
                 <div className="mt-8 space-y-6">
                   {displayOptions.map((option, optIdx) => (
                     <div key={option.name}>
-                      <p className="mb-3 text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">
+                      <p className="mb-3 text-xs font-black uppercase tracking-[0.2em] text-slate-500">
                         {option.name}
                       </p>
                       <div className="flex flex-wrap gap-2">
@@ -258,7 +258,7 @@ export function ProductClient({
                             <button
                               key={value}
                               onClick={() => handleOptionChange(primaryOptionName, primaryValue)}
-                              className={`border px-4 py-3 text-[11px] font-black uppercase tracking-[0.18em] transition-all rounded ${selectedOptions[primaryOptionName] === primaryValue ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-400'}`}
+                              className={`border px-4 py-3 text-xs font-black uppercase tracking-[0.18em] transition-all rounded ${selectedOptions[primaryOptionName] === primaryValue ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-400'}`}
                             >
                               {value}
                             </button>
@@ -275,14 +275,14 @@ export function ProductClient({
               <button
                 onClick={handleAddToCart}
                 disabled={currentStock <= 0}
-                className="flex min-h-[54px] flex-1 items-center justify-center gap-3 bg-slate-900 px-8 text-[11px] font-black uppercase tracking-[0.22em] text-white transition-all hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 rounded"
+                className="flex min-h-[54px] flex-1 items-center justify-center gap-3 bg-slate-900 px-8 text-sm font-black uppercase tracking-[0.22em] text-white transition-all hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 rounded"
               >
                 <ShoppingBag className="h-4 w-4" strokeWidth={1.5} />
                 {currentStock > 0 ? (settings.addToCartButtonText?.[lang] || 'Add to Cart') : (settings.outOfStockText?.[lang] || 'Out of Stock')}
               </button>
               <Link
                 href={`/${lang}/cart`}
-                className="flex min-h-[54px] items-center justify-center border border-slate-200 px-6 text-[11px] font-black uppercase tracking-[0.22em] text-slate-700 transition-all hover:border-slate-900 hover:text-slate-900 rounded"
+                className="flex min-h-[54px] items-center justify-center border border-slate-200 px-6 text-sm font-black uppercase tracking-[0.22em] text-slate-700 transition-all hover:border-slate-900 hover:text-slate-900 rounded"
               >
                 {settings.cartTitle?.[lang] || 'View Cart'}
               </Link>
@@ -293,7 +293,7 @@ export function ProductClient({
             </div>
 
             <div className="mt-8 flex items-center gap-1.5 border-t border-slate-100 pt-6">
-              <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
+              <span className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">
                 <Share2 className="mr-2 inline h-4 w-4" strokeWidth={1.5} />
                 {settings.shareProductText?.[lang] || 'Share'}
               </span>
@@ -355,7 +355,7 @@ export function ProductClient({
             <h2 className="text-2xl font-medium tracking-tight text-slate-900">
               {settings.relatedProductsTitleText?.[lang] || 'Related Products'}
             </h2>
-            <Link href={`/${lang}/products`} className="inline-flex items-center text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 transition-all hover:text-slate-900">
+            <Link href={`/${lang}/products`} className="inline-flex items-center text-xs font-black uppercase tracking-[0.2em] text-slate-500 transition-all hover:text-slate-900">
               Explore more <ChevronRight className="ml-1 h-4 w-4" strokeWidth={1.5} />
             </Link>
           </div>
