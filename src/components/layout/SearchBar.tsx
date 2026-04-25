@@ -261,7 +261,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                                   onClick={() => setIsOverlayOpen(false)}
                                   className="px-4 py-3 border border-slate-100 hover:border-slate-900 transition-all flex items-center gap-3 bg-slate-50 hover:bg-white group rounded-lg"
                                 >
-                                  <span className="text-sm font-black uppercase tracking-[0.12em] text-slate-900"><Highlight text={cat.name} query={searchInput} /></span>
+                                  <span className="text-sm font-black uppercase tracking-[0.12em] text-slate-900"><Highlight text={cat.name} query={searchQuery} /></span>
                                   <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-slate-900 transition-all group-hover:translate-x-1" />
                                 </Link>
                               ))}
@@ -275,7 +275,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                             <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-400">
                               {settings?.searchProductsResultsText?.[lang] || 'Products'} ({filteredResults.products.length})
                             </p>
-                            <Link href={`/${lang}/products?search=${encodeURIComponent(searchInput)}`} onClick={() => setIsOverlayOpen(false)} className="text-xs font-black uppercase tracking-[0.2em] text-slate-900 hover:opacity-70">
+                            <Link href={`/${lang}/products?search=${encodeURIComponent(searchQuery)}`} onClick={() => setIsOverlayOpen(false)} className="text-xs font-black uppercase tracking-[0.2em] text-slate-900 hover:opacity-70">
                               {settings?.viewAllResultsText?.[lang] || 'View all results'}
                             </Link>
                           </div>
@@ -331,25 +331,25 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                   {settings?.socialInstagram && (
                     <Link href={settings.socialInstagram} target="_blank" className="flex items-center gap-2.5 text-slate-400 hover:text-slate-900 transition-colors group text-decoration-none">
                       <FaInstagram className="w-3.5 h-3.5" />
-                      <span className="text-[10px] font-black uppercase tracking-[0.18em]">{settings?.instagramText?.[lang] || 'Instagram'}</span>
+                      <span className="text-xs font-black uppercase tracking-[0.18em]">{settings?.instagramText?.[lang] || 'Instagram'}</span>
                     </Link>
                   )}
                   {settings?.socialFacebook && (
                     <Link href={settings.socialFacebook} target="_blank" className="flex items-center gap-2.5 text-slate-400 hover:text-slate-900 transition-colors group text-decoration-none">
                       <FaFacebook className="w-3.5 h-3.5" />
-                      <span className="text-[10px] font-black uppercase tracking-[0.18em]">{settings?.facebookText?.[lang] || 'Facebook'}</span>
+                      <span className="text-xs font-black uppercase tracking-[0.18em]">{settings?.facebookText?.[lang] || 'Facebook'}</span>
                     </Link>
                   )}
                   {settings?.socialTwitter && (
                     <Link href={settings.socialTwitter} target="_blank" className="flex items-center gap-2.5 text-slate-400 hover:text-slate-900 transition-colors group text-decoration-none">
                       <FaTwitter className="w-3.5 h-3.5" />
-                      <span className="text-[10px] font-black uppercase tracking-[0.18em]">{settings?.twitterText?.[lang] || 'Twitter'}</span>
+                      <span className="text-xs font-black uppercase tracking-[0.18em]">{settings?.twitterText?.[lang] || 'Twitter'}</span>
                     </Link>
                   )}
                   {settings?.socialTikTok && (
                     <Link href={settings.socialTikTok} target="_blank" className="flex items-center gap-2.5 text-slate-400 hover:text-slate-900 transition-colors group text-decoration-none">
                       <FaTiktok className="w-3.5 h-3.5" />
-                      <span className="text-[10px] font-black uppercase tracking-[0.18em]">{settings?.tiktokText?.[lang] || 'TikTok'}</span>
+                      <span className="text-xs font-black uppercase tracking-[0.18em]">{settings?.tiktokText?.[lang] || 'TikTok'}</span>
                     </Link>
                   )}
                   {!settings?.socialInstagram && !settings?.socialFacebook && !settings?.socialTwitter && !settings?.socialTikTok && (
