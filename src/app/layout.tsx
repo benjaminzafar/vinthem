@@ -11,12 +11,12 @@ import { CookieBannerMount } from "@/components/CookieBannerMount";
 import { CartDrawer } from "@/components/layout/CartDrawer";
 import { getServerLocale } from "@/lib/server-locale";
 import { Toaster } from "sonner";
-import { Prata } from 'next/font/google';
+import { Open_Sans } from 'next/font/google';
 
-const prata = Prata({
+const openSans = Open_Sans({
   subsets: ['latin'],
-  weight: ['400'],
-  variable: '--font-prata',
+  weight: ['300', '400', '500', '600', '700', '800'],
+  variable: '--font-open-sans',
   display: 'swap',
 });
 
@@ -95,7 +95,7 @@ export default async function RootLayout({
   const clarityId = integrations.CLARITY_ID;
 
   return (
-    <html lang={lang} className={`h-full antialiased ${prata.variable}`} suppressHydrationWarning>
+    <html lang={lang} className={`h-full antialiased ${openSans.variable}`} suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://auth.vinthem.com" crossOrigin="" />
         <link rel="preconnect" href="https://pub-f44233c26dba4e9795b3ccf51fe6f2cb.r2.dev" crossOrigin="" />

@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: var(--font-prata), system-ui, sans-serif;
-  --font-serif: var(--font-prata), serif;
+  --font-sans: var(--font-open-sans), system-ui, sans-serif;
+  --font-serif: var(--font-open-sans), serif;
   
   /* Customizable Theme Variables */
   --color-brand-bg: var(--theme-bg, #ffffff);
