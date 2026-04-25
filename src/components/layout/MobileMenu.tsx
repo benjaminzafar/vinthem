@@ -126,7 +126,7 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
               className="lg:hidden fixed top-0 right-0 h-[100dvh] w-full sm:w-[85vw] sm:max-w-sm bg-white border-l border-gray-100 z-[201] flex flex-col shadow-2xl"
             >
-              <div className="flex items-center justify-between h-14 px-6 border-b border-gray-100">
+              <div className="flex items-center justify-between h-16 px-6 border-b border-gray-100">
                 <span className="!text-[12px] !font-bold !uppercase !tracking-widest text-brand-ink">{labels.menu}</span>
                 <button
                   onClick={() => setMobileMenuOpen(false)}

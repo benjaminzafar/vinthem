@@ -60,7 +60,7 @@ export default async function Navigation() {
       <ConsentGuardian />
       <h1 className="sr-only">{settings?.seoTitle?.[lang] || settings?.seoTitle?.en || 'Vinthem - Premium Scandinavian Interior Design'}</h1>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-14 items-center relative">
+        <div className="flex justify-between h-16 items-center relative">
           {/* Brand Logo */}
           <div className="flex-1 flex items-center">
             <Link href={localizeHref(lang, '/')} className="flex items-center space-x-3 group">
