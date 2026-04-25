@@ -77,7 +77,7 @@ export function SidebarFilters({
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder={settings.searchPlaceholder?.[lang] || 'Search...'}
-            className="w-full bg-slate-50 border border-slate-200 rounded-none py-3 px-11 text-sm font-medium outline-none transition-all placeholder:text-slate-500 focus:bg-white focus:border-slate-900"
+            className="w-full bg-slate-50 border border-slate-200 rounded-none py-3 px-11 text-base font-normal outline-none transition-all placeholder:text-slate-500 focus:bg-white focus:border-slate-900"
           />
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-slate-900 transition-colors" strokeWidth={2} />
         </div>
