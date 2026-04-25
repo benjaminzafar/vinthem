@@ -46,7 +46,7 @@ export function ConsentForm({ lang }: { lang: string }) {
   };
 
   return (
-    <div className="bg-white p-10 border border-zinc-100 shadow-2xl rounded max-w-md w-full">
+    <div className="bg-white p-10 border border-zinc-100 rounded max-w-md w-full">
       <div className="mb-8 text-center">
         <div className="mx-auto w-12 h-12 bg-zinc-50 flex items-center justify-center rounded-full mb-4">
           <ShieldCheck className="w-6 h-6 text-zinc-900" />
@@ -103,7 +103,7 @@ export function ConsentForm({ lang }: { lang: string }) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-4 bg-zinc-900 text-white text-[11px] font-black uppercase tracking-[0.25em] transition-all hover:bg-black disabled:opacity-50 rounded shadow-lg shadow-zinc-200"
+          className="w-full py-4 bg-zinc-900 text-white text-[11px] font-black uppercase tracking-[0.25em] transition-all hover:bg-black disabled:opacity-50 rounded"
         >
           {loading ? (
             <div className="flex items-center justify-center gap-2">

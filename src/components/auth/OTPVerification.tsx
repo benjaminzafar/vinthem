@@ -116,7 +116,7 @@ export function OTPVerification({
   }, [otp]);
 
   return (
-    <div className="w-full bg-white border border-zinc-100 p-8 shadow-2xl rounded">
+    <div className="w-full bg-white border border-zinc-100 p-8 rounded">
       <div className="text-center mb-8">
         <div className="w-12 h-12 bg-zinc-900 flex items-center justify-center mx-auto mb-6 rounded">
           <ShieldCheck className="w-6 h-6 text-white" strokeWidth={1} />

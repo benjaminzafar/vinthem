@@ -180,7 +180,7 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
       )}
 
       <div className="relative z-10 w-full max-w-md">
-        <div className="bg-white p-10 border border-zinc-100 shadow-2xl rounded">
+        <div className="bg-white p-10 border border-zinc-100 rounded">
           <div className="mb-10 text-center">
             <h2 className="text-3xl font-black tracking-tighter text-zinc-900 uppercase">
               {isForgotPassword ? 'Reset' : (isLogin ? settings.signInTitle?.[lang] : settings.signUpTitle?.[lang])}
