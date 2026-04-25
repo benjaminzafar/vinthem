@@ -102,7 +102,7 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
                   icon: <Check className="w-5 h-5" strokeWidth={1.5} />
                 });
               }}
-              className="w-full h-12 bg-white text-brand-ink border border-slate-200 px-6 text-[17px] font-semibold transition-all duration-300 hover:bg-slate-900 hover:text-white hover:border-slate-900 flex items-center justify-center gap-3 active:scale-[0.98] rounded-lg"
+              className="w-full h-10 bg-white text-brand-ink border border-slate-200 px-6 text-[17px] font-semibold transition-all duration-300 hover:bg-slate-900 hover:text-white hover:border-slate-900 flex items-center justify-center gap-3 active:scale-[0.98] rounded-lg"
             >
               <ShoppingBag className="w-4 h-4" strokeWidth={1.5} />
               {settings.quickAddText?.[lang] || 'Quick add'}
@@ -124,7 +124,7 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
               icon: <Check className="w-5 h-5" strokeWidth={1.5} />
             });
           }}
-          className="w-full h-12 bg-slate-50 text-brand-ink border border-slate-200 px-6 text-[16px] font-semibold flex items-center justify-center gap-3 active:scale-[0.98] rounded-lg"
+          className="w-full h-10 bg-slate-50 text-brand-ink border border-slate-200 px-6 text-[16px] font-semibold flex items-center justify-center gap-3 active:scale-[0.98] rounded-lg"
         >
           <ShoppingBag className="w-4 h-4" strokeWidth={1.5} />
           {settings.quickAddText?.[lang] || 'Quick add'}

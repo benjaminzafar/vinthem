@@ -278,14 +278,14 @@ export function ProductClient({
               <button
                 onClick={handleAddToCart}
                 disabled={currentStock <= 0}
-                className="flex h-14 flex-1 items-center justify-center gap-3 bg-slate-900 px-10 text-[16px] md:text-[17px] font-semibold text-white transition-all hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 rounded-lg shadow-lg shadow-slate-900/10"
+                className="flex h-11 flex-1 items-center justify-center gap-3 bg-slate-900 px-10 text-[16px] md:text-[17px] font-semibold text-white transition-all hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 rounded-lg shadow-lg shadow-slate-900/10"
               >
                 <ShoppingBag className="h-5 w-5" strokeWidth={1.5} />
                 {currentStock > 0 ? (settings.addToCartButtonText?.[lang] || 'Add to cart') : (settings.outOfStockText?.[lang] || 'Out of stock')}
               </button>
               <Link
                 href={`/${lang}/cart`}
-                className="flex h-14 items-center justify-center border border-slate-200 px-8 text-[16px] md:text-[17px] font-semibold text-brand-ink transition-all hover:border-slate-900 hover:text-slate-900 rounded-lg"
+                className="flex h-11 items-center justify-center border border-slate-200 px-8 text-[16px] md:text-[17px] font-semibold text-brand-ink transition-all hover:border-slate-900 hover:text-slate-900 rounded-lg"
               >
                 {settings.cartTitle?.[lang] || 'View cart'}
               </Link>

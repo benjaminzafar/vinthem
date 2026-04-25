@@ -211,7 +211,7 @@ export function CartDrawer({ initialSettings }: CartDrawerProps) {
                   <Link
                     href={localizeHref(lang, '/payment')}
                     onClick={handleClose}
-                    className="w-full h-14 bg-slate-900 text-white flex items-center justify-center gap-3 text-[17px] font-semibold transition-all hover:bg-slate-800 rounded-lg group shadow-lg shadow-slate-900/10 active:scale-[0.98]"
+                    className="w-full h-11 bg-slate-900 text-white flex items-center justify-center gap-3 text-[17px] font-semibold transition-all hover:bg-slate-800 rounded-lg group active:scale-[0.98]"
                   >
                     {settings?.proceedToPaymentText?.[lang] || 'Proceed to Payment'}
                     <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" strokeWidth={1.5} />
