@@ -80,14 +80,14 @@ export async function recordSignupConsentAction({
 }: SignupConsentInput): Promise<AuthActionResult> {
   try {
     if (!acceptedTerms || !acceptedPrivacy) {
-      return { success: false, error: 'You must accept the Terms and Privacy Policy to create an account.' };
+      return { success: false, error: 'You must accept the Terms and Privacy Policy to create an account.', message: 'Consent required' };
     }
 
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return { success: false, error: 'User session not found.' };
+      return { success: false, error: 'User session not found.', message: 'Not authenticated' };
     }
 
     // 1. Force ensure profile exists first to avoid database conflicts
@@ -108,7 +108,7 @@ export async function recordSignupConsentAction({
 
     if (dbError) {
       console.error('[recordSignupConsentAction] DB Error:', dbError);
-      return { success: false, error: `Database error: ${dbError.message}` };
+      return { success: false, error: `Database error: ${dbError.message}`, message: 'Database failure' };
     }
 
     // 3. Background Sync to Brevo (Non-blocking)
@@ -125,7 +125,7 @@ export async function recordSignupConsentAction({
     return { success: true, message: 'Signup consent preferences saved.' };
   } catch (err: any) {
     console.error('[recordSignupConsentAction] General Error:', err);
-    return { success: false, error: err.message || 'Failed to save signup consent.' };
+    return { success: false, error: err.message || 'Failed to save signup consent.', message: err.message || 'Unexpected error' };
   }
 }
 
