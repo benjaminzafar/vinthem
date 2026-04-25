@@ -92,6 +92,12 @@ export function ProductClient({
       if (image && typeof image === 'string') uniqueImages.add(image);
     });
 
+    const variants = Array.isArray(product.variants) ? product.variants : [];
+    variants.forEach((variant) => {
+      const variantImage = getVariantImage(variant);
+      if (variantImage) uniqueImages.add(variantImage);
+    });
+
     return [...uniqueImages];
   }, [product]);
 
