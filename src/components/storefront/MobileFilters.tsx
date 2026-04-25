@@ -286,15 +286,15 @@ export function MobileFilters({
                    updateParams({ search: null, category: 'All', sort: 'newest' });
                    onClose();
                  }}
-                 className="flex-1 h-11 bg-white border border-slate-200 text-brand-muted rounded-lg transition-all hover:bg-slate-50 flex items-center justify-center"
+                 className="flex-1 h-9 bg-white border border-slate-200 text-brand-muted rounded-lg transition-all hover:bg-slate-50 flex items-center justify-center shadow-sm"
                >
-                 <span className="text-[16px] font-medium">{settings.clearFiltersText?.[lang] || 'Clear'}</span>
+                 <span className="text-[14px] font-medium">{settings.clearFiltersText?.[lang] || 'Clear'}</span>
                </button>
                <button
                  onClick={onClose}
-                 className="flex-1 h-11 bg-slate-900 text-white transition-all hover:bg-slate-800 rounded-lg active:scale-[0.98] flex items-center justify-center"
+                 className="flex-1 h-9 bg-slate-900 text-white transition-all hover:bg-slate-800 rounded-lg active:scale-[0.98] flex items-center justify-center shadow-sm"
                >
-                  <span className="text-[16px] font-semibold">{settings.applyFiltersText?.[lang] || 'Apply'} ({productCount})</span>
+                  <span className="text-[14px] font-semibold">{settings.applyFiltersText?.[lang] || 'Apply'} ({productCount})</span>
                 </button>
              </div>
           </motion.div>
