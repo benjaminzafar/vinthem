@@ -111,7 +111,7 @@ export function MobileFilters({
                       key="filter-title"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      className="text-[17px] font-semibold text-brand-ink mr-auto"
+                      className="text-[16px] font-semibold text-brand-ink mr-auto"
                     >
                       {settings.filterAndSortText?.[lang] || 'Filter & Sort'}
                     </motion.h2>
