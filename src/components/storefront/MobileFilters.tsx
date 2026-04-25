@@ -289,7 +289,7 @@ export function MobileFilters({
                 </button>
                 <button
                   onClick={onClose}
-                  className="flex-1 h-11 bg-slate-900 text-white text-[12px] font-bold uppercase tracking-wider hover:bg-slate-800 transition-all rounded active:scale-[0.98] flex items-center justify-center"
+                  className="flex-1 h-11 bg-slate-950 text-white text-[12px] font-bold uppercase tracking-wider hover:bg-slate-800 transition-all rounded active:scale-[0.98] flex items-center justify-center"
                 >
                    {settings.applyFiltersText?.[lang] || 'Apply'} ({productCount})
                 </button>

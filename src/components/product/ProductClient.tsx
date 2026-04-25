@@ -4,7 +4,7 @@ import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { AnimatePresence, motion } from 'motion/react';
-import { Check, Copy, Minus, Plus, ShoppingBag, Star, X } from 'lucide-react';
+import { Check, Copy, Minus, Plus, ShoppingBag, SlidersHorizontal, Star, X } from 'lucide-react';
 import { FaFacebookF, FaTelegramPlane, FaWhatsapp } from 'react-icons/fa';
 import { SiThreads } from 'react-icons/si';
 import { toast } from 'sonner';
@@ -19,6 +19,8 @@ import { Product, ProductVariant, useCartStore } from '@/store/useCartStore';
 import type { StorefrontSettings } from '@/store/useSettingsStore';
 import { useUIStore } from '@/store/useUIStore';
 import { useStorefrontSettings } from '@/hooks/useStorefrontSettings';
+import { MobileFilters } from '@/components/storefront/MobileFilters';
+import { useRouter } from 'next/navigation';
 
 interface ProductClientProps {
   initialProduct: Product;
@@ -30,8 +32,10 @@ interface ProductClientProps {
 export function ProductClient({
   initialProduct,
   relatedProducts,
+  categories,
   initialSettings,
 }: ProductClientProps) {
+  const router = useRouter();
   const getVariantImage = (variant?: ProductVariant | null) => {
     if (!variant) {
       return '';
@@ -58,7 +62,7 @@ export function ProductClient({
 
   const { addItem } = useCartStore();
   const settings = useStorefrontSettings(initialSettings);
-  const { setCartOpen } = useUIStore();
+  const { setCartOpen, isFilterDrawerOpen, setIsFilterDrawerOpen } = useUIStore();
   const pathname = usePathname();
   const lang = getClientLocale(pathname);
 
@@ -179,6 +183,17 @@ export function ProductClient({
     setIsCopied(true);
     toast.success(settings.linkCopiedText?.[lang] || 'Link copied to clipboard');
     setTimeout(() => setIsCopied(false), 2000);
+  };
+
+  const updateParams = (newParams: Record<string, string | null>) => {
+    const params = new URLSearchParams();
+    Object.entries(newParams).forEach(([key, value]) => {
+      if (value && value !== 'All') {
+        params.set(key, value);
+      }
+    });
+    const query = params.toString();
+    router.push(`/${lang}/products${query ? `?${query}` : ''}`);
   };
 
   const handleSocialShare = (platform: 'whatsapp' | 'telegram' | 'threads' | 'facebook') => {
@@ -583,6 +598,32 @@ export function ProductClient({
             </motion.div>
           ) : null}
         </AnimatePresence>
+
+        {/* Universal Filter Button for consistency */}
+        <div className="pointer-events-none fixed bottom-8 right-8 z-40 flex flex-col gap-3 md:hidden">
+          <button
+            onClick={() => setIsFilterDrawerOpen(true)}
+            className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full bg-slate-950 text-white shadow-xl transition-all active:scale-95"
+            aria-label={settings.filterAndSortText?.[lang] || 'Filter and Sort'}
+          >
+            <SlidersHorizontal className="h-6 w-6" strokeWidth={1.5} />
+          </button>
+        </div>
+
+        <MobileFilters
+          isOpen={isFilterDrawerOpen}
+          onClose={() => setIsFilterDrawerOpen(false)}
+          categories={categories}
+          settings={settings}
+          lang={lang}
+          searchInput=""
+          setSearchInput={() => {}}
+          activeCategory="All"
+          sortBy="newest"
+          updateParams={updateParams}
+          productCount={0}
+          allProducts={[]}
+        />
       </div>
     </div>
   );
