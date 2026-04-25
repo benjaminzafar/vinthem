@@ -137,9 +137,9 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
              <span className="text-xs font-black uppercase tracking-widest px-1.5 py-0.5 bg-slate-100 text-slate-400 border border-slate-200 rounded">Draft</span>
           )}
         </div>
-        <h3 className="text-[15px] md:text-[16px] font-bold text-brand-ink group-hover:text-brand-muted transition-colors line-clamp-2 mb-2">
+        <h3 className="text-[12px] font-bold uppercase tracking-widest text-brand-ink group-hover:text-brand-muted transition-colors truncate mb-2">
           <Link href={href}>
-            {product.title}
+            {product.translations?.[lang]?.title || product.title}
           </Link>
         </h3>
         <div className="mt-auto">
