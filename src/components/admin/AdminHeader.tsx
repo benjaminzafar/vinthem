@@ -54,7 +54,7 @@ export function AdminHeader({
   return (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 py-8 border-b border-slate-300 last:border-0">
       <div className="w-full sm:w-auto flex-shrink-0">
-        <h2 className="text-2xl font-bold text-slate-900 tracking-tight">{title}</h2>
+        <h2 className="!text-[12px] !font-bold !uppercase !tracking-widest text-slate-900">{title}</h2>
         {description && <p className="text-sm text-slate-500 mt-1">{description}</p>}
       </div>
 

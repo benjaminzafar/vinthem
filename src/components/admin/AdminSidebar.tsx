@@ -51,8 +51,8 @@ function SidebarContent({
   return (
     <>
       <div className="flex items-center px-6 h-16 border-b border-slate-300 bg-white shrink-0">
-        <h1 className="text-lg font-bold text-slate-900 flex items-center tracking-tight">
-          <Settings className="w-5 h-5 mr-3 text-slate-900" />
+        <h1 className="!text-[12px] !font-black !uppercase !tracking-[0.2em] text-slate-900 flex items-center">
+          <Settings className="w-4 h-4 mr-3 text-slate-900" />
           Admin
         </h1>
       </div>
@@ -66,14 +66,14 @@ function SidebarContent({
               key={item.id}
               href={item.href}
               onClick={onNavItemClick}
-              className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded transition-all ${
+              className={`w-full flex items-center space-x-3 px-3 py-2 transition-all ${
                 isActive
-                  ? 'bg-slate-900 text-white font-medium'
+                  ? 'bg-slate-900 text-white'
                   : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
               }`}
             >
-              <item.icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400'}`} />
-              <span className="text-sm">{item.label}</span>
+              <item.icon className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+              <span className="!text-[12px] !font-bold !uppercase !tracking-widest">{item.label}</span>
             </Link>
           );
         })}
