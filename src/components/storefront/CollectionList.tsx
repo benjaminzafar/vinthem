@@ -74,10 +74,10 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
                   </div>
                   
                   <div className="px-1">
-                    <h3 className="text-sm font-medium text-brand-ink truncate group-hover:text-brand-muted transition-colors">
+                    <h3 className="text-xs font-medium text-brand-ink truncate group-hover:text-brand-muted transition-colors uppercase tracking-widest">
                       {category.name}
                     </h3>
-                    <p className="text-xs text-brand-muted font-medium uppercase tracking-[0.2em] mt-0.5 opacity-60">
+                    <p className="text-[10px] text-brand-muted font-bold uppercase tracking-[0.2em] mt-0.5 opacity-60">
                       Collection
                     </p>
                   </div>

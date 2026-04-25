@@ -38,7 +38,7 @@
 
 body {
   font-family: var(--font-sans);
-  font-size: 16px; /* Shopify Standard Base */
+  font-size: 14px; /* Compact Luxury Base */
   line-height: 1.5;
   background-color: var(--color-brand-bg);
   color: var(--color-brand-ink);
@@ -46,12 +46,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-h1 { @apply text-[32px] md:text-[40px] font-bold leading-tight tracking-tight; }
-h2 { @apply text-[24px] md:text-[30px] font-bold leading-tight tracking-tight; }
-h3 { @apply text-[18px] md:text-[22px] font-bold leading-tight; }
-h4 { @apply text-[16px] md:text-[18px] font-bold leading-snug; }
-h5 { @apply text-[14px] md:text-[16px] font-bold uppercase tracking-wider; }
-h6 { @apply text-[12px] md:text-[14px] font-bold uppercase tracking-widest text-zinc-500; }
+h1 { @apply text-[26px] md:text-[32px] font-bold leading-tight tracking-tight; }
+h2 { @apply text-[20px] md:text-[24px] font-bold leading-tight tracking-tight; }
+h3 { @apply text-[16px] md:text-[18px] font-bold leading-tight; }
+h4 { @apply text-[14px] md:text-[16px] font-bold leading-snug; }
+h5 { @apply text-[12px] md:text-[14px] font-bold uppercase tracking-wider; }
+h6 { @apply text-[11px] md:text-[12px] font-bold uppercase tracking-widest text-zinc-500; }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-sans);
