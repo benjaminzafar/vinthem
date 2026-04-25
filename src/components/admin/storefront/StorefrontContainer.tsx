@@ -334,7 +334,7 @@ Text to translate: "${sourceText}"`;
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
         <Loader2 className="w-8 h-8 text-zinc-900 animate-spin" />
-        <p className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest animate-pulse">
+        <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest animate-pulse">
           Hydrating Neural Storefront...
         </p>
       </div>
@@ -363,7 +363,7 @@ Text to translate: "${sourceText}"`;
           <button
             key={cat.id}
             onClick={() => setActiveCategory(cat.id)}
-            className={`flex items-center gap-2 px-4 py-2 text-[12px] font-black transition-all whitespace-nowrap rounded-md uppercase tracking-widest ${activeCategory === cat.id ? `${cat.bg} text-zinc-900 border border-zinc-200/50` : 'text-zinc-500 hover:bg-zinc-100'}`}
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-black transition-all whitespace-nowrap rounded-md uppercase tracking-widest ${activeCategory === cat.id ? `${cat.bg} text-zinc-900 border border-zinc-200/50` : 'text-zinc-500 hover:bg-zinc-100'}`}
           >
             <cat.icon className="w-3.5 h-3.5" />
             {cat.name}
@@ -469,7 +469,7 @@ Text to translate: "${sourceText}"`;
                     />
 
                     <div className="pt-4 border-t border-zinc-100">
-                      <label className="text-[11px] font-black text-zinc-500 uppercase tracking-widest leading-none block mb-3">
+                      <label className="text-sm font-black text-zinc-500 uppercase tracking-widest leading-none block mb-3">
                         Social Share Asset (OG Image)
                       </label>
                       <div className="flex items-start gap-4">
@@ -496,7 +496,7 @@ Text to translate: "${sourceText}"`;
                              className="w-full h-11 px-4 bg-zinc-50 border border-zinc-200 text-sm font-bold focus:ring-1 focus:ring-zinc-900 focus:outline-none rounded-sm"
                              placeholder="Asset URL (https://...)" 
                            />
-                           <p className="text-[10px] text-zinc-400 font-medium italic leading-relaxed">
+                           <p className="text-xs text-zinc-400 font-medium italic leading-relaxed">
                              Recommended size: 1200x630. This image appears when you share the store link on WhatsApp, Telegram, or Facebook.
                            </p>
                         </div>
@@ -554,7 +554,7 @@ Text to translate: "${sourceText}"`;
                         }} placeholder="/products, /about, etc." />
                       </div>
                     ))}
-                    <button onClick={() => handleUpdate('navbarLinks', [...settings.navbarLinks, { label: { en: 'New Link' }, href: '#' }])} className="w-full py-3 border border-dashed border-zinc-200 rounded-md text-[11px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 hover:bg-zinc-50 transition-all flex items-center justify-center gap-2">
+                    <button onClick={() => handleUpdate('navbarLinks', [...settings.navbarLinks, { label: { en: 'New Link' }, href: '#' }])} className="w-full py-3 border border-dashed border-zinc-200 rounded-md text-sm font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 hover:bg-zinc-50 transition-all flex items-center justify-center gap-2">
                        <Plus className="w-3.5 h-3.5" /> Add Navbar Junction
                     </button>
                   </div>
@@ -628,13 +628,13 @@ Text to translate: "${sourceText}"`;
                                  const newSections = [...settings.footerSections];
                                  newSections[sIdx].links.push({ label: { en: 'New Link' }, href: '#' });
                                  handleUpdate('footerSections', newSections);
-                              }} className="py-2 border border-dashed border-zinc-200 rounded-sm text-[10px] font-bold text-zinc-400 hover:text-zinc-900 flex items-center justify-center">
+                              }} className="py-2 border border-dashed border-zinc-200 rounded-sm text-xs font-bold text-zinc-400 hover:text-zinc-900 flex items-center justify-center">
                                  <Plus className="w-3 h-3 mr-1" /> Add Link
                               </button>
                            </div>
                         </div>
                       ))}
-                      <button onClick={() => handleUpdate('footerSections', [...settings.footerSections, { title: { en: 'New Section' }, links: [] }])} className="w-full py-3 border border-dashed border-zinc-200 rounded-md text-[11px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 transition-all flex items-center justify-center gap-2">
+                      <button onClick={() => handleUpdate('footerSections', [...settings.footerSections, { title: { en: 'New Section' }, links: [] }])} className="w-full py-3 border border-dashed border-zinc-200 rounded-md text-sm font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 transition-all flex items-center justify-center gap-2">
                         <Plus className="w-3.5 h-3.5" /> Append Footer Column
                       </button>
                    </div>
@@ -904,7 +904,7 @@ Text to translate: "${sourceText}"`;
                     </div>
 
                     <div className="pt-6 border-t border-zinc-100">
-                      <p className="text-[11px] font-black uppercase tracking-widest text-zinc-900 mb-4">Account Finalization Wall</p>
+                      <p className="text-sm font-black uppercase tracking-widest text-zinc-900 mb-4">Account Finalization Wall</p>
                       <div className="space-y-6">
                         <LocalizedSettingInput label="Finalization Header" value={settings.finalizeAccountTitle} onChange={v => handleUpdate('finalizeAccountTitle', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('finalizeAccountTitle', 'Finalization Header')} isGenerating={generatingId === 'finalizeAccountTitle-fill'} isTranslating={generatingId === 'finalizeAccountTitle-translate'} />
                         <LocalizedSettingInput label="Finalization Instruction" value={settings.finalizeAccountSubtitle} onChange={v => handleUpdate('finalizeAccountSubtitle', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('finalizeAccountSubtitle', 'Finalization Instruction')} isGenerating={generatingId === 'finalizeAccountSubtitle-fill'} isTranslating={generatingId === 'finalizeAccountSubtitle-translate'} />
@@ -1041,7 +1041,7 @@ Text to translate: "${sourceText}"`;
                     </div>
 
                     <div className="border-t border-zinc-100 pt-8 mt-8">
-                      <p className="text-[11px] font-black uppercase tracking-widest text-zinc-900 mb-6 flex items-center gap-2">
+                      <p className="text-sm font-black uppercase tracking-widest text-zinc-900 mb-6 flex items-center gap-2">
                         <Lock className="w-3.5 h-3.5" /> Set New Password Page
                       </p>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -1072,7 +1072,7 @@ Text to translate: "${sourceText}"`;
                         </div>
                         <div className="flex items-center gap-2">
                            <Info className="w-3.5 h-3.5 text-zinc-400" />
-                           <p className="text-[11px] text-zinc-400 font-medium">Click the preview above to upload a new authentication background image.</p>
+                           <p className="text-xs text-zinc-400 font-medium">Click the preview above to upload a new authentication background image.</p>
                         </div>
                     </div>
                   </div>
@@ -1099,7 +1099,7 @@ Text to translate: "${sourceText}"`;
                      <div className="space-y-6">
                         <div className="flex flex-wrap gap-2">
                            {settings.languages.map(lang => (
-                             <div key={lang} className="flex items-center gap-2 px-3 py-1 bg-zinc-900 text-white rounded text-[11px] font-bold uppercase tracking-widest">
+                             <div key={lang} className="flex items-center gap-2 px-3 py-1 bg-zinc-900 text-white rounded text-xs font-bold uppercase tracking-widest">
                                {lang}
                                {lang !== 'en' && (
                                  <button onClick={() => handleUpdate('languages', settings.languages.filter(l => l !== lang))} className="text-zinc-400 hover:text-white transition-colors">&times;</button>
@@ -1136,7 +1136,7 @@ Text to translate: "${sourceText}"`;
                                  <Trash2 className="w-3.5 h-3.5" />
                                </button>
                                <div className="space-y-2">
-                                <label className="text-[11px] font-bold text-zinc-900/80 uppercase tracking-widest">Country Code (ISO)</label>
+                                <label className="text-xs font-bold text-zinc-900/80 uppercase tracking-widest">Country Code (ISO)</label>
                                 <input 
                                   type="text" 
                                   value={country.code} 

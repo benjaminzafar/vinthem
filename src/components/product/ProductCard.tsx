@@ -56,7 +56,7 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
       <Link href={href} className="block relative aspect-[4/5] mb-5 overflow-hidden bg-slate-50 border border-slate-200 rounded transition-all duration-500">
         {product.isFeatured && (
           <div className="absolute top-3 left-3 md:top-5 md:left-5 z-20">
-            <span className="bg-white/95 border border-slate-200 text-slate-900 text-[10px] font-black px-3 py-1.5 uppercase tracking-[0.18em] rounded">
+            <span className="bg-white/95 border border-slate-200 text-slate-900 text-xs font-black px-3 py-1.5 uppercase tracking-[0.18em] rounded">
               {settings.featuredBadgeText?.[lang] || 'Featured'}
             </span>
           </div>
@@ -97,12 +97,12 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
                 addItem(product);
                 setCartOpen(true);
                 toast.success(`${product.title} added to cart!`, {
-                  className: 'rounded bg-slate-900 text-white text-[11px] font-black uppercase tracking-[0.18em] border-none',
+                  className: 'rounded bg-slate-900 text-white text-xs font-black uppercase tracking-[0.18em] border-none',
                   duration: 2000,
                   icon: <Check className="w-3.5 h-3.5" strokeWidth={1.5} />
                 });
               }}
-              className="w-full bg-white text-slate-900 border border-slate-200 px-5 py-3.5 text-[11px] font-black uppercase tracking-[0.22em] transition-all duration-300 hover:bg-slate-900 hover:text-white hover:border-slate-900 flex items-center justify-center gap-3 active:scale-[0.98] rounded"
+              className="w-full bg-white text-slate-900 border border-slate-200 px-5 py-3.5 text-sm font-black uppercase tracking-[0.22em] transition-all duration-300 hover:bg-slate-900 hover:text-white hover:border-slate-900 flex items-center justify-center gap-3 active:scale-[0.98] rounded"
             >
               <ShoppingBag className="w-3.5 h-3.5" strokeWidth={1.5} />
               {settings.quickAddText?.[lang] || 'Quick Add'}
@@ -119,12 +119,12 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
             addItem(product);
             setCartOpen(true);
             toast.success(`${product.title} added to cart!`, {
-              className: 'rounded bg-slate-900 text-white text-[11px] font-black uppercase tracking-[0.18em] border-none',
+              className: 'rounded bg-slate-900 text-white text-xs font-black uppercase tracking-[0.18em] border-none',
               duration: 2000,
               icon: <Check className="w-3.5 h-3.5" strokeWidth={1.5} />
             });
           }}
-          className="w-full bg-slate-50 text-slate-900 border border-slate-200 px-4 py-3 text-[10px] font-black uppercase tracking-[0.18em] flex items-center justify-center gap-2.5 active:scale-[0.98] rounded"
+          className="w-full bg-slate-50 text-slate-900 border border-slate-200 px-4 py-3 text-xs font-black uppercase tracking-[0.18em] flex items-center justify-center gap-2.5 active:scale-[0.98] rounded"
         >
           <ShoppingBag className="w-3 h-3" strokeWidth={1.5} />
           {settings.quickAddText?.[lang] || 'Quick Add'}
@@ -134,7 +134,7 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
       <div className="flex flex-col flex-1 px-1">
         <div className="flex items-center gap-2 mb-3">
           {product.status === 'draft' && (
-             <span className="text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 bg-slate-100 text-slate-400 border border-slate-200 rounded">Draft</span>
+             <span className="text-xs font-black uppercase tracking-widest px-1.5 py-0.5 bg-slate-100 text-slate-400 border border-slate-200 rounded">Draft</span>
           )}
         </div>
         <h3 className="text-base font-medium tracking-tight text-slate-900 group-hover:text-slate-600 transition-colors line-clamp-2 mb-3">

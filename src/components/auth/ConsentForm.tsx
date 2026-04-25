@@ -74,14 +74,14 @@ export function ConsentForm({ lang }: { lang: string }) {
         <h2 className="text-2xl font-black tracking-tighter text-zinc-900 uppercase">
           {t(settings.finalizeAccountTitle, 'Finalize Account')}
         </h2>
-        <p className="mt-2 text-[10px] text-zinc-500 font-bold uppercase tracking-[0.1em] leading-relaxed">
+        <p className="mt-2 text-xs text-zinc-500 font-bold uppercase tracking-widest leading-relaxed">
           {t(settings.finalizeAccountSubtitle, 'Please confirm your legal preferences to continue.')}
         </p>
       </div>
 
       <form className="space-y-6" onSubmit={handleSubmit}>
         <div className="space-y-4 bg-zinc-50/50 p-6 border border-zinc-100 rounded">
-          <label className="flex items-start gap-4 text-[10px] text-zinc-900 cursor-pointer uppercase font-black tracking-tight group">
+          <label className="flex items-start gap-4 text-xs text-zinc-900 cursor-pointer uppercase font-black tracking-tight group">
             <input 
               type="checkbox" 
               checked={acceptedTerms} 
@@ -94,7 +94,7 @@ export function ConsentForm({ lang }: { lang: string }) {
             </span>
           </label>
 
-          <label className="flex items-start gap-4 text-[10px] text-zinc-900 cursor-pointer uppercase font-black tracking-tight group">
+          <label className="flex items-start gap-4 text-xs text-zinc-900 cursor-pointer uppercase font-black tracking-tight group">
             <input 
               type="checkbox" 
               checked={acceptedPrivacy} 
@@ -107,7 +107,7 @@ export function ConsentForm({ lang }: { lang: string }) {
             </span>
           </label>
 
-          <label className="flex items-start gap-4 text-[10px] text-zinc-900 cursor-pointer uppercase font-black tracking-tight group">
+          <label className="flex items-start gap-4 text-xs text-zinc-900 cursor-pointer uppercase font-black tracking-tight group">
             <input 
               type="checkbox" 
               checked={marketingOptIn} 
@@ -123,7 +123,7 @@ export function ConsentForm({ lang }: { lang: string }) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-4 bg-zinc-900 text-white text-[11px] font-black uppercase tracking-[0.25em] transition-all hover:bg-black disabled:opacity-50 rounded"
+          className="w-full py-4 bg-zinc-900 text-white text-sm font-black uppercase tracking-[0.25em] transition-all hover:bg-black disabled:opacity-50 rounded"
         >
           {loading ? (
             <div className="flex items-center justify-center gap-2">
