@@ -36,7 +36,7 @@ export default function CartClient({ initialSettings }: CartClientProps) {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="text-4xl font-sans text-brand-ink mb-4 tracking-tight"
+          className="!text-[12px] !font-bold !uppercase !tracking-widest text-brand-ink mb-4"
         >
           {settings.cartTitle?.[lang] || 'Your cart is empty'}
         </motion.h2>
@@ -65,9 +65,9 @@ export default function CartClient({ initialSettings }: CartClientProps) {
         <motion.h1 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-4xl md:text-5xl font-sans text-brand-ink tracking-tight mb-4"
+          className="!text-[12px] !font-bold !uppercase !tracking-widest text-brand-ink"
         >
-          {settings.cartTitle?.[lang] || 'Shopping Cart'}.
+          {settings.cartTitle?.[lang] || 'Shopping Cart'}
         </motion.h1>
         <motion.div 
           initial={{ opacity: 0, width: 0 }}
@@ -118,7 +118,7 @@ export default function CartClient({ initialSettings }: CartClientProps) {
                         <span className="px-4 py-2 text-sm font-bold border-x border-gray-200 w-12 text-center">{item.quantity}</span>
                         <button onClick={() => updateQuantity(item.id!, item.quantity + 1)} className="px-4 py-2 text-brand-ink hover:bg-gray-50 transition-colors text-lg font-medium">+</button>
                       </div>
-                      <p className="text-xl font-sans font-medium text-brand-ink">{formatPrice((item.price || 0) * item.quantity, lang, item.prices ? Object.fromEntries(Object.entries(item.prices).map(([k, v]) => [k, v * item.quantity])) : undefined)}</p>
+                      <p className="!text-[14px] !font-bold text-brand-ink">{formatPrice((item.price || 0) * item.quantity, lang, item.prices ? Object.fromEntries(Object.entries(item.prices).map(([k, v]) => [k, v * item.quantity])) : undefined)}</p>
                     </div>
                   </div>
                 </motion.div>
@@ -128,7 +128,7 @@ export default function CartClient({ initialSettings }: CartClientProps) {
 
           <div className="w-full lg:w-[400px] shrink-0">
             <div className="py-8 border-b border-gray-200/60 last:border-0 sticky top-32">
-              <h3 className="text-2xl font-sans text-brand-ink mb-8">{settings.orderSummaryText?.[lang] || 'Order Summary'}</h3>
+              <h3 className="!text-[12px] !font-bold !uppercase !tracking-widest text-brand-ink mb-8">{settings.orderSummaryText?.[lang] || 'Order Summary'}</h3>
               
               <div className="space-y-4 mb-8">
                 <div className="flex justify-between text-brand-muted">
@@ -143,8 +143,8 @@ export default function CartClient({ initialSettings }: CartClientProps) {
 
               <div className="border-t border-gray-100 pt-6 mb-8">
                 <div className="flex justify-between items-end">
-                  <span className="text-sm text-brand-muted uppercase tracking-wider font-bold">{settings.totalText?.[lang] || 'Total'}</span>
-                  <span className="text-4xl font-sans text-brand-ink">{formatPrice(total(lang), lang)}</span>
+                  <span className="!text-[12px] !font-bold !uppercase !tracking-widest text-brand-muted">{settings.totalText?.[lang] || 'Total'}</span>
+                  <span className="!text-[16px] !font-bold text-brand-ink">{formatPrice(total(lang), lang)}</span>
                 </div>
               </div>
 

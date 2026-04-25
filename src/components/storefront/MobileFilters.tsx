@@ -111,7 +111,7 @@ export function MobileFilters({
                       key="filter-title"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      className="text-[12px] font-bold uppercase tracking-widest text-brand-ink mr-auto"
+                      className="!text-[12px] !font-bold !uppercase !tracking-widest text-brand-ink mr-auto"
                     >
                       {settings.filterAndSortText?.[lang] || 'Filter & Sort'}
                     </motion.h2>
@@ -202,7 +202,7 @@ export function MobileFilters({
 
                       {/* Sort By */}
                       <div className="space-y-6">
-                        <h3 className="text-[12px] font-semibold text-brand-muted">
+                        <h3 className="!text-[11px] !font-bold !uppercase !tracking-widest text-brand-muted">
                           {settings.sortByText?.[lang] || 'Sort by'}
                         </h3>
                         <div className="space-y-1">

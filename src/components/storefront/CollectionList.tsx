@@ -22,7 +22,7 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
           <p className="text-xs font-bold tracking-[0.2em] uppercase text-slate-400">
             {settings.collectionTopSubtitle?.[lang] || 'Curated Catalog'}
           </p>
-          <h2 className="font-sans text-brand-ink tracking-tight mb-6 max-w-4xl leading-tight">
+          <h2 className="!text-[12px] !font-bold !uppercase !tracking-widest text-brand-ink mb-6 max-w-4xl leading-tight">
             {settings.collectionTitle?.[lang]}
           </h2>
           <div className="w-12 h-1 bg-brand-ink"></div>
@@ -34,7 +34,7 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
         {featuredCategories.length === 0 ? (
           <div className="text-center py-24 bg-slate-50 rounded border border-slate-100">
             <ShoppingBag className="w-12 h-12 text-slate-300 mx-auto mb-6" />
-            <h3 className="text-xl font-sans font-bold mb-3 text-slate-900">{settings.noCollectionsFoundText?.[lang]}</h3>
+            <h3 className="!text-[12px] !font-bold !uppercase !tracking-widest mb-3 text-slate-900">{settings.noCollectionsFoundText?.[lang]}</h3>
             <p className="text-slate-500 text-sm">{settings.checkBackLaterText?.[lang]}</p>
           </div>
         ) : (
