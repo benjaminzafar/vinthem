@@ -93,7 +93,7 @@ export function SidebarFilters({
                 className="flex items-center space-x-2 text-slate-500 hover:text-brand-ink transition-colors pb-2"
               >
                 <ChevronLeft className="w-4 h-4" />
-                <span className="text-xs font-black uppercase tracking-widest">{activeCategoryData?.name}</span>
+                <span className="text-sm font-bold uppercase tracking-widest">{activeCategoryData?.name}</span>
               </motion.button>
             )}
           </AnimatePresence>
@@ -139,7 +139,7 @@ export function SidebarFilters({
               <button
                 key={option.id}
                 onClick={() => updateParams({ sort: option.id })}
-                className={`w-full text-left py-2 px-4 transition-all text-xs uppercase font-bold tracking-[0.12em] ${sortBy === option.id ? 'text-slate-900' : 'text-slate-600 hover:text-slate-900'}`}
+                className={`w-full text-left py-2 px-4 transition-all text-sm uppercase font-bold tracking-[0.12em] ${sortBy === option.id ? 'text-slate-900' : 'text-slate-600 hover:text-slate-900'}`}
               >
                 {option.label}
               </button>

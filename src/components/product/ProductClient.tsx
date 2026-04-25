@@ -210,7 +210,7 @@ export function ProductClient({
               )}
             </div>
 
-            <h1 className="mt-6 text-3xl font-medium leading-tight tracking-tight text-slate-900 sm:text-4xl">
+            <h1 className="mt-6 font-medium leading-tight tracking-tight text-slate-900 uppercase">
               {product.translations?.[lang]?.title || product.title}
             </h1>
 
@@ -228,7 +228,7 @@ export function ProductClient({
             </div>
 
             <div className="mt-8 flex flex-wrap items-end gap-4 border-b border-slate-100 pb-8">
-              <p className="text-4xl font-medium tracking-tight text-slate-900">
+              <p className="text-2xl font-medium tracking-tight text-slate-900">
                 {formatPrice(currentPrice, lang, product.prices)}
               </p>
               <div className={`inline-flex items-center gap-2 border px-3 py-2 text-xs font-black uppercase tracking-[0.18em] rounded ${currentStock > 0 ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-rose-200 bg-rose-50 text-rose-700'}`}>
@@ -352,7 +352,7 @@ export function ProductClient({
       {relatedProducts.length > 0 && (
         <section className="mt-16 border-t border-slate-200 pt-12">
           <div className="mb-8 flex items-center justify-between">
-            <h2 className="text-2xl font-medium tracking-tight text-slate-900">
+            <h2 className="font-medium tracking-tight text-slate-900 uppercase">
               {settings.relatedProductsTitleText?.[lang] || 'Related Products'}
             </h2>
             <Link href={`/${lang}/products`} className="inline-flex items-center text-xs font-black uppercase tracking-[0.2em] text-slate-500 transition-all hover:text-slate-900">

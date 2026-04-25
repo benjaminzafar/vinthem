@@ -124,7 +124,7 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
               icon: <Check className="w-3.5 h-3.5" strokeWidth={1.5} />
             });
           }}
-          className="w-full bg-slate-50 text-slate-900 border border-slate-200 px-4 py-3 text-xs font-black uppercase tracking-[0.18em] flex items-center justify-center gap-2.5 active:scale-[0.98] rounded"
+          className="w-full bg-slate-50 text-slate-900 border border-slate-200 px-4 py-3 text-sm font-black uppercase tracking-[0.18em] flex items-center justify-center gap-2.5 active:scale-[0.98] rounded"
         >
           <ShoppingBag className="w-3 h-3" strokeWidth={1.5} />
           {settings.quickAddText?.[lang] || 'Quick Add'}
