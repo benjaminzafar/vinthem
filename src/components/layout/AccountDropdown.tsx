@@ -46,8 +46,15 @@ export function AccountDropdown({ user, isAdmin, labels }: AccountDropdownProps)
   const handleLogout = async () => {
     try {
       setIsOpen(false);
+      
+      // 1. Clear server cookies via API
+      const response = await fetch('/api/auth/logout', { method: 'POST' });
+      
+      // 2. Client-side fallback + cleanup
       await supabase.auth.signOut();
-      window.location.replace(`/${getClientLocale(window.location.pathname)}`);
+      
+      // 3. Absolute hard refresh to root
+      window.location.href = `/${getClientLocale(window.location.pathname)}`;
     } catch (error) {
       console.error('Logout error:', error);
       window.location.href = `/${getClientLocale(window.location.pathname)}`;

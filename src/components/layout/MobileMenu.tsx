@@ -76,19 +76,22 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isMobileMenuOpen, setMobileMenuOpen]);
 
-  const handleLogout = (e: React.MouseEvent | React.PointerEvent) => {
+  const handleLogout = async (e: React.MouseEvent | React.PointerEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
-    // Explicit sign out with immediate fallback to ensure redirect even if signOut hangs
-    supabase.auth.signOut().finally(() => {
-      window.location.replace(`/${lang}`);
-    });
-
-    // Forced fallback after 1.5s to ensure user isn't stuck
-    setTimeout(() => {
-      window.location.replace(`/${lang}`);
-    }, 1500);
+    try {
+      // 1. Clear server cookies
+      await fetch('/api/auth/logout', { method: 'POST' });
+      
+      // 2. Client-side cleanup
+      await supabase.auth.signOut();
+      
+      // 3. Absolute hard refresh
+      window.location.href = `/${lang}`;
+    } catch (error) {
+      window.location.href = `/${lang}`;
+    }
   };
 
   if (isDesktop) return null;
