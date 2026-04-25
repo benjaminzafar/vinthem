@@ -1111,7 +1111,7 @@ Text to translate: "${sourceText}"`;
                            <input 
                               type="text" 
                               placeholder="Add lang (e.g. fr, de)" 
-                              className="px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-sm text-[13px] font-medium focus:ring-1 focus:ring-zinc-900 focus:outline-none placeholder:text-zinc-300"
+                              className="px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-sm text-sm font-medium focus:ring-1 focus:ring-zinc-900 focus:outline-none placeholder:text-zinc-300"
                               onKeyDown={(e) => {
                                  if (e.key === 'Enter') {
                                     const val = (e.target as HTMLInputElement).value.trim().toLowerCase();
@@ -1122,7 +1122,7 @@ Text to translate: "${sourceText}"`;
                                  }
                               }}
                            />
-                           <p className="text-[11px] text-zinc-400 font-medium italic">Press Enter to synchronize new locale</p>
+                           <p className="text-xs text-zinc-400 font-medium italic">Press Enter to synchronize new locale</p>
                         </div>
                      </div>
                   </SettingCard>
@@ -1188,8 +1188,8 @@ Text to translate: "${sourceText}"`;
             <Globe className="w-5 h-5 text-indigo-600" />
          </div>
          <div className="flex-1">
-            <p className="text-[11px] font-bold text-zinc-900 uppercase tracking-widest leading-none">Global Synchronization</p>
-            <p className="text-[11px] text-zinc-500 font-medium mt-1">Updates to these settings are pushed in real-time to the public storefront Neural Cache. Languages are synced across all active market segments.</p>
+            <p className="text-xs font-bold text-zinc-900 uppercase tracking-widest leading-none">Global Synchronization</p>
+            <p className="text-xs text-zinc-500 font-medium mt-1">Updates to these settings are pushed in real-time to the public storefront Neural Cache. Languages are synced across all active market segments.</p>
          </div>
       </div>
     </div>
