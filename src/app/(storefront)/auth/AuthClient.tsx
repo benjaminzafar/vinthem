@@ -242,7 +242,7 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
               )}
             </button>
 
-            {isForgotPassword ? null : (
+            {!isLogin && !isForgotPassword && (
               <div className="mt-8 space-y-3 bg-zinc-50/50 p-4 border border-slate-200 rounded">
                 <label className="flex items-start gap-4 text-[11px] text-zinc-900 cursor-pointer uppercase font-black tracking-tight leading-tight group">
                   <input type="checkbox" checked={acceptedTerms} onChange={(e) => setAcceptedTerms(e.target.checked)} className="mt-1 rounded-sm h-4 w-4 border-slate-300 text-zinc-900 focus:ring-zinc-900" required />
@@ -256,12 +256,10 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
                     Accept <Link href={`/${lang}/privacy-policy`} target="_blank" className="underline hover:text-zinc-600 transition-colors">Privacy Policy</Link>
                   </span>
                 </label>
-                {!isLogin && (
-                  <label className="flex items-start gap-4 text-[11px] text-zinc-900 cursor-pointer uppercase font-black tracking-tight leading-tight group">
-                    <input type="checkbox" checked={marketingOptIn} onChange={(e) => setMarketingOptIn(e.target.checked)} className="mt-1 rounded-sm h-4 w-4 border-slate-300 text-zinc-900 focus:ring-zinc-900" />
-                    <span className="opacity-80 font-bold">{settings.signUpMarketingConsentText?.[lang] || 'Subscribe to Newsletter'}</span>
-                  </label>
-                )}
+                <label className="flex items-start gap-4 text-[11px] text-zinc-900 cursor-pointer uppercase font-black tracking-tight leading-tight group">
+                  <input type="checkbox" checked={marketingOptIn} onChange={(e) => setMarketingOptIn(e.target.checked)} className="mt-1 rounded-sm h-4 w-4 border-slate-300 text-zinc-900 focus:ring-zinc-900" />
+                  <span className="opacity-80 font-bold">{settings.signUpMarketingConsentText?.[lang] || 'Subscribe to Newsletter'}</span>
+                </label>
               </div>
             )}
           </form>
@@ -277,7 +275,7 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
               <button
                 type="button"
                 onClick={handleGoogleLogin}
-                disabled={!settings.googleAuthEnabled || !acceptedTerms || !acceptedPrivacy}
+                disabled={!settings.googleAuthEnabled}
                 className="w-full group flex items-center justify-center gap-3 py-4 border border-slate-200 rounded text-[10px] font-black uppercase tracking-[0.2em] text-zinc-950 bg-white hover:bg-zinc-50 transition-all active:scale-[0.98] disabled:opacity-30 disabled:grayscale"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24">
