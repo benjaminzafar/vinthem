@@ -75,10 +75,18 @@ export async function sendTransactionalEmail(payload: {
  */
 export async function syncContactToBrevo(email: string, attributes?: Record<string, any>, listIds: number[] = []) {
   const apiKey = await getBrevoApiKey();
-  if (!apiKey) return;
+  if (!apiKey) {
+    console.warn('[Brevo Sync] No API Key found. Skipping sync.');
+    return;
+  }
+
+  // Map common attributes to Brevo defaults if present
+  const mappedAttributes = { ...attributes };
+  if (attributes?.FULL_NAME && !attributes.FIRSTNAME) {
+    mappedAttributes.FIRSTNAME = attributes.FULL_NAME;
+  }
 
   try {
-    // Add contact to list (or update if exists)
     const response = await fetch(`${BREVO_API_URL}/contacts`, {
       method: 'POST',
       headers: {
@@ -88,17 +96,24 @@ export async function syncContactToBrevo(email: string, attributes?: Record<stri
       },
       body: JSON.stringify({
         email,
-        attributes,
+        attributes: mappedAttributes,
         listIds,
-        updateEnabled: true, // Crucial: updates if contact already exists
+        updateEnabled: true,
       }),
     });
 
-    if (!response.ok && response.status !== 400) { // 400 can mean contact already exists if updateEnabled is false
-       const errorData = await response.json();
-       logger.error('Brevo Contact Sync Error:', errorData);
+    const data = await response.json();
+    
+    if (!response.ok) {
+      console.error('[Brevo Sync Error]', {
+        status: response.status,
+        email,
+        data
+      });
+    } else {
+      console.log(`[Brevo Sync Success] Contact synced: ${email}`);
     }
   } catch (error) {
-    logger.error('Brevo Sync Exception:', error);
+    console.error('[Brevo Sync Exception]', error);
   }
 }

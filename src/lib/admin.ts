@@ -55,16 +55,21 @@ export async function getSessionUserWithRole() {
   }
 
   if (!user) {
-    return { supabase, user: null, role: null, isAdmin: false };
+    return { supabase, user: null, role: null, isAdmin: false, acceptedTermsAt: null };
   }
 
-  const role = await getRoleWithSessionClient(supabase, user.id);
+  const { data: profile } = await supabase
+    .from('users')
+    .select('role, accepted_terms_at')
+    .eq('id', user.id)
+    .maybeSingle();
 
   return {
     supabase,
     user,
-    role,
-    isAdmin: role === 'admin',
+    role: profile?.role ?? null,
+    isAdmin: profile?.role === 'admin',
+    acceptedTermsAt: profile?.accepted_terms_at ?? null
   };
 }
 
