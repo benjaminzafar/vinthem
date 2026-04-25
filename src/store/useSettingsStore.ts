@@ -382,6 +382,7 @@ export interface StorefrontSettings {
   shippingCountries: Array<{ code: string; name: LocalizedString }>;
   finalizeAccountTitle: LocalizedString;
   finalizeAccountSubtitle: LocalizedString;
+  continueToStripeText: LocalizedString;
 }
 
 interface SettingsStore {
@@ -797,10 +798,16 @@ export const defaultSettings: StorefrontSettings = {
   },
   finalizeAccountSubtitle: { 
     en: 'Please confirm your legal preferences to continue.', 
-    sv: 'Vänligen bekräfta dina juridiska inställningar för att fortsätta.', 
-    fi: 'Vahvista oikeudelliset asetuksesi jatkaaksesi.', 
-    da: 'Bekræft venligst dine juridiske præferencer for at fortsætte.' 
+    sv: 'Vänligen bekräfta dina juridiska inställningar för att fortsätta.',
+    fi: 'Vahvista oikeudelliset asetuksesi jatkaaksesi.',
+    da: 'Bekræft venligst dine juridiske præferencer for at fortsætte.'
   },
+  continueToStripeText: {
+    en: 'Continue to Checkout',
+    sv: 'Fortsätt till kassan',
+    fi: 'Jatka kassalle',
+    da: 'Fortsæt til udtjekning'
+  }
 };
 
 export const useSettingsStore = create<SettingsStore>((set) => ({
