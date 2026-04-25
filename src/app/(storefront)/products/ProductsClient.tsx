@@ -126,7 +126,7 @@ export default function ProductsClient({
                 <h3 className="mt-8 text-2xl font-medium text-slate-900">
                   {settings.noProductsFoundText?.[lang] || 'No products found'}
                 </h3>
-                <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-slate-500">
+                <p className="mx-auto mt-3 max-w-md text-[17px] leading-relaxed text-brand-muted">
                   {settings.noProductsDescription?.[lang] || 'No products match the current search or collection filters.'}
                 </p>
                 <button

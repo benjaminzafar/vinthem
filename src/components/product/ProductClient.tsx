@@ -217,7 +217,7 @@ export function ProductClient({
               {product.translations?.[lang]?.title || product.title}
             </h1>
 
-            <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-slate-500">
+            <div className="mt-6 flex flex-wrap items-center gap-4 text-[15px] md:text-[17px] text-slate-500">
               <div className="flex items-center gap-1 text-amber-500">
                 {[...Array(5)].map((_, index) => (
                   <Star key={index} className={`h-4 w-4 ${index < Math.floor(product.rating || 5) ? 'fill-current' : ''}`} strokeWidth={1.5} />
@@ -231,7 +231,7 @@ export function ProductClient({
             </div>
 
             <div className="mt-8 flex flex-wrap items-end gap-4 border-b border-slate-100 pb-8">
-              <p className="text-2xl font-medium tracking-tight text-slate-900">
+              <p className="text-[28px] md:text-[32px] font-medium tracking-tight text-brand-ink">
                 {formatPrice(currentPrice, lang, product.prices)}
               </p>
               <div className={`inline-flex items-center gap-2 border px-3 py-2 text-xs font-black uppercase tracking-[0.18em] rounded ${currentStock > 0 ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-rose-200 bg-rose-50 text-rose-700'}`}>
@@ -291,7 +291,7 @@ export function ProductClient({
               </Link>
             </div>
 
-            <div className="mt-8 text-sm leading-relaxed text-slate-600">
+            <div className="mt-8 text-[17px] leading-relaxed text-brand-muted">
               <p>{product.translations?.[lang]?.description || product.description}</p>
             </div>
 
@@ -370,10 +370,10 @@ export function ProductClient({
                     <Image src={item.imageUrl} alt={item.title} fill sizes="(max-width: 768px) 50vw, 25vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
                   ) : null}
                 </div>
-                <h3 className="mt-4 text-sm font-medium text-slate-900 transition-colors group-hover:text-slate-600">
+                <h3 className="mt-4 text-[17px] font-semibold text-brand-ink transition-colors group-hover:text-brand-muted">
                   {item.translations?.[lang]?.title || item.title}
                 </h3>
-                <p className="mt-1 text-sm text-slate-500">{formatPrice(item.price || 0, lang, item.prices)}</p>
+                <p className="mt-1 text-[17px] font-medium text-brand-muted">{formatPrice(item.price || 0, lang, item.prices)}</p>
               </Link>
             ))}
           </div>
