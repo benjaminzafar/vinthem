@@ -111,7 +111,7 @@ export function MobileFilters({
                       key="filter-title"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      className="text-[14px] font-semibold text-brand-ink mr-auto"
+                      className="text-[14px] font-bold uppercase tracking-widest text-brand-ink mr-auto"
                     >
                       {settings.filterAndSortText?.[lang] || 'Filter & Sort'}
                     </motion.h2>
@@ -148,9 +148,6 @@ export function MobileFilters({
                     <>
                       {/* Collections */}
                       <div className="space-y-6">
-                        <h3 className="text-[12px] font-semibold text-brand-muted">
-                          {settings.searchCollectionsResultsText?.[lang] || settings.categoriesText?.[lang] || 'Collections'}
-                        </h3>
                         <div className="space-y-1">
                           <button
                             onClick={() => updateParams({ category: 'All' })}

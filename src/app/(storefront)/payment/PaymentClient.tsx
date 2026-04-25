@@ -185,9 +185,9 @@ export default function PaymentClient({ initialSettings }: PaymentClientProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="rounded-lg border border-slate-200 bg-white p-8"
+              className="rounded-none border border-slate-200 bg-white p-8"
             >
-              <h2 className="mb-8 flex items-center text-[17px] font-semibold text-brand-ink">
+              <h2 className="mb-8 flex items-center text-[14px] font-bold uppercase tracking-widest text-brand-ink">
                 <Truck className="mr-3 h-5 w-5 text-brand-ink" strokeWidth={1.5} />
                 {settings.shippingInformationText?.[lang] || 'Shipping Information'}
               </h2>
@@ -253,14 +253,14 @@ export default function PaymentClient({ initialSettings }: PaymentClientProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="rounded-lg border border-slate-200 bg-white p-8"
+              className="rounded-none border border-slate-200 bg-white p-8"
             >
-              <h2 className="mb-8 flex items-center text-[17px] font-semibold text-brand-ink">
+              <h2 className="mb-8 flex items-center text-[14px] font-bold uppercase tracking-widest text-brand-ink">
                 <Lock className="mr-3 h-5 w-5 text-brand-ink" strokeWidth={1.5} />
                 {settings.paymentDetailsText?.[lang] || 'Payment Details'}
               </h2>
 
-              <div className="space-y-4 rounded-lg border border-slate-200 bg-slate-50 px-5 py-5 text-[14px] text-brand-muted">
+              <div className="space-y-4 rounded-none border border-slate-200 bg-slate-50 px-5 py-5 text-[14px] text-brand-muted">
                 <p className="font-medium text-brand-ink">
                   Taxes are estimated before redirect and finalized inside Stripe Checkout from the billing and shipping address.
                 </p>
@@ -279,16 +279,16 @@ export default function PaymentClient({ initialSettings }: PaymentClientProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="sticky top-32 rounded-lg border border-slate-200 bg-white p-8"
+              className="sticky top-32 rounded-none border border-slate-200 bg-white p-8"
             >
-              <h3 className="mb-8 text-[17px] font-semibold text-brand-ink">
+              <h3 className="mb-8 text-[14px] font-bold uppercase tracking-widest text-brand-ink">
                 {settings.orderSummaryText?.[lang] || 'Order Summary'}
               </h3>
 
               <div className="mb-8 max-h-60 space-y-4 overflow-y-auto pr-2">
                 {items.map((item) => (
                   <div key={item.id} className="flex gap-4">
-                    <div className="relative h-20 w-16 shrink-0 overflow-hidden rounded-lg border border-slate-100 bg-slate-50">
+                    <div className="relative h-20 w-16 shrink-0 overflow-hidden rounded-none border border-slate-100 bg-slate-50">
                       {item.imageUrl && item.imageUrl.trim() !== '' ? (
                         <Image src={item.imageUrl} alt={item.title} fill className="object-cover" sizes="64px" />
                       ) : (
@@ -324,7 +324,7 @@ export default function PaymentClient({ initialSettings }: PaymentClientProps) {
                 <div className="flex justify-between text-[12px] font-semibold text-brand-muted">
                   <span className="flex items-center">
                     {settings.shippingText?.[lang] || 'Shipping'}
-                    <span className="ml-2 rounded-lg bg-blue-50 px-2 py-0.5 text-xs font-semibold text-[#00529C]">PostNord</span>
+                    <span className="ml-2 rounded-none bg-blue-50 px-2 py-0.5 text-xs font-semibold text-[#00529C]">PostNord</span>
                   </span>
                   <span className="font-semibold text-brand-ink">{formatPrice(effectiveEstimate.shipping, lang)}</span>
                 </div>
@@ -335,7 +335,7 @@ export default function PaymentClient({ initialSettings }: PaymentClientProps) {
                   </span>
                 </div>
                 {effectiveEstimate.taxBreakdown.length > 0 && (
-                  <div className="rounded-lg border border-slate-100 bg-slate-50 px-4 py-3 text-xs text-brand-muted">
+                  <div className="rounded-none border border-slate-100 bg-slate-50 px-4 py-3 text-xs text-brand-muted">
                     {effectiveEstimate.taxBreakdown.map((entry, index) => (
                       <p key={`${entry.jurisdiction || 'tax'}-${index}`}>
                         {entry.jurisdiction || 'Tax'}{typeof entry.rate === 'number' ? ` (${entry.rate}%)` : ''}: {formatPrice(entry.amount, lang)}
