@@ -139,7 +139,7 @@ export function SidebarFilters({
               <button
                 key={option.id}
                 onClick={() => updateParams({ sort: option.id })}
-                className={`w-full text-left py-2 px-4 transition-all text-xs font-medium tracking-wide ${sortBy === option.id ? 'text-slate-900 underline underline-offset-4' : 'text-slate-600 hover:text-slate-900'}`}
+                className={`w-full text-left py-2 px-4 transition-all text-[12px] font-semibold tracking-tight ${sortBy === option.id ? 'text-brand-ink underline underline-offset-4' : 'text-brand-muted hover:text-brand-ink'}`}
               >
                 {option.label}
               </button>
@@ -182,7 +182,7 @@ function CategoryItem({ cat, isActive, hasChildren, goForward, updateParams }: a
         ) : (
           <LayoutGrid className="w-4 h-4 opacity-40 shrink-0" strokeWidth={1.5} />
         )}
-        <span className="text-xs font-medium text-left truncate max-w-[140px] uppercase tracking-wide">{cat.name}</span>
+        <span className="text-[12px] font-semibold text-left truncate max-w-[140px] tracking-tight">{cat.name}</span>
       </div>
       {hasChildren ? (
         <ChevronRight className="w-4 h-4 opacity-80 group-hover:opacity-100 group-hover:translate-x-1 transition-all text-slate-500 group-hover:text-slate-900 shrink-0" strokeWidth={2} />
