@@ -22,7 +22,7 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
           <p className="text-xs font-bold tracking-[0.2em] uppercase text-slate-400">
             {settings.collectionTopSubtitle?.[lang] || 'Curated Catalog'}
           </p>
-          <h2 className="!text-[12px] !font-bold !uppercase !tracking-widest text-brand-ink mb-6 max-w-4xl leading-tight">
+          <h2 className="text-[24px] md:text-[32px] font-bold text-brand-ink mb-6 max-w-4xl leading-tight tracking-tight">
             {settings.collectionTitle?.[lang]}
           </h2>
           <div className="w-12 h-1 bg-brand-ink"></div>

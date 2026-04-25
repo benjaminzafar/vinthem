@@ -213,7 +213,7 @@ export function ProductClient({
               )}
             </div>
 
-            <h1 className="mt-6 text-[12px] font-bold uppercase tracking-[0.24em] text-slate-900">
+            <h1 className="mt-6 text-[18px] sm:text-[24px] font-bold text-slate-900 tracking-tight">
               {product.translations?.[lang]?.title || product.title}
             </h1>
 
@@ -231,7 +231,7 @@ export function ProductClient({
             </div>
 
             <div className="mt-8 flex flex-wrap items-end gap-4 border-b border-slate-100 pb-8">
-              <p className="text-[24px] md:text-[28px] font-medium tracking-tight text-brand-ink">
+              <p className="!text-[18px] md:!text-[22px] font-bold tracking-tight text-brand-ink">
                 {formatPrice(currentPrice, lang, product.prices)}
               </p>
               <div className={`inline-flex items-center gap-2 border px-4 py-1.5 text-[12px] font-semibold uppercase tracking-[0.05em] rounded ${currentStock > 0 ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-rose-200 bg-rose-50 text-rose-700'}`}>
@@ -261,7 +261,7 @@ export function ProductClient({
                             <button
                               key={value}
                               onClick={() => handleOptionChange(primaryOptionName, primaryValue)}
-                              className={`border px-6 h-11 text-[14px] font-semibold transition-all rounded ${selectedOptions[primaryOptionName] === primaryValue ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-brand-ink hover:border-slate-400 hover:bg-slate-50'}`}
+                              className={`border px-6 h-11 !text-[12px] !font-black !uppercase !tracking-widest transition-all rounded ${selectedOptions[primaryOptionName] === primaryValue ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-brand-ink hover:border-slate-400 hover:bg-slate-50'}`}
                             >
                               {value}
                             </button>
@@ -278,20 +278,20 @@ export function ProductClient({
               <button
                 onClick={handleAddToCart}
                 disabled={currentStock <= 0}
-                className="flex h-11 flex-1 items-center justify-center gap-2 bg-slate-900 px-10 text-[14px] font-semibold text-white transition-all hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 rounded"
+                className="flex h-11 flex-1 items-center justify-center gap-2 bg-slate-900 px-10 !text-[12px] !font-black !uppercase !tracking-widest text-white transition-all hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 rounded"
               >
                 <ShoppingBag className="h-4 w-4" strokeWidth={1.5} />
                 {currentStock > 0 ? (settings.addToCartButtonText?.[lang] || 'Add to cart') : (settings.outOfStockText?.[lang] || 'Out of stock')}
               </button>
               <Link
                 href="/cart"
-                className="flex h-11 items-center justify-center border border-slate-200 px-8 text-[14px] font-semibold text-brand-ink transition-all hover:border-slate-900 hover:text-slate-900 rounded"
+                className="flex h-11 items-center justify-center border border-slate-200 px-8 !text-[12px] !font-black !uppercase !tracking-widest text-brand-ink transition-all hover:border-slate-900 hover:text-slate-900 rounded"
               >
                 {settings.cartTitle?.[lang] || 'View bag'}
               </Link>
             </div>
 
-            <div className="mt-8 text-[17px] leading-relaxed text-brand-muted">
+            <div className="mt-8 !text-[14px] leading-relaxed text-brand-muted">
               <p>{product.translations?.[lang]?.description || product.description}</p>
             </div>
 

@@ -130,7 +130,7 @@ export function CartDrawer({ initialSettings }: CartDrawerProps) {
                         <div className="flex-1 flex flex-col justify-between py-0.5">
                           <div className="space-y-1">
                             <div className="flex justify-between items-start gap-2">
-                              <h3 className="text-[12px] font-bold uppercase tracking-widest text-brand-ink leading-snug line-clamp-2">
+                              <h3 className="text-[16px] font-bold text-brand-ink leading-tight line-clamp-2">
                                 {item.translations?.[lang]?.title || item.title}
                               </h3>
                               <button

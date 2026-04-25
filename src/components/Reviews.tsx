@@ -137,7 +137,7 @@ export default function Reviews({ productId, initialSettings, lang }: ReviewsPro
 
   return (
     <div className="mt-16 mb-16">
-      <h2 className="text-2xl font-sans font-medium text-brand-ink mb-8 tracking-tight">{settings.customerReviewsText?.[lang] || 'Customer Reviews'}</h2>
+      <h2 className="text-[20px] md:text-[24px] font-bold text-brand-ink mb-8 tracking-tight">{settings.customerReviewsText?.[lang] || 'Customer Reviews'}</h2>
       
       {currentUser ? (
         hasPurchased === true ? (
@@ -167,7 +167,7 @@ export default function Reviews({ productId, initialSettings, lang }: ReviewsPro
             <button
               type="submit"
               disabled={submitting}
-              className="bg-brand-ink text-white px-10 py-4 rounded font-black text-sm uppercase tracking-[0.2em] hover:opacity-90 transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+              className="bg-brand-ink text-white px-10 py-4 rounded !font-black !text-[12px] !uppercase !tracking-[0.2em] hover:opacity-90 transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submitting ? 'Submitting...' : (settings.submitReviewButtonText?.[lang] || 'Submit Review')}
             </button>

@@ -97,12 +97,12 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
                 addItem(product);
                 setCartOpen(true);
                 toast.success(`${product.title} added to cart!`, {
-                  className: 'rounded bg-slate-900 text-white text-[14px] font-medium border-none px-6 py-3',
+                  className: 'rounded bg-slate-900 text-white !text-[12px] !font-bold !uppercase !tracking-widest border-none px-6 py-3',
                   duration: 2000,
                   icon: <Check className="w-5 h-5" strokeWidth={1.5} />
                 });
               }}
-              className="w-full h-11 bg-white text-brand-ink border border-slate-200 px-6 text-[14px] font-semibold transition-all duration-300 hover:bg-slate-900 hover:text-white hover:border-slate-900 flex items-center justify-center gap-2 active:scale-[0.98] rounded"
+              className="w-full h-11 bg-white text-brand-ink border border-slate-200 px-6 !text-[12px] !font-black !uppercase !tracking-widest transition-all duration-300 hover:bg-slate-900 hover:text-white hover:border-slate-900 flex items-center justify-center gap-2 active:scale-[0.98] rounded"
             >
               <ShoppingBag className="w-4 h-4" strokeWidth={1.5} />
               {settings.quickAddText?.[lang] || 'Quick add'}
@@ -119,12 +119,12 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
             addItem(product);
             setCartOpen(true);
             toast.success(`${product.title} added to cart!`, {
-              className: 'rounded bg-slate-900 text-white text-[14px] font-medium border-none px-6 py-3',
+              className: 'rounded bg-slate-900 text-white !text-[12px] !font-bold !uppercase !tracking-widest border-none px-6 py-3',
               duration: 2000,
               icon: <Check className="w-5 h-5" strokeWidth={1.5} />
             });
           }}
-          className="w-full h-11 bg-slate-50 text-brand-ink border border-slate-200 px-6 text-[14px] font-semibold flex items-center justify-center gap-2 active:scale-[0.98] rounded"
+          className="w-full h-11 bg-slate-50 text-brand-ink border border-slate-200 px-6 !text-[12px] !font-black !uppercase !tracking-widest flex items-center justify-center gap-2 active:scale-[0.98] rounded"
         >
           <ShoppingBag className="w-4 h-4" strokeWidth={1.5} />
           {settings.quickAddText?.[lang] || 'Quick add'}
@@ -137,7 +137,7 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
              <span className="text-xs font-black uppercase tracking-widest px-1.5 py-0.5 bg-slate-100 text-slate-400 border border-slate-200 rounded">Draft</span>
           )}
         </div>
-        <h3 className="text-[12px] font-bold uppercase tracking-widest text-brand-ink group-hover:text-brand-muted transition-colors line-clamp-2 mb-2">
+        <h3 className="text-[15px] md:text-[16px] font-bold text-brand-ink group-hover:text-brand-muted transition-colors line-clamp-2 mb-2">
           <Link href={href}>
             {product.title}
           </Link>

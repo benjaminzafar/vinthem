@@ -123,10 +123,10 @@ export default function ProductsClient({
                 <div className="mx-auto flex h-20 w-20 items-center justify-center rounded border border-slate-200 bg-slate-50">
                   <Search className="h-8 w-8 text-slate-300" />
                 </div>
-                <h3 className="mt-8 text-2xl font-medium text-slate-900">
+                <h3 className="mt-8 !text-[12px] !font-bold !uppercase !tracking-widest text-slate-900">
                   {settings.noProductsFoundText?.[lang] || 'No products found'}
                 </h3>
-                <p className="mx-auto mt-3 max-w-md text-[17px] leading-relaxed text-brand-muted">
+                <p className="mx-auto mt-3 max-w-md !text-[14px] leading-relaxed text-brand-muted text-center">
                   {settings.noProductsDescription?.[lang] || 'No products match the current search or collection filters.'}
                 </p>
                 <button

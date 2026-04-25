@@ -32,7 +32,7 @@ export function FeaturedProducts({ products, lang, settings }: FeaturedProductsP
             <p className="text-xs font-medium tracking-widest uppercase mb-5 text-brand-muted">
               {settings?.featuredTopSubtitle?.[lang] || (lang === 'en' ? 'Curated Selection' : 'Utvald kollektion')}
             </p>
-            <h2 className="!text-[12px] !font-bold !uppercase !tracking-widest mb-6 text-brand-ink">
+            <h2 className="text-[24px] md:text-[32px] font-bold text-brand-ink mb-6 tracking-tight">
               {settings?.featuredTitle?.[lang] || (lang === 'en' ? 'Featured Pieces' : 'Utvalda produkter')}
             </h2>
             <p className="text-brand-muted max-w-xl mx-auto text-sm md:text-base font-normal leading-relaxed">

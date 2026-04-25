@@ -36,7 +36,7 @@ export function NewsletterSection({ settings, lang }: NewsletterSectionProps) {
         <div className="absolute inset-0 bg-gradient-to-b from-brand-ink/10 to-transparent"></div>
       </div>
       <div className="max-w-2xl mx-auto px-4 text-center relative z-10">
-        <h2 className="!text-[12px] !font-bold !uppercase !tracking-widest text-brand-ink mb-6">
+        <h2 className="text-[20px] md:text-[24px] font-bold text-brand-ink mb-6 tracking-tight">
           {settings.newsletterPlaceholder?.[lang]}
         </h2>
         <p className="text-brand-ink/70 mb-12 text-sm md:text-base max-w-md mx-auto font-normal leading-relaxed">
