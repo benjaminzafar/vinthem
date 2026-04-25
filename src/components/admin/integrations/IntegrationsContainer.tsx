@@ -119,7 +119,7 @@ export function IntegrationsContainer({
     return (
       <div className="flex flex-col items-center justify-center p-20 bg-white rounded-md border border-zinc-100">
         <Loader2 className="w-10 h-10 animate-spin text-zinc-300 mb-4" />
-        <span className="text-sm font-bold text-zinc-400 uppercase tracking-widest">Waking Up Infrastructure...</span>
+        <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">Waking Up Infrastructure...</span>
       </div>
     );
   }
@@ -426,7 +426,7 @@ export function IntegrationsContainer({
          </div>
          <div className="flex-1">
             <p className="text-[11px] font-bold text-zinc-900 uppercase tracking-widest leading-none">Zero-Visibility Security Policy</p>
-            <p className="text-[11px] text-zinc-500 font-medium mt-1">All API keys are AES-256 encrypted. Original values are permanently masked from browser view after synchronization.</p>
+            <p className="text-[12px] text-zinc-500 font-medium mt-1">All API keys are AES-256 encrypted. Original values are permanently masked from browser view after synchronization.</p>
          </div>
       </div>
     </div>
@@ -443,7 +443,7 @@ function TemplateGroup({ title, prefix, config, onUpdate, locales }: {
 }) {
   return (
     <div className="space-y-2">
-      <h5 className="text-[10px] font-bold text-zinc-900 border-l-2 border-rose-500 pl-2 uppercase tracking-wider">{title}</h5>
+      <h5 className="text-[11px] font-bold text-zinc-900 border-l-2 border-rose-500 pl-2 uppercase tracking-wider">{title}</h5>
       <div className="space-y-1">
         {locales.map(lang => (
           <LanguageInput 

@@ -461,12 +461,12 @@ export function ProfileClient({
           <div className="border-b border-slate-300 p-8 lg:border-b-0 lg:border-r lg:p-10">
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 bg-slate-900" />
-              <span className="text-[11px] font-bold uppercase tracking-[0.24em] text-slate-400">Customer Workspace</span>
+              <span className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Customer Workspace</span>
             </div>
-            <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-900">
+            <h1 className="mt-4 text-[28px] font-bold tracking-tight text-slate-900">
               Hello, {displayName.split(' ')[0]}.
             </h1>
-            <p className="mt-4 max-w-2xl text-sm font-medium leading-relaxed text-slate-500">
+            <p className="mt-4 max-w-2xl text-[13px] font-medium leading-relaxed text-slate-500">
               Manage your orders, personal data, saved addresses, and support requests from one calm control center.
             </p>
             <div className="mt-8 hidden flex-wrap gap-3 lg:flex">
@@ -487,20 +487,20 @@ export function ProfileClient({
 
           <div className="grid grid-cols-2 bg-slate-50">
             <div className="border-b border-r border-slate-300 p-6">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Lifetime Spend</p>
-              <p className="mt-4 text-2xl font-bold text-slate-900">{formatPrice(totalSpent, lang)}</p>
+              <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Lifetime Spend</p>
+              <p className="mt-4 text-[20px] font-bold text-slate-900">{formatPrice(totalSpent, lang)}</p>
             </div>
             <div className="border-b border-slate-300 p-6">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Active Orders</p>
-              <p className="mt-4 text-2xl font-bold text-slate-900">{activeOrders}</p>
+              <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Active Orders</p>
+              <p className="mt-4 text-[20px] font-bold text-slate-900">{activeOrders}</p>
             </div>
             <div className="border-r border-slate-300 p-6">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Saved Addresses</p>
-              <p className="mt-4 text-2xl font-bold text-slate-900">{addresses.length}</p>
+              <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Saved Addresses</p>
+              <p className="mt-4 text-[20px] font-bold text-slate-900">{addresses.length}</p>
             </div>
             <div className="p-6">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Support Cases</p>
-              <p className="mt-4 text-sm font-bold text-slate-900">{supportTickets.length + refundRequests.length}</p>
+              <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Support Cases</p>
+              <p className="mt-4 text-[20px] font-bold text-slate-900">{supportTickets.length + refundRequests.length}</p>
             </div>
           </div>
         </div>
@@ -530,7 +530,7 @@ export function ProfileClient({
               >
                 <div className="flex items-center gap-3 lg:gap-4">
                   <item.icon className={`w-4 h-4 ${activeTab === item.id ? 'text-slate-900' : 'text-slate-300'}`} />
-                  <span className="text-sm font-bold tracking-tight uppercase">{item.label}</span>
+                  <span className="text-[13px] font-bold tracking-tight uppercase">{item.label}</span>
                 </div>
                 {activeTab === item.id && <div className="w-1.5 h-1.5 bg-slate-900" />}
               </button>
@@ -558,14 +558,14 @@ export function ProfileClient({
                 className="space-y-6"
               >
                 <div className="h-10 flex items-center justify-between border-b-2 border-slate-300 pb-3">
-                  <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Order History</h3>
+                  <h3 className="text-[13px] font-bold text-slate-900 uppercase tracking-widest">Order History</h3>
                   <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{orders.length} TOTAL</span>
                 </div>
 
                 {orders.length === 0 ? (
                   <div className="border border-slate-300 bg-white py-24 text-center">
                     <Package className="w-10 h-10 mx-auto text-slate-200 mb-4" />
-                    <p className="text-sm font-bold text-slate-900 uppercase tracking-widest">No order records found</p>
+                    <p className="text-[13px] font-bold text-slate-900 uppercase tracking-widest">No order records found</p>
                     <button onClick={() => router.push(`/${lang}`)} className="mt-4 text-[11px] font-bold text-slate-400 hover:text-slate-900 transition-all uppercase underline underline-offset-4 tracking-widest">
                        Return to Storefront
                     </button>
@@ -595,7 +595,7 @@ export function ProfileClient({
                                </div>
                                <div>
                                   <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Progress</p>
-                                  <span className={`inline-flex px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest border rounded ${
+                                  <span className={`inline-flex px-2 py-0.5 text-[11px] font-bold uppercase tracking-widest border rounded ${
                                     order.status === 'Delivered' ? 'bg-emerald-50 text-emerald-700 border-emerald-300' :
                                     order.status === 'Shipped' ? 'bg-blue-50 text-blue-700 border-blue-300' :
                                     'bg-amber-50 text-amber-700 border-amber-300'
@@ -702,8 +702,8 @@ export function ProfileClient({
                 {supportTickets.length === 0 && refundRequests.length === 0 ? (
                   <div className="border border-slate-300 bg-white py-20 text-center">
                     <MessageSquare className="mx-auto mb-4 h-10 w-10 text-slate-200" />
-                    <p className="text-sm font-bold uppercase tracking-widest text-slate-900">No support activity yet</p>
-                    <p className="mt-3 text-sm text-slate-500">Open any order and use the help button when you need assistance.</p>
+                    <p className="text-[13px] font-bold uppercase tracking-widest text-slate-900">No support activity yet</p>
+                    <p className="mt-3 text-[13px] text-slate-500">Open any order and use the help button when you need assistance.</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -718,7 +718,7 @@ export function ProfileClient({
                             <p className="mt-3 text-sm leading-6 text-slate-600">{ticket.message || 'No initial message recorded.'}</p>
                           </div>
                           <div className="space-y-2 text-right">
-                            <span className="inline-flex border border-slate-300 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-700">
+                            <span className="inline-flex border border-slate-300 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-slate-700">
                               {ticket.status || 'open'}
                             </span>
                             <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">
@@ -734,10 +734,10 @@ export function ProfileClient({
                               {ticket.messages.map((message, index) => (
                                 <div key={`${ticket.id}-${index}`} className="border border-slate-200 bg-slate-50 px-4 py-3">
                                   <div className="flex items-center justify-between gap-4">
-                                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                                    <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
                                       {message.sender === 'admin' ? 'Admin reply' : 'Your message'}
                                     </span>
-                                    <span className="text-[10px] uppercase tracking-widest text-slate-400">
+                                    <span className="text-[11px] uppercase tracking-widest text-slate-400">
                                       {message.createdAt ? new Date(message.createdAt).toLocaleString() : '---'}
                                     </span>
                                   </div>
@@ -767,7 +767,7 @@ export function ProfileClient({
                             {refund.comments && <p className="mt-2 text-sm leading-6 text-slate-500">{refund.comments}</p>}
                           </div>
                           <div className="space-y-2 text-right">
-                            <span className="inline-flex border border-slate-300 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-700">
+                            <span className="inline-flex border border-slate-300 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-slate-700">
                               {refund.status || 'Pending'}
                             </span>
                             <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">

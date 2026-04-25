@@ -51,7 +51,7 @@ function SidebarContent({
   return (
     <>
       <div className="flex items-center px-6 h-16 border-b border-slate-300 bg-white shrink-0">
-        <h1 className="!text-[12px] !font-black !uppercase !tracking-[0.2em] text-slate-900 flex items-center">
+        <h1 className="!text-[11px] !font-bold !uppercase !tracking-widest text-slate-900 flex items-center">
           <Settings className="w-4 h-4 mr-3 text-slate-900" />
           Admin
         </h1>
@@ -73,7 +73,7 @@ function SidebarContent({
               }`}
             >
               <item.icon className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-slate-400'}`} />
-              <span className="!text-[12px] !font-bold !uppercase !tracking-widest">{item.label}</span>
+              <span className="!text-[11px] !font-bold !uppercase !tracking-widest">{item.label}</span>
             </Link>
           );
         })}
@@ -81,17 +81,17 @@ function SidebarContent({
       
       <div className="p-6 border-t border-slate-300 bg-white">
         <div className="flex items-center mb-6 px-1">
-          <div className="w-9 h-9 rounded bg-slate-900 flex items-center justify-center text-white font-bold text-sm mr-3 shrink-0">
+          <div className="w-9 h-9 rounded bg-slate-900 flex items-center justify-center text-white font-bold text-[13px] mr-3 shrink-0">
             {activeUserEmail?.[0].toUpperCase() || 'A'}
           </div>
           <div className="text-left flex-1 min-w-0">
-            <p className="text-sm font-bold text-slate-900 truncate">Admin User</p>
-            <p className="text-xs text-slate-500 truncate mt-0.5">{activeUserEmail}</p>
+            <p className="text-[13px] font-bold text-slate-900 truncate">Admin User</p>
+            <p className="text-[11px] text-slate-500 truncate mt-0.5">{activeUserEmail}</p>
           </div>
         </div>
         <button
           onClick={onSignOut}
-          className="w-full flex items-center justify-center space-x-2 px-4 h-10 border border-slate-300 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all text-sm font-medium rounded"
+          className="w-full flex items-center justify-center space-x-2 px-4 h-10 border border-slate-300 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all text-[11px] font-bold uppercase tracking-widest"
         >
           <LogOut className="w-4 h-4" />
           <span>Sign Out</span>

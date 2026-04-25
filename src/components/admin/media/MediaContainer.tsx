@@ -215,18 +215,18 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
       {/* 1. Header - Unified with Overview */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Digital Assets</h1>
-          <p className="text-sm text-slate-500 mt-1">Cloud-native infrastructure and intelligent media management</p>
+          <h1 className="text-[18px] font-bold text-slate-900 tracking-tight">Digital Assets</h1>
+          <p className="text-[12px] text-slate-500 mt-1">Cloud-native infrastructure and intelligent media management</p>
         </div>
         {!selectionMode && (
           <div className="flex items-center gap-3">
-            <div className="h-10 px-4 bg-white border border-slate-300 rounded text-sm font-medium text-slate-600 flex items-center gap-2">
-               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Storage</span>
+            <div className="h-10 px-4 bg-white border border-slate-300 rounded text-[13px] font-medium text-slate-600 flex items-center gap-2">
+               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Storage</span>
                <span className="text-slate-900 font-bold">{assets.length} Items</span>
             </div>
             <button 
               onClick={() => fetchMedia()}
-              className="h-10 px-4 border border-slate-300 rounded text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all flex items-center gap-2"
+              className="h-10 px-4 border border-slate-300 rounded text-[13px] font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all flex items-center gap-2"
               disabled={loading}
             >
               <RefreshCcw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -245,11 +245,11 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
               placeholder="Search assets..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-11 bg-slate-50 border border-slate-300 rounded pl-12 pr-6 text-sm focus:outline-none focus:border-slate-900 transition-all font-bold uppercase tracking-tight placeholder:text-slate-400"
+              className="w-full h-11 bg-slate-50 border border-slate-300 rounded pl-12 pr-6 text-[13px] focus:outline-none focus:border-slate-900 transition-all font-bold uppercase tracking-tight placeholder:text-slate-400"
             />
          </div>
 
-         <label className={`flex items-center justify-center gap-2 h-11 px-8 bg-slate-900 text-white rounded text-[11px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all cursor-pointer ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
+         <label className={`flex items-center justify-center gap-2 h-11 px-8 bg-slate-900 text-white rounded text-[11px] font-bold uppercase tracking-widest hover:bg-slate-800 transition-all cursor-pointer ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
             <FilePlus className="w-4 h-4" />
             <span>{uploading ? 'Processing...' : 'Upload Asset'}</span>
             <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} disabled={uploading} />
@@ -263,14 +263,14 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
               <AlertCircle className="w-6 h-6 text-amber-600" />
            </div>
            <div className="space-y-1">
-              <h3 className="text-sm font-black text-amber-900 uppercase tracking-widest">Public Assets Restricted</h3>
-              <p className="text-[11px] text-amber-700 font-bold uppercase tracking-tight leading-relaxed max-w-2xl">
+              <h3 className="text-[13px] font-bold text-amber-900 uppercase tracking-widest">Public Assets Restricted</h3>
+              <p className="text-[11px] text-amber-700 font-bold uppercase tracking-widest leading-relaxed max-w-2xl">
                 The <span className="underline decoration-amber-300">R2 Public URL</span> is missing in your Integrations settings. Images may appear as broken icons because they are being accessed via private storage endpoints.
               </p>
               <div className="pt-2">
                 <Link 
                   href="/admin/integrations" 
-                  className="text-[10px] font-black uppercase tracking-widest text-amber-900 hover:underline inline-flex items-center gap-1"
+                  className="text-[11px] font-bold uppercase tracking-widest text-amber-900 hover:underline inline-flex items-center gap-1"
                 >
                   Configure Integrations <ChevronRight className="w-3 h-3" />
                 </Link>
@@ -321,7 +321,7 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
 
       {/* Footer Info */}
       {!selectionMode && (
-        <div className="flex items-center gap-2 px-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+        <div className="flex items-center gap-2 px-2 text-[11px] font-bold text-slate-400 uppercase tracking-widest">
            <AlertCircle className="w-3.5 h-3.5" />
            <span>Optimized Stream: Showing items from {currentPath.length > 0 ? `/${currentPath.join('/')}` : 'Project Root'}</span>
         </div>
@@ -336,7 +336,7 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
                 <Trash2 className="w-8 h-8 text-rose-600" />
               </div>
               <div>
-                <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-2">Irreversible Action</h3>
+                <h3 className="text-[13px] font-bold text-slate-900 uppercase tracking-widest mb-2">Irreversible Action</h3>
                 <p className="text-[11px] text-slate-500 font-bold uppercase tracking-widest leading-relaxed">
                   Permanently delete this {confirmDelete.isFolder ? 'folder and ALL associated content' : 'asset from the media cloud'}?
                 </p>
@@ -344,13 +344,13 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
               <div className="flex w-full gap-3 pt-2">
                 <button 
                   onClick={() => setConfirmDelete(null)}
-                  className="flex-1 h-12 bg-white border border-slate-300 rounded text-[11px] font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 transition-all"
+                  className="flex-1 h-12 bg-white border border-slate-300 rounded text-[11px] font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-50 transition-all"
                 >
                   Cancel
                 </button>
                 <button 
                   onClick={handleDelete}
-                  className="flex-1 h-12 bg-rose-600 rounded text-[11px] font-black uppercase tracking-widest text-white hover:bg-rose-700 transition-all"
+                  className="flex-1 h-12 bg-rose-600 rounded text-[11px] font-bold uppercase tracking-widest text-white hover:bg-rose-700 transition-all"
                 >
                   Delete
                 </button>

@@ -96,8 +96,8 @@ export function PageManager({ initialPages = [] }: PageManagerProps) {
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="text-2xl font-black leading-none tracking-tight text-slate-900">Pages</h1>
-          <p className="mt-2 px-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">Policies, Support & Informational Content</p>
+          <h1 className="text-[18px] font-bold leading-none tracking-tight text-slate-900">Pages</h1>
+          <p className="mt-2 px-1 text-[11px] font-bold uppercase tracking-widest text-slate-500">Policies, Support & Informational Content</p>
         </div>
 
         <div className="flex items-center gap-4">
@@ -113,7 +113,7 @@ export function PageManager({ initialPages = [] }: PageManagerProps) {
           </div>
           <button
             onClick={() => router.push('/admin/pages/new')}
-            className="flex h-11 items-center gap-2 rounded-[4px] bg-slate-900 px-8 text-[10px] font-black uppercase tracking-widest text-white transition-all hover:bg-slate-800"
+            className="flex h-11 items-center gap-2 rounded-[4px] bg-slate-900 px-8 text-[11px] font-bold uppercase tracking-widest text-white transition-all hover:bg-slate-800"
           >
             <Plus className="h-4 w-4" />
             Add Page
@@ -125,7 +125,7 @@ export function PageManager({ initialPages = [] }: PageManagerProps) {
         <div className="flex h-14 items-center justify-between border-b border-slate-100 bg-slate-50/50 px-6">
           <div className="flex items-center gap-3">
             <FileCode className="h-4 w-4 text-slate-400" />
-            <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-900">Page Library</h3>
+            <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Page Library</h3>
           </div>
           <div className="flex items-center gap-4">
             {selectedPages.length > 0 && (
@@ -156,7 +156,7 @@ export function PageManager({ initialPages = [] }: PageManagerProps) {
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-left">
             <thead>
-              <tr className="border-b border-slate-100 bg-slate-50/50 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+              <tr className="border-b border-slate-100 bg-slate-50/50 text-[11px] font-bold uppercase tracking-widest text-slate-400">
                 <th className="w-12 px-6 py-4">
                   <input
                     type="checkbox"
@@ -216,8 +216,8 @@ export function PageManager({ initialPages = [] }: PageManagerProps) {
                           <FileCode className="h-4 w-4 text-slate-400" />
                         </div>
                         <div className="min-w-0">
-                          <p className="truncate text-xs font-black tracking-tight text-slate-900">{page.title.en || 'Untitled page'}</p>
-                          <p className="mt-1 text-[10px] font-black uppercase tracking-widest text-slate-400">Static content node</p>
+                          <p className="truncate text-[13px] font-bold tracking-tight text-slate-900">{page.title.en || 'Untitled page'}</p>
+                          <p className="mt-1 text-[11px] font-bold uppercase tracking-widest text-slate-400">Static content node</p>
                         </div>
                       </div>
                     </td>
@@ -226,7 +226,7 @@ export function PageManager({ initialPages = [] }: PageManagerProps) {
                         /p/{page.slug}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-[11px] font-bold text-slate-500">
+                    <td className="px-6 py-4 text-[13px] font-bold text-slate-500">
                       {new Date(page.updatedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
                     </td>
                     <td className="px-6 py-4 text-right">
