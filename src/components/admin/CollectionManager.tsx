@@ -261,7 +261,7 @@ export function CollectionManager({
         <div className="px-6 border-b border-slate-300 bg-white flex items-center justify-between h-14">
           <div className="flex items-center gap-3">
              <Layers className="w-4 h-4 text-slate-400" />
-             <h3 className="text-[11px] font-bold uppercase tracking-[0.1em] text-slate-900">Structure & Hierarchy</h3>
+             <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Structure & Hierarchy</h3>
           </div>
         </div>
 
@@ -317,9 +317,9 @@ export function CollectionManager({
                       </div>
                       <div className="min-w-0">
                          <p className="font-bold text-slate-900 text-[13px] tracking-tight truncate">{parent.name}</p>
-                         <p className="text-[10px] text-slate-500 font-medium uppercase tracking-widest mt-0.5">
-                            {level === 0 ? 'Home Depth' : `Depth Level ${level}`}
-                         </p>
+                          <p className="text-[11px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">
+                             {level === 0 ? 'Home Depth' : `Depth Level ${level}`}
+                          </p>
                       </div>
                     </div>
                   </td>
@@ -392,7 +392,7 @@ export function CollectionManager({
             className="fixed bottom-8 left-1/2 z-50 px-6 py-3 bg-slate-900 text-white rounded-full shadow-2xl flex items-center gap-6 border border-white/10 backdrop-blur-md"
           >
             <div className="flex items-center gap-3 pr-6 border-r border-white/20">
-              <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-[10px] font-black uppercase tracking-tighter shadow-inner">
+              <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-[11px] font-bold uppercase tracking-tighter shadow-inner">
                 {selectedCollections.length}
               </div>
               <span className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Selected</span>
@@ -404,7 +404,7 @@ export function CollectionManager({
                 className="flex items-center gap-2 px-4 py-1.5 rounded-full hover:bg-rose-500/10 text-rose-400 transition-all group"
               >
                 <Trash2 className="w-4 h-4 group-hover:animate-shake" />
-                <span className="text-[10px] font-black uppercase tracking-widest">Delete All</span>
+                <span className="text-[11px] font-bold uppercase tracking-widest">Delete All</span>
               </button>
 
               <button
@@ -412,7 +412,7 @@ export function CollectionManager({
                 className="flex items-center gap-2 px-4 py-1.5 rounded-full hover:bg-white/10 text-slate-400 transition-all"
               >
                 <X className="w-4 h-4" />
-                <span className="text-[10px] font-black uppercase tracking-widest">Clear</span>
+                <span className="text-[11px] font-bold uppercase tracking-widest">Clear</span>
               </button>
             </div>
           </motion.div>

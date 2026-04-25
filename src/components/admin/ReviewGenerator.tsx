@@ -75,18 +75,18 @@ export function ReviewGenerator() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900 border-b border-gray-100 pb-4">Fake Review Generator</h2>
+      <h2 className="text-[18px] font-bold text-slate-900 border-b border-slate-100 pb-4">Fake Review Generator</h2>
       <div className="space-y-4">
         {products.map(product => (
           <div key={product.id} className="flex items-center justify-between p-4 border border-gray-200/60 rounded-xl bg-white shadow-sm">
             <div className="flex flex-col">
-              <span className="font-semibold text-gray-900">{product.title}</span>
-              <span className="text-xs text-gray-500 uppercase tracking-wider">{product.categoryName || 'Product'}</span>
+              <span className="font-bold text-slate-900 text-[13px]">{product.title}</span>
+              <span className="text-[11px] text-slate-500 font-bold uppercase tracking-widest">{product.categoryName || 'Product'}</span>
             </div>
             <button
               onClick={() => handleGenerateReview(product)}
               disabled={generating && generatingProductId === product.id}
-              className="px-6 py-2 bg-zinc-900 text-white text-xs font-bold rounded-lg hover:bg-black transition-all disabled:opacity-50"
+              className="px-6 py-2 bg-slate-900 text-white text-[11px] font-bold uppercase tracking-widest rounded-[4px] hover:bg-black transition-all disabled:opacity-50"
             >
               {generating && generatingProductId === product.id ? 'Generating...' : 'Generate Review'}
             </button>

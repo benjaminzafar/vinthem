@@ -396,10 +396,10 @@ Collection Description (Swedish): "${formData.description || ''}"`;
               <ArrowLeft className="w-5 h-5 text-slate-600" />
             </button>
             <div className="flex flex-col">
-              <h1 className="text-2xl font-black text-slate-900 tracking-tight leading-none mb-1.5">
+              <h1 className="text-[18px] font-bold text-slate-900 tracking-tight leading-none mb-1.5">
                 {initialCollection ? `Edit: ${formData.name || 'Collection'}` : 'New Collection'}
               </h1>
-              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
+              <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-500">
                  <Layers className="w-3 h-3" />
                  Category Configuration
               </div>
@@ -410,7 +410,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
             <button 
               onClick={handleSave}
               disabled={saving || uploading}
-              className="px-8 h-11 bg-slate-900 text-white rounded-[4px] text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all group flex items-center gap-2"
+              className="px-8 h-11 bg-slate-900 text-white rounded-[4px] text-[11px] font-bold uppercase tracking-widest hover:bg-slate-800 transition-all group flex items-center gap-2"
             >
               <Save className="w-4 h-4 group-hover:scale-110 transition-transform" />
               {saving ? 'Processing...' : 'Publish Collection'}
@@ -425,8 +425,8 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                <Sparkles className="w-5 h-5 text-indigo-600 animate-pulse" />
             </div>
             <div className="flex flex-col">
-               <span className="text-[10px] font-black text-indigo-900 uppercase tracking-widest">Collection Assistant</span>
-               <span className="text-[9px] text-indigo-400 font-bold uppercase tracking-widest">Generative Metadata</span>
+               <span className="text-[11px] font-bold text-indigo-900 uppercase tracking-widest">Collection Assistant</span>
+               <span className="text-[11px] text-indigo-400 font-bold uppercase tracking-widest">Generative Metadata</span>
             </div>
           </div>
           <div className="flex-1 w-full flex flex-col sm:flex-row gap-3">
@@ -441,7 +441,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
             <button 
               onClick={handleAIChatAutoFill}
               disabled={generating || !aiChatInput.trim()}
-              className="h-12 bg-indigo-600 text-white px-8 rounded-[4px] text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shrink-0"
+              className="h-12 bg-indigo-600 text-white px-8 rounded-[4px] text-[11px] font-bold uppercase tracking-widest hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shrink-0"
             >
               {generating ? 'Drafting...' : 'AI Draft'}
               {!generating && <Wand2 className="w-4 h-4" />}
@@ -457,12 +457,12 @@ Collection Description (Swedish): "${formData.description || ''}"`;
             <section className="bg-white border border-slate-200 rounded-[4px]">
               <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
                 <Layout className="w-4 h-4 text-slate-400" />
-                <h3 className="text-xs font-black uppercase tracking-widest text-slate-900">Collection Details</h3>
+                <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Collection Details</h3>
               </div>
               <div className="p-8 space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-3">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Collection Name (Swedish)</label>
+                    <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Collection Name (Swedish)</label>
                     <input 
                       type="text" 
                       value={formData.name}
@@ -472,7 +472,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                     />
                   </div>
                   <div className="space-y-3">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">URL Slug</label>
+                    <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">URL Slug</label>
                     <input 
                       type="text" 
                       value={formData.slug}
@@ -483,7 +483,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Swedish Marketing Narrative</label>
+                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Swedish Marketing Narrative</label>
                   <textarea 
                     value={formData.description}
                     onChange={(e) => setFormData({...formData, description: e.target.value})}
@@ -506,7 +506,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`px-8 py-4 text-[10px] font-black uppercase tracking-widest border-r border-slate-200 transition-all ${
+                    className={`px-8 py-4 text-[11px] font-bold uppercase tracking-widest border-r border-slate-200 transition-all ${
                       activeTab === tab.id ? 'bg-white text-slate-900' : 'text-slate-400 hover:text-slate-600'
                     }`}
                   >
@@ -518,7 +518,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                 {activeTab === 'hierarchy' && (
                   <div className="space-y-6 animate-in fade-in duration-300">
                     <div className="space-y-3">
-                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Parent Collection (Hierarchy)</label>
+                      <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Parent Collection (Hierarchy)</label>
                       <div className="relative">
                         <select 
                           value={formData.parentId}
@@ -542,7 +542,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                          <button 
                            key={lang}
                            onClick={() => setSelectedLang(lang)}
-                           className={`text-[10px] font-black uppercase tracking-widest transition-all ${selectedLang === lang ? 'text-slate-900 underline underline-offset-4' : 'text-slate-400 hover:text-slate-600'}`}
+                           className={`text-[11px] font-bold uppercase tracking-widest transition-all ${selectedLang === lang ? 'text-slate-900 underline underline-offset-4' : 'text-slate-400 hover:text-slate-600'}`}
                          >
                            {lang}
                          </button>
@@ -551,7 +551,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                       <button
                         onClick={handleAITranslateCollection}
                         disabled={generating || !formData.name?.trim()}
-                        className="flex items-center gap-1.5 px-4 py-1.5 text-[9px] font-black uppercase tracking-widest bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-all disabled:opacity-50"
+                        className="flex items-center gap-1.5 px-4 py-1.5 text-[11px] font-bold uppercase tracking-widest bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-all disabled:opacity-50"
                       >
                         {generating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Languages className="w-3 h-3" />}
                         AI Translate All
@@ -559,7 +559,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                     </div>
                     <div className="grid grid-cols-1 gap-6">
                       <div className="space-y-3">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Local Title ({selectedLang})</label>
+                        <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Local Title ({selectedLang})</label>
                         <input 
                           type="text" 
                           value={formData.translations?.[selectedLang]?.name || ''}
@@ -577,7 +577,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                         />
                       </div>
                       <div className="space-y-3">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Local Description ({selectedLang})</label>
+                        <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Local Description ({selectedLang})</label>
                         <textarea 
                           rows={4}
                           value={formData.translations?.[selectedLang]?.description || ''}
@@ -604,21 +604,21 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                       onClick={() => setFormData({...formData, isFeatured: !formData.isFeatured})}
                       className={`h-14 px-6 border rounded-[4px] flex items-center justify-between transition-all ${formData.isFeatured ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-900'}`}
                     >
-                      <span className="text-[10px] font-black uppercase tracking-widest">Featured on Homepage</span>
+                      <span className="text-[11px] font-bold uppercase tracking-widest">Featured on Homepage</span>
                       <Star className={`w-4 h-4 ${formData.isFeatured ? 'fill-current' : ''}`} />
                     </button>
                     <button 
                       onClick={() => setFormData({...formData, showInHero: !formData.showInHero})}
                       className={`h-14 px-6 border rounded-[4px] flex items-center justify-between transition-all ${formData.showInHero ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-900'}`}
                     >
-                      <span className="text-[10px] font-black uppercase tracking-widest">Display in Hero Section</span>
+                      <span className="text-[11px] font-bold uppercase tracking-widest">Display in Hero Section</span>
                       <Layout className="w-4 h-4" />
                     </button>
                     <button 
                       onClick={() => setFormData({...formData, pinnedInSearch: !formData.pinnedInSearch})}
                       className={`h-14 px-6 border rounded-[4px] flex items-center justify-between transition-all ${formData.pinnedInSearch ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-900'}`}
                     >
-                      <span className="text-[10px] font-black uppercase tracking-widest">Pin to Search Popup</span>
+                      <span className="text-[11px] font-bold uppercase tracking-widest">Pin to Search Popup</span>
                       <Pin className={`w-4 h-4 ${formData.pinnedInSearch ? 'fill-current' : ''}`} />
                     </button>
                   </div>
@@ -633,11 +633,11 @@ Collection Description (Swedish): "${formData.description || ''}"`;
             {/* Banner Section */}
             <section className="bg-white border border-slate-200 rounded-[4px] overflow-hidden">
               <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
-                <h3 className="text-xs font-black uppercase tracking-widest text-slate-900">Collection Banner</h3>
+                <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Collection Banner</h3>
                 <button 
                   onClick={handleAIAutoCompleteCollection}
                   disabled={generating || !formData.imageUrl}
-                  className="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-[9px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all disabled:opacity-50"
+                  className="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-[11px] font-bold uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all disabled:opacity-50"
                 >
                   Analyze Image
                 </button>
@@ -669,12 +669,12 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                     ) : (
                       <div className="text-center p-6">
                          <ImageIcon className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                         <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 text-center">Standard Aspect 16:9 for Best Results</p>
+                         <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 text-center">Standard Aspect 16:9 for Best Results</p>
                       </div>
                     )}
                     <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all z-10 pointer-events-none">
-                       <span className="text-[10px] font-black uppercase tracking-widest text-white border-white border px-4 py-2">Change Image</span>
+                       <span className="text-[11px] font-bold uppercase tracking-widest text-white border-white border px-4 py-2">Change Image</span>
                     </div>
                   </label>
                  <div className="flex gap-2">
@@ -687,7 +687,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                     />
                     <button 
                       onClick={() => { setPickerTarget('image'); setIsMediaPickerOpen(true); }}
-                      className="h-10 px-4 bg-slate-50 border border-slate-200 rounded text-[10px] font-black uppercase tracking-widest"
+                      className="h-10 px-4 bg-slate-50 border border-slate-200 rounded text-[11px] font-bold uppercase tracking-widest"
                     >
                       Lib
                     </button>
@@ -698,7 +698,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
             {/* Icon Section */}
             <section className="bg-white border border-slate-200 rounded-[4px] overflow-hidden text-slate-900">
                <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
-                  <h3 className="text-xs font-black uppercase tracking-widest text-slate-900">Icon Identity</h3>
+                  <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Icon Identity</h3>
                </div>
                <div className="p-6">
                   <div className="flex items-center gap-6 p-4 bg-slate-50 border border-slate-200 rounded-[4px]">
@@ -717,18 +717,18 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                       <button 
                         type="button" 
                         onClick={() => setIsIconSelectorOpen(true)}
-                        className="h-9 px-4 border border-slate-300 rounded-[4px] text-[10px] font-black uppercase tracking-widest hover:border-slate-900 transition-all"
+                        className="h-9 px-4 border border-slate-300 rounded-[4px] text-[11px] font-bold uppercase tracking-widest hover:border-slate-900 transition-all"
                       >
                         Vectors
                       </button>
-                      <label className="h-9 px-4 bg-white border border-slate-200 rounded-[4px] text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all flex items-center justify-center cursor-pointer">
+                      <label className="h-9 px-4 bg-white border border-slate-200 rounded-[4px] text-[11px] font-bold uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all flex items-center justify-center cursor-pointer">
                         Custom
                         <input type="file" className="hidden" onChange={handleIconUpload} accept="image/*" />
                       </label>
                       <button 
                         type="button"
                         onClick={() => { setPickerTarget('icon'); setIsMediaPickerOpen(true); }}
-                        className="h-9 px-4 bg-slate-50 border border-slate-200 rounded-[4px] text-[10px] font-black uppercase tracking-widest hover:border-slate-900 transition-all"
+                        className="h-9 px-4 bg-slate-50 border border-slate-200 rounded-[4px] text-[11px] font-bold uppercase tracking-widest hover:border-slate-900 transition-all"
                       >
                         Lib
                       </button>

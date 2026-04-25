@@ -391,7 +391,7 @@ export function NotificationCenter() {
         {unreadCount > 0 && (
           <>
             <span className="absolute top-1.5 right-1.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-rose-500" />
-            <span className="absolute -top-1 -right-1 min-w-[18px] rounded-full bg-slate-900 px-1.5 py-0.5 text-[10px] font-bold text-white">
+            <span className="absolute -top-1 -right-1 min-w-[18px] rounded-full bg-slate-900 px-1.5 py-0.5 text-[11px] font-bold text-white">
               {Math.min(unreadCount, 9)}
             </span>
           </>
@@ -410,7 +410,7 @@ export function NotificationCenter() {
             <div className="border-b border-slate-100 bg-white/50 px-6 py-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Activity Hub</p>
+                  <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Activity Hub</p>
                   <h3 className="mt-1 text-base font-bold text-slate-900">Notifications</h3>
                 </div>
                 <button 
@@ -425,7 +425,7 @@ export function NotificationCenter() {
                 <button
                   type="button"
                   onClick={markAllAsRead}
-                  className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-white transition-all hover:bg-slate-800 hover:shadow-lg active:scale-95"
+                  className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-white transition-all hover:bg-slate-800 hover:shadow-lg active:scale-95"
                 >
                   <CheckCheck className="h-3.5 w-3.5" />
                   Mark all as read
@@ -433,7 +433,7 @@ export function NotificationCenter() {
                 <button
                   type="button"
                   onClick={clearOldData}
-                  className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-slate-600 transition-all hover:bg-slate-50 active:scale-95"
+                  className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-slate-600 transition-all hover:bg-slate-50 active:scale-95"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                   Clean logs
@@ -469,7 +469,7 @@ export function NotificationCenter() {
                               <p className={`mt-2 text-[13px] leading-relaxed ${!isRead ? 'text-slate-800 font-medium' : 'text-slate-500 font-normal'}`}>{notification.message}</p>
                             </div>
                             <div className="shrink-0 text-right">
-                              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                              <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">
                                 {formatDistanceToNow(notification.timestamp, { addSuffix: true })}
                               </p>
                               {!isRead && <div className="mt-3 ml-auto h-1.5 w-1.5 rounded-full bg-slate-900 animate-pulse" />}

@@ -403,12 +403,12 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
               <ArrowLeft className="w-5 h-5 text-slate-600" />
             </button>
             <div className="flex flex-col">
-              <h1 className="text-2xl font-black text-slate-900 tracking-tight leading-none mb-1.5">
+              <h1 className="text-[18px] font-bold text-slate-900 tracking-tight leading-none mb-1.5">
                 {initialProduct ? `Edit: ${formData.title || 'Product'}` : 'Create New Product'}
               </h1>
               <div className="flex items-center gap-2">
                 <div className={`w-2 h-2 rounded-full ${formData.status === 'published' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
+                <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
                   {formData.status || 'Draft'} Mode
                 </span>
               </div>
@@ -419,14 +419,14 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
             <button 
               onClick={() => handleSave('draft')}
               disabled={loading}
-              className="px-6 h-11 bg-white border border-slate-200 rounded-[4px] text-[10px] font-black uppercase tracking-widest text-slate-600 hover:border-slate-900 hover:text-slate-900 transition-all flex items-center"
+              className="px-6 h-11 bg-white border border-slate-200 rounded-[4px] text-[11px] font-bold uppercase tracking-widest text-slate-600 hover:border-slate-900 hover:text-slate-900 transition-all flex items-center"
             >
               Save as Draft
             </button>
             <button 
               onClick={() => handleSave('published')}
               disabled={loading}
-              className="px-8 h-11 bg-slate-900 text-white rounded-[4px] text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all group flex items-center gap-2"
+              className="px-8 h-11 bg-slate-900 text-white rounded-[4px] text-[11px] font-bold uppercase tracking-widest hover:bg-slate-800 transition-all group flex items-center gap-2"
             >
               <Save className="w-4 h-4 group-hover:scale-110 transition-transform" />
               Publish Product
@@ -442,7 +442,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
           <div className="bg-white border border-slate-200 rounded-[4px] p-6 shadow-sm">
              <div className="flex items-center gap-2 mb-4">
                 <Sparkles className="w-4 h-4 text-indigo-600" />
-                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-900">AI Designer Assistance</h3>
+                <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">AI Designer Assistance</h3>
              </div>
              <div className="flex flex-col sm:flex-row gap-3">
                 <input 
@@ -455,7 +455,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                 <button 
                   onClick={handleAIChatAutoFill}
                   disabled={generating || !aiChatInput.trim()}
-                  className="h-11 px-8 bg-indigo-600 text-white rounded-[4px] text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shrink-0"
+                  className="h-11 px-8 bg-indigo-600 text-white rounded-[4px] text-[11px] font-bold uppercase tracking-widest hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shrink-0"
                 >
                   {generating ? 'Processing...' : 'Auto-Draft'}
                   {!generating && <Wand2 className="w-4 h-4" />}
@@ -467,11 +467,11 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
           <section className="bg-white border border-slate-200 rounded-[4px]">
             <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
               <Layout className="w-4 h-4 text-slate-400" />
-              <h3 className="text-xs font-black uppercase tracking-widest text-slate-900">General Information</h3>
+              <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">General Information</h3>
             </div>
             <div className="p-6 space-y-6">
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Product Title</label>
+                <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Product Title</label>
                 <input 
                   type="text" 
                   value={formData.title}
@@ -480,7 +480,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Description</label>
+                <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Description</label>
                 <textarea 
                   rows={8}
                   value={formData.description}
@@ -490,7 +490,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Category</label>
+                    <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Category</label>
                     <SearchableSelect 
                       options={categories.map(c => ({ value: c.id!, label: c.name }))}
                       value={formData.categoryId || ''}
@@ -498,7 +498,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                     />
                  </div>
                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Tags</label>
+                    <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Tags</label>
                     <input 
                       type="text" 
                       value={formData.tags?.join(', ')}
@@ -515,11 +515,11 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
           <section className="bg-white border border-slate-200 rounded-[4px]">
             <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
               <Package className="w-4 h-4 text-slate-400" />
-              <h3 className="text-xs font-black uppercase tracking-widest text-slate-900">{getLabel(settings.inventoryTitleText, "Pricing & Inventory")}</h3>
+              <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">{getLabel(settings.inventoryTitleText, "Pricing & Inventory")}</h3>
             </div>
             <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-2">
-                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">{getLabel(settings.regularPriceText, "Regular Price (SEK)")}</label>
+                   <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">{getLabel(settings.regularPriceText, "Regular Price (SEK)")}</label>
                    <input 
                      type="number"
                      value={formData.price || ''}
@@ -528,7 +528,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                    />
                 </div>
                 <div className="space-y-2">
-                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">{getLabel(settings.salePriceText, "Sale Price (SEK)")}</label>
+                   <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">{getLabel(settings.salePriceText, "Sale Price (SEK)")}</label>
                    <input 
                      type="number"
                      value={formData.discountPrice || ''}
@@ -537,7 +537,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                    />
                 </div>
                 <div className="space-y-2">
-                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">{getLabel(settings.skuCodeText, "SKU Code")}</label>
+                   <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">{getLabel(settings.skuCodeText, "SKU Code")}</label>
                    <input 
                      type="text"
                      value={formData.sku || ''}
@@ -546,7 +546,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                    />
                 </div>
                 <div className="space-y-2">
-                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">{getLabel(settings.initialStockText, "Initial Stock")}</label>
+                   <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">{getLabel(settings.initialStockText, "Initial Stock")}</label>
                    <input 
                      type="number"
                      value={formData.stock || 0}
@@ -555,7 +555,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                    />
                 </div>
                 <div className="space-y-2">
-                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">{getLabel(settings.weightKgText, "Weight (kg)")}</label>
+                   <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">{getLabel(settings.weightKgText, "Weight (kg)")}</label>
                    <input 
                      type="number"
                      value={formData.weight || 0}
@@ -564,7 +564,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                    />
                 </div>
                 <div className="space-y-2">
-                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">{getLabel(settings.shippingClassText, "Shipping Class")}</label>
+                   <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">{getLabel(settings.shippingClassText, "Shipping Class")}</label>
                    <select 
                      value={formData.shippingClass || ''}
                      onChange={(e) => setFormData({...formData, shippingClass: e.target.value})}
@@ -582,11 +582,11 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
           <section className="bg-white border border-slate-200 rounded-[4px]">
             <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
               <Truck className="w-4 h-4 text-slate-400" />
-              <h3 className="text-xs font-black uppercase tracking-widest text-slate-900">Tax Configuration</h3>
+              <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Tax Configuration</h3>
             </div>
             <div className="p-6 space-y-6">
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Stripe Tax Code</label>
+                <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Stripe Tax Code</label>
                 <select
                   value={formData.stripeTaxCode || ''}
                   onChange={(e) => setFormData({ ...formData, stripeTaxCode: e.target.value })}
@@ -613,7 +613,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
              <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                    <Tag className="w-4 h-4 text-slate-400" />
-                   <h3 className="text-xs font-black uppercase tracking-widest text-slate-900">Advanced Variants</h3>
+                   <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Advanced Variants</h3>
                 </div>
              </div>
              <div className="p-6">
@@ -626,12 +626,12 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
              <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
                <div className="flex items-center gap-2">
                  <Globe className="w-4 h-4 text-slate-400" />
-                 <h3 className="text-xs font-black uppercase tracking-widest text-slate-900">Translations</h3>
+                 <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Translations</h3>
                </div>
                <button
                  onClick={handleAITranslateProduct}
                  disabled={generating || !formData.title?.trim()}
-                 className="flex items-center gap-1.5 px-4 py-1.5 text-[9px] font-black uppercase tracking-widest bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-all disabled:opacity-50"
+                 className="flex items-center gap-1.5 px-4 py-1.5 text-[11px] font-bold uppercase tracking-widest bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-all disabled:opacity-50"
                >
                  {generating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Languages className="w-3 h-3" />}
                  AI Translate All
@@ -643,7 +643,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                     <button 
                       key={lang}
                       onClick={() => setSelectedLang(lang)}
-                      className={`px-6 py-1.5 rounded-[2px] text-[10px] font-black uppercase tracking-widest transition-all ${selectedLang === lang ? 'bg-slate-900 text-white' : 'text-slate-400 hover:bg-slate-100'}`}
+                      className={`px-6 py-1.5 rounded-[2px] text-[11px] font-bold uppercase tracking-widest transition-all ${selectedLang === lang ? 'bg-slate-900 text-white' : 'text-slate-400 hover:bg-slate-100'}`}
                     >
                       {lang}
                     </button>
@@ -712,7 +712,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                                      }
                                    });
                                  }}
-                                 className="w-full text-[10px] font-bold uppercase tracking-wider bg-transparent border-none p-0 focus:ring-0 text-slate-900"
+                                 className="w-full text-[11px] font-bold uppercase tracking-widest bg-transparent border-none p-0 focus:ring-0 text-slate-900"
                                  placeholder="Attribute Name"
                                />
                                <div className="flex flex-wrap gap-1">
@@ -759,7 +759,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
            {/* Main Media Visual */}
            <section className="bg-white border border-slate-200 rounded-[4px] overflow-hidden">
               <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
-                <h3 className="text-xs font-black uppercase tracking-widest text-slate-900">Main Product Image</h3>
+                <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Main Product Image</h3>
               </div>
               <div className="p-6 pt-2">
                 <label className="relative aspect-square bg-slate-50 border-2 border-dashed border-slate-200 rounded-[4px] flex items-center justify-center overflow-hidden hover:border-slate-900 transition-all cursor-pointer group mb-4">
@@ -792,12 +792,12 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                    ) : (
                      <div className="text-center p-6">
                         <ImageIcon className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Click to upload main image</p>
+                        <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Click to upload main image</p>
                      </div>
                    )}
                    <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all z-10 pointer-events-none">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-white border-white border px-4 py-2">Change Image</span>
+                      <span className="text-[11px] font-bold uppercase tracking-widest text-white border-white border px-4 py-2">Change Image</span>
                    </div>
                 </label>
 

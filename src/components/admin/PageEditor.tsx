@@ -177,10 +177,10 @@ Content: "${formData.content.en}"`;
               <ArrowLeft className="h-5 w-5 text-slate-600" />
             </button>
             <div>
-              <h1 className="mb-1.5 text-2xl font-black leading-none tracking-tight text-slate-900">
+              <h1 className="mb-1.5 text-[18px] font-bold leading-none tracking-tight text-slate-900">
                 {initialPage ? `Edit: ${formData.title.en || 'Page'}` : 'New Page'}
               </h1>
-              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
+              <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-500">
                 <FileCode className="h-3 w-3" />
                 Static Page Editor
               </div>
@@ -191,7 +191,7 @@ Content: "${formData.content.en}"`;
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex h-11 items-center justify-center gap-2 rounded-[4px] bg-slate-900 px-8 text-[10px] font-black uppercase tracking-widest text-white transition-all hover:bg-slate-800 w-full md:w-auto"
+              className="flex h-11 items-center justify-center gap-2 rounded-[4px] bg-slate-900 px-8 text-[11px] font-bold uppercase tracking-widest text-white transition-all hover:bg-slate-800 w-full md:w-auto"
             >
               <Save className="h-4 w-4" />
               {saving ? 'Saving...' : 'Publish Page'}
@@ -206,7 +206,7 @@ Content: "${formData.content.en}"`;
             </div>
           </div>
           <div className="flex-1">
-            <p className="text-[10px] font-black uppercase tracking-widest text-indigo-900">Page Assistant</p>
+            <p className="text-[11px] font-bold uppercase tracking-widest text-indigo-900">Page Assistant</p>
             <p className="mt-1 text-sm text-indigo-700">Draft a polished static page from the title, then localize it across active languages.</p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
@@ -214,7 +214,7 @@ Content: "${formData.content.en}"`;
               type="button"
               onClick={handleAIAutoComplete}
               disabled={generating}
-              className="flex h-11 items-center justify-center gap-2 rounded-[4px] border border-indigo-100 bg-white px-5 text-[10px] font-black uppercase tracking-widest text-indigo-700 transition-all hover:bg-indigo-50 w-full sm:w-auto"
+              className="flex h-11 items-center justify-center gap-2 rounded-[4px] border border-indigo-100 bg-white px-5 text-[11px] font-bold uppercase tracking-widest text-indigo-700 transition-all hover:bg-indigo-50 w-full sm:w-auto"
             >
               <Wand2 className="h-4 w-4" />
               Auto-Draft
@@ -223,7 +223,7 @@ Content: "${formData.content.en}"`;
               type="button"
               onClick={handleAITranslate}
               disabled={generating}
-              className="flex h-11 items-center justify-center gap-2 rounded-[4px] bg-indigo-600 px-5 text-[10px] font-black uppercase tracking-widest text-white transition-all hover:bg-indigo-700 w-full sm:w-auto"
+              className="flex h-11 items-center justify-center gap-2 rounded-[4px] bg-indigo-600 px-5 text-[11px] font-bold uppercase tracking-widest text-white transition-all hover:bg-indigo-700 w-full sm:w-auto"
             >
               <Languages className="h-4 w-4" />
               Translate
@@ -234,12 +234,12 @@ Content: "${formData.content.en}"`;
         <section className="rounded-[4px] border border-slate-200 bg-white">
           <div className="flex items-center gap-2 border-b border-slate-100 bg-slate-50 px-6 py-4">
             <FileCode className="h-4 w-4 text-slate-400" />
-            <h3 className="text-xs font-black uppercase tracking-widest text-slate-900">Page Content</h3>
+            <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Page Content</h3>
           </div>
           <div className="space-y-6 p-8">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div className="space-y-3">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Slug</label>
+                <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Slug</label>
                 <input
                   type="text"
                   value={formData.slug}
@@ -260,7 +260,7 @@ Content: "${formData.content.en}"`;
                 <button
                   key={language}
                   onClick={() => setSelectedLang(language)}
-                  className={`text-[10px] font-black uppercase tracking-widest transition-all ${
+                  className={`text-[11px] font-bold uppercase tracking-widest transition-all ${
                     selectedLang === language ? 'text-slate-900 underline underline-offset-4' : 'text-slate-400 hover:text-slate-600'
                   }`}
                 >
@@ -270,7 +270,7 @@ Content: "${formData.content.en}"`;
             </div>
 
             <div className="space-y-3">
-              <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Title ({selectedLang})</label>
+              <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Title ({selectedLang})</label>
               <input
                 type="text"
                 value={formData.title[selectedLang] ?? ''}
@@ -286,7 +286,7 @@ Content: "${formData.content.en}"`;
             </div>
 
             <div className="space-y-3">
-              <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Content ({selectedLang})</label>
+              <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Content ({selectedLang})</label>
               <textarea
                 rows={16}
                 value={formData.content[selectedLang] ?? ''}

@@ -181,7 +181,7 @@ export function OrderManager({
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[800px]">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-300 text-[11px] uppercase tracking-widest text-slate-500 font-bold">
+              <tr className="bg-slate-50 border-b border-slate-300 text-[11px] font-bold uppercase tracking-widest text-slate-500">
                 <th className="px-6 py-4">Order ID</th>
                 <th className="px-6 py-4">Date</th>
                 <th className="px-6 py-4">Customer</th>
@@ -194,10 +194,10 @@ export function OrderManager({
                 <tr><td colSpan={5} className="py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-xs">Retrieving Order Ledger...</td></tr>
               ) : orders.length === 0 ? (
                 <tr>
-                   <td colSpan={5} className="py-20 text-center">
-                     <Package className="w-12 h-12 mx-auto text-slate-200 mb-3" />
-                     <p className="text-sm font-bold text-slate-900 uppercase tracking-widest">No orders found</p>
-                   </td>
+                    <td colSpan={5} className="py-20 text-center">
+                      <Package className="w-12 h-12 mx-auto text-slate-200 mb-3" />
+                      <p className="text-[11px] font-bold text-slate-900 uppercase tracking-widest">No orders found</p>
+                    </td>
                 </tr>
               ) : orders.map((order) => (
                 <React.Fragment key={order.id}>
@@ -217,7 +217,7 @@ export function OrderManager({
                     <td className="px-6 py-4 text-[13px] text-slate-900 font-medium truncate max-w-[200px]">{order.customerEmail || 'Guest'}</td>
                     <td className="px-6 py-4 font-bold text-slate-900 whitespace-nowrap text-[13px]">{order.total?.toLocaleString()} SEK</td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest border ${
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded text-[11px] font-bold uppercase tracking-widest border ${
                         order.status === 'Delivered' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 
                         order.status === 'Shipped' ? 'bg-blue-50 text-blue-700 border-blue-100' :
                         'bg-amber-50 text-amber-700 border-amber-100'

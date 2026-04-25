@@ -25,8 +25,8 @@ export function MediaPickerModal({ isOpen, onClose, onSelect, title = "Select As
               <Images className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-[15px] font-black text-zinc-900 uppercase tracking-[0.25em]">{title}</h3>
-              <p className="text-[10px] text-zinc-500 font-black tracking-widest uppercase mt-0.5">Media Library Assets</p>
+              <h3 className="text-[15px] font-bold text-zinc-900 uppercase tracking-widest">{title}</h3>
+              <p className="text-[11px] text-zinc-500 font-bold tracking-widest uppercase mt-0.5">Media Library Assets</p>
             </div>
           </div>
           <button 
@@ -50,13 +50,13 @@ export function MediaPickerModal({ isOpen, onClose, onSelect, title = "Select As
 
         {/* Footer - Perfectly Balanced */}
         <div className="px-10 py-5 border-t border-zinc-200 bg-zinc-50/30 flex items-center justify-between shrink-0">
-           <p className="text-[10px] font-black uppercase tracking-[0.1em] text-zinc-400">Select an asset from your Cloudflare R2 Cloud storage</p>
-           <button 
-             onClick={onClose}
-             className="px-10 h-10 bg-black text-white rounded-[4px] text-[11px] font-black uppercase tracking-[0.2em] hover:bg-zinc-800 transition-all"
-           >
-             Dismiss
-           </button>
+           <p className="text-[11px] font-bold uppercase tracking-widest text-zinc-400">Select an asset from your Cloudflare R2 Cloud storage</p>
+            <button 
+              onClick={onClose}
+              className="px-10 h-10 bg-black text-white rounded-[4px] text-[11px] font-bold uppercase tracking-widest hover:bg-zinc-800 transition-all"
+            >
+              Dismiss
+            </button>
         </div>
       </div>
     </div>

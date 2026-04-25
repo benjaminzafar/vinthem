@@ -118,14 +118,14 @@ export function BlogManager({ initialPosts = [] }: BlogManagerProps) {
             {selectedPosts.length > 0 && (
               <button
                 onClick={() => void handleDelete(selectedPosts)}
-                className="text-[10px] font-black uppercase tracking-widest text-rose-600 hover:underline"
+                className="text-[11px] font-bold uppercase tracking-widest text-rose-600 hover:underline"
               >
                 Delete Selected ({selectedPosts.length})
               </button>
             )}
             <button
               onClick={() => downloadXLSX(filteredPosts, 'journal_entries')}
-              className="text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-900"
+              className="text-[11px] font-bold uppercase tracking-widest text-slate-500 hover:text-slate-900"
             >
               <Download className="mr-1 inline h-3.5 w-3.5" />
               Export
@@ -196,7 +196,7 @@ export function BlogManager({ initialPosts = [] }: BlogManagerProps) {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="inline-flex items-center gap-2 rounded-[4px] border border-slate-100 bg-white px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-slate-500">
+                      <div className="inline-flex items-center gap-2 rounded-[4px] border border-slate-100 bg-white px-2.5 py-1 text-[11px] font-bold uppercase tracking-widest text-slate-500">
                         <User className="h-3 w-3" />
                         {post.author}
                       </div>

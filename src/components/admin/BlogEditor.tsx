@@ -248,10 +248,10 @@ Content: "${formData.content.en}"`;
               <ArrowLeft className="h-5 w-5 text-slate-600" />
             </button>
             <div>
-              <h1 className="mb-1.5 text-2xl font-black leading-none tracking-tight text-slate-900">
+              <h1 className="mb-1.5 text-[18px] font-bold leading-none tracking-tight text-slate-900">
                 {initialPost ? `Edit: ${formData.title.en || 'Journal Entry'}` : 'New Journal Entry'}
               </h1>
-              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
+              <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-500">
                 <CalendarDays className="h-3 w-3" />
                 {displayDate}
               </div>
@@ -262,7 +262,7 @@ Content: "${formData.content.en}"`;
             <button
               onClick={handleSave}
               disabled={saving || uploading}
-              className="flex h-11 items-center justify-center gap-2 rounded-[4px] bg-slate-900 px-8 text-[10px] font-black uppercase tracking-widest text-white transition-all hover:bg-slate-800 w-full md:w-auto"
+              className="flex h-11 items-center justify-center gap-2 rounded-[4px] bg-slate-900 px-8 text-[11px] font-bold uppercase tracking-widest text-white transition-all hover:bg-slate-800 w-full md:w-auto"
             >
               <Save className="h-4 w-4" />
               {saving ? 'Saving...' : 'Publish Article'}
@@ -277,7 +277,7 @@ Content: "${formData.content.en}"`;
             </div>
           </div>
           <div className="flex-1">
-            <p className="text-[10px] font-black uppercase tracking-widest text-indigo-900">Editorial Assistant</p>
+            <p className="text-[11px] font-bold uppercase tracking-widest text-indigo-900">Editorial Assistant</p>
             <p className="mt-1 text-sm text-indigo-700">Generate the article body from the title, then translate it across your active storefront languages.</p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
@@ -285,7 +285,7 @@ Content: "${formData.content.en}"`;
               type="button"
               onClick={handleAIAutoComplete}
               disabled={generating}
-              className="flex h-11 items-center justify-center gap-2 rounded-[4px] border border-indigo-100 bg-white px-5 text-[10px] font-black uppercase tracking-widest text-indigo-700 transition-all hover:bg-indigo-50 w-full sm:w-auto"
+              className="flex h-11 items-center justify-center gap-2 rounded-[4px] border border-indigo-100 bg-white px-5 text-[11px] font-bold uppercase tracking-widest text-indigo-700 transition-all hover:bg-indigo-50 w-full sm:w-auto"
             >
               <Wand2 className="h-4 w-4" />
               Auto-Draft
@@ -294,7 +294,7 @@ Content: "${formData.content.en}"`;
               type="button"
               onClick={handleAITranslate}
               disabled={generating}
-              className="flex h-11 items-center justify-center gap-2 rounded-[4px] bg-indigo-600 px-5 text-[10px] font-black uppercase tracking-widest text-white transition-all hover:bg-indigo-700 w-full sm:w-auto"
+              className="flex h-11 items-center justify-center gap-2 rounded-[4px] bg-indigo-600 px-5 text-[11px] font-bold uppercase tracking-widest text-white transition-all hover:bg-indigo-700 w-full sm:w-auto"
             >
               <Languages className="h-4 w-4" />
               Translate
@@ -307,11 +307,11 @@ Content: "${formData.content.en}"`;
             <section className="rounded-[4px] border border-slate-200 bg-white">
               <div className="flex items-center gap-2 border-b border-slate-100 bg-slate-50 px-6 py-4">
                 <Sparkles className="h-4 w-4 text-slate-400" />
-                <h3 className="text-xs font-black uppercase tracking-widest text-slate-900">Article Details</h3>
+                <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Article Details</h3>
               </div>
               <div className="space-y-6 p-8">
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Author</label>
+                  <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Author</label>
                   <div className="relative">
                     <User className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-300" />
                     <input
@@ -328,7 +328,7 @@ Content: "${formData.content.en}"`;
                     <button
                       key={language}
                       onClick={() => setSelectedLang(language)}
-                      className={`text-[10px] font-black uppercase tracking-widest transition-all ${
+                      className={`text-[11px] font-bold uppercase tracking-widest transition-all ${
                         selectedLang === language ? 'text-slate-900 underline underline-offset-4' : 'text-slate-400 hover:text-slate-600'
                       }`}
                     >
@@ -338,7 +338,7 @@ Content: "${formData.content.en}"`;
                 </div>
 
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Title ({selectedLang})</label>
+                  <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Title ({selectedLang})</label>
                   <input
                     type="text"
                     value={formData.title[selectedLang] ?? ''}
@@ -353,7 +353,7 @@ Content: "${formData.content.en}"`;
                 </div>
 
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Excerpt ({selectedLang})</label>
+                  <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Excerpt ({selectedLang})</label>
                   <textarea
                     rows={3}
                     value={formData.excerpt[selectedLang] ?? ''}
@@ -368,7 +368,7 @@ Content: "${formData.content.en}"`;
                 </div>
 
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Content ({selectedLang})</label>
+                  <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Content ({selectedLang})</label>
                   <textarea
                     rows={12}
                     value={formData.content[selectedLang] ?? ''}
@@ -388,7 +388,7 @@ Content: "${formData.content.en}"`;
           <div className="space-y-8">
             <section className="overflow-hidden rounded-[4px] border border-slate-200 bg-white">
               <div className="border-b border-slate-100 bg-slate-50 px-6 py-4">
-                <h3 className="text-xs font-black uppercase tracking-widest text-slate-900">Hero Image</h3>
+                <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Hero Image</h3>
               </div>
               <div className="p-6">
                 <div className="group relative mb-4 aspect-[4/3] cursor-pointer overflow-hidden rounded-[4px] border-2 border-dashed border-slate-200 bg-slate-50 transition-all hover:border-slate-900">
@@ -398,7 +398,7 @@ Content: "${formData.content.en}"`;
                     <div className="flex h-full w-full items-center justify-center">
                       <div className="text-center">
                         <ImageIcon className="mx-auto mb-2 h-8 w-8 text-slate-300" />
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Upload article banner</p>
+                        <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Upload article banner</p>
                       </div>
                     </div>
                   )}
@@ -417,7 +417,7 @@ Content: "${formData.content.en}"`;
                   <button
                     type="button"
                     onClick={() => setIsMediaPickerOpen(true)}
-                    className="h-10 rounded border border-slate-200 bg-slate-50 px-4 text-[10px] font-black uppercase tracking-widest"
+                    className="h-10 rounded border border-slate-200 bg-slate-50 px-4 text-[11px] font-bold uppercase tracking-widest"
                   >
                     Lib
                   </button>

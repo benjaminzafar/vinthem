@@ -131,21 +131,21 @@ export function PageManager({ initialPages = [] }: PageManagerProps) {
             {selectedPages.length > 0 && (
               <button
                 onClick={() => void handleDelete(selectedPages)}
-                className="text-[10px] font-black uppercase tracking-widest text-rose-600 hover:underline"
+                className="text-[11px] font-bold uppercase tracking-widest text-rose-600 hover:underline"
               >
                 Delete Selected ({selectedPages.length})
               </button>
             )}
             <button
               onClick={() => void handleSeedDefaults()}
-              className="text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-900"
+              className="text-[11px] font-bold uppercase tracking-widest text-slate-500 hover:text-slate-900"
             >
               <RefreshCw className="mr-1 inline h-3.5 w-3.5" />
               Seed Defaults
             </button>
             <button
               onClick={() => downloadXLSX(filteredPages, 'pages')}
-              className="text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-900"
+              className="text-[11px] font-bold uppercase tracking-widest text-slate-500 hover:text-slate-900"
             >
               <Download className="mr-1 inline h-3.5 w-3.5" />
               Export
@@ -178,7 +178,7 @@ export function PageManager({ initialPages = [] }: PageManagerProps) {
                     <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-[4px] border border-slate-100 bg-slate-50">
                       <FileCode className="h-6 w-6 text-slate-300" />
                     </div>
-                    <p className="text-sm font-black uppercase tracking-widest text-slate-900">
+                    <p className="text-sm font-bold uppercase tracking-widest text-slate-900">
                       {settings.noPagesYetText?.en || 'No pages yet'}
                     </p>
                     <p className="mt-2 text-xs text-slate-500">

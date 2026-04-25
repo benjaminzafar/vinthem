@@ -447,7 +447,7 @@ export function ProductManager({
                       </div>
                       <div className="min-w-0">
                         <p className="font-bold text-slate-900 text-[13px] truncate">{product.title}</p>
-                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">{product.sku || 'SKU-000'}</p>
+                        <p className="text-[11px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">{product.sku || 'SKU-000'}</p>
                       </div>
                     </div>
                   </td>
@@ -461,7 +461,7 @@ export function ProductManager({
                     {product.stock} <span className="text-[10px] uppercase opacity-60 ml-1">Units</span>
                   </td>
                   <td className="px-6 py-4">
-                    <div className={`inline-flex items-center gap-2 px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest border ${
+                    <div className={`inline-flex items-center gap-2 px-2.5 py-1 rounded text-[11px] font-bold uppercase tracking-widest border ${
                       product.status === 'draft' ? 'bg-zinc-100 text-zinc-600 border-zinc-200' :
                       product.stock > 10 ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 
                       product.stock > 0 ? 'bg-amber-50 text-amber-700 border-amber-100' : 
@@ -501,10 +501,10 @@ export function ProductManager({
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-8 duration-300">
           <div className="bg-slate-900 text-white rounded-full px-6 py-3 shadow-2xl flex items-center gap-6 border border-white/10 backdrop-blur-md">
             <div className="flex items-center gap-3 pr-6 border-r border-white/20">
-              <div className="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center text-[10px] font-black uppercase">
+              <div className="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center text-[11px] font-bold uppercase">
                 {selectedIds.size}
               </div>
-              <span className="text-xs font-bold uppercase tracking-widest text-slate-300">Selected</span>
+              <span className="text-[11px] font-bold uppercase tracking-widest text-slate-300">Selected</span>
             </div>
 
             <div className="flex items-center gap-2">
@@ -514,7 +514,7 @@ export function ProductManager({
                 className="flex items-center gap-2 px-4 py-1.5 rounded-full hover:bg-rose-500/10 text-rose-400 transition-all group"
               >
                 <Trash2 className="w-4 h-4" />
-                <span className="text-[10px] font-black uppercase tracking-widest">Delete</span>
+                <span className="text-[11px] font-bold uppercase tracking-widest">Delete</span>
               </button>
 
               <button
@@ -522,7 +522,7 @@ export function ProductManager({
                 className="flex items-center gap-2 px-4 py-1.5 rounded-full hover:bg-white/10 text-slate-400 transition-all"
               >
                 <X className="w-4 h-4" />
-                <span className="text-[10px] font-black uppercase tracking-widest">Clear</span>
+                <span className="text-[11px] font-bold uppercase tracking-widest">Clear</span>
               </button>
             </div>
           </div>
