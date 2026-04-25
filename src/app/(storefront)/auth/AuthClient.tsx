@@ -246,11 +246,15 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
               <div className="mt-8 space-y-3 bg-zinc-50/50 p-4 border border-zinc-100 rounded">
                 <label className="flex items-start gap-3 text-[10px] text-zinc-500 cursor-pointer uppercase font-bold tracking-tight">
                   <input type="checkbox" checked={acceptedTerms} onChange={(e) => setAcceptedTerms(e.target.checked)} className="mt-0.5 rounded-sm" required />
-                  <span>Accept Terms</span>
+                  <span>
+                    Accept <Link href={`/${lang}/terms-of-service`} target="_blank" className="underline hover:text-zinc-900 transition-colors">Terms</Link>
+                  </span>
                 </label>
                 <label className="flex items-start gap-3 text-[10px] text-zinc-500 cursor-pointer uppercase font-bold tracking-tight">
                   <input type="checkbox" checked={acceptedPrivacy} onChange={(e) => setAcceptedPrivacy(e.target.checked)} className="mt-0.5 rounded-sm" required />
-                  <span>Accept Privacy</span>
+                  <span>
+                    Accept <Link href={`/${lang}/privacy-policy`} target="_blank" className="underline hover:text-zinc-900 transition-colors">Privacy</Link>
+                  </span>
                 </label>
                 <label className="flex items-start gap-3 text-[10px] text-zinc-500 cursor-pointer uppercase font-bold tracking-tight">
                   <input type="checkbox" checked={marketingOptIn} onChange={(e) => setMarketingOptIn(e.target.checked)} className="mt-0.5 rounded-sm" />

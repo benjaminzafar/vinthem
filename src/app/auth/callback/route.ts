@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { createClient, createAdminClient } from '@/utils/supabase/server';
 import { ensureUserProfile } from '@/lib/admin';
 
 export async function GET(request: NextRequest) {
@@ -19,6 +19,18 @@ export async function GET(request: NextRequest) {
     if (!error && data.user) {
       try {
         await ensureUserProfile(data.user, data.user.user_metadata?.full_name);
+        
+        // Check if user has already accepted terms
+        const admin = createAdminClient();
+        const { data: profile } = await admin
+          .from('users')
+          .select('accepted_terms_at')
+          .eq('id', data.user.id)
+          .maybeSingle();
+
+        if (!profile?.accepted_terms_at) {
+          return NextResponse.redirect(`${origin}/auth/consent?next=${next}`);
+        }
       } catch (profileError) {
         console.error('[Auth Callback] Profile sync skipped:', profileError);
       }

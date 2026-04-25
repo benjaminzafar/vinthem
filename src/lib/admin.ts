@@ -1,5 +1,6 @@
 import type { User } from '@supabase/supabase-js';
 import { createAdminClient, createClient } from '@/utils/supabase/server';
+import { syncContactToBrevo } from '@/lib/brevo';
 
 type SessionClient = Awaited<ReturnType<typeof createClient>>;
 type AdminClient = ReturnType<typeof createAdminClient>;
@@ -143,5 +144,15 @@ export async function ensureUserProfile(user: User, name?: string | null, lang?:
 
   if (error) {
     throw error;
+  }
+
+  // --- Background sync to Brevo CRM ---
+  if (user.email) {
+    // Add to Brevo in the background to avoid blocking the main auth flow
+    void syncContactToBrevo(user.email, {
+      FULL_NAME: name ?? '',
+      SOURCE: 'account_auth_system',
+      LANG: lang ?? 'en'
+    }).catch(e => console.error('[Brevo Sync Error] ensureUserProfile:', e));
   }
 }

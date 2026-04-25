@@ -328,6 +328,23 @@ export function NotificationCenter() {
     [visibleNotifications, readIds]
   );
 
+  useEffect(() => {
+    const syncWithUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.user_metadata?.cleared_notifications_at) {
+        const dbCutoff = new Date(user.user_metadata.cleared_notifications_at);
+        if (!clearedBefore || dbCutoff > clearedBefore) {
+          setClearedBefore(dbCutoff);
+          persistState({
+            readIds,
+            clearedBefore: dbCutoff.toISOString(),
+          });
+        }
+      }
+    };
+    void syncWithUser();
+  }, [supabase, clearedBefore, readIds]);
+
   const markAllAsRead = () => {
     const nextReadIds = Array.from(new Set([...readIds, ...visibleNotifications.map((notification) => notification.id)]));
     setReadIds(nextReadIds);
@@ -337,18 +354,21 @@ export function NotificationCenter() {
     });
   };
 
-  const clearOldData = () => {
-    // Set cutoff to exactly now to hide all current ones
+  const clearOldData = async () => {
     const cutoff = new Date();
     setClearedBefore(cutoff);
     
-    // Also mark them as read so they don't count towards the badge if the UI lag occurs
     const nextReadIds = Array.from(new Set([...readIds, ...visibleNotifications.map((notification) => notification.id)]));
     setReadIds(nextReadIds);
     
     persistState({
       readIds: nextReadIds,
       clearedBefore: cutoff.toISOString(),
+    });
+
+    // Permanent Save to User Metadata
+    await supabase.auth.updateUser({
+      data: { cleared_notifications_at: cutoff.toISOString() }
     });
   };
 
