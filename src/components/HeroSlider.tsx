@@ -74,7 +74,7 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
             {/* Desktop Button */}
             <div className="hidden lg:block">
               <Link 
-                href={localizeHref(lang, `/products?category=${encodeURIComponent(category.name)}`)}
+                href={localizeHref(lang, `/products?category=${encodeURIComponent(category.slug)}`)}
                 className="inline-flex items-center bg-black text-white px-10 py-4 rounded-[4px] text-[12px] font-bold uppercase tracking-[0.2em] hover:bg-gray-800 transition-all duration-300"
               >
                 {settings.shopNowText?.[lang] || 'Explore'} <ArrowRight className="ml-3 w-4 h-4" />
@@ -103,7 +103,7 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
           {/* Mobile Button */}
           <div className="w-full flex justify-center order-3 mt-8 lg:hidden z-10 flex-shrink-0 pb-10">
             <Link 
-              href={localizeHref(lang, `/products?category=${encodeURIComponent(category.name)}`)}
+              href={localizeHref(lang, `/products?category=${encodeURIComponent(category.slug)}`)}
               className="flex items-center justify-center bg-black text-white px-8 py-4 rounded-[4px] text-[12px] font-bold uppercase tracking-[0.2em] w-full"
             >
               {settings.shopNowText?.[lang] || 'Explore'} <ArrowRight className="ml-3 w-4 h-4" />

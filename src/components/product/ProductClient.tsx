@@ -322,7 +322,12 @@ export function ProductClient({
                             {option.name}
                           </span>
                           <span className="text-[12px] font-medium text-slate-500">
-                            {selectedValue}
+                            {/* Display the localized value by finding the index of the primary value */}
+                            {(() => {
+                              const primaryValues = product.options?.[optionIndex]?.values || [];
+                              const valueIndex = primaryValues.indexOf(selectedValue);
+                              return displayOptions[optionIndex]?.values?.[valueIndex] || selectedValue;
+                            })()}
                           </span>
                         </div>
                         <div className="flex flex-wrap gap-2.5">

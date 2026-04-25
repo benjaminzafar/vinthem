@@ -47,7 +47,7 @@ export function FeaturedProducts({ products, lang, settings }: FeaturedProductsP
             const price = product.price || 0;
             
             return (
-              <Link key={product.id} href={`/product/${product.id}`} className="group">
+              <Link key={product.id} href={`/${lang}/product/${product.id}`} className="group">
                 <div className="relative aspect-[3/4] overflow-hidden rounded bg-gray-100 mb-4">
                   <div className="h-full w-full">
                     {product.imageUrl && product.imageUrl.trim() !== "" ? (

@@ -64,6 +64,11 @@ export function SidebarFilters({
     setViewStack(prev => prev.slice(0, -1));
   };
 
+  const getCatName = (cat?: Category) => {
+    if (!cat) return '';
+    return cat.translations?.[lang]?.name || cat.name;
+  };
+
   return (
     <div 
       suppressHydrationWarning
@@ -96,7 +101,7 @@ export function SidebarFilters({
                 className="flex items-center space-x-2 text-slate-500 hover:text-brand-ink transition-colors pb-2"
               >
                 <ChevronLeft className="w-4 h-4" />
-                <span className="text-sm font-medium tracking-wide">{activeCategoryData?.name}</span>
+                <span className="text-sm font-medium tracking-wide">{getCatName(activeCategoryData)}</span>
               </motion.button>
             )}
           </AnimatePresence>
@@ -125,6 +130,7 @@ export function SidebarFilters({
                   hasChildren={hasChildren}
                   goForward={goForward}
                   updateParams={updateParams}
+                  lang={lang}
                 />
               );
             })}
@@ -154,10 +160,14 @@ export function SidebarFilters({
   );
 }
 
-function CategoryItem({ cat, isActive, hasChildren, goForward, updateParams }: any) {
+function CategoryItem({ cat, isActive, hasChildren, goForward, updateParams, lang }: any) {
   const [imageError, setImageError] = React.useState(false);
   const iconToUse = cat.iconUrl || cat.imageUrl;
   const isRemoteIcon = iconToUse && (iconToUse.startsWith('http') || iconToUse.startsWith('/') || iconToUse.startsWith('blob:'));
+
+  const getCatName = (c: Category) => {
+    return c.translations?.[lang]?.name || c.name;
+  };
 
   return (
     <button
@@ -173,7 +183,7 @@ function CategoryItem({ cat, isActive, hasChildren, goForward, updateParams }: a
             {isRemoteIcon ? (
               <Image 
                 src={iconToUse} 
-                alt={cat.name} 
+                alt={getCatName(cat)} 
                 fill 
                 className="object-cover rounded grayscale group-hover:grayscale-0 transition-all opacity-80 group-hover:opacity-100" 
                 onError={() => setImageError(true)}
@@ -185,7 +195,7 @@ function CategoryItem({ cat, isActive, hasChildren, goForward, updateParams }: a
         ) : (
           <LayoutGrid className="w-4 h-4 opacity-40 shrink-0" strokeWidth={1.5} />
         )}
-        <span className="text-[12px] font-semibold text-left truncate max-w-[140px] tracking-tight">{cat.name}</span>
+        <span className="text-[12px] font-semibold text-left truncate max-w-[140px] tracking-tight">{getCatName(cat)}</span>
       </div>
       {hasChildren ? (
         <ChevronRight className="w-4 h-4 opacity-80 group-hover:opacity-100 group-hover:translate-x-1 transition-all text-slate-500 group-hover:text-slate-900 shrink-0" strokeWidth={2} />

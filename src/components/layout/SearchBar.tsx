@@ -40,7 +40,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
           .or('status.eq.published,status.eq.active,status.is.null'),
         supabase
           .from('categories')
-          .select('*')
+          .select('*, translations')
           .order('pinned_in_search', { ascending: false })
           .order('show_in_hero', { ascending: false })
           .order('name', { ascending: true }),
@@ -57,7 +57,8 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
           imageUrl: c.image_url || c.imageUrl,
           iconUrl: c.icon_url || c.iconUrl,
           pinnedInSearch: c.pinned_in_search,
-          showInHero: c.show_in_hero
+          showInHero: c.show_in_hero,
+          translations: c.translations
         })));
       }
     } catch (error) {
@@ -211,25 +212,28 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                             </p>
                             {discoveryCategories.length > 0 ? (
                               <div className="grid grid-cols-3 lg:grid-cols-4 gap-4">
-                                {discoveryCategories.map((cat) => (
-                                  <Link
-                                    key={cat.id}
-                                    href={`/${lang}/products?category=${encodeURIComponent(cat.slug)}`}
-                                    onClick={() => setIsOverlayOpen(false)}
-                                    className="group block relative aspect-square overflow-hidden bg-slate-50 border border-slate-100 rounded"
-                                  >
-                                    <Image
-                                      src={isRemoteImage(cat.imageUrl) ? cat.imageUrl! : `https://images.unsplash.com/photo-1618220179428-22790b46a015?q=80&w=400`}
-                                      alt={cat.name}
-                                      fill
-                                      className="object-cover transition-transform duration-700 group-hover:scale-110"
-                                    />
-                                    <div className="absolute inset-0 bg-slate-900/25 group-hover:bg-slate-900/40 transition-colors" />
-                                    <div className="absolute inset-0 p-4 flex items-end">
-                                      <span className="text-white text-sm font-medium tracking-tight translate-y-2 group-hover:translate-y-0 transition-transform">{cat.name}</span>
-                                    </div>
-                                  </Link>
-                                ))}
+                                  {discoveryCategories.map((cat) => {
+                                    const catName = cat.translations?.[lang]?.name || cat.name;
+                                    return (
+                                      <Link
+                                        key={cat.id}
+                                        href={`/${lang}/products?category=${encodeURIComponent(cat.slug)}`}
+                                        onClick={() => setIsOverlayOpen(false)}
+                                        className="group block relative aspect-square overflow-hidden bg-slate-50 border border-slate-100 rounded"
+                                      >
+                                        <Image
+                                          src={isRemoteImage(cat.imageUrl) ? cat.imageUrl! : `https://images.unsplash.com/photo-1618220179428-22790b46a015?q=80&w=400`}
+                                          alt={catName}
+                                          fill
+                                          className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                        />
+                                        <div className="absolute inset-0 bg-slate-900/25 group-hover:bg-slate-900/40 transition-colors" />
+                                        <div className="absolute inset-0 p-4 flex items-end">
+                                          <span className="text-white text-sm font-medium tracking-tight translate-y-2 group-hover:translate-y-0 transition-transform">{catName}</span>
+                                        </div>
+                                      </Link>
+                                    );
+                                  })}
                               </div>
                             ) : (
                               <div className="rounded border border-slate-100 bg-slate-50 px-6 py-12 text-center text-sm text-slate-500">
@@ -254,17 +258,20 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                               {settings?.searchCollectionsResultsText?.[lang] || 'Collections'}
                             </p>
                             <div className="flex flex-wrap gap-2">
-                              {filteredResults.categories.map(cat => (
-                                <Link
-                                  key={cat.id}
-                                  href={`/${lang}/products?category=${encodeURIComponent(cat.slug)}`}
-                                  onClick={() => setIsOverlayOpen(false)}
-                                  className="px-4 py-3 border border-slate-100 hover:border-slate-900 transition-all flex items-center gap-3 bg-slate-50 hover:bg-white group rounded"
-                                >
-                                  <span className="text-sm font-black uppercase tracking-[0.12em] text-slate-900"><Highlight text={cat.name} query={searchQuery} /></span>
-                                  <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-slate-900 transition-all group-hover:translate-x-1" />
-                                </Link>
-                              ))}
+                              {filteredResults.categories.map(cat => {
+                                 const catName = cat.translations?.[lang]?.name || cat.name;
+                                 return (
+                                   <Link
+                                     key={cat.id}
+                                     href={`/${lang}/products?category=${encodeURIComponent(cat.slug)}`}
+                                     onClick={() => setIsOverlayOpen(false)}
+                                     className="px-4 py-3 border border-slate-100 hover:border-slate-900 transition-all flex items-center gap-3 bg-slate-50 hover:bg-white group rounded"
+                                   >
+                                     <span className="text-sm font-black uppercase tracking-[0.12em] text-slate-900"><Highlight text={catName} query={searchQuery} /></span>
+                                     <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-slate-900 transition-all group-hover:translate-x-1" />
+                                   </Link>
+                                 );
+                               })}
                             </div>
                           </div>
                         )}
@@ -297,7 +304,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                                   >
                                     <Image
                                       src={product.imageUrl}
-                                      alt={product.title}
+                                      alt={product.translations?.[lang]?.title || product.title}
                                       fill
                                       className="object-cover transition-transform duration-700 group-hover:scale-105"
                                       sizes="(max-width: 768px) 30vw, 15vw"

@@ -73,6 +73,11 @@ export function MobileFilters({
     setViewStack(prev => prev.slice(0, -1));
   };
 
+  const getCatName = (cat?: Category) => {
+    if (!cat) return '';
+    return cat.translations?.[lang]?.name || cat.name;
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -104,7 +109,7 @@ export function MobileFilters({
                       className="flex items-center space-x-2 text-slate-400 hover:text-slate-900 transition-colors mr-auto"
                     >
                       <ChevronLeft className="w-5 h-5" strokeWidth={1.5} />
-                      <span className="text-[14px] font-semibold tracking-tight">{activeCategoryData?.name}</span>
+                      <span className="text-[14px] font-semibold tracking-tight">{getCatName(activeCategoryData)}</span>
                     </motion.button>
                   ) : (
                     <motion.h2 
@@ -179,7 +184,7 @@ export function MobileFilters({
                                   {iconToUse ? (
                                     <div className="relative w-5 h-5 flex items-center justify-center shrink-0">
                                       {isRemoteIcon ? (
-                                        <Image src={iconToUse} alt={cat.name} fill className="object-cover rounded-[2px]" />
+                                        <Image src={iconToUse} alt={getCatName(cat)} fill className="object-cover rounded-[2px]" />
                                       ) : (
                                         <IconRenderer iconName={iconToUse} className="w-5 h-5" />
                                       )}
@@ -187,7 +192,7 @@ export function MobileFilters({
                                   ) : (
                                     <LayoutGrid className="w-4 h-4 opacity-40 shrink-0" strokeWidth={1.5} />
                                   )}
-                                  <span className="text-[14px] font-normal tracking-tight truncate max-w-[180px]">{cat.name}</span>
+                                  <span className="text-[14px] font-normal tracking-tight truncate max-w-[180px]">{getCatName(cat)}</span>
                                 </div>
                                 {hasChildren ? (
                                   <ChevronRight className="w-4 h-4 text-slate-300" strokeWidth={1.5} />
@@ -228,7 +233,7 @@ export function MobileFilters({
                        <button
                          onClick={() => { updateParams({ category: activeCategoryData?.slug || 'All' }); onClose(); }}
                          className={`w-full flex items-center justify-between h-[48px] px-4 border transition-all rounded ${activeCategory === activeCategoryData?.slug ? 'bg-slate-50 border-slate-900 border-2 text-slate-900 font-bold' : 'bg-slate-50 border-slate-100 text-slate-400 font-medium'}`}>
-                          <span className="text-[14px] font-semibold tracking-tight">View all {activeCategoryData?.name}</span>
+                          <span className="text-[14px] font-semibold tracking-tight">View all {getCatName(activeCategoryData)}</span>
                           {activeCategory === activeCategoryData?.slug ? <Check className="w-4 h-4 text-slate-900" strokeWidth={2.5} /> : <ArrowRight className="w-4 h-4" />}
                         </button>
 
@@ -251,7 +256,7 @@ export function MobileFilters({
                                  {iconToUse ? (
                                    <div className="relative w-5 h-5 flex items-center justify-center shrink-0">
                                      {isRemoteIcon ? (
-                                       <Image src={iconToUse} alt={sub.name} fill className="object-cover rounded-[2px]" />
+                                       <Image src={iconToUse} alt={getCatName(sub)} fill className="object-cover rounded-[2px]" />
                                      ) : (
                                        <IconRenderer iconName={iconToUse} className="w-5 h-5" />
                                      )}
@@ -259,7 +264,7 @@ export function MobileFilters({
                                  ) : (
                                    <LayoutGrid className="w-4 h-4 opacity-40 shrink-0" strokeWidth={1.5} />
                                  )}
-                                 <span className="text-[14px] font-normal tracking-tight truncate max-w-[180px]">{sub.name}</span>
+                                 <span className="text-[14px] font-normal tracking-tight truncate max-w-[180px]">{getCatName(sub)}</span>
                                </div>
                                {hasChildren ? (
                                  <ChevronRight className="w-4 h-4 text-slate-300" />
