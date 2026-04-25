@@ -36,10 +36,10 @@ export function NewsletterSection({ settings, lang }: NewsletterSectionProps) {
         <div className="absolute inset-0 bg-gradient-to-b from-brand-ink/10 to-transparent"></div>
       </div>
       <div className="max-w-2xl mx-auto px-4 text-center relative z-10">
-        <h2 className="text-3xl md:text-5xl font-sans mb-6 tracking-tight font-light">
+        <h2 className="text-2xl md:text-3xl font-sans mb-6 tracking-tight font-medium">
           {settings.newsletterPlaceholder?.[lang]}
         </h2>
-        <p className="text-brand-ink/70 mb-12 text-sm md:text-base max-w-md mx-auto font-light">
+        <p className="text-brand-ink/70 mb-12 text-sm md:text-base max-w-md mx-auto font-normal leading-relaxed">
           {settings.newsletterSectionSubtitle?.[lang] || 'Subscribe to receive updates, access to exclusive deals, and more.'}
         </p>
         
