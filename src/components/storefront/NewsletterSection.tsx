@@ -54,7 +54,7 @@ export function NewsletterSection({ settings, lang }: NewsletterSectionProps) {
               type="email" 
               name="email"
               placeholder="Enter your email address" 
-              className="w-full bg-white border border-brand-ink/10 rounded px-6 py-4 text-brand-ink placeholder:text-brand-muted focus:outline-none focus:border-brand-ink/30 focus:bg-white/50 transition-all text-sm font-sans"
+              className="w-full bg-white border border-slate-200 rounded-full px-6 py-4 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-400 transition-all text-sm font-sans pr-32"
               required
               disabled={isPending}
               aria-label="Email address for newsletter"
@@ -62,7 +62,7 @@ export function NewsletterSection({ settings, lang }: NewsletterSectionProps) {
             <button 
               type="submit" 
               disabled={isPending}
-              className="absolute right-2 top-2 bottom-2 bg-brand-ink text-white px-6 rounded-[4px] text-[12px] font-bold uppercase tracking-[0.2em] hover:bg-brand-ink/90 transition-colors flex items-center justify-center disabled:opacity-50"
+              className="absolute right-2 top-2 bottom-2 bg-slate-950 text-white px-6 rounded-full text-[12px] font-bold uppercase tracking-[0.2em] hover:bg-slate-800 transition-colors flex items-center justify-center disabled:opacity-50"
             >
               {isPending ? '...' : (settings.newsletterButtonText?.[lang])}
             </button>
