@@ -80,19 +80,9 @@ export async function recordSignupConsentAction({
 }: SignupConsentInput): Promise<AuthActionResult> {
   try {
     if (!acceptedTerms || !acceptedPrivacy) {
-      throw new Error('You must accept the Terms and Privacy Policy to create an account.');
+      return { success: false, error: 'You must accept the Terms and Privacy Policy to create an account.' };
     }
 
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error,
-    } = await supabase.auth.getUser();
-
-    if (error) {
-      throw error;
-}: SignupConsentInput) {
-  try {
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
@@ -100,7 +90,7 @@ export async function recordSignupConsentAction({
       return { success: false, error: 'User session not found.' };
     }
 
-    // 1. Force ensure profile exists first to avoid foreign key issues
+    // 1. Force ensure profile exists first to avoid database conflicts
     await ensureUserProfile(user, fullName ?? user.user_metadata?.full_name);
 
     // 2. Update the consent flags in the DB
@@ -135,7 +125,7 @@ export async function recordSignupConsentAction({
     return { success: true, message: 'Signup consent preferences saved.' };
   } catch (err: any) {
     console.error('[recordSignupConsentAction] General Error:', err);
-    return { success: false, error: err.message || 'Failed to save signup consent.', message: err.message };
+    return { success: false, error: err.message || 'Failed to save signup consent.' };
   }
 }
 
