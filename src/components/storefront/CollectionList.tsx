@@ -22,7 +22,7 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
           <p className="text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase text-slate-400">
             {settings.collectionTopSubtitle?.[lang] || 'Curated Catalog'}
           </p>
-          <h2 className="text-3xl md:text-5xl font-sans text-brand-ink tracking-tight mb-6 max-w-4xl leading-tight">
+          <h2 className="text-2xl md:text-3xl font-sans text-brand-ink tracking-tight mb-6 max-w-4xl leading-tight">
             {settings.collectionTitle?.[lang]}
           </h2>
           <div className="w-12 h-1 bg-brand-ink"></div>
@@ -77,7 +77,7 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
                     <h3 className="text-sm font-medium text-brand-ink truncate group-hover:text-brand-muted transition-colors">
                       {category.name}
                     </h3>
-                    <p className="text-[10px] text-brand-muted font-medium uppercase tracking-[0.1em] mt-0.5 opacity-70">
+                    <p className="text-xs text-brand-muted font-medium uppercase tracking-[0.1em] mt-0.5 opacity-70">
                       Collection
                     </p>
                   </div>
@@ -90,7 +90,7 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
         <div className="mt-16 md:mt-24 text-center">
           <Link 
             href="/products" 
-            className="group inline-flex items-center text-[10px] font-black uppercase tracking-[0.2em] text-brand-ink hover:opacity-70 transition-all border-b-2 border-brand-ink pb-1"
+            className="group inline-flex items-center text-xs font-black uppercase tracking-[0.2em] text-brand-ink hover:opacity-70 transition-all border-b-2 border-brand-ink pb-1"
           >
             {settings.viewAllText?.[lang] || 'View All'} 
           </Link>

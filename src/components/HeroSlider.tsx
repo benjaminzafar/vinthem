@@ -67,10 +67,10 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
               transition={{ delay: 0.3, duration: 0.8 }}
               className="h-[3px] bg-black mb-3 lg:mb-6 mx-auto lg:mx-0"
             />
-            <h2 className="text-3xl sm:text-4xl lg:text-6xl xl:text-7xl font-sans font-bold tracking-tight text-black leading-[1.1] mb-2 lg:mb-6 uppercase break-words">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-sans font-bold tracking-tight text-black leading-[1.1] mb-2 lg:mb-4 uppercase break-words">
               {category.translations?.[lang]?.name || category.name}
             </h2>
-            <p className="text-gray-600 text-[14px] sm:text-base lg:text-xl font-medium leading-relaxed mb-4 lg:mb-8 max-w-md mx-auto lg:mx-0">
+            <p className="text-gray-600 text-sm sm:text-base lg:text-lg font-medium leading-relaxed mb-4 lg:mb-6 max-w-md mx-auto lg:mx-0">
               {category.translations?.[lang]?.description || category.description}
             </p>
             
