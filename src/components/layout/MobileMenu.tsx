@@ -163,7 +163,7 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
                   {user ? (
                     <div className="space-y-4">
                       <span className="text-[12px] font-semibold uppercase tracking-[0.05em] text-brand-muted">{labels.account}</span>
-                      <div className="flex items-center justify-between bg-gray-50 p-4 rounded">
+                      <div className="flex items-center justify-between bg-gray-50 p-4 rounded-none">
                         <div className="flex items-center space-x-3">
                           <UserAvatar 
                             name={user.user_metadata?.full_name || user.email}
@@ -178,7 +178,7 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
                         <Link
                           href="/profile"
                           onClick={() => setMobileMenuOpen(false)}
-                          className="p-2 bg-white rounded border border-gray-100 text-brand-ink hover:bg-gray-100 transition-colors"
+                          className="p-2 bg-white rounded-none border border-gray-100 text-brand-ink hover:bg-gray-100 transition-colors"
                         >
                           <User className="w-4 h-4" />
                         </Link>
@@ -187,7 +187,7 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
                         <Link
                           href="/admin"
                           onClick={() => setMobileMenuOpen(false)}
-                          className="w-full flex items-center justify-center space-x-2 py-3 bg-indigo-50 text-indigo-700 rounded font-medium hover:bg-indigo-100 transition-colors"
+                          className="w-full flex items-center justify-center space-x-2 py-3 bg-indigo-50 text-indigo-700 rounded-none font-medium hover:bg-indigo-100 transition-colors"
                         >
                           <Settings className="w-4 h-4" />
                           <span>{labels.adminDashboard}</span>
@@ -197,7 +197,7 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
                         type="button"
                         onPointerDown={(e) => e.stopPropagation()}
                         onClick={handleLogout}
-                        className="w-full h-12 flex items-center justify-center space-x-2 text-red-600 bg-red-50 rounded font-bold hover:bg-red-100 transition-colors cursor-pointer relative z-[220]"
+                        className="w-full h-12 flex items-center justify-center space-x-2 text-red-600 bg-red-50 rounded-none font-bold hover:bg-red-100 transition-colors cursor-pointer relative z-[220]"
                       >
                         <LogOut className="w-5 h-5" />
                         <span>{labels.logout}</span>
@@ -207,7 +207,7 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
                     <Link
                       href="/auth"
                       onClick={() => setMobileMenuOpen(false)}
-                      className="w-full h-11 flex items-center justify-center text-[15px] font-semibold text-white bg-brand-ink rounded-lg hover:bg-gray-800 transition-all active:scale-95 text-center"
+                      className="w-full h-11 flex items-center justify-center text-[15px] font-semibold text-white bg-brand-ink rounded-none hover:bg-gray-800 transition-all active:scale-95 text-center"
                     >
                       {labels.login}
                     </Link>

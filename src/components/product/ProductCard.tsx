@@ -26,7 +26,7 @@ const Highlight = ({ text, query }: { text: string; query: string }) => {
     <>
       {parts.map((part, i) => 
         part.toLowerCase() === query.toLowerCase() ? (
-          <mark key={i} className="bg-amber-100 text-amber-900 rounded-2xl px-0.5 font-medium">{part}</mark>
+          <mark key={i} className="bg-amber-100 text-amber-900 rounded-none px-0.5 font-medium">{part}</mark>
         ) : (
           part
         )
@@ -56,7 +56,7 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
       <Link href={href} className="block relative aspect-[4/5] mb-5 overflow-hidden bg-slate-50 border border-slate-200 rounded transition-all duration-500">
         {product.isFeatured && (
           <div className="absolute top-4 left-4 z-20">
-            <span className="bg-white/90 backdrop-blur-sm border border-slate-100 text-brand-ink text-[12px] font-semibold px-4 py-1.5 rounded">
+            <span className="bg-white/90 backdrop-blur-sm border border-slate-100 text-brand-ink text-[12px] font-semibold px-4 py-1.5 rounded-none">
               {settings.featuredBadgeText?.[lang] || 'Featured'}
             </span>
           </div>
@@ -97,12 +97,12 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
                 addItem(product);
                 setCartOpen(true);
                 toast.success(`${product.title} added to cart!`, {
-                  className: 'rounded-lg bg-slate-900 text-white text-[14px] font-medium border-none px-6 py-3',
+                  className: 'rounded-none bg-slate-900 text-white text-[14px] font-medium border-none px-6 py-3',
                   duration: 2000,
                   icon: <Check className="w-5 h-5" strokeWidth={1.5} />
                 });
               }}
-              className="w-full h-11 bg-white text-brand-ink border border-slate-200 px-6 text-[14px] font-semibold transition-all duration-300 hover:bg-slate-900 hover:text-white hover:border-slate-900 flex items-center justify-center gap-2 active:scale-[0.98] rounded-lg"
+              className="w-full h-11 bg-white text-brand-ink border border-slate-200 px-6 text-[14px] font-semibold transition-all duration-300 hover:bg-slate-900 hover:text-white hover:border-slate-900 flex items-center justify-center gap-2 active:scale-[0.98] rounded-none"
             >
               <ShoppingBag className="w-4 h-4" strokeWidth={1.5} />
               {settings.quickAddText?.[lang] || 'Quick add'}
@@ -119,12 +119,12 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
             addItem(product);
             setCartOpen(true);
             toast.success(`${product.title} added to cart!`, {
-              className: 'rounded-lg bg-slate-900 text-white text-[14px] font-medium border-none px-6 py-3',
+              className: 'rounded-none bg-slate-900 text-white text-[14px] font-medium border-none px-6 py-3',
               duration: 2000,
               icon: <Check className="w-5 h-5" strokeWidth={1.5} />
             });
           }}
-          className="w-full h-11 bg-slate-50 text-brand-ink border border-slate-200 px-6 text-[14px] font-semibold flex items-center justify-center gap-2 active:scale-[0.98] rounded-lg"
+          className="w-full h-11 bg-slate-50 text-brand-ink border border-slate-200 px-6 text-[14px] font-semibold flex items-center justify-center gap-2 active:scale-[0.98] rounded-none"
         >
           <ShoppingBag className="w-4 h-4" strokeWidth={1.5} />
           {settings.quickAddText?.[lang] || 'Quick add'}
@@ -134,7 +134,7 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
       <div className="flex flex-col flex-1 px-1">
         <div className="flex items-center gap-2 mb-3">
           {product.status === 'draft' && (
-             <span className="text-xs font-black uppercase tracking-widest px-1.5 py-0.5 bg-slate-100 text-slate-400 border border-slate-200 rounded">Draft</span>
+             <span className="text-xs font-black uppercase tracking-widest px-1.5 py-0.5 bg-slate-100 text-slate-400 border border-slate-200 rounded-none">Draft</span>
           )}
         </div>
         <h3 className="text-[14px] font-semibold tracking-tight text-brand-ink group-hover:text-brand-muted transition-colors line-clamp-2 mb-2">

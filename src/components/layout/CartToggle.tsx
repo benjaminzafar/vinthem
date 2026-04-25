@@ -11,7 +11,7 @@ export function CartToggle() {
   return (
     <button
       onClick={() => setCartOpen(true)}
-      className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-lg group"
+      className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-none group"
       aria-label="View Shopping Cart"
     >
       <div className="relative">

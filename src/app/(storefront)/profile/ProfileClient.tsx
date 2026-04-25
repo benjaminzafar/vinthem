@@ -595,7 +595,7 @@ export function ProfileClient({
                                </div>
                                <div>
                                   <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Progress</p>
-                                  <span className={`inline-flex px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest border ${
+                                  <span className={`inline-flex px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest border rounded-none ${
                                     order.status === 'Delivered' ? 'bg-emerald-50 text-emerald-700 border-emerald-300' :
                                     order.status === 'Shipped' ? 'bg-blue-50 text-blue-700 border-blue-300' :
                                     'bg-amber-50 text-amber-700 border-amber-300'
@@ -743,7 +743,7 @@ export function ProfileClient({
                                   </div>
                                   <p className="mt-2 text-sm leading-6 text-slate-700">{message.text || '-'}</p>
                                   {message.imageUrl && isValidUrl(message.imageUrl) && (
-                                    <div className="mt-4 relative aspect-video w-full max-w-sm rounded-lg overflow-hidden border border-slate-200 shadow-sm">
+                                    <div className="mt-4 relative aspect-video w-full max-w-sm rounded-none overflow-hidden border border-slate-200 shadow-sm">
                                       <Image src={message.imageUrl} alt="Support inquiry attachment" fill className="object-cover" />
                                     </div>
                                   )}
@@ -1209,7 +1209,7 @@ export function ProfileClient({
                                       <Image src={supportImageUrl} alt="Support attachment" fill className="object-cover" />
                                       <button 
                                         onClick={() => setSupportImageUrl('')}
-                                        className="absolute -top-2 -right-2 w-6 h-6 bg-white border border-slate-300 rounded-full flex items-center justify-center shadow-sm hover:border-slate-900"
+                                        className="absolute -top-2 -right-2 w-6 h-6 bg-white border border-slate-300 rounded-none flex items-center justify-center shadow-sm hover:border-slate-900"
                                       >
                                         <X className="w-3 h-3" />
                                       </button>

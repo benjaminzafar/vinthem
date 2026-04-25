@@ -139,7 +139,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
     <div className="relative">
       <button 
         onClick={handleToggle}
-        className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-lg"
+        className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-none"
         aria-label="Search"
       >
         <Search className="w-5 h-5" strokeWidth={1.5} />
@@ -164,7 +164,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.98, y: 10 }}
                   transition={{ type: 'spring', damping: 25, stiffness: 300, mass: 0.5 }}
-                  className="w-full max-w-[850px] bg-white border-0 lg:border border-slate-200 pointer-events-auto lg:shadow-[0_0_80px_rgba(0,0,0,0.1)] flex flex-col h-full lg:h-auto lg:max-h-[70vh] overflow-hidden rounded-none lg:rounded-2xl"
+                  className="w-full max-w-[850px] bg-white border-0 lg:border border-slate-200 pointer-events-auto lg:shadow-[0_0_80px_rgba(0,0,0,0.1)] flex flex-col h-full lg:h-auto lg:max-h-[70vh] overflow-hidden rounded-none"
                 >
                 {/* Search Header: Aligned h-16 to match main Navigation */}
                 <div className="flex items-center gap-6 px-10 border-b border-slate-100 bg-white sticky top-0 z-20 shrink-0 h-16">
@@ -185,7 +185,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                     <kbd className="hidden sm:flex h-6 items-center gap-1.5 px-2 font-mono text-xs font-medium text-slate-500 border border-slate-100 rounded">ESC</kbd>
                     <button 
                       onClick={() => setIsOverlayOpen(false)}
-                      className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-lg"
+                      className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-none"
                     >
                       <X className="w-5 h-5" strokeWidth={1.5} />
                     </button>
@@ -216,7 +216,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                                     key={cat.id}
                                     href={`/${lang}/products?category=${encodeURIComponent(cat.slug)}`}
                                     onClick={() => setIsOverlayOpen(false)}
-                                    className="group block relative aspect-square overflow-hidden bg-slate-50 border border-slate-100 rounded-xl"
+                                    className="group block relative aspect-square overflow-hidden bg-slate-50 border border-slate-100 rounded-none"
                                   >
                                     <Image
                                       src={isRemoteImage(cat.imageUrl) ? cat.imageUrl! : `https://images.unsplash.com/photo-1618220179428-22790b46a015?q=80&w=400`}
@@ -232,7 +232,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                                 ))}
                               </div>
                             ) : (
-                              <div className="rounded-xl border border-slate-100 bg-slate-50 px-6 py-12 text-center text-sm text-slate-500">
+                              <div className="rounded-none border border-slate-100 bg-slate-50 px-6 py-12 text-center text-sm text-slate-500">
                                 {settings?.noCollectionsFoundText?.[lang] || 'No collections found'}
                               </div>
                             )}
@@ -259,7 +259,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                                   key={cat.id}
                                   href={`/${lang}/products?category=${encodeURIComponent(cat.slug)}`}
                                   onClick={() => setIsOverlayOpen(false)}
-                                  className="px-4 py-3 border border-slate-100 hover:border-slate-900 transition-all flex items-center gap-3 bg-slate-50 hover:bg-white group rounded-lg"
+                                  className="px-4 py-3 border border-slate-100 hover:border-slate-900 transition-all flex items-center gap-3 bg-slate-50 hover:bg-white group rounded-none"
                                 >
                                   <span className="text-sm font-black uppercase tracking-[0.12em] text-slate-900"><Highlight text={cat.name} query={searchQuery} /></span>
                                   <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-slate-900 transition-all group-hover:translate-x-1" />
@@ -293,7 +293,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                                   <Link 
                                     href={`/${lang}/product/${product.id}`} 
                                     onClick={() => setIsOverlayOpen(false)}
-                                    className="block relative aspect-[4/5] overflow-hidden bg-slate-50 border border-slate-100 mb-3 rounded-lg"
+                                    className="block relative aspect-[4/5] overflow-hidden bg-slate-50 border border-slate-100 mb-3 rounded-none"
                                   >
                                     <Image
                                       src={product.imageUrl}
