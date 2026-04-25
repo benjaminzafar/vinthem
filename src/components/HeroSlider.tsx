@@ -49,7 +49,7 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
     : 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=2000&auto=format&fit=crop';
 
   return (
-    <section className="relative w-full h-[calc(100vh-70px)] lg:h-[calc(100vh-80px)] flex flex-col justify-center overflow-hidden py-4 lg:py-0" style={{ backgroundColor: settings.heroBackgroundColor || '#ffffff' }}>
+    <section className="relative w-full h-[calc(100vh-62px)] lg:h-[calc(100vh-72px)] flex flex-col justify-center overflow-hidden py-4 lg:py-0" style={{ backgroundColor: settings.heroBackgroundColor || '#ffffff' }}>
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={category.id}
