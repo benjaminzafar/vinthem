@@ -93,7 +93,7 @@ export function SidebarFilters({
                 className="flex items-center space-x-2 text-slate-500 hover:text-brand-ink transition-colors pb-2"
               >
                 <ChevronLeft className="w-4 h-4" />
-                <span className="text-sm font-bold uppercase tracking-widest">{activeCategoryData?.name}</span>
+                <span className="text-sm font-medium tracking-wide">{activeCategoryData?.name}</span>
               </motion.button>
             )}
           </AnimatePresence>
@@ -102,7 +102,7 @@ export function SidebarFilters({
             {viewStack.length === 0 && (
               <button
                 onClick={() => updateParams({ category: 'All' })}
-                className={`w-full flex items-center justify-between py-3 px-4 transition-all border ${activeCategory === 'All' ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-transparent hover:bg-slate-50 text-slate-700 hover:text-slate-900'}`}
+                className={`w-full flex items-center justify-between py-3 px-4 transition-all border ${activeCategory === 'All' ? 'bg-slate-100 border-slate-200 text-slate-900' : 'bg-white border-transparent hover:bg-slate-50 text-slate-600 hover:text-slate-900'}`}
               >
                 <span className="text-sm font-medium">
                   {settings.allCategoriesText?.[lang] || 'All Products'}
@@ -162,7 +162,7 @@ function CategoryItem({ cat, isActive, hasChildren, goForward, updateParams }: a
         if (hasChildren && cat.id) goForward(cat.id);
         else updateParams({ category: cat.slug });
       }}
-      className={`w-full flex items-center justify-between py-3 px-4 transition-all border group ${isActive ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-transparent hover:bg-slate-50 text-slate-700 hover:text-slate-900'}`}
+      className={`w-full flex items-center justify-between py-3 px-4 transition-all border group ${isActive ? 'bg-slate-100 border-slate-200 text-slate-900' : 'bg-white border-transparent hover:bg-slate-50 text-slate-600 hover:text-slate-900'}`}
     >
       <div className="flex items-center space-x-3">
         {iconToUse && !imageError ? (
