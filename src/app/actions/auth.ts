@@ -1,6 +1,7 @@
 'use server';
 ﻿import { logger } from '@/lib/logger';
 
+import { revalidatePath } from 'next/cache';
 import { ensureUserProfile } from '@/lib/admin';
 import { upsertNewsletterSubscriber } from '@/app/actions/newsletter';
 import { createAdminClient, createClient } from '@/utils/supabase/server';
