@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { logger } from '@/lib/logger';
 
 export type ConsentState = {
@@ -8,9 +8,9 @@ export type ConsentState = {
   updatedAt: string;
 };
 
-export const CONSENT_STORAGE_KEY = "mavren-consent";
-export const CONSENT_COOKIE_NAME = "mavren_consent";
-export const OPEN_CONSENT_PREFERENCES_EVENT = "mavren:open-consent-preferences";
+export const CONSENT_STORAGE_KEY = "vinthem-consent";
+export const CONSENT_COOKIE_NAME = "vinthem_consent";
+export const OPEN_CONSENT_PREFERENCES_EVENT = "vinthem:open-consent-preferences";
 
 export function createConsentState(overrides?: Partial<ConsentState>): ConsentState {
   return {

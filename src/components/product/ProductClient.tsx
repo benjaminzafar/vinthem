@@ -182,7 +182,7 @@ export function ProductClient({
                 </button>
               ) : (
                 <div className="flex h-full items-center justify-center text-sm uppercase tracking-[0.24em] text-slate-400">
-                  Mavren
+                  Vinthem
                 </div>
               )}
             </div>

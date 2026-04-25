@@ -1,5 +1,5 @@
 /**
- * Official European locales for Mavren Shop.
+ * Official European locales for Vinthem.
  * This is the single source of truth for dynamic configurations (Brevo, CRM, etc.)
  */
 // Source of truth for languages is now dynamic from DB, but we allow any common 2-letter code

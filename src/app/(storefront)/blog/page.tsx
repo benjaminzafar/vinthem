@@ -53,7 +53,7 @@ export default async function BlogList() {
       </div>
 
       {posts.length === 0 ? (
-        <div className="text-center py-24 bg-white rounded-2xl border border-gray-100">
+        <div className="text-center py-24 bg-white rounded border border-gray-100">
           <p className="text-brand-gray text-lg">{settings.noJournalEntriesText?.[lang] || 'No journal entries found.'}</p>
         </div>
       ) : (
@@ -64,7 +64,7 @@ export default async function BlogList() {
               className="group cursor-pointer"
             >
               <Link href={`/blog/${post.id}`} className="block">
-                <div className="aspect-[4/3] rounded-2xl overflow-hidden mb-6 bg-gray-100 shadow-sm border border-gray-100 relative">
+                <div className="aspect-[4/3] rounded overflow-hidden mb-6 bg-gray-100 shadow-sm border border-gray-100 relative">
                   {post.imageUrl && post.imageUrl.trim() !== "" ? (
                     <Image 
                       src={post.imageUrl} 
@@ -75,7 +75,7 @@ export default async function BlogList() {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400 font-sans">
-                      {settings.journalTitleText?.[lang] || 'Mavren'}
+                      {settings.journalTitleText?.[lang] || 'Vinthem'}
                     </div>
                   )}
                 </div>
