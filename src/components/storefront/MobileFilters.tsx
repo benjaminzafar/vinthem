@@ -280,21 +280,21 @@ export function MobileFilters({
             </div>
 
             <div className="p-4 border-t border-slate-100 flex items-center gap-3 shrink-0 mb-safe bg-white z-20">
-               <button
-                 onClick={() => {
-                   setSearchInput('');
-                   updateParams({ search: null, category: 'All', sort: 'newest' });
-                   onClose();
-                 }}
-                 className="flex-1 h-11 bg-white border border-slate-200 text-brand-muted rounded-lg transition-all hover:bg-slate-50 flex items-center justify-center"
-               >
-                 <span className="text-[14px] font-semibold">{settings.clearFiltersText?.[lang] || 'Clear'}</span>
-               </button>
-               <button
-                 onClick={onClose}
-                 className="flex-1 h-11 bg-slate-900 text-white transition-all hover:bg-slate-800 rounded-lg active:scale-[0.98] flex items-center justify-center"
-               >
-                  <span className="text-[14px] font-semibold">{settings.applyFiltersText?.[lang] || 'Apply'} ({productCount})</span>
+                <button
+                  onClick={() => {
+                    setSearchInput('');
+                    updateParams({ search: null, category: 'All', sort: 'newest' });
+                    onClose();
+                  }}
+                  className="flex-1 h-11 border border-slate-200 text-[14px] font-semibold uppercase tracking-wider text-slate-600 hover:text-slate-900 hover:border-slate-400 transition-all rounded-none flex items-center justify-center"
+                >
+                  {settings.clearFiltersText?.[lang] || 'Clear'}
+                </button>
+                <button
+                  onClick={onClose}
+                  className="flex-1 h-11 bg-slate-900 text-white text-[14px] font-semibold uppercase tracking-wider hover:bg-slate-800 transition-all rounded-none active:scale-[0.98] flex items-center justify-center"
+                >
+                   {settings.applyFiltersText?.[lang] || 'Apply'} ({productCount})
                 </button>
              </div>
           </motion.div>

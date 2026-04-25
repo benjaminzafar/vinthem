@@ -211,7 +211,7 @@ export function CartDrawer({ initialSettings }: CartDrawerProps) {
                   <Link
                     href={localizeHref(lang, '/payment')}
                     onClick={handleClose}
-                    className="w-full h-11 bg-slate-900 text-white flex items-center justify-center gap-3 text-[17px] font-semibold transition-all hover:bg-slate-800 rounded-lg group shadow-none active:scale-[0.98]"
+                    className="flex h-11 w-full items-center justify-center bg-zinc-900 text-[14px] font-bold uppercase tracking-wider text-white transition-all hover:bg-black rounded-none shadow-none active:scale-[0.98] group"
                   >
                     {settings?.proceedToPaymentText?.[lang] || 'Review Bag'}
                     <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" strokeWidth={1.5} />
