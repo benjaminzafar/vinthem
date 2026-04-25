@@ -301,32 +301,32 @@ export function ProductClient({
                 {settings.shareProductText?.[lang] || 'Share'}
               </span>
               <button 
-                className="flex h-11 w-11 items-center justify-center border border-slate-200 text-brand-ink transition-all hover:border-brand-ink rounded-lg"
+                className="flex h-10 w-10 items-center justify-center border border-slate-200 text-brand-ink transition-all hover:border-brand-ink rounded-full shadow-none"
               >
                 <FaWhatsapp className="w-5 h-5" />
               </button>
               <button 
                 onClick={() => handleShare('Telegram')} 
-                className="flex h-11 w-11 items-center justify-center border border-slate-200 text-brand-ink transition-all hover:border-brand-ink rounded-lg"
+                className="flex h-10 w-10 items-center justify-center border border-slate-200 text-brand-ink transition-all hover:border-brand-ink rounded-full shadow-none"
               >
                 <FaTelegramPlane className="w-5 h-5" />
               </button>
               <button 
                 onClick={() => handleShare('Threads')} 
-                className="flex h-11 w-11 items-center justify-center border border-slate-200 text-brand-ink transition-all hover:border-brand-ink rounded-lg"
+                className="flex h-10 w-10 items-center justify-center border border-slate-200 text-brand-ink transition-all hover:border-brand-ink rounded-full shadow-none"
               >
                 <FaThreads className="w-5 h-5" />
               </button>
               <button 
                 onClick={() => handleShare('Facebook')} 
-                className="flex h-11 w-11 items-center justify-center border border-slate-200 text-brand-ink transition-all hover:border-brand-ink rounded-lg"
+                className="flex h-10 w-10 items-center justify-center border border-slate-200 text-brand-ink transition-all hover:border-brand-ink rounded-full shadow-none"
               >
                 <FaFacebook className="w-5 h-5" />
               </button>
               
               <button 
                 onClick={handleCopyLink} 
-                className={`flex h-10 w-10 items-center justify-center border transition-all rounded ${isCopied ? 'bg-emerald-50 border-emerald-200 text-emerald-600' : 'border-slate-200 text-slate-700 hover:border-slate-900 hover:text-slate-900'}`}
+                className={`flex h-10 w-10 items-center justify-center border transition-all rounded-full shadow-none ${isCopied ? 'bg-emerald-50 border-emerald-200 text-emerald-600' : 'border-slate-200 text-slate-700 hover:border-slate-900 hover:text-slate-900'}`}
                 title="Copy product link"
               >
                 {isCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
