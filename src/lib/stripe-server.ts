@@ -31,8 +31,8 @@ export async function getStripeCredentials(): Promise<StripeCredentials> {
   const encryptedWebhookSecret = integrations.find((row) => row.key === 'STRIPE_WEBHOOK_SECRET')?.value;
 
   return {
-    secretKey: encryptedSecretKey ? decrypt(encryptedSecretKey) : '',
-    webhookSecret: encryptedWebhookSecret ? decrypt(encryptedWebhookSecret) : '',
+    secretKey: encryptedSecretKey ? await decrypt(encryptedSecretKey) : '',
+    webhookSecret: encryptedWebhookSecret ? await decrypt(encryptedWebhookSecret) : '',
   };
 }
 

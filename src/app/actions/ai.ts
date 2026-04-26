@@ -58,7 +58,7 @@ export async function generateAIContentAction(params: AIContentParams) {
 
     let apiKey = "";
     try {
-      apiKey = decrypt(groqKey);
+      apiKey = await decrypt(groqKey);
     } catch (decryptErr) {
       console.error(`[Groq Action] [${now}] FAILED TO DECRYPT GROQ_API_KEY. The ENCRYPTION_SECRET might be invalid or have changed.`, decryptErr);
       throw new Error("Security Error: Failed to decrypt AI credentials. Please re-save your Groq API Key in the Integrations Manager.");

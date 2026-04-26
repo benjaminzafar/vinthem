@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
         const sanitizedValue = value.replace(/[<>]/g, '');
         const normalizedValue = sanitizedValue;
         const storedValue = isSensitiveIntegrationKey(key)
-          ? encrypt(normalizedValue)
+          ? await encrypt(normalizedValue)
           : normalizedValue;
 
         const { error: upsertError } = await supabase

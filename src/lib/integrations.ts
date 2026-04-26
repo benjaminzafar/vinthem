@@ -13,7 +13,7 @@ function looksEncrypted(value: string): boolean {
   );
 }
 
-export function maybeDecryptStoredValue(value: string | null | undefined): string {
+export async function maybeDecryptStoredValue(value: string | null | undefined): Promise<string> {
   if (!value) {
     return '';
   }
@@ -23,7 +23,7 @@ export function maybeDecryptStoredValue(value: string | null | undefined): strin
   }
 
   try {
-    return decrypt(value);
+    return await decrypt(value);
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
       logger.warn('Encrypted integration value could not be decrypted. Falling back to the stored raw value.', error);

@@ -33,8 +33,8 @@ export async function getR2Credentials(): Promise<R2Credentials> {
 
   return {
     accountId: accountId || process.env.R2_ACCOUNT_ID || '',
-    accessKeyId: encryptedAccessKey ? decrypt(encryptedAccessKey) : (process.env.R2_ACCESS_KEY_ID || ''),
-    secretAccessKey: encryptedSecretKey ? decrypt(encryptedSecretKey) : (process.env.R2_SECRET_ACCESS_KEY || ''),
+    accessKeyId: encryptedAccessKey ? await decrypt(encryptedAccessKey) : (process.env.R2_ACCESS_KEY_ID || ''),
+    secretAccessKey: encryptedSecretKey ? await decrypt(encryptedSecretKey) : (process.env.R2_SECRET_ACCESS_KEY || ''),
   };
 }
 

@@ -42,15 +42,14 @@ export async function getIntegrationsAction(): Promise<IntegrationActionResponse
     const activeLocales = settingsRow?.data?.languages || ['en', 'sv', 'fi', 'da'];
 
     const config: Record<string, string> = {};
-    integrations?.forEach(item => {
+    for (const item of integrations ?? []) {
       config[`${item.key}_CONNECTED`] = 'true';
       if (isSensitiveIntegrationKey(item.key)) {
         config[item.key] = '********';
-        return;
+        continue;
       }
-
-      config[item.key] = maybeDecryptStoredValue(item.value);
-    });
+      config[item.key] = await maybeDecryptStoredValue(item.value);
+    }
 
     return { 
       success: true, 
@@ -81,7 +80,7 @@ export async function saveIntegrationAction(updates: Record<string, string>): Pr
         const sanitizedValue = value.replace(/[<>]/g, '');
         const normalizedValue = sanitizedValue;
         const finalValue = isSensitiveIntegrationKey(key)
-          ? encrypt(normalizedValue)
+          ? await encrypt(normalizedValue)
           : normalizedValue;
 
         const { error: upsertError } = await supabase
@@ -153,7 +152,7 @@ export async function testBrevoApiAction(apiKey: string): Promise<IntegrationAct
          .single();
        
        if (row) {
-         apiKey = maybeDecryptStoredValue(row.value);
+         apiKey = await maybeDecryptStoredValue(row.value);
        }
     }
 

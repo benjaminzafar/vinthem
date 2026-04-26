@@ -19,9 +19,9 @@ export const getIntegrations = cache(async () => {
   }
 
   const config: Record<string, string> = {};
-  integrations?.forEach(item => {
-    config[item.key] = maybeDecryptStoredValue(item.value);
-  });
+  for (const item of integrations ?? []) {
+    config[item.key] = await maybeDecryptStoredValue(item.value);
+  }
 
   return config;
 });
