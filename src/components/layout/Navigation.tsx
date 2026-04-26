@@ -25,7 +25,7 @@ export default async function Navigation() {
       .from('users')
       .select('role')
       .eq('id', user.id)
-      .single();
+      .maybeSingle();
     isAdmin = profile?.role === 'admin';
   }
 
