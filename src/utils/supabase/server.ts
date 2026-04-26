@@ -1,13 +1,26 @@
 import { createServerClient } from '@supabase/ssr';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
-import { cookies, headers } from 'next/headers';
+import { cookies } from 'next/headers';
 
 export async function createClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+
+  if (!url || !key) {
+    if (process.env.NODE_ENV === 'production') {
+      console.error('Supabase client failed: NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY is missing.');
+    }
+    // Return a dummy client to prevent hard crash
+    return createServerClient('https://missing.supabase.co', 'missing', { 
+      cookies: { getAll() { return [] }, setAll() {} } 
+    });
+  }
+
   const cookieStore = await cookies();
 
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    url,
+    key,
     {
       cookies: {
         getAll() {
@@ -33,21 +46,22 @@ export async function createClient() {
 }
 
 export function createAdminClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!serviceRoleKey) {
+  
+  if (!url || !serviceRoleKey) {
     if (process.env.NODE_ENV === 'production') {
-      console.error('CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing. Admin features and settings hydration will fail.');
+      console.error('CRITICAL: Supabase URL or SERVICE_ROLE_KEY is missing.');
     }
-    // Return a dummy client that will fail gracefully on calls instead of crashing the whole server
     return createSupabaseClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      url || 'https://missing.supabase.co',
       'missing-key',
       { auth: { autoRefreshToken: false, persistSession: false } }
     );
   }
 
   return createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    url,
     serviceRoleKey,
     { auth: { autoRefreshToken: false, persistSession: false } }
   );

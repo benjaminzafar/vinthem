@@ -202,7 +202,13 @@ export async function middleware(request: NextRequest) {
   const { supabaseResponse, user, role } = await updateSession(request);
 
   // 3. Headers & Security
-  const nonce = crypto.randomUUID().replace(/-/g, '');
+  let nonce = '';
+  try {
+    nonce = (globalThis.crypto as any).randomUUID().replace(/-/g, '');
+  } catch (e) {
+    nonce = Math.random().toString(36).substring(2, 15);
+  }
+  
   supabaseResponse.headers.set('x-csp-nonce', nonce);
   supabaseResponse.headers.set('x-active-locale', pathnameLocale ?? detectedLocale ?? DEFAULT_LANGUAGE);
   supabaseResponse.headers.set('x-pathname-no-locale', normalizedPathname);
