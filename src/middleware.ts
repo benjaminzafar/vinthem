@@ -168,8 +168,10 @@ function getRequestKey(request: NextRequest) {
   return `${method}:${request.nextUrl.pathname}:${ip}:${userAgent}`;
 }
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+  
+  // 1. Language Routing
   const userAgent = request.headers.get('user-agent');
   const geoCountry = request.headers.get('cf-ipcountry');
   const isBotRequest = isSearchEngineBot(userAgent);
@@ -194,88 +196,44 @@ export async function proxy(request: NextRequest) {
       });
       return redirectResponse;
     }
-
-    if (normalizedPathname.startsWith('/api') || normalizedPathname.startsWith('/admin') || normalizedPathname.startsWith('/auth/callback')) {
-      const redirectUrl = request.nextUrl.clone();
-      redirectUrl.pathname = normalizedPathname;
-      const redirectResponse = NextResponse.redirect(redirectUrl);
-      redirectResponse.cookies.set('NEXT_LOCALE', pathnameLocale ?? detectedLocale, {
-        path: '/',
-        maxAge: LOCALE_COOKIE_MAX_AGE_SECONDS,
-        sameSite: 'lax',
-      });
-      return redirectResponse;
-    }
   }
 
-  const requestHeaders = new Headers(request.headers);
+  // 2. Auth Session Update
+  const { supabaseResponse, user, role } = await updateSession(request);
+
+  // 3. Headers & Security
   const nonce = crypto.randomUUID().replace(/-/g, '');
-  requestHeaders.set('x-csp-nonce', nonce);
-  requestHeaders.set('x-active-locale', pathnameLocale ?? detectedLocale ?? DEFAULT_LANGUAGE);
-  requestHeaders.set('x-pathname-no-locale', normalizedPathname);
+  supabaseResponse.headers.set('x-csp-nonce', nonce);
+  supabaseResponse.headers.set('x-active-locale', pathnameLocale ?? detectedLocale ?? DEFAULT_LANGUAGE);
+  supabaseResponse.headers.set('x-pathname-no-locale', normalizedPathname);
+  
+  applyCorsHeaders(request, supabaseResponse);
+  applySecurityHeaders(request, supabaseResponse, nonce);
 
-  const response = NextResponse.next({
-    request: {
-      headers: requestHeaders,
-    },
-  });
-  const originAllowed = applyCorsHeaders(request, response);
-  applySecurityHeaders(request, response, nonce);
-  response.cookies.set('NEXT_LOCALE', pathnameLocale ?? detectedLocale, {
-    path: '/',
-    maxAge: LOCALE_COOKIE_MAX_AGE_SECONDS,
-    sameSite: 'lax',
-  });
-
-  if (!originAllowed && request.method === 'OPTIONS') {
-    return new NextResponse(null, { status: 403, headers: response.headers });
-  }
-
-  if (request.method === 'OPTIONS') {
-    return new NextResponse(null, { status: 204, headers: response.headers });
-  }
-
+  // 4. Rate Limiting
   const rateLimitRule = getRateLimitRule(normalizedPathname);
   const rateLimitResult = await checkRateLimit(getRequestKey(request), rateLimitRule);
-  response.headers.set('X-RateLimit-Limit', String(rateLimitRule.limit));
-  response.headers.set('X-RateLimit-Remaining', String(rateLimitResult.remaining));
-  response.headers.set('X-RateLimit-Reset', String(rateLimitResult.resetTime));
+  supabaseResponse.headers.set('X-RateLimit-Limit', String(rateLimitRule.limit));
+  supabaseResponse.headers.set('X-RateLimit-Remaining', String(rateLimitResult.remaining));
+  supabaseResponse.headers.set('X-RateLimit-Reset', String(rateLimitResult.resetTime));
 
   if (!rateLimitResult.allowed) {
-    return new NextResponse('Too Many Requests', { status: 429, headers: response.headers });
+    return new NextResponse('Too Many Requests', { status: 429, headers: supabaseResponse.headers });
   }
 
-  const { supabaseResponse, user, role } = await updateSession(
-    new NextRequest(request.url, {
-      method: request.method,
-      headers: requestHeaders,
-      body: request.body,
-    })
-  );
-
-  supabaseResponse.headers.forEach((value, key) => {
-    response.headers.set(key, value);
-  });
-
-  supabaseResponse.cookies.getAll().forEach((cookie) => {
-    response.cookies.set(cookie);
-  });
-
+  // 5. Admin Protection
   const adminPath = normalizedPathname.startsWith('/admin') || normalizedPathname.startsWith('/api/admin');
   if (adminPath && (!user || role !== 'admin')) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = pathnameLocale ? `/${pathnameLocale}/auth` : '/auth';
     redirectUrl.searchParams.set('redirect', pathname);
-    return NextResponse.redirect(redirectUrl, { headers: response.headers });
+    return NextResponse.redirect(redirectUrl, { headers: supabaseResponse.headers });
   }
 
-  return response;
+  return supabaseResponse;
 }
 
 export const config = {
   matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|avif|css|js|map|txt|xml|woff2?)).*)'],
 };
-export default proxy;
-
-
-
+export default middleware;

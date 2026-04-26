@@ -35,8 +35,14 @@ export async function createClient() {
 export function createAdminClient() {
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!serviceRoleKey) {
-    throw new Error(
-      'SUPABASE_SERVICE_ROLE_KEY is not set. Server cannot start without it.'
+    if (process.env.NODE_ENV === 'production') {
+      console.error('CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing. Admin features and settings hydration will fail.');
+    }
+    // Return a dummy client that will fail gracefully on calls instead of crashing the whole server
+    return createSupabaseClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      'missing-key',
+      { auth: { autoRefreshToken: false, persistSession: false } }
     );
   }
 
