@@ -2,9 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { Search, ChevronRight, ChevronLeft, Check, LayoutGrid } from 'lucide-react';
-import { IconRenderer } from '../IconRenderer';
+import { Search, ChevronRight, ChevronLeft, Check } from 'lucide-react';
 import { StorefrontSettings } from '@/store/useSettingsStore';
 import { Category } from '@/types';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
@@ -161,10 +159,6 @@ export function SidebarFilters({
 }
 
 function CategoryItem({ cat, isActive, hasChildren, goForward, updateParams, lang }: any) {
-  const [imageError, setImageError] = React.useState(false);
-  const iconToUse = cat.iconUrl || cat.imageUrl;
-  const isRemoteIcon = iconToUse && (iconToUse.startsWith('http') || iconToUse.startsWith('/') || iconToUse.startsWith('blob:'));
-
   const getCatName = (c: Category) => {
     return c.translations?.[lang]?.name || c.name;
   };
@@ -178,23 +172,6 @@ function CategoryItem({ cat, isActive, hasChildren, goForward, updateParams, lan
       className={`w-full flex items-center justify-between py-3 px-4 transition-all border rounded group ${isActive ? 'bg-slate-100 border-slate-200 text-slate-900' : 'bg-white border-transparent hover:bg-slate-50 text-slate-600 hover:text-slate-900'}`}
     >
       <div className="flex items-center space-x-3">
-        {iconToUse && !imageError ? (
-          <div className="relative w-5 h-5 flex items-center justify-center shrink-0">
-            {isRemoteIcon ? (
-              <Image 
-                src={iconToUse} 
-                alt={getCatName(cat)} 
-                fill 
-                className="object-cover rounded grayscale group-hover:grayscale-0 transition-all opacity-80 group-hover:opacity-100" 
-                onError={() => setImageError(true)}
-              />
-            ) : (
-                <IconRenderer iconName={iconToUse} className="w-5 h-5 opacity-40 group-hover:opacity-100 transition-all" />
-            )}
-          </div>
-        ) : (
-          <LayoutGrid className="w-4 h-4 opacity-40 shrink-0" strokeWidth={1.5} />
-        )}
         <span className="text-[12px] font-semibold text-left truncate max-w-[140px] tracking-tight">{getCatName(cat)}</span>
       </div>
       {hasChildren ? (
@@ -205,3 +182,4 @@ function CategoryItem({ cat, isActive, hasChildren, goForward, updateParams, lan
     </button>
   );
 }
+

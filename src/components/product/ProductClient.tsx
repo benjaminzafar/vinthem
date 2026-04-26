@@ -19,7 +19,6 @@ import { Product, ProductVariant, useCartStore } from '@/store/useCartStore';
 import type { StorefrontSettings } from '@/store/useSettingsStore';
 import { useUIStore } from '@/store/useUIStore';
 import { useStorefrontSettings } from '@/hooks/useStorefrontSettings';
-import { MobileFilters } from '@/components/storefront/MobileFilters';
 import { useRouter } from 'next/navigation';
 
 interface ProductClientProps {
@@ -221,7 +220,7 @@ export function ProductClient({
             <button
               type="button"
               onClick={() => activeImage && setIsLightboxOpen(true)}
-              className="relative flex h-[360px] w-full items-start justify-center overflow-hidden bg-white sm:h-[520px] lg:h-[560px]"
+              className="relative flex h-[360px] w-full items-start justify-center overflow-hidden sm:h-[520px] lg:h-[560px]"
               aria-label="Open product image"
             >
               {activeImage ? (
@@ -237,7 +236,7 @@ export function ProductClient({
                     alt={displayTitle}
                     fill
                     sizes="(max-width: 1024px) 100vw, 520px"
-                    className="object-cover object-center sm:object-contain sm:object-top"
+                    className="object-cover object-center"
                     priority
                   />
                 </motion.div>
@@ -604,31 +603,6 @@ export function ProductClient({
           ) : null}
         </AnimatePresence>
 
-        {/* Universal Filter Button for consistency */}
-        <div className="pointer-events-none fixed bottom-8 right-8 z-40 flex flex-col gap-3 md:hidden">
-          <button
-            onClick={() => setIsFilterDrawerOpen(true)}
-            className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full bg-slate-950 text-white shadow-xl transition-all active:scale-95"
-            aria-label={settings.filterAndSortText?.[lang] || 'Filter and Sort'}
-          >
-            <SlidersHorizontal className="h-6 w-6" strokeWidth={1.5} />
-          </button>
-        </div>
-
-        <MobileFilters
-          isOpen={isFilterDrawerOpen}
-          onClose={() => setIsFilterDrawerOpen(false)}
-          categories={categories}
-          settings={settings}
-          lang={lang}
-          searchInput=""
-          setSearchInput={() => {}}
-          activeCategory="All"
-          sortBy="newest"
-          updateParams={updateParams}
-          productCount={0}
-          allProducts={[]}
-        />
       </div>
     </div>
   );

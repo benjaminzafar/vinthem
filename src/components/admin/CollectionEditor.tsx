@@ -8,7 +8,7 @@ import {
   X, Sparkles, Image as ImageIcon, Layout, Settings, 
   Globe, Trash2, Wand2, Star, Check, Plus, Loader2,
   ChevronRight, ArrowLeft, Save, Languages, Search,
-  Layers, ChevronDown, Pin
+  Layers, ChevronDown
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSettingsStore } from '@/store/useSettingsStore';
@@ -16,8 +16,6 @@ import { genAI } from '@/lib/ai';
 import { safeParseAiResponse } from '@/lib/json';
 import { saveCategoryAction } from '@/app/actions/categories';
 import { MediaPickerModal } from './MediaPickerModal';
-import { IconSelector } from '../IconSelector';
-import { IconRenderer } from '../IconRenderer';
 import Image from 'next/image';
 import { isValidUrl } from '@/lib/utils';
 
@@ -40,7 +38,6 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
     description: initialCollection?.description || '',
     isFeatured: initialCollection?.isFeatured ?? false,
     showInHero: initialCollection?.showInHero ?? false,
-    pinnedInSearch: initialCollection?.pinnedInSearch ?? false,
     parentId: initialCollection?.parentId || '',
     imageUrl: initialCollection?.imageUrl || '',
     iconUrl: initialCollection?.iconUrl || '',
@@ -52,8 +49,6 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
   const [selectedLang, setSelectedLang] = useState('en');
   const [aiChatInput, setAiChatInput] = useState('');
   const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
-  const [isIconSelectorOpen, setIsIconSelectorOpen] = useState(false);
-  const [pickerTarget, setPickerTarget] = useState<'image' | 'icon'>('image');
 
   // Sync form data when initialCollection prop changes (e.g. navigation)
   useEffect(() => {
@@ -65,7 +60,6 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
         description: initialCollection.description || '',
         isFeatured: initialCollection.isFeatured ?? false,
         showInHero: initialCollection.showInHero ?? false,
-        pinnedInSearch: initialCollection.pinnedInSearch ?? false,
         parentId: initialCollection.parentId || '',
         imageUrl: initialCollection.imageUrl || '',
         iconUrl: initialCollection.iconUrl || '',
@@ -243,7 +237,6 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
         description: formData.description, 
         isFeatured: formData.isFeatured, 
         showInHero: formData.showInHero ?? false, 
-        pinnedInSearch: formData.pinnedInSearch ?? false,
         parentId: formData.parentId || null, 
         imageUrl: formData.imageUrl || null, 
         iconUrl: formData.iconUrl || null, 
@@ -294,33 +287,6 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
     }
   };
 
-  const handleIconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    const toastId = toast.loading('Uploading icon...');
-    try {
-      const formDataUpload = new FormData();
-      formDataUpload.append('file', file);
-      formDataUpload.append('path', `categories/icons/${Date.now()}_${file.name}`);
-
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formDataUpload
-      });
-
-      if (!res.ok) throw new Error('Upload failed');
-      const { url } = await res.json();
-
-      setFormData(prev => ({ ...prev, iconUrl: url }));
-      toast.success('Icon uploaded', { id: toastId });
-    } catch (error: unknown) {
-      const err = error as Error;
-      toast.error('Upload failed: ' + err.message, { id: toastId });
-    } finally {
-      setUploading(false);
-    }
-  };
 
   const languages = settings.languages || ['sv', 'en'];
 
@@ -614,13 +580,6 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                       <span className="text-[11px] font-bold uppercase tracking-widest">Display in Hero Section</span>
                       <Layout className="w-4 h-4" />
                     </button>
-                    <button 
-                      onClick={() => setFormData({...formData, pinnedInSearch: !formData.pinnedInSearch})}
-                      className={`h-14 px-6 border rounded-[4px] flex items-center justify-between transition-all ${formData.pinnedInSearch ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-900'}`}
-                    >
-                      <span className="text-[11px] font-bold uppercase tracking-widest">Pin to Search Popup</span>
-                      <Pin className={`w-4 h-4 ${formData.pinnedInSearch ? 'fill-current' : ''}`} />
-                    </button>
                   </div>
                 )}
               </div>
@@ -686,7 +645,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                       className="flex-1 h-10 border border-slate-200 rounded-[4px] px-3 text-xs"
                     />
                     <button 
-                      onClick={() => { setPickerTarget('image'); setIsMediaPickerOpen(true); }}
+                      onClick={() => setIsMediaPickerOpen(true)}
                       className="h-10 px-4 bg-slate-50 border border-slate-200 rounded text-[11px] font-bold uppercase tracking-widest"
                     >
                       Lib
@@ -695,47 +654,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
               </div>
             </section>
 
-            {/* Icon Section */}
-            <section className="bg-white border border-slate-200 rounded-[4px] overflow-hidden text-slate-900">
-               <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
-                  <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Icon Identity</h3>
-               </div>
-               <div className="p-6">
-                  <div className="flex items-center gap-6 p-4 bg-slate-50 border border-slate-200 rounded-[4px]">
-                    <div className="w-16 h-16 bg-white border border-slate-200 rounded-[4px] flex items-center justify-center shrink-0 overflow-hidden relative group">
-                      {formData.iconUrl ? (
-                         formData.iconUrl.startsWith('icon:') ? (
-                           <IconRenderer iconName={formData.iconUrl} className="w-8 h-8 text-slate-900" />
-                         ) : isValidUrl(formData.iconUrl) ? (
-                           <Image src={formData.iconUrl} alt="Icon" fill sizes="64px" className="object-cover" />
-                         ) : (
-                           <Star className="w-6 h-6 text-slate-200" />
-                         )
-                      ) : <Star className="w-6 h-6 text-slate-200" />}
-                    </div>
-                    <div className="flex flex-col gap-2 flex-1">
-                      <button 
-                        type="button" 
-                        onClick={() => setIsIconSelectorOpen(true)}
-                        className="h-9 px-4 border border-slate-300 rounded-[4px] text-[11px] font-bold uppercase tracking-widest hover:border-slate-900 transition-all"
-                      >
-                        Vectors
-                      </button>
-                      <label className="h-9 px-4 bg-white border border-slate-200 rounded-[4px] text-[11px] font-bold uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all flex items-center justify-center cursor-pointer">
-                        Custom
-                        <input type="file" className="hidden" onChange={handleIconUpload} accept="image/*" />
-                      </label>
-                      <button 
-                        type="button"
-                        onClick={() => { setPickerTarget('icon'); setIsMediaPickerOpen(true); }}
-                        className="h-9 px-4 bg-slate-50 border border-slate-200 rounded-[4px] text-[11px] font-bold uppercase tracking-widest hover:border-slate-900 transition-all"
-                      >
-                        Lib
-                      </button>
-                    </div>
-                  </div>
-               </div>
-            </section>
+
           </div>
         </div>
       </div>
@@ -744,20 +663,10 @@ Collection Description (Swedish): "${formData.description || ''}"`;
         isOpen={isMediaPickerOpen}
         onClose={() => setIsMediaPickerOpen(false)}
         onSelect={(url) => { 
-          if (pickerTarget === 'image') {
-            setFormData({ ...formData, imageUrl: url }); 
-          } else {
-            setFormData({ ...formData, iconUrl: url });
-          }
+          setFormData({ ...formData, imageUrl: url }); 
           setIsMediaPickerOpen(false); 
         }}
       />
-      {isIconSelectorOpen && (
-        <IconSelector
-          onSelect={(iconName) => setFormData({ ...formData, iconUrl: `icon:${iconName}` })}
-          onClose={() => setIsIconSelectorOpen(false)}
-        />
-      )}
     </div>
   );
 }

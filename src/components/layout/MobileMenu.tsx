@@ -13,12 +13,15 @@ import { User as SupabaseUser } from '@supabase/supabase-js';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { Portal } from './Portal';
 import { UserAvatar } from '../ui/UserAvatar';
+import { Category } from '@/types';
+import { localizeHref } from '@/lib/i18n-routing';
 
 interface MobileMenuProps {
   user: SupabaseUser | null;
   isAdmin: boolean;
   settings: StorefrontSettings;
   lang: string;
+  categories: Category[];
   availableLanguages: string[];
   labels: {
     menu: string;
@@ -30,7 +33,7 @@ interface MobileMenuProps {
   };
 }
 
-export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, labels }: MobileMenuProps) {
+export function MobileMenu({ user, isAdmin, settings, lang, categories, availableLanguages, labels }: MobileMenuProps) {
   const { isMobileMenuOpen, setMobileMenuOpen } = useUIStore();
   const menuRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
@@ -138,11 +141,44 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
               </div>
 
               <div className="flex-1 overflow-y-auto px-6 py-8 custom-scrollbar">
-                <nav className="flex flex-col space-y-6 mb-12">
-                  {(settings.navbarLinks || []).map((link: MenuLink, index: number) => (
+                <nav className="flex flex-col space-y-6">
+                  {/* Collections */}
+                  <Link
+                    href={localizeHref(lang, `/products`)}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="group flex items-center justify-between"
+                  >
+                    <span className="!text-[12px] !font-bold !uppercase !tracking-widest text-brand-ink group-hover:text-brand-ink transition-all duration-300">
+                      {settings?.searchProductsResultsText?.[lang] || 'All Products'}
+                    </span>
+                    <ChevronRight className="w-5 h-5 text-brand-muted opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </Link>
+
+                  {categories.map((cat) => (
+                    <Link
+                      key={cat.id}
+                      href={`/${lang}/products?category=${encodeURIComponent(cat.slug)}`}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="group flex items-center justify-between"
+                    >
+                      <span className="!text-[12px] !font-bold !uppercase !tracking-widest text-brand-ink group-hover:text-brand-ink transition-all duration-300">
+                        {cat.translations?.[lang]?.name || cat.name}
+                      </span>
+                      <ChevronRight className="w-5 h-5 text-brand-muted opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </Link>
+                  ))}
+                  
+                  {categories.length > 0 && (
+                    <div className="w-8 h-px bg-gray-200 my-2" />
+                  )}
+
+                  {/* Pages */}
+                  {(settings.navbarLinks || [])
+                    .filter((link: MenuLink) => link.href !== '/products' && link.href !== '/products/')
+                    .map((link: MenuLink, index: number) => (
                     <Link
                       key={index}
-                      href={link.href}
+                      href={localizeHref(lang, link.href)}
                       onClick={() => setMobileMenuOpen(false)}
                       className="group flex items-center justify-between"
                     >
@@ -153,65 +189,57 @@ export function MobileMenu({ user, isAdmin, settings, lang, availableLanguages, 
                     </Link>
                   ))}
                 </nav>
+              </div>
 
-                <div className="pt-8 border-t border-gray-100 space-y-8">
-                  <div className="space-y-4">
-                    <span className="!text-[12px] !font-bold !uppercase !tracking-widest text-brand-muted">{labels.language}</span>
-                    <LanguageSwitcher availableLanguages={availableLanguages} variant="boxes" />
-                  </div>
+              {/* Fixed Bottom Section */}
+              <div className="px-6 py-4 border-t border-gray-100 bg-white shrink-0 mt-auto">
+                <div className="flex items-center justify-between">
+                  {/* Compact Language Selector (Mobile Drawer) */}
+                  <LanguageSwitcher availableLanguages={availableLanguages} variant="drawer" direction="up" align="left" />
 
-                  {user ? (
-                    <div className="space-y-4">
-                      <span className="!text-[12px] !font-bold !uppercase !tracking-widest text-brand-muted">{labels.account}</span>
-                      <div className="flex items-center justify-between bg-gray-50 p-4 rounded">
-                        <div className="flex items-center space-x-3">
-                          <UserAvatar 
-                            name={user.user_metadata?.full_name || user.email}
-                            imageUrl={user.user_metadata?.avatar_url || user.user_metadata?.picture}
-                            size={40}
-                          />
-                          <div>
-                            <p className="text-sm font-medium text-brand-ink">{user.user_metadata?.full_name || 'Account'}</p>
-                            <p className="text-xs text-gray-500 truncate max-w-[120px]">{user.email}</p>
-                          </div>
-                        </div>
+                  {/* Compact User Actions */}
+                  <div className="flex items-center gap-1">
+                    {user ? (
+                      <>
+                        {isAdmin && (
+                          <Link
+                            href="/admin"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="p-2.5 text-slate-400 hover:text-brand-ink transition-colors rounded-full hover:bg-slate-50"
+                            aria-label={labels.adminDashboard}
+                          >
+                            <Settings className="w-5 h-5" strokeWidth={1.5} />
+                          </Link>
+                        )}
                         <Link
-                          href="/profile"
+                          href={localizeHref(lang, '/profile')}
                           onClick={() => setMobileMenuOpen(false)}
-                          className="p-2 bg-white rounded border border-gray-100 text-brand-ink hover:bg-gray-100 transition-colors"
+                          className="p-2.5 text-slate-400 hover:text-brand-ink transition-colors rounded-full hover:bg-slate-50"
+                          aria-label={labels.account}
                         >
-                          <User className="w-4 h-4" />
+                          <User className="w-5 h-5" strokeWidth={1.5} />
                         </Link>
-                      </div>
-                      {isAdmin && (
-                        <Link
-                          href="/admin"
-                          onClick={() => setMobileMenuOpen(false)}
-                          className="w-full flex items-center justify-center space-x-2 py-3 bg-indigo-50 text-indigo-700 rounded font-medium hover:bg-indigo-100 transition-colors"
+                        <button
+                          type="button"
+                          onPointerDown={(e) => e.stopPropagation()}
+                          onClick={handleLogout}
+                          className="p-2.5 text-red-400 hover:text-red-600 transition-colors rounded-full hover:bg-red-50"
+                          aria-label={labels.logout}
                         >
-                          <Settings className="w-4 h-4" />
-                          <span>{labels.adminDashboard}</span>
-                        </Link>
-                      )}
-                      <button
-                        type="button"
-                        onPointerDown={(e) => e.stopPropagation()}
-                        onClick={handleLogout}
-                        className="w-full h-12 flex items-center justify-center space-x-2 text-red-600 bg-red-50 rounded font-bold hover:bg-red-100 transition-colors cursor-pointer relative z-[220]"
+                          <LogOut className="w-5 h-5" strokeWidth={1.5} />
+                        </button>
+                      </>
+                    ) : (
+                      <Link
+                        href={localizeHref(lang, '/auth')}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-2 p-2.5 text-brand-ink hover:text-brand-muted transition-colors rounded-full hover:bg-slate-50"
                       >
-                        <LogOut className="w-5 h-5" />
-                        <span>{labels.logout}</span>
-                      </button>
-                    </div>
-                  ) : (
-                    <Link
-                      href="/auth"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="w-full h-11 flex items-center justify-center !text-[12px] !font-bold !uppercase !tracking-widest text-white bg-brand-ink rounded hover:bg-gray-800 transition-all active:scale-95 text-center"
-                    >
-                      {labels.login}
-                    </Link>
-                  )}
+                        <User className="w-5 h-5" strokeWidth={1.5} />
+                        <span className="text-[11px] font-bold uppercase tracking-widest">{labels.login}</span>
+                      </Link>
+                    )}
+                  </div>
                 </div>
               </div>
             </motion.div>

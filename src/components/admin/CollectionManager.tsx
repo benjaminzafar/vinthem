@@ -2,11 +2,11 @@
 import { logger } from '@/lib/logger';
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { deleteCategoriesAction, toggleCategorySearchPinAction } from '@/app/actions/categories';
+import { deleteCategoriesAction } from '@/app/actions/categories';
 import { createClient } from '@/utils/supabase/client';
 import { Product } from '@/store/useCartStore';
 import { Category } from '@/types';
-import { Plus, Package, Edit, Layers, Search, Pin, Trash2, Check, X } from 'lucide-react';
+import { Plus, Package, Edit, Layers, Search, Trash2, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useCustomConfirm } from '@/components/ConfirmationContext';
@@ -74,7 +74,6 @@ export function CollectionManager({
 
       let batchCategories = (rootData || []).map((c) => ({
         ...c, isFeatured: c.is_featured, showInHero: c.show_in_hero, 
-        pinnedInSearch: c.pinned_in_search,
         parentId: c.parent_id, imageUrl: c.image_url, iconUrl: c.icon_url
       })) as unknown as Category[];
 
@@ -88,7 +87,6 @@ export function CollectionManager({
         if (childrenData) {
           const mappedChildren = childrenData.map((c) => ({
             ...c, isFeatured: c.is_featured, showInHero: c.show_in_hero, 
-            pinnedInSearch: c.pinned_in_search,
             parentId: c.parent_id, imageUrl: c.image_url, iconUrl: c.icon_url
           })) as unknown as Category[];
           batchCategories = [...batchCategories, ...mappedChildren];
@@ -165,23 +163,7 @@ export function CollectionManager({
     }
   };
 
-  const toggleSearchPin = async (category: Category) => {
-    const toastId = toast.loading(category.pinnedInSearch ? 'Unpinning...' : 'Pinning...');
-    try {
-      const result = await toggleCategorySearchPinAction({ 
-        categoryId: category.id!, 
-        pinnedInSearch: !category.pinnedInSearch 
-      });
-      if (!result.success) throw new Error(result.error || result.message);
-      
-      setCategories(prev => prev.map(c => 
-        c.id === category.id ? { ...c, pinnedInSearch: !c.pinnedInSearch } : c
-      ));
-      toast.success(result.message, { id: toastId });
-    } catch (error: any) {
-      toast.error('Action failed: ' + error.message, { id: toastId });
-    }
-  };
+
 
   const refreshCategories = () => void fetchCategories({ reset: true, showLoader: false });
 
@@ -284,7 +266,6 @@ export function CollectionManager({
                 <th className="px-6 py-4">Collection</th>
                 <th className="px-6 py-4">Type</th>
                 <th className="px-6 py-4 text-center">Inventory</th>
-                <th className="px-6 py-4 text-center">Pin in Search</th>
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
@@ -335,20 +316,7 @@ export function CollectionManager({
                   <td className="px-6 py-4 text-[11px] font-bold text-slate-900 text-center">
                     {products.filter(p => p.categoryId === parent.id).length} Items
                   </td>
-                  <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
-                    <button
-                      type="button"
-                      onClick={() => toggleSearchPin(parent)}
-                      className={`inline-flex h-9 items-center gap-2 border px-3 text-[10px] font-bold uppercase tracking-widest transition-all rounded ${
-                        parent.pinnedInSearch
-                          ? 'border-slate-900 bg-slate-900 text-white shadow-lg shadow-slate-900/10'
-                          : 'border-slate-200 bg-white text-slate-600 hover:border-slate-900 hover:text-slate-900'
-                      }`}
-                    >
-                      <Pin className={`h-3.5 w-3.5 ${parent.pinnedInSearch ? 'fill-current animate-in zoom-in-50 duration-300' : ''}`} />
-                      {parent.pinnedInSearch ? 'Pinned' : 'Pin to Search'}
-                    </button>
-                  </td>
+
                   <td className="px-6 py-4 text-right">
                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button 

@@ -2,10 +2,8 @@
 
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { Search, ChevronRight, Check, LayoutGrid, ArrowRight, ChevronLeft, X } from 'lucide-react';
+import { Search, ChevronRight, Check, ArrowRight, ChevronLeft, X, LayoutGrid } from 'lucide-react';
 import { StorefrontSettings } from '@/store/useSettingsStore';
-import { IconRenderer } from '../IconRenderer';
 import { motion, AnimatePresence } from 'motion/react';
 import { Category } from '@/types';
 import { Product } from '@/store/useCartStore';
@@ -168,9 +166,6 @@ export function MobileFilters({
                           </button>
                           {currentCategories.map(cat => {
                             const hasChildren = categories.some(c => c.parentId === cat.id);
-                            const iconToUse = cat.iconUrl || cat.imageUrl;
-                            const isRemoteIcon = iconToUse && (iconToUse.startsWith('http') || iconToUse.startsWith('/') || iconToUse.startsWith('blob:'));
-
                             return (
                               <button 
                                 key={cat.id} 
@@ -181,17 +176,6 @@ export function MobileFilters({
                                 className={`w-full flex items-center justify-between h-[48px] px-4 border transition-all rounded ${activeCategory === cat.slug ? 'bg-slate-50 border-slate-900 border-2 text-slate-900 font-bold' : 'bg-white border-slate-100 text-slate-600'}`}
                               >
                                 <div className="flex items-center gap-3">
-                                  {iconToUse ? (
-                                    <div className="relative w-5 h-5 flex items-center justify-center shrink-0">
-                                      {isRemoteIcon ? (
-                                        <Image src={iconToUse} alt={getCatName(cat)} fill className="object-cover rounded-[2px]" />
-                                      ) : (
-                                        <IconRenderer iconName={iconToUse} className="w-5 h-5" />
-                                      )}
-                                    </div>
-                                  ) : (
-                                    <LayoutGrid className="w-4 h-4 opacity-40 shrink-0" strokeWidth={1.5} />
-                                  )}
                                   <span className="text-[14px] font-normal tracking-tight truncate max-w-[180px]">{getCatName(cat)}</span>
                                 </div>
                                 {hasChildren ? (
@@ -202,6 +186,7 @@ export function MobileFilters({
                               </button>
                             );
                           })}
+
                         </div>
                       </div>
 
@@ -240,9 +225,6 @@ export function MobileFilters({
                        <div className="grid gap-2">
                          {currentCategories.map((sub) => {
                            const hasChildren = categories.some(c => c.parentId === sub.id);
-                           const iconToUse = sub.iconUrl || sub.imageUrl;
-                           const isRemoteIcon = iconToUse && (iconToUse.startsWith('http') || iconToUse.startsWith('/') || iconToUse.startsWith('blob:'));
-
                            return (
                              <button
                                key={sub.id}
@@ -253,17 +235,6 @@ export function MobileFilters({
                                className={`flex items-center justify-between h-[48px] px-4 border transition-colors rounded ${activeCategory === sub.slug ? 'bg-slate-50 border-slate-900 border-2 text-slate-900 font-bold' : 'bg-white border-slate-100 text-slate-600'}`}
                              >
                                <div className="flex items-center gap-3">
-                                 {iconToUse ? (
-                                   <div className="relative w-5 h-5 flex items-center justify-center shrink-0">
-                                     {isRemoteIcon ? (
-                                       <Image src={iconToUse} alt={getCatName(sub)} fill className="object-cover rounded-[2px]" />
-                                     ) : (
-                                       <IconRenderer iconName={iconToUse} className="w-5 h-5" />
-                                     )}
-                                   </div>
-                                 ) : (
-                                   <LayoutGrid className="w-4 h-4 opacity-40 shrink-0" strokeWidth={1.5} />
-                                 )}
                                  <span className="text-[14px] font-normal tracking-tight truncate max-w-[180px]">{getCatName(sub)}</span>
                                </div>
                                {hasChildren ? (

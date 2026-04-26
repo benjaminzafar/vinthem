@@ -24,7 +24,6 @@ export type SaveCategoryInput = {
   description?: string;
   isFeatured: boolean;
   showInHero: boolean;
-  pinnedInSearch?: boolean;
   parentId?: string | null;
   imageUrl?: string | null;
   iconUrl?: string | null;
@@ -48,11 +47,6 @@ export type CategoryActionResponse = {
   success: boolean;
   message: string;
   error?: string;
-};
-
-export type ToggleCategorySearchPinInput = {
-  categoryId: string;
-  pinnedInSearch: boolean;
 };
 
 async function requireAdmin() {
@@ -101,7 +95,6 @@ export async function saveCategoryAction(input: SaveCategoryInput): Promise<Cate
       description: input.description?.trim() || null,
       is_featured: input.isFeatured,
       show_in_hero: input.showInHero,
-      pinned_in_search: input.pinnedInSearch ?? false,
       parent_id: input.parentId || null,
       image_url: input.imageUrl || null,
       icon_url: input.iconUrl || null,
@@ -133,8 +126,8 @@ export async function saveCategoryAction(input: SaveCategoryInput): Promise<Cate
     let errorMessage = error instanceof Error ? error.message : 'Unknown error';
     
     // Check for common missing column error
-    if (errorMessage.includes('pinned_in_search') && (errorMessage.includes('column') || errorMessage.includes('does not exist'))) {
-      errorMessage = 'DATABASE MIGRATION REQUIRED: The "pinned_in_search" column is missing from your categories table. Please run the SQL migration.';
+    if (errorMessage.includes('column') || errorMessage.includes('does not exist')) {
+      errorMessage = 'DATABASE ERROR: A required column is missing. Please check your schema.';
     }
 
     return {
@@ -267,51 +260,5 @@ export async function deleteCategoriesAction(input: DeleteCategoriesInput): Prom
   }
 }
 
-export async function toggleCategorySearchPinAction(
-  input: ToggleCategorySearchPinInput,
-): Promise<CategoryActionResponse> {
-  try {
-    await requireAdmin();
 
-    const categoryId = input.categoryId.trim();
-
-    if (!categoryId) {
-      throw new Error('Missing collection id.');
-    }
-
-    const supabase = createAdminClient();
-
-    const { error } = await supabase
-      .from('categories')
-      .update({ pinned_in_search: input.pinnedInSearch })
-      .eq('id', categoryId);
-
-    if (error) {
-      throw error;
-    }
-
-    revalidatePath('/admin');
-    revalidatePath('/');
-    revalidatePath('/products');
-
-    return {
-      success: true,
-      message: input.pinnedInSearch ? 'Collection pinned to search.' : 'Collection removed from search pins.',
-    };
-  } catch (error: unknown) {
-    logger.error('[toggleCategorySearchPinAction] Critical Error:', error);
-    let errorMessage = error instanceof Error ? error.message : 'Unknown error';
-
-    // Check for common missing column error
-    if (errorMessage.includes('pinned_in_search') && (errorMessage.includes('column') || errorMessage.includes('does not exist'))) {
-      errorMessage = 'DATABASE MIGRATION REQUIRED: The "pinned_in_search" column is missing. Please run the SQL migration.';
-    }
-
-    return {
-      success: false,
-      message: 'Failed to update search pin.',
-      error: errorMessage,
-    };
-  }
-}
 

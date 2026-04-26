@@ -16,7 +16,6 @@ export interface Category {
   };
   isFeatured: boolean;
   showInHero?: boolean;
-  pinnedInSearch?: boolean;
   parentId?: string;
   imageUrl?: string;
   iconUrl?: string;

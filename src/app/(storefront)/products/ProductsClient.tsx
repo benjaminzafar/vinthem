@@ -7,7 +7,6 @@ import { SlidersHorizontal, Search } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Product } from '@/store/useCartStore';
 import { Category } from '@/types';
-import { MobileFilters } from '@/components/storefront/MobileFilters';
 import { SidebarFilters } from '@/components/storefront/SidebarFilters';
 import { ProductCard } from '@/components/product/ProductCard';
 import { getClientLocale } from '@/lib/locale';
@@ -167,30 +166,6 @@ export default function ProductsClient({
         </div>
       </div>
 
-      <div className="pointer-events-none fixed bottom-8 right-8 z-40 flex flex-col gap-3 md:hidden">
-        <button
-          onClick={openFilters}
-          className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full bg-slate-950 text-white shadow-xl transition-all active:scale-95"
-          aria-label={settings.filterAndSortText?.[lang] || 'Filter and Sort'}
-        >
-          <SlidersHorizontal className="h-6 w-6" strokeWidth={1.5} />
-        </button>
-      </div>
-
-      <MobileFilters
-        isOpen={isFilterDrawerOpen}
-        onClose={() => setIsFilterDrawerOpen(false)}
-        categories={categoriesData}
-        settings={settings}
-        lang={lang}
-        searchInput={searchInput}
-        setSearchInput={setSearchInput}
-        activeCategory={activeCategory}
-        sortBy={sortBy}
-        updateParams={updateParams}
-        productCount={products.length}
-        allProducts={initialProducts}
-      />
     </div>
   );
 }
