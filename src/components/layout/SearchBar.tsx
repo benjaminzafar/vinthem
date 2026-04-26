@@ -131,8 +131,8 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
       if (sortBy === 'price-asc') return a.price - b.price;
       if (sortBy === 'price-desc') return b.price - a.price;
       
-      const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
-      const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
       return dateB - dateA;
     });
 
@@ -451,3 +451,4 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
     </div>
   );
 }
+

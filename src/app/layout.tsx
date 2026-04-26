@@ -4,7 +4,6 @@ import "./globals.css";
 import { ConfirmationProvider } from "@/components/ConfirmationContext";
 import { AuthProvider } from "@/components/AuthProvider";
 import { StoreHydrator } from "@/components/StoreHydrator";
-import { Analytics } from "@vercel/analytics/next";
 import { getSettings, getIntegrations } from "@/lib/data";
 import { LazyMotion, domAnimation } from "motion/react";
 import { CookieBannerMount } from "@/components/CookieBannerMount";
@@ -103,10 +102,10 @@ export default async function RootLayout({
               <CartDrawer initialSettings={settings} />
               <Toaster position="top-center" expand={false} richColors />
             </LazyMotion>
-            {process.env.NODE_ENV === 'production' ? <Analytics /> : null}
           </ConfirmationProvider>
         </AuthProvider>
       </body>
     </html>
   );
 }
+

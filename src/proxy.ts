@@ -60,7 +60,6 @@ function buildScriptSrc(nonce: string) {
     `'nonce-${nonce}'`,
     'https://www.clarity.ms',
     'https://js.stripe.com',
-    'https://va.vercel-scripts.com',
   ];
 
   if (process.env.NODE_ENV !== 'production') {
@@ -74,7 +73,6 @@ function buildConnectSrc(request: NextRequest) {
   const sources = new Set<string>([
     "'self'",
     request.nextUrl.origin,
-    'https://vitals.vercel-insights.com',
     'https://region1.google-analytics.com',
     'https://www.google-analytics.com',
     'https://js.stripe.com',
@@ -173,7 +171,7 @@ function getRequestKey(request: NextRequest) {
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const userAgent = request.headers.get('user-agent');
-  const geoCountry = request.headers.get('x-vercel-ip-country');
+  const geoCountry = request.headers.get('cf-ipcountry');
   const isBotRequest = isSearchEngineBot(userAgent);
   const detectedLocale = resolvePreferredLanguage(
     pathname,
