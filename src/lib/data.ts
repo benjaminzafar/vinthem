@@ -1,58 +1,74 @@
-import { createAdminClient } from '@/utils/supabase/server';
 import { cache } from 'react';
-import { StorefrontSettings } from '@/store/useSettingsStore';
-import { logger } from '@/lib/logger';
-import {
-  maybeDecryptStoredValue,
-} from '@/lib/integrations';
+import { createAdminClient } from '@/utils/supabase/server';
+import type { StorefrontSettings } from '@/store/useSettingsStore';
+import { maybeDecryptStoredValue } from './integrations';
 
-export const getIntegrations = cache(async () => {
-  const supabase = createAdminClient();
-  const { data: integrations, error } = await supabase
-    .from('integrations')
-    .select('key, value')
-    .in('key', ['CLARITY_ID', 'POSTHOG_PROJECT_KEY', 'POSTHOG_HOST']);
-
-  if (error) {
-    logger.error('Error fetching integrations:', error);
-    return {};
-  }
-
-  const config: Record<string, string> = {};
-  for (const item of integrations ?? []) {
-    config[item.key] = await maybeDecryptStoredValue(item.value);
-  }
-
-  return config;
-});
-
-export const getSettings = async () => {
-  const supabase = createAdminClient();
-  const { data: settingsData, error } = await supabase
-    .from('settings')
-    .select('data')
-    .eq('id', 'primary')
-    .single();
-
-  if (error || !settingsData) {
-    if (error) {
-      console.error('SERVER-SIDE FETCH ERROR:', error);
-      logger.error(`Error fetching settings: [${error.code}] ${error.message}`, {
-        details: error.details,
-        hint: error.hint
-      });
-    } else {
-      console.warn('SERVER-SIDE: No settings record found in Supabase.');
-    }
-    // Return minimal defaults so the UI doesn't crash
-    return ({
+export const getSettings = cache(async () => {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!url || url.includes('missing')) {
+    console.warn('Database URL missing. Using default settings.');
+    return {
       storeName: { en: 'Vinthem', sv: 'Vinthem' },
       logoUrl: '',
       heroBackgroundColor: '#ffffff',
-      primaryColor: '#000000'
-    } as unknown) as StorefrontSettings;
+      primaryColor: '#000000',
+    } as any;
   }
 
-  const settings = (settingsData.data || {}) as StorefrontSettings;
-  return settings;
-};
+  try {
+    const supabase = createAdminClient();
+    const { data: settingsData, error } = await supabase
+      .from('settings')
+      .select('data')
+      .eq('id', 'primary')
+      .maybeSingle();
+
+    if (error || !settingsData) {
+      return {
+        storeName: { en: 'Vinthem', sv: 'Vinthem' },
+        logoUrl: '',
+        heroBackgroundColor: '#ffffff',
+        primaryColor: '#000000',
+      } as any;
+    }
+
+    const settings = settingsData.data as StorefrontSettings;
+    return settings;
+  } catch (e) {
+    return {
+      storeName: { en: 'Vinthem', sv: 'Vinthem' },
+      logoUrl: '',
+      heroBackgroundColor: '#ffffff',
+      primaryColor: '#000000',
+    } as any;
+  }
+});
+
+export const getIntegrations = cache(async (): Promise<Record<string, string>> => {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!url || url.includes('missing')) return {};
+
+  try {
+    const supabase = createAdminClient();
+    const { data: integrations, error } = await supabase
+      .from('integrations')
+      .select('key, value')
+      .in('key', ['CLARITY_ID', 'POSTHOG_PROJECT_KEY', 'POSTHOG_HOST']);
+
+    if (error || !integrations) return {};
+
+    const decryptedIntegrations = await Promise.all(
+      integrations.map(async (integration) => ({
+        ...integration,
+        value: await maybeDecryptStoredValue(integration.value),
+      }))
+    );
+
+    return decryptedIntegrations.reduce((acc, curr) => ({
+      ...acc,
+      [curr.key]: curr.value
+    }), {} as Record<string, string>);
+  } catch (e) {
+    return {};
+  }
+});
