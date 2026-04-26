@@ -746,6 +746,28 @@ Text to translate: "${sourceText}"`;
                 </SettingCard>
 
                 <SettingCard id="Future" title="Future Product Preview" icon={Clock}>
+                   <div className="space-y-6 mb-8 pb-8 border-b border-zinc-100">
+                    <LocalizedSettingInput 
+                      label="Future Section Title" 
+                      value={settings.futureTitle} 
+                      onChange={v => handleUpdate('futureTitle', v)} 
+                      languages={settings.languages} 
+                      onAITranslate={() => handleAITranslate('futureTitle', 'Future Section Title')} 
+                      onAIAutoComplete={() => handleAIAutoComplete('futureTitle', 'Future Section Title')} 
+                      isGenerating={generatingId === 'futureTitle-fill'} 
+                      isTranslating={generatingId === 'futureTitle-translate'} 
+                    />
+                    <LocalizedSettingInput 
+                      label="Future Section Description" 
+                      value={settings.futureSubtitle} 
+                      onChange={v => handleUpdate('futureSubtitle', v)} 
+                      languages={settings.languages} 
+                      onAITranslate={() => handleAITranslate('futureSubtitle', 'Future Section Description')} 
+                      onAIAutoComplete={() => handleAIAutoComplete('futureSubtitle', 'Future Section Description')} 
+                      isGenerating={generatingId === 'futureSubtitle-fill'} 
+                      isTranslating={generatingId === 'futureSubtitle-translate'} 
+                    />
+                   </div>
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                      <div className="space-y-4">
                         <div className="aspect-[4/5] bg-zinc-50 border border-zinc-100 rounded-md relative group overflow-hidden">
