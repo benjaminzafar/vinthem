@@ -15,7 +15,10 @@
 
 # next.js
 /.next/
+/.open-next/
 /out/
+.wrangler/
+cloudflare-env.d.ts
 
 # production
 /build
