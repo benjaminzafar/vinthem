@@ -53,7 +53,7 @@ export const getIntegrations = cache(async (): Promise<Record<string, string>> =
     const { data: integrations, error } = await supabase
       .from('integrations')
       .select('key, value')
-      .in('key', ['CLARITY_ID', 'POSTHOG_PROJECT_KEY', 'POSTHOG_HOST']);
+      .in('key', ['CLARITY_ID']);
 
     if (error || !integrations) return {};
 

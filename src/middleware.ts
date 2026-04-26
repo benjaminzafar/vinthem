@@ -82,10 +82,6 @@ function buildConnectSrc(request: NextRequest) {
     'https://m.stripe.network',
     'https://www.clarity.ms',
     'https://*.clarity.ms',
-    'https://*.posthog.com',
-    'https://*.i.posthog.com',
-    'wss://*.posthog.com',
-    'wss://*.i.posthog.com',
   ]);
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
