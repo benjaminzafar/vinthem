@@ -19,6 +19,22 @@ export const getSettings = cache(async () => {
 
   try {
     const supabase = createAdminClient();
+    
+    // Test connection with a simple count first
+    const { count, error: testError } = await supabase
+      .from('settings')
+      .select('*', { count: 'exact', head: true });
+
+    if (testError) {
+      console.error('SUPABASE PERMISSION ERROR:', testError.message);
+      return {
+        storeName: { en: `Vinthem (Auth Error: ${testError.code})`, sv: `Vinthem (Auth Error: ${testError.code})` },
+        logoUrl: '',
+        heroBackgroundColor: '#ffffff',
+        primaryColor: '#000000',
+      } as any;
+    }
+
     const { data: settingsData, error } = await supabase
       .from('settings')
       .select('data')
@@ -26,9 +42,8 @@ export const getSettings = cache(async () => {
       .maybeSingle();
 
     if (error) {
-      console.error('CRITICAL SETTINGS ERROR:', error.message, error.code);
       return {
-        storeName: { en: `Vinthem (${error.code})`, sv: `Vinthem (${error.code})` },
+        storeName: { en: `Vinthem (Query Error: ${error.code})`, sv: `Vinthem (Query Error: ${error.code})` },
         logoUrl: '',
         heroBackgroundColor: '#ffffff',
         primaryColor: '#000000',
@@ -36,9 +51,8 @@ export const getSettings = cache(async () => {
     }
 
     if (!settingsData) {
-      console.warn('Settings row "primary" not found.');
       return {
-        storeName: { en: 'Vinthem (No Config)', sv: 'Vinthem (No Config)' },
+        storeName: { en: 'Vinthem (No primary row)', sv: 'Vinthem (No primary row)' },
         logoUrl: '',
         heroBackgroundColor: '#ffffff',
         primaryColor: '#000000',
@@ -47,9 +61,8 @@ export const getSettings = cache(async () => {
 
     return settingsData.data as StorefrontSettings;
   } catch (e: any) {
-    console.error('Settings Crash:', e.message);
     return {
-      storeName: { en: 'Vinthem (Crash)', sv: 'Vinthem (Crash)' },
+      storeName: { en: `Vinthem (System Crash: ${e.message})`, sv: `Vinthem (System Crash: ${e.message})` },
       logoUrl: '',
       heroBackgroundColor: '#ffffff',
       primaryColor: '#000000',
