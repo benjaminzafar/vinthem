@@ -118,41 +118,39 @@ export function ProductClient({
             <p className="mt-4 text-2xl font-semibold text-slate-950">{formatPrice(currentPrice, lang, product.prices)}</p>
             
             <div className="mt-8 prose prose-slate max-w-none">
-              <p className="text-slate-600 leading-relaxed font-medium">{displayDescription}</p>
+              <p className="text-[15px] text-slate-600 leading-relaxed font-normal">{displayDescription}</p>
             </div>
 
             {product.options?.map((option) => {
               const isColor = option.name.toLowerCase().includes('color') || option.name.toLowerCase().includes('färg');
               
               return (
-                <div key={option.name} className="mt-12 first:mt-8">
-                  <div className="flex items-center justify-between mb-5">
-                    <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-950">{option.name}</h3>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{selectedOptions[option.name]}</span>
+                <div key={option.name} className="mt-10 first:mt-8">
+                  <div className="flex items-center gap-2 mb-4">
+                    <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400">{option.name}</h3>
+                    <div className="h-[1px] flex-1 bg-slate-100" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-900">{selectedOptions[option.name]}</span>
                   </div>
-                  <div className="flex flex-wrap gap-4">
+                  <div className="flex flex-wrap gap-2.5">
                     {option.values?.map((value) => {
                       if (isColor) {
                         return (
                           <button
                             key={value}
                             onClick={() => setSelectedOptions(prev => ({ ...prev, [option.name]: value }))}
-                            className={`group relative flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all duration-500 ${
+                            className={`group relative flex items-center justify-center w-8 h-8 rounded-full border transition-all duration-500 ${
                               selectedOptions[option.name] === value 
-                                ? 'border-slate-950 scale-110 shadow-xl shadow-slate-200' 
+                                ? 'border-slate-900 scale-110 shadow-sm' 
                                 : 'border-transparent hover:border-slate-200'
                             }`}
                             title={value}
                           >
                             <span 
-                              className="w-9 h-9 rounded-full border border-black/5 shadow-inner transition-transform group-hover:scale-95" 
+                              className="w-6 h-6 rounded-full border border-black/5 shadow-inner" 
                               style={{ 
                                 backgroundColor: value.toLowerCase(),
                               }} 
                             />
-                            {selectedOptions[option.name] === value && (
-                              <div className="absolute -bottom-2 w-1.5 h-1.5 bg-slate-950 rounded-full" />
-                            )}
                           </button>
                         );
                       }
@@ -160,9 +158,9 @@ export function ProductClient({
                         <button
                           key={value}
                           onClick={() => setSelectedOptions(prev => ({ ...prev, [option.name]: value }))}
-                          className={`h-14 px-8 text-[12px] font-black uppercase tracking-[0.15em] transition-all duration-500 border-2 ${
+                          className={`h-11 px-6 text-[11px] font-bold uppercase tracking-widest transition-all duration-300 border ${
                             selectedOptions[option.name] === value
-                              ? 'bg-slate-950 text-white border-slate-950 shadow-2xl shadow-slate-950/20 translate-y-[-2px]'
+                              ? 'bg-slate-950 text-white border-slate-950 shadow-md shadow-slate-950/10'
                               : 'bg-white text-slate-500 border-slate-100 hover:border-slate-300 hover:text-slate-950'
                           }`}
                         >
@@ -175,37 +173,44 @@ export function ProductClient({
               );
             })}
 
-            <div className="mt-12">
-              <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-950 mb-5">Quantity</h3>
-              <div className="flex h-16 w-44 items-center border-2 border-slate-100 rounded-none overflow-hidden bg-slate-50/30 group hover:border-slate-200 transition-colors">
+            <div className="mt-10">
+              <div className="flex items-center gap-2 mb-4">
+                <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400">Quantity</h3>
+                <div className="h-[1px] flex-1 bg-slate-100" />
+              </div>
+              <div className="flex h-11 w-32 items-center border border-slate-200 rounded-full overflow-hidden bg-white hover:border-slate-400 transition-colors">
                 <button 
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="flex h-full w-14 items-center justify-center text-slate-400 hover:text-slate-950 hover:bg-white transition-all border-r border-slate-100"
+                  className="flex h-full w-10 items-center justify-center text-slate-400 hover:text-slate-900 transition-all"
                 >
-                  <Minus className="w-4 h-4" />
+                  <Minus className="w-3.5 h-3.5" />
                 </button>
-                <span className="flex-1 text-center text-[14px] font-black text-slate-950">{quantity}</span>
+                <span className="flex-1 text-center text-[12px] font-bold text-slate-950">{quantity}</span>
                 <button 
                   onClick={() => setQuantity(quantity + 1)}
-                  className="flex h-full w-14 items-center justify-center text-slate-400 hover:text-slate-950 hover:bg-white transition-all border-l border-slate-100"
+                  className="flex h-full w-10 items-center justify-center text-slate-400 hover:text-slate-900 transition-all"
                 >
-                  <Plus className="w-4 h-4" />
+                  <Plus className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
 
-            <div className="mt-16">
+            <div className="mt-12">
               <button
                 onClick={handleAddToCart}
-                className="group relative flex h-20 w-full items-center justify-center overflow-hidden bg-slate-950 text-[12px] font-black uppercase tracking-[0.3em] text-white transition-all duration-700 hover:bg-black hover:shadow-[0_20px_50px_rgba(0,0,0,0.3)] active:scale-[0.98]"
+                className="group relative flex h-14 w-full items-center justify-center overflow-hidden bg-slate-950 text-[11px] font-bold uppercase tracking-[0.2em] text-white transition-all duration-500 hover:bg-black hover:shadow-xl active:scale-[0.98]"
               >
-                <div className="flex items-center gap-4 relative z-10">
-                  <ShoppingBag className="w-6 h-6 transition-transform duration-500 group-hover:-translate-y-1" />
+                <div className="flex items-center gap-3 relative z-10">
+                  <ShoppingBag className="w-4.5 h-4.5" />
                   {settings.addToCartButtonText?.[lang] || 'Add to cart'}
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
               </button>
-              <p className="mt-6 text-center text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 animate-pulse">Free Express Worldwide Shipping</p>
+              <div className="mt-6 flex items-center justify-center gap-4 text-[9px] font-bold uppercase tracking-[0.15em] text-slate-400">
+                <span className="flex items-center gap-1.5"><Check className="w-3 h-3" /> Secure Payment</span>
+                <span className="w-1 h-1 bg-slate-200 rounded-full" />
+                <span className="flex items-center gap-1.5"><Check className="w-3 h-3" /> Worldwide Shipping</span>
+              </div>
             </div>
           </aside>
         </main>
