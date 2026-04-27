@@ -47,21 +47,20 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
                   className="group relative"
                 >
                   <Link href={`/products?category=${encodeURIComponent(category.slug)}`} className="group block">
-                    <div className="relative aspect-[3/4] overflow-hidden rounded bg-gray-100 mb-4 transition-all transform-gpu [backface-visibility:hidden]">
-                      <div className="h-full w-full">
+                    <div className="relative aspect-[3/4] overflow-hidden rounded bg-gray-100 mb-4 transition-all transform-gpu">
+                      <div className="absolute inset-0 w-full h-full transform-gpu" style={{ WebkitBackfaceVisibility: 'hidden', WebkitTransform: 'translate3d(0,0,0)' }}>
                         {category.imageUrl && category.imageUrl.trim() !== "" ? (
                             <Image
                               src={category.imageUrl}
                               alt={displayName}
                               fill
                               sizes="(max-width: 768px) 50vw, 25vw"
-                              className="object-cover transition-transform duration-700 group-hover:scale-105 will-change-transform [backface-visibility:hidden]"
-                              priority={true}
+                              className="object-cover transition-transform duration-700 group-hover:scale-105"
                               onError={(e) => {
                                 const target = e.target as HTMLImageElement;
-                                target.classList.add('hidden');
-                                const fallback = target.parentElement?.querySelector('.category-fallback');
-                                if (fallback) fallback.classList.remove('hidden');
+                                target.style.display = 'none';
+                                const fallback = target.parentElement?.querySelector('.category-fallback') as HTMLElement;
+                                if (fallback) fallback.style.display = 'flex';
                               }}
                             />
                         ) : null}
