@@ -2,7 +2,6 @@
 
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { ShoppingBag, Check } from 'lucide-react';
 import { useCartStore, Product } from '@/store/useCartStore';
 import { useUIStore } from '@/store/useUIStore';
@@ -18,23 +17,6 @@ interface ProductCardProps {
   priority?: boolean;
 }
 
-const Highlight = ({ text, query }: { text: string; query: string }) => {
-  if (!text) return null;
-  if (!query.trim()) return <>{text}</>;
-  const parts = text.split(new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'));
-  return (
-    <>
-      {parts.map((part, i) => 
-        part.toLowerCase() === query.toLowerCase() ? (
-          <mark key={i} className="bg-amber-100 text-amber-900 rounded px-0.5 font-medium">{part}</mark>
-        ) : (
-          part
-        )
-      )}
-    </>
-  );
-};
-
 export function ProductCard({ product, lang, settings, priority }: ProductCardProps) {
   const { addItem } = useCartStore();
   const { setCartOpen } = useUIStore();
@@ -46,14 +28,19 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
     return lowerUrl.includes('.mp4') || lowerUrl.includes('.webm') || lowerUrl.includes('.mov');
   };
 
+  const title = product.translations?.[lang]?.title || product.title;
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: 0.4 }}
       className="group flex flex-col h-full bg-white"
     >
-      <Link href={href} className="block relative aspect-[4/5] mb-5 overflow-hidden bg-slate-50 border border-slate-200 rounded transition-all duration-500">
+      <Link 
+        href={href} 
+        className="block relative aspect-[4/5] mb-5 overflow-hidden border border-slate-100 rounded bg-slate-50"
+      >
         {product.isFeatured && (
           <div className="absolute top-4 left-4 z-20">
             <span className="bg-white/90 backdrop-blur-sm border border-slate-100 text-brand-ink text-[12px] font-semibold px-4 py-1.5 rounded">
@@ -61,6 +48,7 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
             </span>
           </div>
         )}
+        
         {isVideo(product.imageUrl) ? (
           product.imageUrl && product.imageUrl.trim() !== "" && (
             <video 
@@ -69,34 +57,34 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
               loop
               muted
               playsInline
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
           )
         ) : (
           product.imageUrl && product.imageUrl.trim() !== "" && (
-            <div className="absolute inset-0">
-              <Image 
-                src={product.imageUrl} 
-                alt={product.title}
-                fill
-                sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                className="object-cover transition-transform duration-700 group-hover:scale-110"
-                priority={priority}
-              />
-            </div>
+            <img 
+              src={product.imageUrl} 
+              alt={title}
+              loading={priority ? "eager" : "lazy"}
+              // @ts-ignore
+              fetchPriority={priority ? "high" : "auto"}
+              decoding="async"
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
+            />
           )
         )}
         
         {/* Quick Add Overlay - Desktop Only */}
-        <div className="absolute inset-0 z-20 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none md:block hidden">
+        <div className="absolute inset-0 z-20 opacity-0 group-hover:opacity-100 transition-all duration-300 md:block hidden">
           <div className="absolute inset-0 bg-slate-900/10 pointer-events-none" />
-          <div className="absolute bottom-5 left-5 right-5 pointer-events-auto">
+          <div className="absolute bottom-5 left-5 right-5">
             <button 
               onClick={(e) => {
                 e.preventDefault();
                 addItem(product);
                 setCartOpen(true);
-                toast.success(`${product.title} added to cart!`, {
+                toast.success(`${title} added to cart!`, {
                   className: 'rounded bg-slate-900 text-white !text-[12px] !font-bold !uppercase !tracking-widest border-none px-6 py-3',
                   duration: 2000,
                   icon: <Check className="w-5 h-5" strokeWidth={1.5} />
@@ -112,13 +100,13 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
       </Link>
       
       {/* Mobile Quick Add Button - Below Image */}
-      <div className="md:hidden block mb-4">
+      <div className="md:hidden block mb-4 px-1">
         <button 
           onClick={(e) => {
             e.preventDefault();
             addItem(product);
             setCartOpen(true);
-            toast.success(`${product.title} added to cart!`, {
+            toast.success(`${title} added to cart!`, {
               className: 'rounded bg-slate-900 text-white !text-[12px] !font-bold !uppercase !tracking-widest border-none px-6 py-3',
               duration: 2000,
               icon: <Check className="w-5 h-5" strokeWidth={1.5} />
@@ -139,7 +127,7 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
         </div>
         <h3 className="text-[12px] font-bold uppercase tracking-widest text-brand-ink group-hover:text-brand-muted transition-colors truncate mb-2">
           <Link href={href}>
-            {product.translations?.[lang]?.title || product.title}
+            {title}
           </Link>
         </h3>
         <div className="mt-auto">

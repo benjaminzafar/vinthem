@@ -5,17 +5,11 @@ import Link from 'next/link';
 import { Category, StorefrontSettingsType } from '@/types';
 import { ShoppingBag, ArrowRight } from 'lucide-react';
 
-interface CollectionListProps {
-  categories: Category[];
-  lang: string;
-  settings: StorefrontSettingsType;
-}
-
 export function CollectionList({ categories, lang, settings }: CollectionListProps) {
   const featuredCategories = categories.filter(c => c.isFeatured);
 
   return (
-    <section id="collection" className="py-20 md:py-32 bg-white" style={{ contentVisibility: 'auto' }}>
+    <section id="collection" className="py-20 md:py-32 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center mb-12 md:mb-20 text-center gap-4">
           <p className="text-xs font-bold tracking-[0.2em] uppercase text-slate-500">
@@ -46,16 +40,7 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
                   className="group relative"
                 >
                   <Link href={`/products?category=${encodeURIComponent(category.slug)}`} className="group block">
-                    {/* Ultra-stable container with paint containment */}
-                    <div 
-                      className="relative w-full overflow-hidden rounded mb-4" 
-                      style={{ 
-                        paddingBottom: '133.33%', 
-                        contain: 'paint',
-                        transform: 'translateZ(0) rotate(0.001deg)',
-                        willChange: 'transform'
-                      }}
-                    >
+                    <div className="relative aspect-[3/4] overflow-hidden rounded bg-gray-50 mb-4 transition-all duration-500 border border-slate-100">
                       {category.imageUrl && category.imageUrl.trim() !== "" ? (
                         <img
                           src={category.imageUrl}
@@ -63,13 +48,9 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
                           loading="eager"
                           // @ts-ignore
                           fetchPriority="high"
-                          decoding="sync"
-                          className="absolute inset-0 w-full h-full object-cover"
-                          style={{ 
-                            backfaceVisibility: 'hidden', 
-                            WebkitBackfaceVisibility: 'hidden',
-                            transform: 'translateZ(0)'
-                          }}
+                          decoding="async"
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                          style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
                         />
                       ) : (
                         <div className="absolute inset-0 flex items-center justify-center text-slate-200 font-sans text-2xl bg-zinc-50 uppercase tracking-tighter font-black">
@@ -106,4 +87,10 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
       </div>
     </section>
   );
+}
+
+interface CollectionListProps {
+  categories: Category[];
+  lang: string;
+  settings: StorefrontSettingsType;
 }

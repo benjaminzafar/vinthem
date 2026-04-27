@@ -24,7 +24,7 @@ export function FeaturedProducts({ products, lang, settings }: FeaturedProductsP
   if (featuredProducts.length === 0) return null;
 
   return (
-    <section id="featured" className="py-32 bg-white" style={{ contentVisibility: 'auto' }}>
+    <section id="featured" className="py-32 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row justify-between items-center mb-20">
           <div className="text-center mx-auto">
@@ -32,7 +32,7 @@ export function FeaturedProducts({ products, lang, settings }: FeaturedProductsP
               {settings?.featuredTopSubtitle?.[lang] || (lang === 'en' ? 'Curated Selection' : 'Utvald kollektion')}
             </p>
             <h2 className="text-[24px] md:text-[32px] font-bold text-brand-ink mb-6 tracking-tight">
-              {settings?.featuredTitle?.[lang] || (lang === 'en' ? 'Featured Pieces' : 'Utvalda محصولات')}
+              {settings?.featuredTitle?.[lang] || (lang === 'en' ? 'Featured Pieces' : 'Utvalda produkter')}
             </h2>
             <p className="text-brand-muted max-w-xl mx-auto text-sm md:text-base font-normal leading-relaxed">
               {settings?.featuredSubtitle?.[lang]}
@@ -47,15 +47,7 @@ export function FeaturedProducts({ products, lang, settings }: FeaturedProductsP
             
             return (
               <Link key={product.id} href={`/${lang}/product/${product.id}`} className="group">
-                <div 
-                  className="relative w-full overflow-hidden rounded mb-4" 
-                  style={{ 
-                    paddingBottom: '133.33%', 
-                    contain: 'paint',
-                    transform: 'translateZ(0) rotate(0.001deg)',
-                    willChange: 'transform'
-                  }}
-                >
+                <div className="relative aspect-[3/4] overflow-hidden rounded bg-gray-50 mb-4 transition-all duration-500 border border-slate-100">
                   {product.imageUrl && product.imageUrl.trim() !== "" ? (
                     <img 
                       src={product.imageUrl} 
@@ -63,13 +55,9 @@ export function FeaturedProducts({ products, lang, settings }: FeaturedProductsP
                       loading="eager"
                       // @ts-ignore
                       fetchPriority="high"
-                      decoding="sync"
-                      className="absolute inset-0 w-full h-full object-cover" 
-                      style={{ 
-                        backfaceVisibility: 'hidden', 
-                        WebkitBackfaceVisibility: 'hidden',
-                        transform: 'translateZ(0)'
-                      }}
+                      decoding="async"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                      style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
                     />
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center bg-zinc-50 text-zinc-200">
