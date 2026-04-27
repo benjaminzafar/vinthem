@@ -8,6 +8,8 @@ assets = { directory = ".open-next/assets", binding = "ASSETS" }
 enabled = true
 
 [vars]
+SUPABASE_URL = "https://xeatyjjiywcrkuvifyhm.supabase.co"
+SUPABASE_PUBLISHABLE_KEY = "sb_publishable_8ZBscrzZCPmE1xA9VwvBZQ_Kee2EMWk"
 NEXT_PUBLIC_SUPABASE_URL = "https://xeatyjjiywcrkuvifyhm.supabase.co"
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_8ZBscrzZCPmE1xA9VwvBZQ_Kee2EMWk"
 
