@@ -91,28 +91,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
-  /* Support for users who prefer reduced motion (older devices or accessibility needs) */
-  @media (prefers-reduced-motion: reduce) {
-    * {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-      scroll-behavior: auto !important;
-    }
-  }
 }
 
-/* Accessible Touch Targets for old mobile devices and elderly users */
-button, a, input, select {
-  min-height: 44px; /* Apple & Google minimum standard for touch */
-}
-
-/* Stable and performant image rendering for all screen types */
+/* Stable Image rendering */
 img {
   -webkit-user-drag: none;
-  image-rendering: -webkit-optimize-contrast;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
+  image-rendering: auto;
 }
 
 h1 { @apply text-[34px] md:text-[40px] font-semibold leading-[1.205] tracking-normal; }
