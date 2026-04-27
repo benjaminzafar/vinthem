@@ -4,6 +4,8 @@ import { ListObjectsV2Command, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { requireAdminUser } from '@/lib/admin';
 import { logger } from '@/lib/logger';
 
+export const runtime = 'nodejs';
+
 export async function GET(req: NextRequest) {
   try {
     await requireAdminUser();
