@@ -58,7 +58,6 @@ export function CartDrawer({ initialSettings }: CartDrawerProps) {
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
               className="relative w-full max-w-md bg-white border-l border-slate-100 flex flex-col shadow-2xl h-full"
-              style={{ willChange: 'transform' }}
             >
               {/* Header */}
               <div className="flex items-center justify-between px-4 sm:px-6 h-16 border-b border-slate-100 shrink-0 bg-white z-10">
