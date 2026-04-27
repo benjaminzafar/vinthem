@@ -45,7 +45,7 @@ export function IntegrationCard({
             <h3 className="text-sm font-bold text-zinc-900 leading-none tracking-tight">{title}</h3>
             <div className="mt-1.5 flex items-center gap-1.5">
                <div className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-emerald-500' : 'bg-zinc-300'}`} />
-               <span className={`text-[10px] font-bold uppercase tracking-wider ${isConnected ? 'text-emerald-600' : 'text-zinc-400'}`}>
+               <span className={`text-[10px] font-bold uppercase tracking-wider ${isConnected ? 'text-emerald-600' : 'text-zinc-500'}`}>
                 {isConnected ? 'Active & Encrypted' : 'Requires Setup'}
                </span>
             </div>
@@ -56,7 +56,7 @@ export function IntegrationCard({
           {tutorial && (
             <button 
               onClick={(e) => { e.stopPropagation(); setShowTutorial(!showTutorial); }}
-              className={`p-1.5 rounded-md transition-colors ${showTutorial ? 'bg-zinc-100 text-brand-ink' : 'text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100'}`}
+              className={`p-1.5 rounded-md transition-colors ${showTutorial ? 'bg-zinc-100 text-brand-ink' : 'text-zinc-500 hover:text-zinc-600 hover:bg-zinc-100'}`}
               title="View Documentation"
             >
               <HelpCircle className="w-4 h-4" />
@@ -82,7 +82,7 @@ export function IntegrationCard({
             </div>
             
             <div className="px-6 py-4 border-t border-zinc-100 bg-zinc-50/50 flex justify-between items-center">
-               <div className="text-[11px] text-zinc-400 font-medium tracking-tight">
+               <div className="text-[11px] text-zinc-500 font-medium tracking-tight">
                   {isConnected ? 'All credentials are AES-256 protected' : 'Pending synchronization'}
                </div>
                <button
@@ -108,7 +108,7 @@ export function IntegrationCard({
           >
              <div className="flex items-center justify-between mb-3 border-b border-zinc-200 pb-2">
                 <span className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">Configuration Guide</span>
-                <button onClick={() => setShowTutorial(false)} className="text-zinc-400 hover:text-zinc-900 font-black text-lg leading-none">&times;</button>
+                <button onClick={() => setShowTutorial(false)} className="text-zinc-500 hover:text-zinc-900 font-black text-lg leading-none">&times;</button>
              </div>
              <div className="text-[13px] leading-relaxed text-zinc-600 font-medium">
                 {tutorial}

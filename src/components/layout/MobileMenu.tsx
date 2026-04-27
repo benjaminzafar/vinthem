@@ -133,7 +133,7 @@ export function MobileMenu({ user, isAdmin, settings, lang, categories, availabl
                 <span className="!text-[12px] !font-bold !uppercase !tracking-widest text-brand-ink">{labels.menu}</span>
                 <button
                   onClick={() => setMobileMenuOpen(false)}
-                  className="p-2 -mr-2 text-gray-400 hover:text-brand-ink transition-colors"
+                  className="p-2 -mr-2 text-gray-500 hover:text-brand-ink transition-colors"
                   aria-label="Close menu"
                 >
                   <X className="w-5 h-5" />
@@ -205,7 +205,7 @@ export function MobileMenu({ user, isAdmin, settings, lang, categories, availabl
                           <Link
                             href="/admin"
                             onClick={() => setMobileMenuOpen(false)}
-                            className="p-2.5 text-slate-400 hover:text-brand-ink transition-colors rounded-full hover:bg-slate-50"
+                            className="p-2.5 text-slate-500 hover:text-brand-ink transition-colors rounded-full hover:bg-slate-50"
                             aria-label={labels.adminDashboard}
                           >
                             <Settings className="w-5 h-5" strokeWidth={1.5} />
@@ -214,7 +214,7 @@ export function MobileMenu({ user, isAdmin, settings, lang, categories, availabl
                         <Link
                           href={localizeHref(lang, '/profile')}
                           onClick={() => setMobileMenuOpen(false)}
-                          className="p-2.5 text-slate-400 hover:text-brand-ink transition-colors rounded-full hover:bg-slate-50"
+                          className="p-2.5 text-slate-500 hover:text-brand-ink transition-colors rounded-full hover:bg-slate-50"
                           aria-label={labels.account}
                         >
                           <User className="w-5 h-5" strokeWidth={1.5} />

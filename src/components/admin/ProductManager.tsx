@@ -332,7 +332,7 @@ export function ProductManager({
             </div>
           )}
           <div className="relative flex-1 sm:flex-none">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
             <input 
               type="text"
               placeholder="Search products..."
@@ -362,7 +362,7 @@ export function ProductManager({
                 className={`h-full text-[11px] font-bold uppercase tracking-widest border-b-2 transition-all ${
                   activeTab === tab 
                     ? 'text-slate-900 border-slate-900' 
-                    : 'text-slate-400 border-transparent hover:text-slate-600'
+                    : 'text-slate-500 border-transparent hover:text-slate-600'
                 }`}
               >
                 {tab === 'all' ? 'All Products' : tab}
@@ -410,9 +410,9 @@ export function ProductManager({
             </thead>
             <tbody className="divide-y divide-slate-100">
               {loading && products.length === 0 ? (
-                <tr><td colSpan={7} className="py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-xs">Accessing Inventory...</td></tr>
+                <tr><td colSpan={7} className="py-20 text-center text-slate-500 font-bold uppercase tracking-widest text-xs">Accessing Inventory...</td></tr>
               ) : products.length === 0 ? (
-                <tr><td colSpan={7} className="py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-xs">No entries found</td></tr>
+                <tr><td colSpan={7} className="py-20 text-center text-slate-500 font-bold uppercase tracking-widest text-xs">No entries found</td></tr>
               ) : products.map((product) => (
                 <tr 
                   key={product.id} 
@@ -519,7 +519,7 @@ export function ProductManager({
 
               <button
                 onClick={() => setSelectedIds(new Set())}
-                className="flex items-center gap-2 px-4 py-1.5 rounded-full hover:bg-white/10 text-slate-400 transition-all"
+                className="flex items-center gap-2 px-4 py-1.5 rounded-full hover:bg-white/10 text-slate-500 transition-all"
               >
                 <X className="w-4 h-4" />
                 <span className="text-[11px] font-bold uppercase tracking-widest">Clear</span>

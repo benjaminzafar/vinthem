@@ -461,7 +461,7 @@ export function ProfileClient({
           <div className="border-b border-slate-300 p-8 lg:border-b-0 lg:border-r lg:p-10">
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 bg-slate-900" />
-              <span className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Customer Workspace</span>
+              <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Customer Workspace</span>
             </div>
             <h1 className="mt-4 text-[28px] font-bold tracking-tight text-slate-900">
               Hello, {displayName.split(' ')[0]}.
@@ -487,19 +487,19 @@ export function ProfileClient({
 
           <div className="grid grid-cols-2 bg-slate-50">
             <div className="border-b border-r border-slate-300 p-6">
-              <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Lifetime Spend</p>
+              <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Lifetime Spend</p>
               <p className="mt-4 text-[20px] font-bold text-slate-900">{formatPrice(totalSpent, lang)}</p>
             </div>
             <div className="border-b border-slate-300 p-6">
-              <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Active Orders</p>
+              <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Active Orders</p>
               <p className="mt-4 text-[20px] font-bold text-slate-900">{activeOrders}</p>
             </div>
             <div className="border-r border-slate-300 p-6">
-              <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Saved Addresses</p>
+              <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Saved Addresses</p>
               <p className="mt-4 text-[20px] font-bold text-slate-900">{addresses.length}</p>
             </div>
             <div className="p-6">
-              <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Support Cases</p>
+              <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Support Cases</p>
               <p className="mt-4 text-[20px] font-bold text-slate-900">{supportTickets.length + refundRequests.length}</p>
             </div>
           </div>
@@ -559,14 +559,14 @@ export function ProfileClient({
               >
                 <div className="h-10 flex items-center justify-between border-b-2 border-slate-300 pb-3">
                   <h3 className="text-[13px] font-bold text-slate-900 uppercase tracking-widest">Order History</h3>
-                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{orders.length} TOTAL</span>
+                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">{orders.length} TOTAL</span>
                 </div>
 
                 {orders.length === 0 ? (
                   <div className="border border-slate-300 bg-white py-24 text-center">
                     <Package className="w-10 h-10 mx-auto text-slate-200 mb-4" />
                     <p className="text-[13px] font-bold text-slate-900 uppercase tracking-widest">No order records found</p>
-                    <button onClick={() => router.push(`/${lang}`)} className="mt-4 text-[11px] font-bold text-slate-400 hover:text-slate-900 transition-all uppercase underline underline-offset-4 tracking-widest">
+                    <button onClick={() => router.push(`/${lang}`)} className="mt-4 text-[11px] font-bold text-slate-500 hover:text-slate-900 transition-all uppercase underline underline-offset-4 tracking-widest">
                        Return to Storefront
                     </button>
                   </div>
@@ -582,19 +582,19 @@ export function ProfileClient({
                           >
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 flex-1">
                                <div>
-                                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Order ID</p>
+                                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">Order ID</p>
                                   <p className="text-sm font-bold text-slate-900 font-mono tracking-tighter">#{order.orderId || order.id.slice(0, 10).toUpperCase()}</p>
                                </div>
                                <div>
-                                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Order Date</p>
+                                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">Order Date</p>
                                   <p className="text-sm font-bold text-slate-900">{order.createdAt ? new Date(order.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '---'}</p>
                                </div>
                                <div>
-                                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Order Total</p>
+                                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">Order Total</p>
                                   <p className="text-sm font-bold text-slate-900">{formatPrice(order.total, lang, undefined, order.currency ?? undefined)}</p>
                                </div>
                                <div>
-                                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Progress</p>
+                                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">Progress</p>
                                   <span className={`inline-flex px-2 py-0.5 text-[11px] font-bold uppercase tracking-widest border rounded ${
                                     order.status === 'Delivered' ? 'bg-emerald-50 text-emerald-700 border-emerald-300' :
                                     order.status === 'Shipped' ? 'bg-blue-50 text-blue-700 border-blue-300' :
@@ -615,7 +615,7 @@ export function ProfileClient({
                                >
                                  Get Help
                                </button>
-                               <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isExpanded ? 'rotate-180 text-slate-900' : ''}`} />
+                               <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform duration-300 ${isExpanded ? 'rotate-180 text-slate-900' : ''}`} />
                             </div>
                           </div>
 
@@ -635,14 +635,14 @@ export function ProfileClient({
                                             <div className="relative">
                                                <div className="absolute -left-[31px] top-1 w-2 h-2 bg-slate-900" />
                                                <p className="text-sm font-bold text-slate-900 uppercase tracking-tight">System Confirmation</p>
-                                               <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest mt-1">
+                                               <p className="text-[11px] text-slate-500 font-bold uppercase tracking-widest mt-1">
                                                  {order.createdAt ? new Date(order.createdAt).toLocaleTimeString() : '---'}
                                                </p>
                                             </div>
                                             <div className="relative">
                                                <div className={`absolute -left-[31px] top-1 w-2 h-2 ${order.status === 'Shipped' || order.status === 'Delivered' ? 'bg-slate-900' : 'bg-slate-200'}`} />
                                                <p className={`text-sm font-bold uppercase tracking-tight ${order.status === 'Shipped' || order.status === 'Delivered' ? 'text-slate-900' : 'text-slate-300'}`}>Logistic Transit</p>
-                                               <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest mt-1">Ground Carrier Active</p>
+                                               <p className="text-[11px] text-slate-500 font-bold uppercase tracking-widest mt-1">Ground Carrier Active</p>
                                             </div>
                                          </div>
                                       </div>
@@ -652,12 +652,12 @@ export function ProfileClient({
                                          <div className="space-y-4">
                                             {order.items?.map((item, idx) => (
                                               <div key={idx} className="flex justify-between items-center text-sm">
-                                                 <span className="text-slate-900 font-bold uppercase tracking-tight">{item.name || item.title} <span className="text-slate-400 font-bold pl-2">X{item.quantity}</span></span>
+                                                 <span className="text-slate-900 font-bold uppercase tracking-tight">{item.name || item.title} <span className="text-slate-500 font-bold pl-2">X{item.quantity}</span></span>
                                                  <span className="font-bold text-slate-900">{formatPrice(item.price * item.quantity, lang, undefined, order.currency ?? undefined)}</span>
                                               </div>
                                             ))}
                                             <div className="pt-6 border-t-2 border-slate-900 flex justify-between items-center font-bold text-lg mt-4">
-                                               <span className="text-xs uppercase tracking-widest text-slate-400">Total Valuation</span>
+                                               <span className="text-xs uppercase tracking-widest text-slate-500">Total Valuation</span>
                                                <span className="text-slate-900 tracking-tighter underline underline-offset-8 decoration-slate-300 decoration-2">{formatPrice(order.total, lang, undefined, order.currency ?? undefined)}</span>
                                             </div>
                                          </div>
@@ -684,7 +684,7 @@ export function ProfileClient({
               >
                 <div className="h-10 flex items-center justify-between border-b-2 border-slate-300 pb-3">
                   <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Support Activity</h3>
-                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
                     {supportTickets.length + refundRequests.length} TOTAL
                   </span>
                 </div>
@@ -711,7 +711,7 @@ export function ProfileClient({
                       <div key={ticket.id} className="border border-slate-300 bg-white p-6">
                         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                           <div>
-                            <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Support Ticket</p>
+                            <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Support Ticket</p>
                             <h4 className="mt-2 text-sm font-bold uppercase tracking-tight text-slate-900">
                               {ticket.subject || 'Customer support request'}
                             </h4>
@@ -721,7 +721,7 @@ export function ProfileClient({
                             <span className="inline-flex border border-slate-300 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-slate-700">
                               {ticket.status || 'open'}
                             </span>
-                            <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                            <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
                               {ticket.created_at ? new Date(ticket.created_at).toLocaleString() : '---'}
                             </p>
                           </div>
@@ -729,7 +729,7 @@ export function ProfileClient({
 
                         {ticket.messages && ticket.messages.length > 0 && (
                           <div className="mt-6 border-t border-slate-200 pt-5">
-                            <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Conversation</p>
+                            <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Conversation</p>
                             <div className="mt-4 space-y-3">
                               {ticket.messages.map((message, index) => (
                                 <div key={`${ticket.id}-${index}`} className="border border-slate-200 bg-slate-50 px-4 py-3">
@@ -737,7 +737,7 @@ export function ProfileClient({
                                     <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
                                       {message.sender === 'admin' ? 'Admin reply' : 'Your message'}
                                     </span>
-                                    <span className="text-[11px] uppercase tracking-widest text-slate-400">
+                                    <span className="text-[11px] uppercase tracking-widest text-slate-500">
                                       {message.createdAt ? new Date(message.createdAt).toLocaleString() : '---'}
                                     </span>
                                   </div>
@@ -759,7 +759,7 @@ export function ProfileClient({
                       <div key={refund.id} className="border border-slate-300 bg-white p-6">
                         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                           <div>
-                            <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Refund Request</p>
+                            <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Refund Request</p>
                             <h4 className="mt-2 text-sm font-bold uppercase tracking-tight text-slate-900">
                               Order #{refund.order_id || refund.id.slice(0, 8).toUpperCase()}
                             </h4>
@@ -770,7 +770,7 @@ export function ProfileClient({
                             <span className="inline-flex border border-slate-300 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-slate-700">
                               {refund.status || 'Pending'}
                             </span>
-                            <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                            <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
                               {refund.created_at ? new Date(refund.created_at).toLocaleString() : '---'}
                             </p>
                           </div>
@@ -791,22 +791,22 @@ export function ProfileClient({
               >
                 <div className="h-10 flex items-center justify-between border-b-2 border-slate-300 pb-3">
                   <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Workspace Settings</h3>
-                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">SECURITY VERIFIED</span>
+                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">SECURITY VERIFIED</span>
                 </div>
 
                 <div className="bg-white border border-slate-300 p-12 space-y-12">
                    <div className="max-w-xl space-y-12">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                          <div className="space-y-3">
-                            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Legal Name</label>
+                            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Legal Name</label>
                             <p className="text-sm font-bold text-slate-900 uppercase tracking-tight">{displayName}</p>
                          </div>
                          <div className="space-y-3">
-                            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Security Email</label>
+                            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Security Email</label>
                             <p className="text-sm font-bold text-slate-500 truncate">{user.email}</p>
                          </div>
                       </div>
-                      <div className="p-8 border border-slate-200 text-[11px] text-slate-400 leading-relaxed font-bold uppercase tracking-widest bg-slate-50">
+                      <div className="p-8 border border-slate-200 text-[11px] text-slate-500 leading-relaxed font-bold uppercase tracking-widest bg-slate-50">
                          Identity authenticated on {new Date(user.created_at || Date.now()).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}.
                       </div>
                    </div>
@@ -817,7 +817,7 @@ export function ProfileClient({
                         <div className="flex items-center justify-between">
                            <div>
                               <h4 className="text-sm font-bold text-slate-900 uppercase tracking-tight">Access Credentials</h4>
-                              <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest mt-1">Manage your account security and password</p>
+                              <p className="text-[11px] text-slate-500 font-bold uppercase tracking-widest mt-1">Manage your account security and password</p>
                            </div>
                            <button 
                               onClick={() => setShowPasswordForm(true)}
@@ -840,7 +840,7 @@ export function ProfileClient({
                               <button 
                                 type="button"
                                 onClick={() => setShowPasswordForm(false)}
-                                className="text-[11px] font-bold text-slate-400 hover:text-slate-900 uppercase tracking-widest"
+                                className="text-[11px] font-bold text-slate-500 hover:text-slate-900 uppercase tracking-widest"
                               >
                                 Cancel
                               </button>
@@ -848,7 +848,7 @@ export function ProfileClient({
 
                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                               <div className="space-y-2 relative">
-                                 <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">New Password</label>
+                                 <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">New Password</label>
                                  <input 
                                     type={showPass ? "text" : "password"}
                                     value={passwordData.new}
@@ -859,13 +859,13 @@ export function ProfileClient({
                                  <button 
                                     type="button" 
                                     onClick={() => setShowPass(!showPass)}
-                                    className="absolute right-4 bottom-4 text-slate-400"
+                                    className="absolute right-4 bottom-4 text-slate-500"
                                  >
                                     {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                  </button>
                               </div>
                               <div className="space-y-2">
-                                 <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Confirm Password</label>
+                                 <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Confirm Password</label>
                                  <input 
                                     type={showPass ? "text" : "password"}
                                     value={passwordData.confirm}
@@ -925,7 +925,7 @@ export function ProfileClient({
                    {addresses.length === 0 ? (
                      <div className="col-span-2 py-32 text-center border border-slate-300 bg-white">
                        <MapPin className="w-10 h-10 mx-auto text-slate-100 mb-4" />
-                       <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest">{settings.noAddressesSavedText?.[lang] || 'No addresses saved'}</p>
+                       <p className="text-[11px] text-slate-500 font-bold uppercase tracking-widest">{settings.noAddressesSavedText?.[lang] || 'No addresses saved'}</p>
                        <button
                          onClick={openAddAddressModal}
                          className="mt-6 inline-flex items-center gap-2 border border-slate-900 px-5 py-3 text-[11px] font-bold uppercase tracking-widest text-slate-900 transition-all hover:bg-slate-900 hover:text-white"
@@ -1015,7 +1015,7 @@ export function ProfileClient({
             >
               <div className="flex items-center justify-between border-b border-slate-300 bg-slate-50 px-6 py-5 md:px-8">
                 <div>
-                  <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                  <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
                     {addressForm.id ? settings.editAddressTitleText?.[lang] || 'Edit Address' : settings.addNewAddressTitleText?.[lang] || 'Add New Address'}
                   </p>
                   <h3 className="mt-2 text-xl font-bold tracking-tight text-slate-900">
@@ -1035,27 +1035,27 @@ export function ProfileClient({
               <form onSubmit={handleSaveAddress} className="space-y-8 p-6 md:p-8">
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div className="space-y-2">
-                    <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400">{settings.firstNameLabelText?.[lang] || 'First Name'}</label>
+                    <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">{settings.firstNameLabelText?.[lang] || 'First Name'}</label>
                     <input value={addressForm.firstName} onChange={(e) => handleAddressFieldChange('firstName', e.target.value)} className="w-full border border-slate-300 bg-white p-4 text-sm font-bold text-slate-900 transition-all focus:outline-none focus:border-slate-900" required />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400">{settings.lastNameLabelText?.[lang] || 'Last Name'}</label>
+                    <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">{settings.lastNameLabelText?.[lang] || 'Last Name'}</label>
                     <input value={addressForm.lastName} onChange={(e) => handleAddressFieldChange('lastName', e.target.value)} className="w-full border border-slate-300 bg-white p-4 text-sm font-bold text-slate-900 transition-all focus:outline-none focus:border-slate-900" required />
                   </div>
                   <div className="space-y-2 md:col-span-2">
-                    <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400">{settings.streetAddressLabelText?.[lang] || 'Street Address'}</label>
+                    <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">{settings.streetAddressLabelText?.[lang] || 'Street Address'}</label>
                     <input value={addressForm.street} onChange={(e) => handleAddressFieldChange('street', e.target.value)} className="w-full border border-slate-300 bg-white p-4 text-sm font-bold text-slate-900 transition-all focus:outline-none focus:border-slate-900" required />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400">{settings.cityLabelText?.[lang] || 'City'}</label>
+                    <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">{settings.cityLabelText?.[lang] || 'City'}</label>
                     <input value={addressForm.city} onChange={(e) => handleAddressFieldChange('city', e.target.value)} className="w-full border border-slate-300 bg-white p-4 text-sm font-bold text-slate-900 transition-all focus:outline-none focus:border-slate-900" required />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400">{settings.postalCodeLabelText?.[lang] || 'Postal Code'}</label>
+                    <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">{settings.postalCodeLabelText?.[lang] || 'Postal Code'}</label>
                     <input value={addressForm.postalCode} onChange={(e) => handleAddressFieldChange('postalCode', e.target.value)} className="w-full border border-slate-300 bg-white p-4 text-sm font-bold text-slate-900 transition-all focus:outline-none focus:border-slate-900" required />
                   </div>
                   <div className="space-y-2 md:col-span-2">
-                    <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400">{settings.countryLabelText?.[lang] || 'Country'}</label>
+                    <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">{settings.countryLabelText?.[lang] || 'Country'}</label>
                     <select value={addressForm.country} onChange={(e) => handleAddressFieldChange('country', e.target.value)} className="w-full border border-slate-300 bg-white p-4 text-sm font-bold text-slate-900 transition-all focus:outline-none focus:border-slate-900">
                       {settings.shippingCountries?.map((c) => (
                         <option key={c.code} value={c.code}>{typeof c.name === 'string' ? c.name : c.name?.[lang] || c.name?.en || c.code}</option>
@@ -1115,7 +1115,7 @@ export function ProfileClient({
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
                      <span className="text-[11px] font-bold bg-slate-900 text-white px-2 py-0.5 tracking-widest uppercase">Support Protocol</span>
-                     <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">REF: #{supportOrder.orderId || supportOrder.id.slice(0,10).toUpperCase()}</span>
+                     <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">REF: #{supportOrder.orderId || supportOrder.id.slice(0,10).toUpperCase()}</span>
                   </div>
                   <h3 className="text-2xl font-bold text-slate-900 uppercase tracking-tight">How can we assist?</h3>
                 </div>
@@ -1146,7 +1146,7 @@ export function ProfileClient({
                             <opt.icon className="w-5 h-5" />
                          </div>
                          <p className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-2">{opt.label}</p>
-                         <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed">{opt.desc}</p>
+                         <p className="text-[11px] text-slate-500 font-bold uppercase tracking-widest leading-relaxed">{opt.desc}</p>
                        </button>
                      ))}
                   </div>
@@ -1155,7 +1155,7 @@ export function ProfileClient({
                      <div className="flex items-center justify-between mb-8 border-b border-slate-100 pb-4">
                         <button 
                           onClick={() => setSupportType(null)}
-                          className="text-[11px] font-bold text-slate-400 hover:text-slate-900 transition-all uppercase tracking-widest flex items-center gap-2"
+                          className="text-[11px] font-bold text-slate-500 hover:text-slate-900 transition-all uppercase tracking-widest flex items-center gap-2"
                         >
                            ← Back to Menu
                         </button>
@@ -1168,7 +1168,7 @@ export function ProfileClient({
                               <div className="flex items-start gap-4">
                                 <div className="w-8 h-8 bg-slate-900 flex items-center justify-center text-[11px] text-white shrink-0 font-bold">M</div>
                                 <div className="bg-white border border-slate-300 p-6 shadow-sm">
-                                  <p className="text-[11px] font-bold text-slate-400 leading-relaxed uppercase tracking-widest">
+                                  <p className="text-[11px] font-bold text-slate-500 leading-relaxed uppercase tracking-widest">
                                     Member identity verified. An agent will be assigned to this session. Please summarize your technical or logistic requirement below.
                                   </p>
                                 </div>
@@ -1193,7 +1193,7 @@ export function ProfileClient({
                      ) : (
                         <div className="space-y-10 flex-1 flex flex-col">
                            <div className="flex-1">
-                             <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-6 block border-l-4 border-slate-900 pl-4">Inquiry Rationale & Context</label>
+                             <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-6 block border-l-4 border-slate-900 pl-4">Inquiry Rationale & Context</label>
                              <textarea 
                                 value={supportMessage}
                                 onChange={(e) => setSupportMessage(e.target.value)}
@@ -1202,7 +1202,7 @@ export function ProfileClient({
                              />
                              
                              <div className="mt-4 flex flex-col gap-4">
-                                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest block">Attachments & Visual Evidence</label>
+                                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest block">Attachments & Visual Evidence</label>
                                 <div className="flex items-center gap-4">
                                   {supportImageUrl ? (
                                     <div className="relative w-24 h-24 border border-slate-300 bg-white group">
@@ -1218,13 +1218,13 @@ export function ProfileClient({
                                     <label className="w-24 h-24 border-2 border-dashed border-slate-200 hover:border-slate-900 bg-slate-50 flex items-center justify-center cursor-pointer transition-all">
                                       <div className="flex flex-col items-center">
                                         <Plus className="w-5 h-5 text-slate-300" />
-                                        <span className="text-[8px] font-bold uppercase text-slate-400 mt-1">Add Image</span>
+                                        <span className="text-[8px] font-bold uppercase text-slate-500 mt-1">Add Image</span>
                                       </div>
                                       <input type="file" className="hidden" accept="image/*" onChange={handleSupportFileUpload} />
                                     </label>
                                   )}
                                   <div className="flex-1">
-                                    <p className="text-[10px] font-medium text-slate-400 leading-relaxed uppercase">
+                                    <p className="text-[10px] font-medium text-slate-500 leading-relaxed uppercase">
                                        Upload a high-quality photo of the product or issue to expedite our technical audit.
                                     </p>
                                   </div>

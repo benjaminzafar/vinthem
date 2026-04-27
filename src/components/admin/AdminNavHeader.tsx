@@ -32,11 +32,11 @@ export default function AdminNavHeader({ onToggle }: { onToggle: () => void }) {
         <div className="flex items-center space-x-4">
           {!isIntegrationsPage && (
             <div className="hidden md:flex relative">
-              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
               <input 
                 type="text" 
                 placeholder="Search..." 
-                className="pl-10 pr-4 h-9 bg-slate-50 border border-slate-300 rounded text-[13px] focus:outline-none focus:border-slate-900 transition-all w-32 lg:w-64 placeholder:text-slate-400 text-slate-900"
+                className="pl-10 pr-4 h-9 bg-slate-50 border border-slate-300 rounded text-[13px] focus:outline-none focus:border-slate-900 transition-all w-32 lg:w-64 placeholder:text-slate-500 text-slate-900"
               />
             </div>
           )}

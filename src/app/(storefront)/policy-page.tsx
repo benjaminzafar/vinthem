@@ -194,7 +194,7 @@ export async function renderPolicyPage(slug: string) {
               <div className="flex h-12 w-12 items-center justify-center border border-slate-300 bg-slate-50 text-slate-900">
                 <PolicyIcon className="h-5 w-5" />
               </div>
-              <span className="text-[11px] font-bold uppercase tracking-[0.24em] text-slate-400">
+              <span className="text-[11px] font-bold uppercase tracking-[0.24em] text-slate-500">
                 {isCorePolicy ? presentation.eyebrow : 'Information'}
               </span>
             </div>
@@ -209,7 +209,7 @@ export async function renderPolicyPage(slug: string) {
                   {presentation.lead}
                 </p>
 
-                <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-[11px] font-bold uppercase tracking-widest text-slate-400/80">
+                <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-[11px] font-bold uppercase tracking-widest text-slate-500/80">
                   <span>{updatedLabel}: <span className="text-slate-900">{updatedAt}</span></span>
                   <span>Source: <span className="text-slate-900">Storefront Settings</span></span>
                 </div>

@@ -233,7 +233,7 @@ Content: "${formData.content.en}"`;
 
         <section className="rounded-[4px] border border-slate-200 bg-white">
           <div className="flex items-center gap-2 border-b border-slate-100 bg-slate-50 px-6 py-4">
-            <FileCode className="h-4 w-4 text-slate-400" />
+            <FileCode className="h-4 w-4 text-slate-500" />
             <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Page Content</h3>
           </div>
           <div className="space-y-6 p-8">
@@ -261,7 +261,7 @@ Content: "${formData.content.en}"`;
                   key={language}
                   onClick={() => setSelectedLang(language)}
                   className={`text-[11px] font-bold uppercase tracking-widest transition-all ${
-                    selectedLang === language ? 'text-slate-900 underline underline-offset-4' : 'text-slate-400 hover:text-slate-600'
+                    selectedLang === language ? 'text-slate-900 underline underline-offset-4' : 'text-slate-500 hover:text-slate-600'
                   }`}
                 >
                   {language}

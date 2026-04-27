@@ -221,7 +221,7 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
         {!selectionMode && (
           <div className="flex items-center gap-3">
             <div className="h-10 px-4 bg-white border border-slate-300 rounded text-[13px] font-medium text-slate-600 flex items-center gap-2">
-               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Storage</span>
+               <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Storage</span>
                <span className="text-slate-900 font-bold">{assets.length} Items</span>
             </div>
             <button 
@@ -239,13 +239,13 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
       {/* 2. Controls - Unified with Admin Inputs */}
       <div className="flex flex-col lg:flex-row gap-6">
          <div className="relative flex-1 group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-slate-900 transition-colors" />
             <input 
               type="text" 
               placeholder="Search assets..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-11 bg-slate-50 border border-slate-300 rounded pl-12 pr-6 text-[13px] focus:outline-none focus:border-slate-900 transition-all font-bold uppercase tracking-tight placeholder:text-slate-400"
+              className="w-full h-11 bg-slate-50 border border-slate-300 rounded pl-12 pr-6 text-[13px] focus:outline-none focus:border-slate-900 transition-all font-bold uppercase tracking-tight placeholder:text-slate-500"
             />
          </div>
 
@@ -321,7 +321,7 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
 
       {/* Footer Info */}
       {!selectionMode && (
-        <div className="flex items-center gap-2 px-2 text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+        <div className="flex items-center gap-2 px-2 text-[11px] font-bold text-slate-500 uppercase tracking-widest">
            <AlertCircle className="w-3.5 h-3.5" />
            <span>Optimized Stream: Showing items from {currentPath.length > 0 ? `/${currentPath.join('/')}` : 'Project Root'}</span>
         </div>

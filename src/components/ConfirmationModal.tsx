@@ -41,7 +41,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
           <h3 className="text-[15px] font-black text-zinc-900 uppercase tracking-widest leading-none">{title}</h3>
           <button 
             onClick={onClose} 
-            className="text-zinc-400 hover:text-zinc-900 transition-colors p-2 hover:bg-zinc-100 rounded-full"
+            className="text-zinc-500 hover:text-zinc-900 transition-colors p-2 hover:bg-zinc-100 rounded-full"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"></line>

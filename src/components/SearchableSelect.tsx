@@ -69,12 +69,12 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
         onClick={() => setIsOpen(!isOpen)}
       >
         <span className="text-sm font-medium truncate">{getSelectedLabels() || placeholder}</span>
-        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180 text-slate-900' : ''}`} />
+        <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform duration-200 ${isOpen ? 'rotate-180 text-slate-900' : ''}`} />
       </div>
       {isOpen && (
         <div className="absolute z-[100] w-full mt-1 bg-white border border-slate-200 rounded-[4px] animate-in fade-in zoom-in-95 duration-100">
           <div className="p-2 border-b border-slate-100 flex items-center bg-slate-50">
-            <Search className="w-4 h-4 text-slate-400 mr-2" />
+            <Search className="w-4 h-4 text-slate-500 mr-2" />
             <input
               type="text"
               className="w-full text-sm outline-none bg-transparent font-medium"
@@ -101,7 +101,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                 </div>
               ))
             ) : (
-              <div className="px-4 py-8 text-center text-xs text-slate-400 font-bold uppercase tracking-widest">
+              <div className="px-4 py-8 text-center text-xs text-slate-500 font-bold uppercase tracking-widest">
                 No matches found
               </div>
             )}

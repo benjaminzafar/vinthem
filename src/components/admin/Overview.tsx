@@ -590,7 +590,7 @@ export function Overview({ initialStats, onProductClick, onSeedClick }: Overview
                   className="group flex w-full items-center justify-between rounded border border-slate-200 bg-slate-50 p-4 transition-all hover:border-slate-300"
                 >
                   <div className="flex min-w-0 items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded border border-slate-300 bg-white text-slate-400 transition-colors group-hover:text-slate-900">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded border border-slate-300 bg-white text-slate-500 transition-colors group-hover:text-slate-900">
                       <Package className="h-5 w-5" />
                     </div>
                     <span className="truncate text-sm font-bold text-slate-900">{product.title}</span>
@@ -602,7 +602,7 @@ export function Overview({ initialStats, onProductClick, onSeedClick }: Overview
               ))
             ) : (
               <div className="rounded border border-slate-300 bg-slate-50 py-12 text-center">
-                <p className="text-sm font-bold uppercase tracking-widest text-slate-400">Inventory Fully Stocked</p>
+                <p className="text-sm font-bold uppercase tracking-widest text-slate-500">Inventory Fully Stocked</p>
               </div>
             )}
 
@@ -643,7 +643,7 @@ export function Overview({ initialStats, onProductClick, onSeedClick }: Overview
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={3} className="px-4 py-12 text-center text-xs font-bold uppercase tracking-widest text-slate-400">
+                    <td colSpan={3} className="px-4 py-12 text-center text-xs font-bold uppercase tracking-widest text-slate-500">
                       No data available
                     </td>
                   </tr>

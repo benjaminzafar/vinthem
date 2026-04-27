@@ -50,7 +50,7 @@ export function MediaPickerModal({ isOpen, onClose, onSelect, title = "Select As
 
         {/* Footer - Perfectly Balanced */}
         <div className="px-10 py-5 border-t border-zinc-200 bg-zinc-50/30 flex items-center justify-between shrink-0">
-           <p className="text-[11px] font-bold uppercase tracking-widest text-zinc-400">Select an asset from your Cloudflare R2 Cloud storage</p>
+           <p className="text-[11px] font-bold uppercase tracking-widest text-zinc-500">Select an asset from your Cloudflare R2 Cloud storage</p>
             <button 
               onClick={onClose}
               className="px-10 h-10 bg-black text-white rounded-[4px] text-[11px] font-bold uppercase tracking-widest hover:bg-zinc-800 transition-all"

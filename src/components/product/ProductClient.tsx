@@ -241,7 +241,7 @@ export function ProductClient({
                   />
                 </motion.div>
               ) : (
-                <span className="text-[12px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                <span className="text-[12px] font-semibold uppercase tracking-[0.2em] text-slate-500">
                   Image unavailable
                 </span>
               )}
@@ -287,7 +287,7 @@ export function ProductClient({
                   {formatPrice(currentPrice, lang, product.prices)}
                 </p>
                 {comparePrice ? (
-                  <p className="text-[14px] font-medium text-slate-400 line-through">
+                  <p className="text-[14px] font-medium text-slate-500 line-through">
                     {formatPrice(comparePrice, lang, product.prices)}
                   </p>
                 ) : null}
@@ -497,14 +497,14 @@ export function ProductClient({
               <button
                 type="button"
                 onClick={() => setActiveDetailsTab('description')}
-                className={`h-12 border-r border-slate-200 px-4 text-[12px] font-medium transition-colors sm:px-6 ${activeDetailsTab === 'description' ? 'bg-white text-slate-950' : 'bg-[#fafafa] text-slate-400 hover:text-slate-950'}`}
+                className={`h-12 border-r border-slate-200 px-4 text-[12px] font-medium transition-colors sm:px-6 ${activeDetailsTab === 'description' ? 'bg-white text-slate-950' : 'bg-[#fafafa] text-slate-500 hover:text-slate-950'}`}
               >
                 Description
               </button>
               <button
                 type="button"
                 onClick={() => setActiveDetailsTab('reviews')}
-                className={`h-12 border-r border-slate-200 px-4 text-[12px] font-medium transition-colors sm:px-6 ${activeDetailsTab === 'reviews' ? 'bg-white text-slate-950' : 'bg-[#fafafa] text-slate-400 hover:text-slate-950'}`}
+                className={`h-12 border-r border-slate-200 px-4 text-[12px] font-medium transition-colors sm:px-6 ${activeDetailsTab === 'reviews' ? 'bg-white text-slate-950' : 'bg-[#fafafa] text-slate-500 hover:text-slate-950'}`}
               >
                 {settings.customerReviewsText?.[lang] || 'Reviews'} ({product.reviewCount || 0})
               </button>
@@ -522,7 +522,7 @@ export function ProductClient({
                       {displayDescription}
                     </p>
                   ) : (
-                    <p className="text-[14px] text-slate-400">No description available.</p>
+                    <p className="text-[14px] text-slate-500">No description available.</p>
                   )}
                 </motion.div>
               ) : (

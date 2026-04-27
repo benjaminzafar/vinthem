@@ -25,7 +25,7 @@ export function CredentialInput({
   const [showPassword, setShowPassword] = useState(false);
   const isPassword = type === 'password';
 
-  const baseClasses = "w-full bg-white border border-zinc-200 px-3 py-2 text-[13px] font-medium text-zinc-900 transition-all focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900 placeholder:text-zinc-400 rounded-sm";
+  const baseClasses = "w-full bg-white border border-zinc-200 px-3 py-2 text-[13px] font-medium text-zinc-900 transition-all focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900 placeholder:text-zinc-500 rounded-sm";
 
   return (
     <div className="space-y-1.5 group">
@@ -34,7 +34,7 @@ export function CredentialInput({
           {label}
         </label>
         {description && (
-           <span className="text-[10px] text-zinc-400 font-medium italic">{description}</span>
+           <span className="text-[10px] text-zinc-500 font-medium italic">{description}</span>
         )}
       </div>
 
@@ -50,7 +50,7 @@ export function CredentialInput({
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>
-            <ChevronDown className="w-3.5 h-3.5 absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
+            <ChevronDown className="w-3.5 h-3.5 absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" />
           </div>
         ) : type === 'toggle' ? (
           <button
@@ -58,7 +58,7 @@ export function CredentialInput({
             className={`flex items-center gap-2 px-3 py-1.5 transition-all text-[11px] font-black uppercase tracking-widest border rounded ${
               value === 'true' 
                 ? 'bg-emerald-50 border-emerald-200 text-emerald-700' 
-                : 'bg-zinc-50 border-zinc-200 text-zinc-400'
+                : 'bg-zinc-50 border-zinc-200 text-zinc-500'
             }`}
           >
             {value === 'true' ? (
@@ -80,7 +80,7 @@ export function CredentialInput({
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-zinc-400 hover:text-zinc-600 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-zinc-500 hover:text-zinc-600 transition-colors"
                 title={showPassword ? "Hide Secret" : "Show Secret"}
               >
                 {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}

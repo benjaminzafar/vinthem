@@ -58,7 +58,7 @@ export const CategoryDeleteModal: React.FC<CategoryDeleteModalProps> = ({
       >
         <div className="flex justify-between items-center px-4 py-3 border-b border-zinc-100 bg-zinc-50/50">
           <h3 className="text-sm font-semibold text-zinc-900">Delete Collection</h3>
-          <button onClick={onClose} className="text-zinc-400 hover:text-zinc-600 transition-colors">
+          <button onClick={onClose} className="text-zinc-500 hover:text-zinc-600 transition-colors">
             <X className="w-4 h-4" />
           </button>
         </div>

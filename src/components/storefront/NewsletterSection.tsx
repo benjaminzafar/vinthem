@@ -54,7 +54,7 @@ export function NewsletterSection({ settings, lang }: NewsletterSectionProps) {
               type="email" 
               name="email"
               placeholder="Enter your email address" 
-              className="w-full bg-white border border-slate-200 rounded-full px-6 py-4 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-400 transition-all text-sm font-sans pr-32"
+              className="w-full bg-white border border-slate-200 rounded-full px-6 py-4 text-slate-900 placeholder:text-slate-500 focus:outline-none focus:border-slate-400 transition-all text-sm font-sans pr-32"
               required
               disabled={isPending}
               aria-label="Email address for newsletter"

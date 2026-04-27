@@ -386,7 +386,7 @@ Text to translate: "${sourceText}"`;
                       )}
                       <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'logoImage')} className="absolute inset-0 opacity-0 cursor-pointer" title="Update Logo" />
                       <div className="absolute inset-0 bg-zinc-900/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                        <Upload className="w-6 h-6 text-zinc-400" />
+                        <Upload className="w-6 h-6 text-zinc-500" />
                       </div>
                     </div>
                     <div className="flex-1 space-y-4">
@@ -496,7 +496,7 @@ Text to translate: "${sourceText}"`;
                              className="w-full h-11 px-4 bg-zinc-50 border border-zinc-200 text-sm font-bold focus:ring-1 focus:ring-zinc-900 focus:outline-none rounded-sm"
                              placeholder="Asset URL (https://...)" 
                            />
-                           <p className="text-xs text-zinc-400 font-medium italic leading-relaxed">
+                           <p className="text-xs text-zinc-500 font-medium italic leading-relaxed">
                              Recommended size: 1200x630. This image appears when you share the store link on WhatsApp, Telegram, or Facebook.
                            </p>
                         </div>
@@ -554,7 +554,7 @@ Text to translate: "${sourceText}"`;
                         }} placeholder="/products, /about, etc." />
                       </div>
                     ))}
-                    <button onClick={() => handleUpdate('navbarLinks', [...settings.navbarLinks, { label: { en: 'New Link' }, href: '#' }])} className="w-full py-3 border border-dashed border-zinc-200 rounded-md text-sm font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 hover:bg-zinc-50 transition-all flex items-center justify-center gap-2">
+                    <button onClick={() => handleUpdate('navbarLinks', [...settings.navbarLinks, { label: { en: 'New Link' }, href: '#' }])} className="w-full py-3 border border-dashed border-zinc-200 rounded-md text-sm font-black uppercase tracking-widest text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50 transition-all flex items-center justify-center gap-2">
                        <Plus className="w-3.5 h-3.5" /> Add Navbar Junction
                     </button>
                   </div>
@@ -628,13 +628,13 @@ Text to translate: "${sourceText}"`;
                                  const newSections = [...settings.footerSections];
                                  newSections[sIdx].links.push({ label: { en: 'New Link' }, href: '#' });
                                  handleUpdate('footerSections', newSections);
-                              }} className="py-2 border border-dashed border-zinc-200 rounded-sm text-xs font-bold text-zinc-400 hover:text-zinc-900 flex items-center justify-center">
+                              }} className="py-2 border border-dashed border-zinc-200 rounded-sm text-xs font-bold text-zinc-500 hover:text-zinc-900 flex items-center justify-center">
                                  <Plus className="w-3 h-3 mr-1" /> Add Link
                               </button>
                            </div>
                         </div>
                       ))}
-                      <button onClick={() => handleUpdate('footerSections', [...settings.footerSections, { title: { en: 'New Section' }, links: [] }])} className="w-full py-3 border border-dashed border-zinc-200 rounded-md text-sm font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 transition-all flex items-center justify-center gap-2">
+                      <button onClick={() => handleUpdate('footerSections', [...settings.footerSections, { title: { en: 'New Section' }, links: [] }])} className="w-full py-3 border border-dashed border-zinc-200 rounded-md text-sm font-black uppercase tracking-widest text-zinc-500 hover:text-zinc-900 transition-all flex items-center justify-center gap-2">
                         <Plus className="w-3.5 h-3.5" /> Append Footer Column
                       </button>
                    </div>
@@ -838,7 +838,7 @@ Text to translate: "${sourceText}"`;
                     />
 
                     <div className="space-y-2">
-                      <label className="text-[11px] font-black uppercase tracking-widest text-zinc-400">Curated Category Showcase</label>
+                      <label className="text-[11px] font-black uppercase tracking-widest text-zinc-500">Curated Category Showcase</label>
                       <p className="text-[12px] text-zinc-500 mb-4 font-medium italic">Select which category's items to showcase on the homepage. Defaults to all featured products if left unselected.</p>
                       <SearchableSelect 
                         options={[
@@ -1093,8 +1093,8 @@ Text to translate: "${sourceText}"`;
                            </div>
                         </div>
                         <div className="flex items-center gap-2">
-                           <Info className="w-3.5 h-3.5 text-zinc-400" />
-                           <p className="text-xs text-zinc-400 font-medium">Click the preview above to upload a new authentication background image.</p>
+                           <Info className="w-3.5 h-3.5 text-zinc-500" />
+                           <p className="text-xs text-zinc-500 font-medium">Click the preview above to upload a new authentication background image.</p>
                         </div>
                     </div>
                   </div>
@@ -1124,7 +1124,7 @@ Text to translate: "${sourceText}"`;
                              <div key={lang} className="flex items-center gap-2 px-3 py-1 bg-zinc-900 text-white rounded text-xs font-bold uppercase tracking-widest">
                                {lang}
                                {lang !== 'en' && (
-                                 <button onClick={() => handleUpdate('languages', settings.languages.filter(l => l !== lang))} className="text-zinc-400 hover:text-white transition-colors">&times;</button>
+                                 <button onClick={() => handleUpdate('languages', settings.languages.filter(l => l !== lang))} className="text-zinc-500 hover:text-white transition-colors">&times;</button>
                                )}
                              </div>
                            ))}
@@ -1144,7 +1144,7 @@ Text to translate: "${sourceText}"`;
                                  }
                               }}
                            />
-                           <p className="text-xs text-zinc-400 font-medium italic">Press Enter to synchronize new locale</p>
+                           <p className="text-xs text-zinc-500 font-medium italic">Press Enter to synchronize new locale</p>
                         </div>
                      </div>
                   </SettingCard>
@@ -1193,7 +1193,7 @@ Text to translate: "${sourceText}"`;
                           const newCountries = [...(settings.shippingCountries || [])];
                           newCountries.push({ code: 'US', name: { en: 'United States' } });
                           handleUpdate('shippingCountries', newCountries);
-                        }} className="w-full py-3 border border-dashed border-zinc-200 rounded-md text-[11px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 hover:bg-zinc-50 transition-all flex items-center justify-center gap-2">
+                        }} className="w-full py-3 border border-dashed border-zinc-200 rounded-md text-[11px] font-black uppercase tracking-widest text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50 transition-all flex items-center justify-center gap-2">
                            <Plus className="w-3.5 h-3.5" /> Add Shipping Destination
                         </button>
                      </div>

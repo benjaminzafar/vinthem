@@ -292,7 +292,7 @@ export default function PaymentClient({ initialSettings }: PaymentClientProps) {
                       {item.imageUrl && item.imageUrl.trim() !== '' ? (
                         <Image src={item.imageUrl} alt={item.title} fill className="object-cover" sizes="64px" />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center text-[10px] text-gray-400">IMG</div>
+                        <div className="flex h-full w-full items-center justify-center text-[10px] text-gray-500">IMG</div>
                       )}
                     </div>
                     <div className="flex flex-1 flex-col justify-center">

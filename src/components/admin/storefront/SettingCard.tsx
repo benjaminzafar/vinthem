@@ -50,7 +50,7 @@ export function SettingCard({
           {tutorial && (
             <button 
               onClick={(e) => { e.stopPropagation(); setShowTutorial(!showTutorial); }}
-              className={`p-1.5 rounded-md transition-colors ${showTutorial ? 'bg-zinc-100 text-brand-ink' : 'text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100'}`}
+              className={`p-1.5 rounded-md transition-colors ${showTutorial ? 'bg-zinc-100 text-brand-ink' : 'text-zinc-500 hover:text-zinc-600 hover:bg-zinc-100'}`}
               title="View Guide"
             >
               <HelpCircle className="w-3.5 h-3.5" />
@@ -100,8 +100,8 @@ export function SettingCard({
             className="bg-zinc-50/50 border-t border-zinc-100 px-6 py-5"
           >
              <div className="flex items-center justify-between mb-3 border-b border-zinc-100 pb-2">
-                <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Configuration Insight</span>
-                <button onClick={() => setShowTutorial(false)} className="text-zinc-400 hover:text-zinc-900 font-black text-lg leading-none transition-colors">&times;</button>
+                <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Configuration Insight</span>
+                <button onClick={() => setShowTutorial(false)} className="text-zinc-500 hover:text-zinc-900 font-black text-lg leading-none transition-colors">&times;</button>
              </div>
              <div className="text-[12px] leading-relaxed text-zinc-500 font-medium">
                 {tutorial}

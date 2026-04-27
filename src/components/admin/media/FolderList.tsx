@@ -23,12 +23,12 @@ export function FolderList({ folders, onNavigate, onDelete, selectionMode }: Fol
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onNavigate(folder); }}
         >
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 bg-white border border-slate-300 rounded flex items-center justify-center text-slate-400 group-hover:text-slate-900 transition-colors shrink-0">
+            <div className="w-10 h-10 bg-white border border-slate-300 rounded flex items-center justify-center text-slate-500 group-hover:text-slate-900 transition-colors shrink-0">
               <Folder className="w-5 h-5" />
             </div>
             <div className="truncate">
               <span className="block text-sm font-bold text-slate-900 truncate uppercase tracking-tight">{folder}</span>
-              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Directory</span>
+              <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">Directory</span>
             </div>
           </div>
           

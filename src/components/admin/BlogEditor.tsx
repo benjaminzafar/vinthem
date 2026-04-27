@@ -306,7 +306,7 @@ Content: "${formData.content.en}"`;
           <div className="space-y-8">
             <section className="rounded-[4px] border border-slate-200 bg-white">
               <div className="flex items-center gap-2 border-b border-slate-100 bg-slate-50 px-6 py-4">
-                <Sparkles className="h-4 w-4 text-slate-400" />
+                <Sparkles className="h-4 w-4 text-slate-500" />
                 <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Article Details</h3>
               </div>
               <div className="space-y-6 p-8">
@@ -329,7 +329,7 @@ Content: "${formData.content.en}"`;
                       key={language}
                       onClick={() => setSelectedLang(language)}
                       className={`text-[11px] font-bold uppercase tracking-widest transition-all ${
-                        selectedLang === language ? 'text-slate-900 underline underline-offset-4' : 'text-slate-400 hover:text-slate-600'
+                        selectedLang === language ? 'text-slate-900 underline underline-offset-4' : 'text-slate-500 hover:text-slate-600'
                       }`}
                     >
                       {language}
@@ -398,7 +398,7 @@ Content: "${formData.content.en}"`;
                     <div className="flex h-full w-full items-center justify-center">
                       <div className="text-center">
                         <ImageIcon className="mx-auto mb-2 h-8 w-8 text-slate-300" />
-                        <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Upload article banner</p>
+                        <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Upload article banner</p>
                       </div>
                     </div>
                   )}

@@ -466,7 +466,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
           {/* General Information */}
           <section className="bg-white border border-slate-200 rounded-[4px]">
             <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
-              <Layout className="w-4 h-4 text-slate-400" />
+              <Layout className="w-4 h-4 text-slate-500" />
               <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">General Information</h3>
             </div>
             <div className="p-6 space-y-6">
@@ -514,7 +514,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
           {/* Pricing & Inventory */}
           <section className="bg-white border border-slate-200 rounded-[4px]">
             <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
-              <Package className="w-4 h-4 text-slate-400" />
+              <Package className="w-4 h-4 text-slate-500" />
               <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">{getLabel(settings.inventoryTitleText, "Pricing & Inventory")}</h3>
             </div>
             <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -581,7 +581,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
 
           <section className="bg-white border border-slate-200 rounded-[4px]">
             <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
-              <Truck className="w-4 h-4 text-slate-400" />
+              <Truck className="w-4 h-4 text-slate-500" />
               <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Tax Configuration</h3>
             </div>
             <div className="p-6 space-y-6">
@@ -612,7 +612,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
           <section className="bg-white border border-slate-200 rounded-[4px] overflow-hidden shadow-sm">
              <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                   <Tag className="w-4 h-4 text-slate-400" />
+                   <Tag className="w-4 h-4 text-slate-500" />
                    <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Advanced Variants</h3>
                 </div>
              </div>
@@ -625,7 +625,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
           <section className="bg-white border border-slate-200 rounded-[4px] overflow-hidden shadow-sm">
              <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
                <div className="flex items-center gap-2">
-                 <Globe className="w-4 h-4 text-slate-400" />
+                 <Globe className="w-4 h-4 text-slate-500" />
                  <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Translations</h3>
                </div>
                <button
@@ -643,7 +643,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                     <button 
                       key={lang}
                       onClick={() => setSelectedLang(lang)}
-                      className={`px-6 py-1.5 rounded-[2px] text-[11px] font-bold uppercase tracking-widest transition-all ${selectedLang === lang ? 'bg-slate-900 text-white' : 'text-slate-400 hover:bg-slate-100'}`}
+                      className={`px-6 py-1.5 rounded-[2px] text-[11px] font-bold uppercase tracking-widest transition-all ${selectedLang === lang ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-slate-100'}`}
                     >
                       {lang}
                     </button>
@@ -792,7 +792,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                    ) : (
                      <div className="text-center p-6">
                         <ImageIcon className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                        <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Click to upload main image</p>
+                        <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Click to upload main image</p>
                      </div>
                    )}
                    <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
@@ -901,7 +901,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                       </div>
                     ))}
                    <label className="aspect-square border-2 border-dashed border-slate-200 rounded flex items-center justify-center hover:border-slate-400 transition-all cursor-pointer group">
-                      <Plus className="w-4 h-4 text-slate-400 group-hover:text-slate-900" />
+                      <Plus className="w-4 h-4 text-slate-500 group-hover:text-slate-900" />
                       <input type="file" className="hidden" multiple accept="image/*" onChange={async (e) => {
                         const files = Array.from(e.target.files || []);
                         if (files.length === 0) return;
@@ -944,8 +944,8 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                       }}
                       className="aspect-square border-2 border-dashed border-slate-200 rounded flex flex-col items-center justify-center hover:border-slate-400 transition-all bg-slate-50 group"
                    >
-                      <ImageIcon className="w-4 h-4 text-slate-400 group-hover:text-slate-900" />
-                      <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 mt-1">Lib</span>
+                      <ImageIcon className="w-4 h-4 text-slate-500 group-hover:text-slate-900" />
+                      <span className="text-[8px] font-black uppercase tracking-widest text-slate-500 mt-1">Lib</span>
                    </button>
                 </div>
               </div>

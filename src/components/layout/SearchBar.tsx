@@ -290,7 +290,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                               key={option.id}
                               onClick={() => setSortBy(option.id as any)}
                               className={`w-full text-left text-[12px] font-bold uppercase tracking-widest transition-all ${
-                                sortBy === option.id ? 'text-slate-900 underline underline-offset-8 decoration-2' : 'text-slate-400 hover:text-slate-900'
+                                sortBy === option.id ? 'text-slate-900 underline underline-offset-8 decoration-2' : 'text-slate-500 hover:text-slate-900'
                               }`}
                             >
                               {option.label}
@@ -314,7 +314,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                                   className="w-full flex items-center justify-between group transition-all py-1"
                                 >
                                   <span className={`text-[12px] font-bold uppercase tracking-widest ${
-                                    isActive ? 'text-slate-900' : 'text-slate-400 group-hover:text-slate-900'
+                                    isActive ? 'text-slate-900' : 'text-slate-500 group-hover:text-slate-900'
                                   }`}>
                                     {val}
                                   </span>
@@ -354,7 +354,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                             <Search className="w-6 h-6 text-slate-300" />
                           </div>
                           <h3 className="text-[12px] font-bold uppercase tracking-[0.2em] text-slate-900 mb-2">Search Catalog</h3>
-                          <p className="text-[13px] text-slate-400 max-w-[280px]">Type to find products or use filters above to browse by attribute.</p>
+                          <p className="text-[13px] text-slate-500 max-w-[280px]">Type to find products or use filters above to browse by attribute.</p>
                         </motion.div>
                       ) : (
                         <motion.div
@@ -366,7 +366,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                         >
                           {filteredResults.categories.length > 0 && (
                             <div>
-                              <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-6">
+                              <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-6">
                                 {settings?.searchCollectionsResultsText?.[lang] || 'Collections'}
                               </p>
                               <div className="flex flex-wrap gap-2">
@@ -389,7 +389,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
 
                           <div>
                             <div className="flex items-center justify-between mb-8">
-                              <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                              <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
                                 {settings?.searchProductsResultsText?.[lang] || 'Products'} ({filteredResults.products.length})
                               </p>
                               <Link href={`/${lang}/products?search=${encodeURIComponent(searchQuery)}`} onClick={() => setIsOverlayOpen(false)} className="text-[11px] font-bold uppercase tracking-widest text-slate-900 hover:opacity-70">
@@ -432,7 +432,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                               </div>
                             ) : (
                               <div className="py-20 text-center border-t border-slate-50 mt-4">
-                                <p className="text-slate-400 text-xs italic tracking-wide">
+                                <p className="text-slate-500 text-xs italic tracking-wide">
                                   {settings?.searchNoProductsResultsText?.[lang] || settings?.noProductsMatchingText?.[lang] || 'No products found matching your search.'}
                                 </p>
                               </div>

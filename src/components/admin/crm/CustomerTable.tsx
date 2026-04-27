@@ -31,13 +31,13 @@ export function CustomerTable({
         </div>
 
         <div className="relative w-full sm:max-w-md">
-          <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search customer database..."
-            className="h-11 w-full rounded border border-slate-300 bg-white pl-10 pr-4 text-sm text-slate-900 transition-all placeholder:text-slate-400 focus:border-slate-900 focus:outline-none"
+            className="h-11 w-full rounded border border-slate-300 bg-white pl-10 pr-4 text-sm text-slate-900 transition-all placeholder:text-slate-500 focus:border-slate-900 focus:outline-none"
           />
         </div>
       </div>
@@ -57,13 +57,13 @@ export function CustomerTable({
           <tbody className="divide-y divide-slate-100">
             {loading ? (
               <tr>
-                <td colSpan={5} className="py-20 text-center text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                <td colSpan={5} className="py-20 text-center text-[11px] font-bold uppercase tracking-widest text-slate-500">
                   Syncing CRM databases...
                 </td>
               </tr>
             ) : customers.length === 0 ? (
               <tr>
-                <td colSpan={5} className="py-20 text-center text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                <td colSpan={5} className="py-20 text-center text-[11px] font-bold uppercase tracking-widest text-slate-500">
                   No matching records found
                 </td>
               </tr>
@@ -77,7 +77,7 @@ export function CustomerTable({
                       </div>
                       <div className="min-w-0">
                         <p className="truncate text-sm font-bold text-slate-900">{customer.name || customer.email}</p>
-                        <p className="truncate text-xs text-slate-400">{customer.email}</p>
+                        <p className="truncate text-xs text-slate-500">{customer.email}</p>
                       </div>
                     </div>
                   </td>
@@ -123,7 +123,7 @@ export function CustomerTable({
                   <td className="px-6 py-4 text-right">
                     <button
                       onClick={() => onSelectCustomer(customer)}
-                      className="border-b border-transparent text-[11px] font-bold uppercase tracking-widest text-slate-400 transition-all hover:border-slate-900 hover:text-slate-900"
+                      className="border-b border-transparent text-[11px] font-bold uppercase tracking-widest text-slate-500 transition-all hover:border-slate-900 hover:text-slate-900"
                     >
                       View Profile
                     </button>

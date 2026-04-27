@@ -72,7 +72,7 @@ function SidebarContent({
                   : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
               }`}
             >
-              <item.icon className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+              <item.icon className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-slate-500'}`} />
               <span className="!text-[11px] !font-bold !uppercase !tracking-widest">{item.label}</span>
             </Link>
           );

@@ -19,7 +19,7 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
     <section id="collection" className="py-20 md:py-32 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center mb-12 md:mb-20 text-center gap-4">
-          <p className="text-xs font-bold tracking-[0.2em] uppercase text-slate-400">
+          <p className="text-xs font-bold tracking-[0.2em] uppercase text-slate-500">
             {settings.collectionTopSubtitle?.[lang] || 'Curated Catalog'}
           </p>
           <h2 className="text-[24px] md:text-[32px] font-bold text-brand-ink mb-6 max-w-4xl leading-tight tracking-tight">

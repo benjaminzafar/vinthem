@@ -214,7 +214,7 @@ export default function Reviews({ productId, initialSettings, lang }: ReviewsPro
                   </div>
                   <span className="font-bold text-[12px] uppercase tracking-wider text-slate-950">{review.userName}</span>
                 </div>
-                <span className="text-[11px] text-slate-400 font-bold uppercase tracking-widest">{review.createdAt ? new Date(review.createdAt).toLocaleDateString() : ''}</span>
+                <span className="text-[11px] text-slate-500 font-bold uppercase tracking-widest">{review.createdAt ? new Date(review.createdAt).toLocaleDateString() : ''}</span>
               </div>
               <p className="text-gray-600 leading-relaxed text-sm font-light">{review.comment}</p>
               
@@ -222,7 +222,7 @@ export default function Reviews({ productId, initialSettings, lang }: ReviewsPro
                 <div className="mt-4 ml-6 p-4 bg-slate-50 rounded border border-slate-100">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-900">Admin Response</span>
-                    <span className="text-[11px] text-slate-400 font-bold uppercase tracking-widest">{review.adminReplyAt ? new Date(review.adminReplyAt).toLocaleDateString() : ''}</span>
+                    <span className="text-[11px] text-slate-500 font-bold uppercase tracking-widest">{review.adminReplyAt ? new Date(review.adminReplyAt).toLocaleDateString() : ''}</span>
                   </div>
                   <p className="text-slate-600 text-[14px] font-medium italic">"{review.adminReply}"</p>
                 </div>

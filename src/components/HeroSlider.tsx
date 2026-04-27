@@ -61,7 +61,7 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
         >
           {/* Text Content */}
           <div className="w-full lg:w-[45%] flex flex-col justify-center order-1 text-center lg:text-left z-10 flex-shrink-0">
-            <span className="text-[12px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-4 block">
+            <span className="text-[12px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-4 block">
               {settings.featuredTopSubtitle?.[lang] || 'Featured Category'}
             </span>
             <h2 className="text-[36px] md:text-[56px] lg:text-[64px] font-bold text-black leading-[1.1] mb-4 lg:mb-6 tracking-tight">

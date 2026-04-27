@@ -164,7 +164,7 @@ export function OTPVerification({
       </button>
 
       <div className="mt-6 text-center">
-        <button onClick={() => setOtp(new Array(8).fill(""))} className="text-xs font-bold text-zinc-400 hover:text-zinc-900 uppercase tracking-widest">
+        <button onClick={() => setOtp(new Array(8).fill(""))} className="text-xs font-bold text-zinc-500 hover:text-zinc-900 uppercase tracking-widest">
           {L.clearButton}
         </button>
       </div>

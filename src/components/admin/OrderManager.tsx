@@ -173,7 +173,7 @@ export function OrderManager({
       />
 
       <div className="bg-slate-50 border border-slate-300 rounded p-4 text-sm text-slate-700 flex items-center gap-3">
-        <RefreshCcw className="w-5 h-5 text-slate-400 shrink-0" />
+        <RefreshCcw className="w-5 h-5 text-slate-500 shrink-0" />
         <p>Automated label printing requires configuration. Please go to Shipping Settings to enable your preferred service.</p>
       </div>
 
@@ -191,7 +191,7 @@ export function OrderManager({
             </thead>
             <tbody className="divide-y divide-slate-100">
               {loading && orders.length === 0 ? (
-                <tr><td colSpan={5} className="py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-xs">Retrieving Order Ledger...</td></tr>
+                <tr><td colSpan={5} className="py-20 text-center text-slate-500 font-bold uppercase tracking-widest text-xs">Retrieving Order Ledger...</td></tr>
               ) : orders.length === 0 ? (
                 <tr>
                     <td colSpan={5} className="py-20 text-center">
@@ -207,7 +207,7 @@ export function OrderManager({
                   >
                     <td className="px-6 py-4 font-bold text-slate-900 text-[13px] flex items-center">
                       <div className="w-6 flex items-center shrink-0">
-                        {expandedOrderId === order.id ? <ChevronDown className="w-4 h-4 text-slate-400" /> : <ChevronRight className="w-4 h-4 text-slate-400" />}
+                        {expandedOrderId === order.id ? <ChevronDown className="w-4 h-4 text-slate-500" /> : <ChevronRight className="w-4 h-4 text-slate-500" />}
                       </div>
                       <span className="truncate">#{order.orderId || order.id.slice(0, 8)}</span>
                     </td>
@@ -266,7 +266,7 @@ export function OrderManager({
                                   <option value="Delivered">Delivered</option>
                                   <option value="Cancelled">Cancelled</option>
                                 </select>
-                                {updatingOrderId === order.id && <RefreshCcw className="w-5 h-5 animate-spin text-slate-400" />}
+                                {updatingOrderId === order.id && <RefreshCcw className="w-5 h-5 animate-spin text-slate-500" />}
                               </div>
                             </div>
                             

@@ -219,7 +219,7 @@ export function CollectionManager({
             </div>
           )}
           <div className="relative group flex-1 md:flex-none">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-slate-900 transition-colors" />
             <input 
               type="text"
               placeholder="Search collections..."
@@ -242,7 +242,7 @@ export function CollectionManager({
       <div className="bg-white border border-slate-300 rounded overflow-hidden shadow-none">
         <div className="px-6 border-b border-slate-300 bg-white flex items-center justify-between h-14">
           <div className="flex items-center gap-3">
-             <Layers className="w-4 h-4 text-slate-400" />
+             <Layers className="w-4 h-4 text-slate-500" />
              <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Structure & Hierarchy</h3>
           </div>
         </div>
@@ -271,9 +271,9 @@ export function CollectionManager({
             </thead>
             <tbody className="divide-y divide-slate-300">
               {loading && categories.length === 0 ? (
-                <tr><td colSpan={6} className="py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-xs">Retrieving Catalog Structure...</td></tr>
+                <tr><td colSpan={6} className="py-20 text-center text-slate-500 font-bold uppercase tracking-widest text-xs">Retrieving Catalog Structure...</td></tr>
               ) : sortedData.length === 0 ? (
-                <tr><td colSpan={6} className="py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-xs">No collections found</td></tr>
+                <tr><td colSpan={6} className="py-20 text-center text-slate-500 font-bold uppercase tracking-widest text-xs">No collections found</td></tr>
               ) : sortedData.map(({ category: parent, level }) => (
                 <tr 
                   key={parent.id} 
@@ -324,13 +324,13 @@ export function CollectionManager({
                              e.stopPropagation();
                              router.push(`/admin/collections/${parent.id}`);
                           }}
-                          className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded transition-all"
+                          className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded transition-all"
                         >
                            <Edit className="w-4 h-4" />
                         </button>
                         <button 
                           onClick={(e) => deleteSingle(parent.id!, e)}
-                          className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-all"
+                          className="p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded transition-all"
                         >
                            <Trash2 className="w-4 h-4" />
                         </button>
@@ -363,7 +363,7 @@ export function CollectionManager({
               <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-[11px] font-bold uppercase tracking-tighter shadow-inner">
                 {selectedCollections.length}
               </div>
-              <span className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Selected</span>
+              <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Selected</span>
             </div>
 
             <div className="flex items-center gap-2">
@@ -377,7 +377,7 @@ export function CollectionManager({
 
               <button
                 onClick={() => setSelectedCollections([])}
-                className="flex items-center gap-2 px-4 py-1.5 rounded-full hover:bg-white/10 text-slate-400 transition-all"
+                className="flex items-center gap-2 px-4 py-1.5 rounded-full hover:bg-white/10 text-slate-500 transition-all"
               >
                 <X className="w-4 h-4" />
                 <span className="text-[11px] font-bold uppercase tracking-widest">Clear</span>

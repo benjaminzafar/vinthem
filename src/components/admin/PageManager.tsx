@@ -102,7 +102,7 @@ export function PageManager({ initialPages = [] }: PageManagerProps) {
 
         <div className="flex items-center gap-4">
           <div className="group relative">
-            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-slate-900" />
+            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 transition-colors group-focus-within:text-slate-900" />
             <input
               type="text"
               placeholder="Search pages..."
@@ -124,7 +124,7 @@ export function PageManager({ initialPages = [] }: PageManagerProps) {
       <div className="overflow-hidden rounded-[4px] border border-slate-200 bg-white">
         <div className="flex h-14 items-center justify-between border-b border-slate-100 bg-slate-50/50 px-6">
           <div className="flex items-center gap-3">
-            <FileCode className="h-4 w-4 text-slate-400" />
+            <FileCode className="h-4 w-4 text-slate-500" />
             <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Page Library</h3>
           </div>
           <div className="flex items-center gap-4">
@@ -156,7 +156,7 @@ export function PageManager({ initialPages = [] }: PageManagerProps) {
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-left">
             <thead>
-              <tr className="border-b border-slate-100 bg-slate-50/50 text-[11px] font-bold uppercase tracking-widest text-slate-400">
+              <tr className="border-b border-slate-100 bg-slate-50/50 text-[11px] font-bold uppercase tracking-widest text-slate-500">
                 <th className="w-12 px-6 py-4">
                   <input
                     type="checkbox"
@@ -213,11 +213,11 @@ export function PageManager({ initialPages = [] }: PageManagerProps) {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-4">
                         <div className="flex h-10 w-10 items-center justify-center rounded-[4px] border border-slate-200 bg-slate-50">
-                          <FileCode className="h-4 w-4 text-slate-400" />
+                          <FileCode className="h-4 w-4 text-slate-500" />
                         </div>
                         <div className="min-w-0">
                           <p className="truncate text-[13px] font-bold tracking-tight text-slate-900">{page.title.en || 'Untitled page'}</p>
-                          <p className="mt-1 text-[11px] font-bold uppercase tracking-widest text-slate-400">Static content node</p>
+                          <p className="mt-1 text-[11px] font-bold uppercase tracking-widest text-slate-500">Static content node</p>
                         </div>
                       </div>
                     </td>

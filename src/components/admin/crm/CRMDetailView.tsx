@@ -30,7 +30,7 @@ export function CRMDetailView({ customer, orders, tickets, refunds, reviews, onB
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
       <button 
         onClick={onBack}
-        className="flex items-center text-[11px] font-bold text-slate-400 hover:text-slate-900 uppercase tracking-widest transition-all group"
+        className="flex items-center text-[11px] font-bold text-slate-500 hover:text-slate-900 uppercase tracking-widest transition-all group"
       >
         <ArrowLeft className="w-4 h-4 mr-2 transition-transform group-hover:-translate-x-1" /> Return to Intelligence Hub
       </button>
@@ -56,11 +56,11 @@ export function CRMDetailView({ customer, orders, tickets, refunds, reviews, onB
 
             <div className="space-y-6">
               <div className="flex items-center text-sm text-slate-900 font-bold">
-                <Mail className="w-4 h-4 mr-4 text-slate-400" />
+                <Mail className="w-4 h-4 mr-4 text-slate-500" />
                 <span className="truncate">{customer.email}</span>
               </div>
               <div className="flex items-center text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                <Calendar className="w-4 h-4 mr-4 text-slate-400" />
+                <Calendar className="w-4 h-4 mr-4 text-slate-500" />
                 <span>Enrolled {customer.createdAt ? new Date(customer.createdAt).toLocaleDateString() : 'N/A'}</span>
               </div>
             </div>
@@ -68,26 +68,26 @@ export function CRMDetailView({ customer, orders, tickets, refunds, reviews, onB
 
           <div className="grid grid-cols-2 gap-4">
             <div className="border border-slate-300 bg-white p-5">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Tickets</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Tickets</p>
               <p className="mt-3 text-2xl font-bold text-slate-900">{tickets.length}</p>
             </div>
             <div className="border border-slate-300 bg-white p-5">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Refunds</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Refunds</p>
               <p className="mt-3 text-2xl font-bold text-slate-900">{refunds.length}</p>
             </div>
             <div className="border border-slate-300 bg-white p-5">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Reviews</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Reviews</p>
               <p className="mt-3 text-2xl font-bold text-slate-900">{reviews.length}</p>
             </div>
             <div className="border border-slate-300 bg-white p-5">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Avg. Order</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Avg. Order</p>
               <p className="mt-3 text-xl font-bold text-slate-900">{formatPrice(avgOrderValue, 'en', undefined, primaryCurrency)}</p>
             </div>
           </div>
 
           <div className="bg-slate-900 p-8 sm:p-10 rounded text-white overflow-hidden relative">
             <div className="relative z-10">
-              <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6">Aggregate Revenue</h3>
+              <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-6">Aggregate Revenue</h3>
               <div className="text-3xl font-bold tracking-tight mb-2">{formatPrice(totalSpent, 'en', undefined, primaryCurrency)}</div>
               <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{orders.length} Processed Transactions</p>
             </div>
@@ -95,17 +95,17 @@ export function CRMDetailView({ customer, orders, tickets, refunds, reviews, onB
           </div>
 
           <div className="border border-slate-300 bg-white p-6 space-y-4">
-            <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Activity Snapshot</h3>
+            <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Activity Snapshot</h3>
             <div className="flex items-center justify-between text-sm font-bold text-slate-900">
-              <span className="flex items-center gap-2"><MessageSquare className="w-4 h-4 text-slate-400" /> Latest Ticket</span>
+              <span className="flex items-center gap-2"><MessageSquare className="w-4 h-4 text-slate-500" /> Latest Ticket</span>
               <span className="text-slate-500 text-xs">{tickets[0]?.createdAt ? new Date(tickets[0].createdAt).toLocaleDateString() : 'None'}</span>
             </div>
             <div className="flex items-center justify-between text-sm font-bold text-slate-900">
-              <span className="flex items-center gap-2"><RotateCcw className="w-4 h-4 text-slate-400" /> Refund Status</span>
+              <span className="flex items-center gap-2"><RotateCcw className="w-4 h-4 text-slate-500" /> Refund Status</span>
               <span className="text-slate-500 text-xs">{refunds[0]?.status || 'No requests'}</span>
             </div>
             <div className="flex items-center justify-between text-sm font-bold text-slate-900">
-              <span className="flex items-center gap-2"><Star className="w-4 h-4 text-slate-400" /> Last Review</span>
+              <span className="flex items-center gap-2"><Star className="w-4 h-4 text-slate-500" /> Last Review</span>
               <span className="text-slate-500 text-xs">{reviews[0]?.createdAt ? new Date(reviews[0].createdAt).toLocaleDateString() : 'None'}</span>
             </div>
           </div>
@@ -114,7 +114,7 @@ export function CRMDetailView({ customer, orders, tickets, refunds, reviews, onB
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white rounded border border-slate-300 overflow-hidden shadow-none">
             <div className="p-6 sm:p-8 border-b border-slate-300 bg-slate-50/30 flex items-center gap-3">
-              <ShoppingBag className="w-5 h-5 text-slate-400" />
+              <ShoppingBag className="w-5 h-5 text-slate-500" />
               <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Transaction Hub</h3>
             </div>
             <div className="overflow-x-auto">
@@ -137,7 +137,7 @@ export function CRMDetailView({ customer, orders, tickets, refunds, reviews, onB
                       >
                         <td className="px-8 py-5 font-bold text-slate-900 text-sm flex items-center">
                           <div className="w-6 flex items-center shrink-0">
-                            {expandedOrderId === order.id ? <ChevronDown className="w-4 h-4 text-slate-400" /> : <ChevronRight className="w-4 h-4 text-slate-400" />}
+                            {expandedOrderId === order.id ? <ChevronDown className="w-4 h-4 text-slate-500" /> : <ChevronRight className="w-4 h-4 text-slate-500" />}
                           </div>
                           #{order.orderId?.slice(0, 12)}
                         </td>
@@ -169,7 +169,7 @@ export function CRMDetailView({ customer, orders, tickets, refunds, reviews, onB
                                       </div>
                                       <div>
                                         <p className="font-bold text-slate-900 text-sm">{item.name || item.title || 'Untitled item'}</p>
-                                        <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Qty: {item.quantity || 1}</p>
+                                        <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Qty: {item.quantity || 1}</p>
                                       </div>
                                     </div>
                                     <p className="font-bold text-slate-900 text-sm">{formatPrice((Number(item.price) || 0) * (Number(item.quantity) || 1), 'en', undefined, order.currency ?? undefined)}</p>
@@ -183,7 +183,7 @@ export function CRMDetailView({ customer, orders, tickets, refunds, reviews, onB
                     </React.Fragment>
                   ))
                 ) : (
-                  <tr><td colSpan={4} className="p-20 text-center text-slate-400 font-bold uppercase tracking-widest text-[11px]">No transactions recorded.</td></tr>
+                  <tr><td colSpan={4} className="p-20 text-center text-slate-500 font-bold uppercase tracking-widest text-[11px]">No transactions recorded.</td></tr>
                 )}
               </tbody>
             </table>
@@ -192,14 +192,14 @@ export function CRMDetailView({ customer, orders, tickets, refunds, reviews, onB
 
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
             <div className="border border-slate-300 bg-white p-6 space-y-4">
-              <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Support Timeline</h3>
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Support Timeline</h3>
               {tickets.length === 0 ? (
                 <p className="text-sm text-slate-500">No support activity recorded yet.</p>
               ) : tickets.slice(0, 4).map((ticket) => (
                 <div key={ticket.id} className="border border-slate-200 rounded p-4">
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-sm font-bold text-slate-900">{ticket.subject}</p>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{ticket.status}</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{ticket.status}</span>
                   </div>
                   <p className="mt-2 text-xs text-slate-500 leading-relaxed">{ticket.description || 'No description available.'}</p>
                 </div>
@@ -207,7 +207,7 @@ export function CRMDetailView({ customer, orders, tickets, refunds, reviews, onB
             </div>
 
             <div className="border border-slate-300 bg-white p-6 space-y-4">
-              <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Feedback & Refunds</h3>
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Feedback & Refunds</h3>
               {refunds.length === 0 && reviews.length === 0 ? (
                 <p className="text-sm text-slate-500">No refunds or reviews recorded yet.</p>
               ) : (
@@ -216,7 +216,7 @@ export function CRMDetailView({ customer, orders, tickets, refunds, reviews, onB
                     <div key={refund.id} className="border border-slate-200 rounded p-4">
                       <div className="flex items-center justify-between gap-3">
                         <p className="text-sm font-bold text-slate-900">Refund #{refund.orderId?.slice(0, 8) || refund.id.slice(0, 8)}</p>
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{refund.status}</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{refund.status}</span>
                       </div>
                       <p className="mt-2 text-xs text-slate-500">{refund.reason || 'No reason supplied.'}</p>
                     </div>
@@ -225,7 +225,7 @@ export function CRMDetailView({ customer, orders, tickets, refunds, reviews, onB
                     <div key={review.id} className="border border-slate-200 rounded p-4">
                       <div className="flex items-center justify-between gap-3">
                         <p className="text-sm font-bold text-slate-900">{review.userName || 'Anonymous'}</p>
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{review.rating || 0}/5</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{review.rating || 0}/5</span>
                       </div>
                       <p className="mt-2 text-xs text-slate-500">{review.comment || 'No review text.'}</p>
                     </div>

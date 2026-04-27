@@ -29,7 +29,7 @@ export function LocalizedSettingInput({
   isTranslating,
   description
 }: LocalizedSettingInputProps) {
-  const baseInputClasses = "w-full bg-white border border-zinc-200 px-3 py-2 text-[13px] font-medium text-zinc-900 transition-all focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900 placeholder:text-zinc-400 rounded-sm";
+  const baseInputClasses = "w-full bg-white border border-zinc-200 px-3 py-2 text-[13px] font-medium text-zinc-900 transition-all focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900 placeholder:text-zinc-500 rounded-sm";
 
   return (
     <div className="space-y-2 group">
@@ -39,7 +39,7 @@ export function LocalizedSettingInput({
             {label}
           </label>
            {description && (
-            <p className="text-[10px] text-zinc-400 font-medium italic">{description}</p>
+            <p className="text-[10px] text-zinc-500 font-medium italic">{description}</p>
           )}
         </div>
         

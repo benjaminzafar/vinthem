@@ -182,7 +182,7 @@ export function AssetGrid({
                   <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
                     {formatSize(obj.size)}
                   </span>
-                  <span className="text-[9px] text-slate-400 font-medium">
+                  <span className="text-[9px] text-slate-500 font-medium">
                     {new Date(obj.lastModified).toLocaleDateString()}
                   </span>
                 </div>
@@ -207,8 +207,8 @@ export function AssetGrid({
         >
           {loadingMore && (
             <div className="flex items-center gap-2">
-              <RefreshCcw className="w-4 h-4 animate-spin text-slate-400" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Loading more assets...</span>
+              <RefreshCcw className="w-4 h-4 animate-spin text-slate-500" />
+              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Loading more assets...</span>
             </div>
           )}
         </div>

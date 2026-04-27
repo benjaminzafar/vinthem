@@ -400,7 +400,7 @@ export function CRMContainer({ initialData }: { initialData?: CRMData }) {
                 className={`h-full flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest border-b-2 transition-all ${
                   activeTab === tab.id 
                     ? 'text-slate-900 border-slate-900' 
-                    : 'text-slate-400 border-transparent hover:text-slate-600'
+                    : 'text-slate-500 border-transparent hover:text-slate-600'
                 }`}
               >
                 <tab.icon className="w-3.5 h-3.5" />

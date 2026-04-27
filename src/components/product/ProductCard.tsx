@@ -134,7 +134,7 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
       <div className="flex flex-col flex-1 px-1">
         <div className="flex items-center gap-2 mb-3">
           {product.status === 'draft' && (
-             <span className="text-xs font-black uppercase tracking-widest px-1.5 py-0.5 bg-slate-100 text-slate-400 border border-slate-200 rounded">Draft</span>
+             <span className="text-xs font-black uppercase tracking-widest px-1.5 py-0.5 bg-slate-100 text-slate-500 border border-slate-200 rounded">Draft</span>
           )}
         </div>
         <h3 className="text-[12px] font-bold uppercase tracking-widest text-brand-ink group-hover:text-brand-muted transition-colors truncate mb-2">

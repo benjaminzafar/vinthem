@@ -131,9 +131,9 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
           </thead>
           <tbody className="divide-y divide-slate-100">
             {loading ? (
-              <tr><td colSpan={4} className="py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-[11px]">Loading help center...</td></tr>
+              <tr><td colSpan={4} className="py-20 text-center text-slate-500 font-bold uppercase tracking-widest text-[11px]">Loading help center...</td></tr>
             ) : tickets.length === 0 ? (
-              <tr><td colSpan={4} className="py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-[11px]">No active tickets</td></tr>
+              <tr><td colSpan={4} className="py-20 text-center text-slate-500 font-bold uppercase tracking-widest text-[11px]">No active tickets</td></tr>
             ) : (
               tickets.map((ticket) => (
                 <React.Fragment key={ticket.id}>
@@ -143,7 +143,7 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
                   >
                     <td className="px-6 py-4 font-bold text-slate-900 text-sm flex items-center">
                       <div className="w-6 flex items-center shrink-0">
-                        {expandedTicketId === ticket.id ? <ChevronDown className="w-3.5 h-3.5 text-slate-400" /> : <ChevronRight className="w-3.5 h-3.5 text-slate-400" />}
+                        {expandedTicketId === ticket.id ? <ChevronDown className="w-3.5 h-3.5 text-slate-500" /> : <ChevronRight className="w-3.5 h-3.5 text-slate-500" />}
                       </div>
                       {ticket.customerName || ticket.customerEmail || 'Unknown requester'}
                     </td>
@@ -197,14 +197,14 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
                                           <Image src={msg.imageUrl} alt="Attachment" fill className="object-cover" />
                                         </div>
                                       )}
-                                      <span className="text-[9px] font-bold uppercase tracking-widest block mt-2 text-slate-400">
+                                      <span className="text-[9px] font-bold uppercase tracking-widest block mt-2 text-slate-500">
                                         {msg.createdAt && !isNaN(new Date(msg.createdAt).getTime()) ? new Date(msg.createdAt).toLocaleString() : 'Recent'}
                                       </span>
                                     </div>
                                   </div>
                                 ))}
                                 {(!ticket.messages || ticket.messages.length === 0) && (
-                                  <div className="flex items-center gap-3 text-slate-400 bg-white p-4 rounded border border-slate-300 border-dashed">
+                                  <div className="flex items-center gap-3 text-slate-500 bg-white p-4 rounded border border-slate-300 border-dashed">
                                     <AlertCircle className="w-4 h-4" />
                                     <p className="text-[11px] font-bold uppercase tracking-widest">Awaiting interaction</p>
                                   </div>
@@ -222,12 +222,12 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
                                   {replyImages[ticket.id] ? (
                                     <div className="relative w-10 h-10 border border-slate-300 bg-white">
                                       <Image src={replyImages[ticket.id]} alt="Reply preview" fill className="object-cover" />
-                                      <button onClick={() => setReplyImages(prev => ({ ...prev, [ticket.id]: '' }))} className="absolute -top-1.5 -right-1.5 bg-white border border-slate-300 rounded-full p-0.5 text-slate-400">
+                                      <button onClick={() => setReplyImages(prev => ({ ...prev, [ticket.id]: '' }))} className="absolute -top-1.5 -right-1.5 bg-white border border-slate-300 rounded-full p-0.5 text-slate-500">
                                         <ChevronDown className="w-2.5 h-2.5 rotate-45" />
                                       </button>
                                     </div>
                                   ) : (
-                                    <label className="p-2 text-slate-400 hover:text-slate-900 cursor-pointer transition-colors bg-white border border-slate-200 rounded">
+                                    <label className="p-2 text-slate-500 hover:text-slate-900 cursor-pointer transition-colors bg-white border border-slate-200 rounded">
                                       <ImageIcon className="w-4 h-4" />
                                       <input 
                                         type="file" 
@@ -270,7 +270,7 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
 
                           <div className="bg-white p-6 border border-slate-300 rounded space-y-6">
                             <div>
-                              <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4">Support Controls</h4>
+                              <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-4">Support Controls</h4>
                               <div className="flex flex-col gap-2">
                                 {['open', 'resolved'].map((s) => (
                                   <button 
@@ -358,7 +358,7 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
                             </div>
                             {ticket.imageUrl && (
                               <div>
-                                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Attachment</h4>
+                                <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Attachment</h4>
                                 <a href={ticket.imageUrl} target="_blank" rel="noopener noreferrer" className="block rounded border border-slate-300 overflow-hidden">
                                   <div className="relative aspect-[4/3] w-full">
                                     <Image src={ticket.imageUrl} alt="" fill className="object-cover grayscale hover:grayscale-0 transition-all" sizes="(max-width: 1024px) 100vw, 320px" />

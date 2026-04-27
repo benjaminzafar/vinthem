@@ -72,7 +72,7 @@ export function CartDrawer({ initialSettings }: CartDrawerProps) {
                 </div>
                 <button
                   onClick={handleClose}
-                  className="p-2 -mr-2 text-slate-400 hover:text-slate-900 transition-colors"
+                  className="p-2 -mr-2 text-slate-500 hover:text-slate-900 transition-colors"
                   aria-label="Close cart"
                 >
                   <X className="w-5 h-5" strokeWidth={1.5} />
@@ -89,7 +89,7 @@ export function CartDrawer({ initialSettings }: CartDrawerProps) {
                     <p className="text-slate-900 text-sm font-medium mb-2">
                        {settings?.cartTitle?.[lang] || 'Your cart is empty'}
                     </p>
-                    <p className="text-slate-400 text-xs leading-relaxed max-w-[240px] mb-8">
+                    <p className="text-slate-500 text-xs leading-relaxed max-w-[240px] mb-8">
                        {settings?.cartEmptyMessage?.[lang] || 'Looks like you haven\'t added anything yet.'}
                     </p>
                     <button
@@ -217,7 +217,7 @@ export function CartDrawer({ initialSettings }: CartDrawerProps) {
                     <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" strokeWidth={1.5} />
                   </Link>
                   
-                  <div className="flex items-center justify-center gap-2.5 text-slate-400">
+                  <div className="flex items-center justify-center gap-2.5 text-slate-500">
                     <ShieldCheck className="w-3.5 h-3.5" strokeWidth={1.5} />
                     <span className="text-[10px] font-medium tracking-wide uppercase">Secure encrypted checkout</span>
                   </div>

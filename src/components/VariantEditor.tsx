@@ -123,7 +123,7 @@ export function VariantEditor({ formData, setFormData }: VariantEditorProps) {
             <button
               type="button"
               onClick={() => handleRemoveOption(index)}
-              className="absolute top-3 right-3 text-zinc-400 hover:text-red-500"
+              className="absolute top-3 right-3 text-zinc-500 hover:text-red-500"
             >
               <X className="w-4 h-4" />
             </button>
@@ -187,7 +187,7 @@ export function VariantEditor({ formData, setFormData }: VariantEditorProps) {
                             className="w-full h-full object-cover" 
                           />
                         ) : (
-                          <div className="text-[10px] font-black text-zinc-400 uppercase text-center leading-tight tracking-wider">Empty</div>
+                          <div className="text-[10px] font-black text-zinc-500 uppercase text-center leading-tight tracking-wider">Empty</div>
                         )}
                         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center gap-2 cursor-default transition-all duration-200 scale-95 group-hover:scale-100">
                           <div className="flex gap-2">
@@ -284,7 +284,7 @@ export function VariantEditor({ formData, setFormData }: VariantEditorProps) {
                               className="w-full h-full object-cover" 
                             />
                           ) : (
-                            <div className="text-[8px] font-black text-zinc-400 uppercase text-center leading-tight">...</div>
+                            <div className="text-[8px] font-black text-zinc-500 uppercase text-center leading-tight">...</div>
                           )}
                           <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-1.5 transition-all">
                             <label className="p-1 px-1.5 bg-white/90 rounded text-zinc-900 hover:bg-white cursor-pointer" title="Upload">

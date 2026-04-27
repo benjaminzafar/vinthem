@@ -61,7 +61,7 @@ export function AdminHeader({
       <div className="flex items-center gap-4 w-full sm:w-auto mt-2 sm:mt-0">
         {search && (
           <div className={`relative flex-1 sm:w-64 transition-all duration-300 ${isSearchFocused ? 'sm:w-80' : ''}`}>
-            <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${isSearchFocused ? 'text-slate-900' : 'text-slate-400'}`} />
+            <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${isSearchFocused ? 'text-slate-900' : 'text-slate-500'}`} />
             <input 
               type="text"
               placeholder={search.placeholder || "System search..."}
@@ -121,7 +121,7 @@ export function AdminHeader({
                             : 'text-slate-600 hover:bg-slate-50'
                         }`}
                       >
-                        <action.icon className={`w-4 h-4 ${action.variant === 'danger' ? 'text-red-400' : 'text-slate-400'}`} />
+                        <action.icon className={`w-4 h-4 ${action.variant === 'danger' ? 'text-red-400' : 'text-slate-500'}`} />
                         {action.label}
                       </button>
                     ))}

@@ -58,8 +58,8 @@ export function InfiniteScrollSentinel({
     >
       {isLoading && (
         <>
-          <RefreshCcw className="w-5 h-5 animate-spin text-slate-400" />
-          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 animate-pulse">
+          <RefreshCcw className="w-5 h-5 animate-spin text-slate-500" />
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 animate-pulse">
             {loadingMessage}
           </p>
         </>

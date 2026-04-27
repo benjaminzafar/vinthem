@@ -104,7 +104,7 @@ export function MobileFilters({
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: -10 }}
                       onClick={goBack}
-                      className="flex items-center space-x-2 text-slate-400 hover:text-slate-900 transition-colors mr-auto"
+                      className="flex items-center space-x-2 text-slate-500 hover:text-slate-900 transition-colors mr-auto"
                     >
                       <ChevronLeft className="w-5 h-5" strokeWidth={1.5} />
                       <span className="text-[14px] font-semibold tracking-tight">{getCatName(activeCategoryData)}</span>
@@ -123,7 +123,7 @@ export function MobileFilters({
 
               <button 
                 onClick={onClose}
-                className="p-2 -mr-2 text-slate-400 hover:text-slate-900 transition-colors"
+                className="p-2 -mr-2 text-slate-500 hover:text-slate-900 transition-colors"
                 aria-label="Close filters"
               >
                 <X className="w-6 h-6" strokeWidth={1.5} />
@@ -217,7 +217,7 @@ export function MobileFilters({
                     <div className="space-y-8 pt-2">
                        <button
                          onClick={() => { updateParams({ category: activeCategoryData?.slug || 'All' }); onClose(); }}
-                         className={`w-full flex items-center justify-between h-[48px] px-4 border transition-all rounded ${activeCategory === activeCategoryData?.slug ? 'bg-slate-50 border-slate-900 border-2 text-slate-900 font-bold' : 'bg-slate-50 border-slate-100 text-slate-400 font-medium'}`}>
+                         className={`w-full flex items-center justify-between h-[48px] px-4 border transition-all rounded ${activeCategory === activeCategoryData?.slug ? 'bg-slate-50 border-slate-900 border-2 text-slate-900 font-bold' : 'bg-slate-50 border-slate-100 text-slate-500 font-medium'}`}>
                           <span className="text-[14px] font-semibold tracking-tight">View all {getCatName(activeCategoryData)}</span>
                           {activeCategory === activeCategoryData?.slug ? <Check className="w-4 h-4 text-slate-900" strokeWidth={2.5} /> : <ArrowRight className="w-4 h-4" />}
                         </button>

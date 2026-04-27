@@ -143,7 +143,7 @@ export function LanguageSwitcher({ availableLanguages, variant = 'dropdown', dir
                 </h3>
                 <button 
                   onClick={() => setIsOpen(false)} 
-                  className="p-2 -mr-2 text-slate-400 hover:text-brand-ink transition-colors"
+                  className="p-2 -mr-2 text-slate-500 hover:text-brand-ink transition-colors"
                   aria-label="Close"
                 >
                   <X className="w-5 h-5" strokeWidth={1.5} />
@@ -162,7 +162,7 @@ export function LanguageSwitcher({ availableLanguages, variant = 'dropdown', dir
                         <span className={`text-[12px] font-bold uppercase tracking-widest transition-colors ${currentLocale === lng ? 'text-brand-ink' : 'text-brand-muted hover:text-brand-ink'}`}>
                           {getLanguageName(lng)}
                         </span>
-                        <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border ${currentLocale === lng ? 'bg-white border-slate-200 text-brand-ink' : 'border-transparent text-slate-400'}`}>
+                        <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border ${currentLocale === lng ? 'bg-white border-slate-200 text-brand-ink' : 'border-transparent text-slate-500'}`}>
                           {lng}
                         </span>
                       </div>

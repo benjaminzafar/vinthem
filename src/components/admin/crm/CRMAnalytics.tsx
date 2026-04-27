@@ -35,7 +35,7 @@ interface CRMAnalyticsProps {
 function EmptyPanel({ message, error }: { message: string, error?: string }) {
   return (
     <div className="flex h-full flex-col items-center justify-center rounded border border-dashed border-slate-200 bg-slate-50/70 p-6 text-center">
-      <p className="max-w-xs text-xs font-semibold uppercase tracking-widest text-slate-400">
+      <p className="max-w-xs text-xs font-semibold uppercase tracking-widest text-slate-500">
         {message}
       </p>
       {error && (
@@ -139,7 +139,7 @@ export function CRMAnalytics({ tickets, customers, refunds, orders }: CRMAnalyti
             </div>
             <div className="text-right">
               <span className="text-sm font-bold text-slate-900 font-mono">{tickets.length}</span>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Total Requests</p>
+              <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Total Requests</p>
             </div>
           </div>
           
@@ -163,7 +163,7 @@ export function CRMAnalytics({ tickets, customers, refunds, orders }: CRMAnalyti
                         return (
                           <div className="rounded border border-slate-200 bg-white px-3 py-2 shadow-lg scale-90">
                             <p className="text-[10px] font-bold text-slate-900 uppercase tracking-widest">{payload[0].payload.name}</p>
-                            <p className="text-xs font-black text-slate-900">{payload[0].value} <span className="text-[9px] font-medium text-slate-400 uppercase tracking-tighter">Tickets</span></p>
+                            <p className="text-xs font-black text-slate-900">{payload[0].value} <span className="text-[9px] font-medium text-slate-500 uppercase tracking-tighter">Tickets</span></p>
                           </div>
                         );
                       }
@@ -204,7 +204,7 @@ export function CRMAnalytics({ tickets, customers, refunds, orders }: CRMAnalyti
             </div>
             <div className="text-right">
               <span className="text-sm font-bold text-slate-900 font-mono">{refunds.length}</span>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Total Entries</p>
+              <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Total Entries</p>
             </div>
           </div>
 
@@ -228,7 +228,7 @@ export function CRMAnalytics({ tickets, customers, refunds, orders }: CRMAnalyti
                         return (
                           <div className="rounded border border-slate-200 bg-white px-3 py-2 shadow-lg scale-90">
                             <p className="text-[10px] font-bold text-slate-900 uppercase tracking-widest">{payload[0].payload.name}</p>
-                            <p className="text-xs font-black text-slate-900">{payload[0].value} <span className="text-[9px] font-medium text-slate-400 uppercase tracking-tighter">Units</span></p>
+                            <p className="text-xs font-black text-slate-900">{payload[0].value} <span className="text-[9px] font-medium text-slate-500 uppercase tracking-tighter">Units</span></p>
                           </div>
                         );
                       }

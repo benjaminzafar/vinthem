@@ -76,7 +76,7 @@ export default async function ReturnPolicyPage({ params }: ReturnPolicyPageProps
               </div>
               <div className="space-y-4">
                 <div className="bg-zinc-50 p-4 rounded-xl">
-                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">Return Cost</span>
+                  <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block mb-1">Return Cost</span>
                   <p className="text-sm font-bold text-zinc-900 italic">Customer Self-Paid</p>
                 </div>
               </div>

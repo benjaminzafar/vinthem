@@ -119,7 +119,7 @@ export function IntegrationsContainer({
     return (
       <div className="flex flex-col items-center justify-center p-20 bg-white rounded-md border border-zinc-100">
         <Loader2 className="w-10 h-10 animate-spin text-zinc-300 mb-4" />
-        <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">Waking Up Infrastructure...</span>
+        <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest">Waking Up Infrastructure...</span>
       </div>
     );
   }
@@ -366,7 +366,7 @@ export function IntegrationsContainer({
                         </div>
 
                         <div className="pt-4 border-t border-zinc-100">
-                           <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block mb-4">Multilingual Template IDs</label>
+                           <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block mb-4">Multilingual Template IDs</label>
                            
                            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-4">
                              <TemplateGroup title="Signup" prefix="BREVO_TPL_SIGNUP" config={config} onUpdate={handleUpdate} locales={locales} />
@@ -467,7 +467,7 @@ function LanguageInput({ label, name, value, onChange }: {
 }) {
   return (
     <div className="flex items-center gap-2">
-      <span className="w-5 text-[9px] font-bold text-zinc-400">{label}</span>
+      <span className="w-5 text-[9px] font-bold text-zinc-500">{label}</span>
       <input 
         type="text"
         value={value || ''}

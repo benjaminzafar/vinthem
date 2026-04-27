@@ -422,7 +422,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
             {/* General Info Section */}
             <section className="bg-white border border-slate-200 rounded-[4px]">
               <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
-                <Layout className="w-4 h-4 text-slate-400" />
+                <Layout className="w-4 h-4 text-slate-500" />
                 <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Collection Details</h3>
               </div>
               <div className="p-8 space-y-8">
@@ -473,7 +473,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
                     className={`px-8 py-4 text-[11px] font-bold uppercase tracking-widest border-r border-slate-200 transition-all ${
-                      activeTab === tab.id ? 'bg-white text-slate-900' : 'text-slate-400 hover:text-slate-600'
+                      activeTab === tab.id ? 'bg-white text-slate-900' : 'text-slate-500 hover:text-slate-600'
                     }`}
                   >
                     {tab.label}
@@ -494,7 +494,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                           <option value="">No Parent (Main Navigation Root)</option>
                           {categories.filter(c => c.id !== formData.id).map(c => <option key={c.id} value={c.id}>Sub-collection of {c.name}</option>)}
                         </select>
-                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                       </div>
                     </div>
                   </div>
@@ -508,7 +508,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                          <button 
                            key={lang}
                            onClick={() => setSelectedLang(lang)}
-                           className={`text-[11px] font-bold uppercase tracking-widest transition-all ${selectedLang === lang ? 'text-slate-900 underline underline-offset-4' : 'text-slate-400 hover:text-slate-600'}`}
+                           className={`text-[11px] font-bold uppercase tracking-widest transition-all ${selectedLang === lang ? 'text-slate-900 underline underline-offset-4' : 'text-slate-500 hover:text-slate-600'}`}
                          >
                            {lang}
                          </button>
@@ -628,7 +628,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                     ) : (
                       <div className="text-center p-6">
                          <ImageIcon className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                         <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 text-center">Standard Aspect 16:9 for Best Results</p>
+                         <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500 text-center">Standard Aspect 16:9 for Best Results</p>
                       </div>
                     )}
                     <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />

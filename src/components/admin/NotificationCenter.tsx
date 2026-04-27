@@ -410,12 +410,12 @@ export function NotificationCenter() {
             <div className="border-b border-slate-100 bg-white/50 px-6 py-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Activity Hub</p>
+                  <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Activity Hub</p>
                   <h3 className="mt-1 text-base font-bold text-slate-900">Notifications</h3>
                 </div>
                 <button 
                   onClick={() => setIsOpen(false)} 
-                  className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-400 transition-all hover:bg-slate-200 hover:text-slate-900"
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-all hover:bg-slate-200 hover:text-slate-900"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -469,7 +469,7 @@ export function NotificationCenter() {
                               <p className={`mt-2 text-[13px] leading-relaxed ${!isRead ? 'text-slate-800 font-medium' : 'text-slate-500 font-normal'}`}>{notification.message}</p>
                             </div>
                             <div className="shrink-0 text-right">
-                              <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                              <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
                                 {formatDistanceToNow(notification.timestamp, { addSuffix: true })}
                               </p>
                               {!isRead && <div className="mt-3 ml-auto h-1.5 w-1.5 rounded-full bg-slate-900 animate-pulse" />}

@@ -167,7 +167,7 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
               errorInvalid: settings.invalidOtpErrorText?.[lang]
             }}
           />
-          <button onClick={() => setShowOTP(false)} className="w-full mt-8 text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 border-b border-zinc-100 pb-1 self-center">
+          <button onClick={() => setShowOTP(false)} className="w-full mt-8 text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-zinc-900 border-b border-zinc-100 pb-1 self-center">
             Back to Entry
           </button>
         </div>

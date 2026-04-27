@@ -70,7 +70,7 @@ export function OperationsManager({ type, data, loading }: OperationsManagerProp
         </thead>
         <tbody className="divide-y divide-slate-100">
           {refunds.length === 0 ? (
-            <tr><td colSpan={5} className="py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-[11px]">No active refund requests</td></tr>
+            <tr><td colSpan={5} className="py-20 text-center text-slate-500 font-bold uppercase tracking-widest text-[11px]">No active refund requests</td></tr>
           ) : refunds.map((refund) => (
             <tr key={refund.id} className="hover:bg-slate-50 transition-colors">
               <td className="px-6 py-4 font-bold text-slate-900 text-sm">#{refund.orderId?.slice(0, 8) || refund.id.slice(0, 8)}</td>
@@ -96,14 +96,14 @@ export function OperationsManager({ type, data, loading }: OperationsManagerProp
                   <button
                     onClick={() => handleRefundStatus(refund.id, refund.status === 'Approved' ? 'Refunded' : 'Approved')}
                     disabled={isUpdating === refund.id}
-                    className="p-2 border border-slate-300 rounded hover:bg-slate-50 transition-all text-slate-400 hover:text-slate-900 disabled:opacity-50"
+                    className="p-2 border border-slate-300 rounded hover:bg-slate-50 transition-all text-slate-500 hover:text-slate-900 disabled:opacity-50"
                   >
                     <CheckCircle2 className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => handleRefundStatus(refund.id, 'Rejected')}
                     disabled={isUpdating === refund.id}
-                    className="p-2 border border-slate-300 rounded hover:bg-slate-50 transition-all text-slate-400 hover:text-slate-900 disabled:opacity-50"
+                    className="p-2 border border-slate-300 rounded hover:bg-slate-50 transition-all text-slate-500 hover:text-slate-900 disabled:opacity-50"
                   >
                     <XCircle className="w-4 h-4" />
                   </button>
@@ -124,7 +124,7 @@ export function OperationsManager({ type, data, loading }: OperationsManagerProp
       <div className="border border-slate-300 rounded bg-slate-50/30 overflow-hidden">
         <table className="w-full text-left">
           <thead className="bg-white border-b border-slate-200">
-            <tr className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+            <tr className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
               <th className="px-6 py-3">Contact Identity</th>
               <th className="px-6 py-3">Source</th>
               <th className="px-6 py-3">Status</th>
@@ -136,12 +136,12 @@ export function OperationsManager({ type, data, loading }: OperationsManagerProp
               <tr key={sub.email} className="hover:bg-white transition-colors">
                 <td className="px-6 py-4">
                   <p className="text-sm font-bold text-slate-900">{typeof sub.email === 'string' ? sub.email : ''}</p>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
                     {typeof sub.customerName === 'string' && sub.customerName ? sub.customerName : 'Client'}
                   </p>
                 </td>
                 <td className="px-6 py-4">
-                   <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                   <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
                     {typeof sub.source === 'string' ? sub.source.replace(/_/g, ' ') : 'System'}
                   </p>
                 </td>
@@ -157,7 +157,7 @@ export function OperationsManager({ type, data, loading }: OperationsManagerProp
                   </span>
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400">
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">
                     {sub.status === 'unsubscribed'
                       ? (sub.unsubscribedAt ? new Date(sub.unsubscribedAt).toLocaleDateString() : 'N/A')
                       : (sub.subscribedAt ? new Date(sub.subscribedAt).toLocaleDateString() : 'N/A')}
@@ -181,7 +181,7 @@ export function OperationsManager({ type, data, loading }: OperationsManagerProp
                 <Star key={i} className={`w-3.5 h-3.5 ${i < (review.rating ?? 0) ? 'fill-slate-900 text-slate-900' : 'text-slate-200'}`} />
               ))}
             </div>
-            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{review.createdAt ? new Date(review.createdAt).toLocaleDateString() : 'N/A'}</span>
+            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">{review.createdAt ? new Date(review.createdAt).toLocaleDateString() : 'N/A'}</span>
           </div>
           
           <p className="text-sm font-medium text-slate-900 leading-relaxed mb-6">{review.comment}</p>
@@ -192,13 +192,13 @@ export function OperationsManager({ type, data, loading }: OperationsManagerProp
             </div>
             <div>
               <p className="text-xs font-bold text-slate-900">{review.userName}</p>
-              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Verified Collector</p>
+              <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Verified Collector</p>
             </div>
           </div>
 
           {review.adminReply && (
             <div className="mt-6 bg-slate-50 p-4 rounded border border-slate-200">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-2">
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 flex items-center gap-2">
                 <Package className="w-3.5 h-3.5" /> Official Response
               </p>
               <p className="text-xs font-medium text-slate-600 italic">"{review.adminReply}"</p>
@@ -210,7 +210,7 @@ export function OperationsManager({ type, data, loading }: OperationsManagerProp
   );
 
   if (loading) {
-    return <div className="py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-[11px]">Syncing operations...</div>;
+    return <div className="py-20 text-center text-slate-500 font-bold uppercase tracking-widest text-[11px]">Syncing operations...</div>;
   }
 
   return (
