@@ -71,14 +71,27 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
   // Fetch all categories for parent selector
   useEffect(() => {
     const fetchCategories = async () => {
-      const supabase = createClient();
-      const { data } = await supabase.from('categories').select('*').order('name');
-      if (data) {
-        setCategories((data as Array<Record<string, unknown>>).map(c => ({
-          id: c.id as string, 
-          name: c.name as string, 
-          parentId: c.parent_id as string
-        })) as unknown as Category[]);
+      try {
+        const supabase = createClient();
+        const { data, error } = await supabase.from('categories').select('*').order('name');
+        if (error) throw error;
+        if (data) {
+          console.log(`[CollectionEditor] Fetched ${data.length} categories for selector`);
+          setCategories(data.map(c => ({
+            ...c,
+            id: c.id,
+            name: c.name,
+            parentId: c.parent_id,
+            isFeatured: c.is_featured,
+            showInHero: c.show_in_hero,
+            pinnedInSearch: c.pinned_in_search,
+            imageUrl: c.image_url,
+            iconUrl: c.icon_url,
+            translations: c.translations || {}
+          })) as Category[]);
+        }
+      } catch (err) {
+        console.error('[CollectionEditor] Failed to fetch categories:', err);
       }
     };
     fetchCategories();
@@ -454,9 +467,10 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                     <select 
                       value={formData.parentId}
                       onChange={(e) => setFormData({...formData, parentId: e.target.value})}
-                      className="w-full h-12 bg-white border border-slate-200 rounded-[4px] px-4 text-sm font-bold appearance-none outline-none focus:border-slate-900"
+                      disabled={loading || categories.length === 0}
+                      className="w-full h-12 bg-white border border-slate-200 rounded-[4px] px-4 text-sm font-bold appearance-none outline-none focus:border-slate-900 disabled:opacity-50"
                     >
-                      <option value="">No Parent (Main Navigation Root)</option>
+                      <option value="">{categories.length === 0 ? 'Loading collections...' : 'No Parent (Main Navigation Root)'}</option>
                       {categories.filter(c => c.id !== formData.id).map(c => (
                         <option key={c.id} value={c.id}>
                           Parent: {c.name}
