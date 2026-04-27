@@ -191,15 +191,20 @@ export function CollectionManager({
   };
 
   const sortedData = useMemo(() => {
-    const roots = categories.filter(c => !c.parentId).sort((a, b) => a.name.localeCompare(b.name));
     const result: { category: Category; level: number }[] = [];
     
-    roots.forEach(root => {
-      result.push({ category: root, level: 0 });
-      const children = categories.filter(c => c.parentId === root.id).sort((a, b) => a.name.localeCompare(b.name));
-      children.forEach(child => result.push({ category: child, level: 1 }));
-    });
+    const addChildren = (parentId: string | null, level: number) => {
+      const children = categories
+        .filter(c => (parentId === null ? !c.parentId : c.parentId === parentId))
+        .sort((a, b) => a.name.localeCompare(b.name));
+        
+      children.forEach(child => {
+        result.push({ category: child, level });
+        addChildren(child.id!, level + 1);
+      });
+    };
     
+    addChildren(null, 0);
     return result;
   }, [categories]);
 

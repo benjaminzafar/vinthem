@@ -449,6 +449,25 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                   </div>
                 </div>
                 <div className="space-y-3">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Parent Collection (Hierarchy)</label>
+                  <div className="relative">
+                    <select 
+                      value={formData.parentId}
+                      onChange={(e) => setFormData({...formData, parentId: e.target.value})}
+                      className="w-full h-12 bg-white border border-slate-200 rounded-[4px] px-4 text-sm font-bold appearance-none outline-none focus:border-slate-900"
+                    >
+                      <option value="">No Parent (Main Navigation Root)</option>
+                      {categories.filter(c => c.id !== formData.id).map(c => (
+                        <option key={c.id} value={c.id}>
+                          Parent: {c.name}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  </div>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest italic">Tip: Move this collection under another one to create a sub-menu structure.</p>
+                </div>
+                <div className="space-y-3">
                   <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Swedish Marketing Narrative</label>
                   <textarea 
                     value={formData.description}
@@ -483,18 +502,28 @@ Collection Description (Swedish): "${formData.description || ''}"`;
               <div className="p-8">
                 {activeTab === 'hierarchy' && (
                   <div className="space-y-6 animate-in fade-in duration-300">
-                    <div className="space-y-3">
-                      <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Parent Collection (Hierarchy)</label>
-                      <div className="relative">
-                        <select 
-                          value={formData.parentId}
-                          onChange={(e) => setFormData({...formData, parentId: e.target.value})}
-                          className="w-full h-12 bg-white border border-slate-200 rounded-[4px] px-4 text-sm font-bold appearance-none outline-none focus:border-slate-900"
-                        >
-                          <option value="">No Parent (Main Navigation Root)</option>
-                          {categories.filter(c => c.id !== formData.id).map(c => <option key={c.id} value={c.id}>Sub-collection of {c.name}</option>)}
-                        </select>
-                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                    <div className="space-y-4">
+                      <h4 className="text-[11px] font-bold text-slate-900 uppercase tracking-widest mb-2 flex items-center gap-2">
+                        <Layers className="w-3.5 h-3.5" />
+                        Active Sub-collections
+                      </h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {categories.filter(c => c.parentId === formData.id).length > 0 ? (
+                          categories.filter(c => c.parentId === formData.id).map(c => (
+                            <button 
+                              key={c.id}
+                              onClick={() => router.push(`/admin/collections/${c.id}`)}
+                              className="p-3 bg-slate-50 border border-slate-200 rounded flex items-center justify-between hover:border-slate-900 transition-all text-left"
+                            >
+                              <span className="text-xs font-bold text-slate-700">{c.name}</span>
+                              <ChevronRight className="w-3 h-3 text-slate-400" />
+                            </button>
+                          ))
+                        ) : (
+                          <div className="col-span-full py-6 text-center border-2 border-dashed border-slate-100 rounded">
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">This collection has no sub-items</p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
