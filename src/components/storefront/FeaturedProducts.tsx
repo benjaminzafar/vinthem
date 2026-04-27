@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Product } from '@/store/useCartStore';
@@ -37,39 +37,49 @@ export function FeaturedProducts({ products, lang, settings }: FeaturedProductsP
           </div>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          {featuredProducts.map((product, index) => {
-            if (!product) return null;
-            const title = product.translations?.[lang]?.title || product.title || 'Product';
-            
-            return (
-              <div key={product.id}>
-                <Link href={`/${lang}/product/${product.id}`} className="group">
-                  <div className="relative aspect-[3/4] overflow-hidden rounded bg-slate-50 mb-4 border border-slate-100">
-                    {product.imageUrl && product.imageUrl.trim() !== "" ? (
-                      <Image 
-                        src={product.imageUrl} 
-                        alt={title} 
-                        fill
-                        sizes="(max-width: 768px) 50vw, 25vw"
-                        className="object-cover transition-opacity duration-300 group-hover:scale-105 transition-transform"
-                      />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center bg-zinc-50 text-zinc-200">
-                        <Package className="w-8 h-8" />
-                      </div>
-                    )}
-                    <div className="absolute bottom-3 right-3 bg-brand-ink/90 backdrop-blur-md border border-white/10 w-10 h-10 md:w-12 md:h-12 rounded opacity-100 md:opacity-0 group-hover:opacity-100 transition-all duration-300 z-20 flex items-center justify-center">
-                      <ArrowRight className="w-4 h-4 md:w-5 md:h-5 text-white" />
-                    </div>
-                  </div>
-                  <h3 className="text-[12px] font-bold uppercase tracking-widest text-brand-ink truncate">{title}</h3>
-                  <p className="text-[14px] font-medium text-brand-muted">{formatPrice(product.price || 0, lang, product.prices)}</p>
-                </Link>
-              </div>
-            );
-          })}
+          {featuredProducts.map((product, index) => (
+            <FeaturedCard key={product.id} product={product} lang={lang} index={index} />
+          ))}
         </div>
       </div>
     </section>
+  );
+}
+
+function FeaturedCard({ product, lang, index }: { product: Product; lang: string; index: number }) {
+  const [isLoaded, setIsLoaded] = useState(false);
+  if (!product) return null;
+  const title = product.translations?.[lang]?.title || product.title || 'Product';
+  
+  return (
+    <div style={{ contain: 'layout style' }}>
+      <Link href={`/${lang}/product/${product.id}`} className="group">
+        <div 
+          className="relative w-full overflow-hidden rounded bg-slate-100 mb-4 border border-slate-100"
+          style={{ paddingBottom: '133.33%' }}
+        >
+          {product.imageUrl && product.imageUrl.trim() !== "" ? (
+            <Image 
+              src={product.imageUrl} 
+              alt={title} 
+              fill
+              sizes="(max-width: 768px) 50vw, 25vw"
+              className={`object-cover transition-all duration-700 ease-out group-hover:scale-105 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+              onLoad={() => setIsLoaded(true)}
+              priority={index === 0}
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center bg-zinc-50 text-zinc-200">
+              <Package className="w-8 h-8" />
+            </div>
+          )}
+          <div className="absolute bottom-3 right-3 bg-brand-ink/90 backdrop-blur-md border border-white/10 w-10 h-10 rounded opacity-100 transition-all duration-300 z-20 flex items-center justify-center">
+            <ArrowRight className="w-4 h-4 text-white" />
+          </div>
+        </div>
+        <h3 className="text-[12px] font-bold uppercase tracking-widest text-brand-ink truncate">{title}</h3>
+        <p className="text-[14px] font-medium text-brand-muted">{formatPrice(product.price || 0, lang, product.prices)}</p>
+      </Link>
+    </div>
   );
 }

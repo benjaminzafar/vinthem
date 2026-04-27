@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ShoppingBag, Check } from 'lucide-react';
@@ -20,6 +20,7 @@ interface ProductCardProps {
 export function ProductCard({ product, lang, settings, priority }: ProductCardProps) {
   const { addItem } = useCartStore();
   const { setCartOpen } = useUIStore();
+  const [isLoaded, setIsLoaded] = useState(false);
   
   const href = product.id ? `/product/${product.id}` : '/products';
   const title = product.translations?.[lang]?.title || product.title;
@@ -31,10 +32,11 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
   };
 
   return (
-    <div className="group flex flex-col h-full bg-white">
+    <div className="group flex flex-col h-full bg-white" style={{ contain: 'layout style' }}>
       <Link 
         href={href} 
-        className="block relative aspect-[4/5] mb-5 overflow-hidden border border-slate-100 rounded bg-slate-50"
+        className="block relative w-full mb-5 overflow-hidden border border-slate-100 rounded bg-slate-100"
+        style={{ paddingBottom: '125%' }} // Stable 4:5 aspect ratio
       >
         {product.isFeatured && (
           <div className="absolute top-4 left-4 z-20">
@@ -44,29 +46,32 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
           </div>
         )}
         
-        {isVideo(product.imageUrl) ? (
-          product.imageUrl && product.imageUrl.trim() !== "" && (
-            <video 
-              src={product.imageUrl}
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="w-full h-full object-cover"
-            />
-          )
-        ) : (
-          product.imageUrl && product.imageUrl.trim() !== "" && (
-            <Image 
-              src={product.imageUrl} 
-              alt={title}
-              fill
-              sizes="(max-width: 768px) 50vw, 33vw"
-              className="object-cover transition-opacity duration-300 group-hover:scale-105 transition-transform"
-              priority={priority}
-            />
-          )
-        )}
+        <div className="absolute inset-0">
+          {isVideo(product.imageUrl) ? (
+            product.imageUrl && product.imageUrl.trim() !== "" && (
+              <video 
+                src={product.imageUrl}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-full object-cover"
+              />
+            )
+          ) : (
+            product.imageUrl && product.imageUrl.trim() !== "" && (
+              <Image 
+                src={product.imageUrl} 
+                alt={title}
+                fill
+                sizes="(max-width: 768px) 50vw, 33vw"
+                className={`object-cover transition-all duration-700 ease-out group-hover:scale-105 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+                onLoad={() => setIsLoaded(true)}
+                priority={priority}
+              />
+            )
+          )}
+        </div>
         
         <div className="absolute inset-0 z-20 opacity-0 group-hover:opacity-100 transition-all duration-300 md:block hidden">
           <div className="absolute inset-0 bg-black/5" />
