@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Category } from '@/types';
 import { ArrowRight, ShoppingBag } from 'lucide-react';
+import { getOptimizedImageUrl } from '@/utils/image-utils';
 
 export function CollectionList({ categories, lang, labels }: CollectionListProps) {
   return (
@@ -44,14 +45,14 @@ export function CollectionList({ categories, lang, labels }: CollectionListProps
                   <div className="relative aspect-[3/4] overflow-hidden rounded bg-slate-50 border border-slate-100 mb-4 transform-gpu">
                     {category.imageUrl ? (
                       <Image
-                        src={category.imageUrl}
+                        src={getOptimizedImageUrl(category.imageUrl, 400, 75)}
                         alt={`${displayName} collection`}
                         fill
                         sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 300px"
                         className="object-cover transition-transform duration-500 group-hover:scale-105"
                         priority={index < 2} // Only first 2 for mobile balance
                         decoding="async"
-                        quality={75}
+                        unoptimized={true}
                       />
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center text-slate-200 text-2xl font-black bg-zinc-50">

@@ -8,6 +8,7 @@ import { ArrowRight } from 'lucide-react';
 import { Category, StorefrontSettingsType } from '@/types';
 import { useStorefrontSettings } from '@/hooks/useStorefrontSettings';
 import { localizeHref } from '@/lib/i18n-routing';
+import { getOptimizedImageUrl } from '@/utils/image-utils';
 
 interface HeroSliderProps {
   categories: Category[];
@@ -87,15 +88,15 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
             <div className="relative w-full max-h-[50vh] lg:max-h-none aspect-[16/10] sm:aspect-[16/9] lg:aspect-[4/3] xl:aspect-[16/10] overflow-hidden rounded-[4px] shadow-sm bg-zinc-50">
               {category.imageUrl && (
                 <Image 
-                  src={imageToShow || ''} 
+                  src={getOptimizedImageUrl(imageToShow || '', 1200, 75)} 
                   alt={category.translations?.[lang]?.name || category.name} 
                   fill
                   priority
                   fetchPriority="high"
-                  quality={75}
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px"
                   className="object-cover transition-transform duration-[20s] ease-linear group-hover:scale-110"
                   decoding="async"
+                  unoptimized={true}
                 />
               )}
             </div>
