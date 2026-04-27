@@ -32,15 +32,11 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
   };
 
   return (
-    <div className="group flex flex-col h-full bg-white" style={{ isolation: 'isolate' }}>
+    <div className="group flex flex-col h-full bg-white" style={{ contain: 'layout style' }}>
       <Link 
         href={href} 
         className="block relative w-full mb-5 overflow-hidden border border-slate-100 rounded bg-slate-100"
-        style={{ 
-          paddingBottom: '125%', 
-          transform: 'translate3d(0,0,0)',
-          backfaceVisibility: 'hidden'
-        }}
+        style={{ paddingBottom: '125%' }} // Stable 4:5 aspect ratio
       >
         {product.isFeatured && (
           <div className="absolute top-4 left-4 z-20">
@@ -69,11 +65,9 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
                 alt={title}
                 fill
                 sizes="(max-width: 768px) 50vw, 33vw"
-                className={`object-cover transition-opacity duration-500 ease-out group-hover:scale-105 transition-transform ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+                className={`object-cover transition-all duration-700 ease-out group-hover:scale-105 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
                 onLoad={() => setIsLoaded(true)}
                 priority={priority}
-                // @ts-ignore - Stability hack for high refresh rates
-                decoding="sync"
               />
             )
           )}

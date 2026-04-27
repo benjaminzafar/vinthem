@@ -52,15 +52,11 @@ function FeaturedCard({ product, lang, index }: { product: Product; lang: string
   const title = product.translations?.[lang]?.title || product.title || 'Product';
   
   return (
-    <div style={{ isolation: 'isolate' }}>
+    <div style={{ contain: 'layout style' }}>
       <Link href={`/${lang}/product/${product.id}`} className="group">
         <div 
           className="relative w-full overflow-hidden rounded bg-slate-100 mb-4 border border-slate-100"
-          style={{ 
-            paddingBottom: '133.33%', 
-            transform: 'translate3d(0,0,0)',
-            backfaceVisibility: 'hidden'
-          }}
+          style={{ paddingBottom: '133.33%' }}
         >
           {product.imageUrl && product.imageUrl.trim() !== "" ? (
             <Image 
@@ -68,11 +64,9 @@ function FeaturedCard({ product, lang, index }: { product: Product; lang: string
               alt={title} 
               fill
               sizes="(max-width: 768px) 50vw, 25vw"
-              className={`object-cover transition-all duration-500 ease-out group-hover:scale-105 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+              className={`object-cover transition-all duration-700 ease-out group-hover:scale-105 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
               onLoad={() => setIsLoaded(true)}
               priority={index === 0}
-              // @ts-ignore
-              decoding="sync"
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center bg-zinc-50 text-zinc-200">

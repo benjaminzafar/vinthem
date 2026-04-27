@@ -10,7 +10,7 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
   const featuredCategories = categories.filter(c => c.isFeatured);
 
   return (
-    <section id="collection" className="py-20 md:py-32 bg-white">
+    <section id="collection" className="py-20 md:py-32 bg-white" style={{ isolation: 'isolate' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center mb-12 md:mb-20 text-center gap-4">
           <p className="text-xs font-bold tracking-[0.2em] uppercase text-slate-500">
@@ -53,15 +53,11 @@ function CollectionCard({ category, lang, index }: { category: Category; lang: s
   const displayName = category.translations?.[lang]?.name || category.name;
 
   return (
-    <div className="group relative" style={{ isolation: 'isolate' }}>
+    <div className="group relative" style={{ transform: 'translateZ(0)', willChange: 'transform' }}>
       <Link href={`/products?category=${encodeURIComponent(category.slug)}`} className="group block">
         <div 
           className="relative w-full overflow-hidden rounded bg-slate-100 mb-4 border border-slate-100"
-          style={{ 
-            paddingBottom: '133.33%', 
-            transform: 'translate3d(0,0,0)',
-            backfaceVisibility: 'hidden'
-          }}
+          style={{ paddingBottom: '133.33%' }}
         >
           {category.imageUrl && category.imageUrl.trim() !== "" ? (
             <Image
@@ -69,7 +65,7 @@ function CollectionCard({ category, lang, index }: { category: Category; lang: s
               alt={displayName}
               fill
               sizes="(max-width: 768px) 50vw, 25vw"
-              className={`object-cover transition-all duration-500 ease-out group-hover:scale-105 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+              className={`object-cover transition-opacity duration-300 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
               onLoad={() => setIsLoaded(true)}
               priority={index < 2}
               // @ts-ignore
@@ -81,7 +77,8 @@ function CollectionCard({ category, lang, index }: { category: Category; lang: s
             </div>
           )}
           
-          <div className="absolute bottom-3 right-3 bg-brand-ink/90 backdrop-blur-md border border-white/10 w-10 h-10 rounded opacity-100 transition-all duration-300 z-20 flex items-center justify-center">
+          {/* Simplified button: Removed backdrop-blur to fix mobile menu lag */}
+          <div className="absolute bottom-3 right-3 bg-brand-ink w-10 h-10 rounded opacity-100 transition-transform duration-300 z-20 flex items-center justify-center group-hover:scale-110">
             <ArrowRight className="w-4 h-4 text-white" />
           </div>
         </div>
