@@ -48,7 +48,7 @@ export function FeaturedProducts({ products, lang, settings }: FeaturedProductsP
             
             return (
               <Link key={product.id} href={`/${lang}/product/${product.id}`} className="group">
-                <div className="relative aspect-[3/4] overflow-hidden rounded bg-gray-100 mb-4">
+                <div className="relative aspect-[3/4] overflow-hidden rounded bg-gray-100 mb-4 transform-gpu [backface-visibility:hidden]">
                   <div className="h-full w-full">
                     {product.imageUrl && product.imageUrl.trim() !== "" ? (
                       <Image 
@@ -56,7 +56,7 @@ export function FeaturedProducts({ products, lang, settings }: FeaturedProductsP
                         alt={title} 
                         fill 
                         sizes="(max-width: 768px) 50vw, 25vw"
-                        className="object-cover transition-transform duration-700 group-hover:scale-105" 
+                        className="object-cover transition-transform duration-700 group-hover:scale-105 will-change-transform [backface-visibility:hidden]" 
                         priority={true}
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
