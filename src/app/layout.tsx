@@ -12,7 +12,6 @@ import { CartDrawer } from "@/components/layout/CartDrawer";
 import { getServerLocale } from "@/lib/server-locale";
 import { Toaster } from "sonner";
 import Script from "next/script";
-import { BrandStory } from "@/components/storefront/BrandStory";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: 'swap' });
 const roboto = Roboto({ weight: ["400", "700"], subsets: ["latin"], variable: "--font-roboto", display: 'swap' });
@@ -140,7 +139,6 @@ export default async function RootLayout({
               <CartDrawer />
               {children}
               
-              <BrandStory lang={lang} />
 
               <Toaster position="top-right" richColors />
             </LazyMotion>
