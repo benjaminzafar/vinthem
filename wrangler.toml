@@ -1,15 +1,16 @@
 name = "vinthem"
 main = ".open-next/worker.js"
-compatibility_date = "2024-12-30"
+compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
+assets = { directory = ".open-next/assets", binding = "ASSETS" }
 
 [observability]
 enabled = true
 
-[observability.logs]
-enabled = true
-invocation_logs = true
+[vars]
+NEXT_PUBLIC_SUPABASE_URL = "https://xeatyjjiywcrkuvifyhm.supabase.co"
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_8ZBscrzZCPmE1xA9VwvBZQ_Kee2EMWk"
 
-[assets]
-directory = ".open-next/assets"
-binding = "ASSETS"
+# NOTE: ENCRYPTION_SECRET and SUPABASE_SERVICE_ROLE_KEY 
+# must be managed via 'npx wrangler secret put' 
+# or the Cloudflare Dashboard to stay protected.
