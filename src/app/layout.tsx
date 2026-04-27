@@ -33,16 +33,14 @@ export async function generateMetadata(): Promise<Metadata> {
       "vinthem brand", "vinthem official"
     ],
     keywords: [
-      "vinthem", "vinhem", "vind hem", "vindhem", "vind-hem", "vintam", "vintham", "vnthem", "vinthem shop", "vinhem shop", "vinthem store", 
-      "vinthem online", "vinthem clothing", "vinthem sweden", "vinthem fashion", "vinthem brand", "vinthem official",
-      "vind hem clothing", "vind hem sweden", "vind hem shop", "vind hem store",
-      "vinthem stockholm", "vinthem scandinavia", "vinthem luxury", "vinthem premium", "vinthem minimalist",
-      "scandinavian design", "minimalist fashion", "premium streetwear", "luxury basics", "sustainable fashion sweden",
-      "nordic style", "minimalist wardrobe", "timeless clothing", "high-end basics", "designer streetwear",
+      "vinthem", "vinhem", "vind hem", "vindhem", "vind-hem", "vintam", "vintham", "vnthem", "vntem", "vintem", "winthem", "winhem", "findhem", "find hem", "venthem", "vanthem", "vinth-em", "vin-them", "vin-hem",
+      "vinthem shop", "vinhem shop", "vind hem shop", "vindhem store", "vinthem official", "vinthem brand", "vinthem online",
+      "vinthem clothing", "vinthem sweden", "vinthem fashion", "vinthem stockholm", "vinthem scandinavia",
+      "wintem", "wintham", "venhem", "vanhem", "vintheme", "vinheme", "vinthem-shop", "vinthem-store",
+      "vintham store", "vintham shop", "vintam store", "vintam shop", "vintem shop", "vintem store",
+      "vindhem shop", "vindhem store", "findhem shop", "findhem store", "vinthem.com", "vinhem.com",
       "vinthem collection", "vinthem arrivals", "vinthem apparel", "vinthem wear", "vinthem outfit",
-      "buy minimalist clothes", "premium hoodies online", "luxury t-shirts sweden", "minimalist jackets",
       "vinthem mens fashion", "vinthem womens fashion", "vinthem unisex", "vinthem lifestyle",
-      "scandinavian streetwear brand", "stockholm fashion store", "vinthem limited edition",
       "vinhem clothing store", "vinhem online shop", "vinhem sweden brand", "vinhem luxury fashion",
       "minimalist aesthetic clothing", "quiet luxury brand sweden", "capsule wardrobe essentials",
       "vinthem best sellers", "vinthem exclusive", "vinthem discount", "vinthem shipping",
@@ -81,8 +79,9 @@ export default async function RootLayout({
     "@type": "Organization",
     "name": "Vinthem",
     "alternateName": [
-      "Vinhem", "Vind Hem", "Vindhem", "Vinthem Shop", "Vinhem Store", "Vinthem Sweden", "Vinthem Stockholm",
-      "Vintham", "Vintam", "Vnthem", "Vinthem Brand", "Vinthem Official"
+      "Vinhem", "Vind Hem", "Vindhem", "Vintham", "Vintam", "Vnthem", "Vntem", "Vintem", 
+      "Winthem", "Winhem", "Findhem", "Find Hem", "Vinthem Sweden", "Vinthem Stockholm",
+      "Vinthem Shop", "Vinhem Store", "Vinthem Official", "Vinthem Brand", "Vinthem.com"
     ],
     "url": siteUrl,
     "logo": settings.faviconUrl || `${siteUrl}/favicon.ico`,
@@ -147,14 +146,16 @@ export default async function RootLayout({
               {/* Aggressive SEO Hidden Section - Invisible to users, golden for bots */}
               <div className="sr-only" aria-hidden="true">
                 <h1>Vinthem - Premium Scandinavian Minimalist Fashion</h1>
-                <p>Welcome to Vinthem (also known as Vinhem, Vind Hem, Vindhem, Vintham, or Vintam), the leading minimalist fashion brand from Stockholm, Sweden. We specialize in premium streetwear, luxury basics, and sustainable fashion with a clean Nordic aesthetic.</p>
-                <p>Explore our exclusive collection of hoodies, jackets, t-shirts, and capsule wardrobe essentials. Vinthem Shop (or Vind Hem Store) offers high-end apparel for those who value timeless design and exceptional quality materials like organic cotton and durable fabrics.</p>
-                <p>Whether you are looking for Vinthem official store, Vinhem clothing, Vindhem sweden, or the best scandinavian streetwear, Vinthem is your destination for quiet luxury and minimalist style in Europe and worldwide.</p>
+                <p>Welcome to Vinthem (also known as Vinhem, Vind Hem, Vindhem, Vintham, Vintam, Vnthem, Vntem, Vintem, Winthem, Winhem, Findhem, or Find Hem), the leading minimalist fashion brand from Stockholm, Sweden. We specialize in premium streetwear, luxury basics, and sustainable fashion with a clean Nordic aesthetic.</p>
+                <p>Explore our exclusive collection of hoodies, jackets, t-shirts, and capsule wardrobe essentials. Vinthem Shop (also known as Vinhem Store, Vindhem Shop, or Vintham Store) offers high-end apparel for those who value timeless design and exceptional quality materials like organic cotton and durable fabrics.</p>
+                <p>Whether you are looking for Vinthem official store, Vinhem clothing, Vindhem sweden, Winthem fashion, or the best scandinavian streetwear, Vinthem is your destination for quiet luxury and minimalist style in Europe and worldwide.</p>
                 <ul>
                   <li>Vinthem Official Store Stockholm</li>
                   <li>Vinhem Minimalist Clothing</li>
                   <li>Vind Hem Fashion Sweden</li>
                   <li>Vindhem Scandinavian Design</li>
+                  <li>Winthem Premium Wear</li>
+                  <li>Findhem Luxury Basics</li>
                   <li>Scandinavian Designer Apparel</li>
                   <li>Premium Nordic Fashion Brand</li>
                   <li>Luxury Minimalist Wardrobe Essentials</li>
