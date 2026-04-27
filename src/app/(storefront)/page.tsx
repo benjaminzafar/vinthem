@@ -120,19 +120,25 @@ export default async function StorefrontPage() {
   const { data: categoriesData } = await supabase.from('categories').select('*').order('name');
 
   const categories = (categoriesData || []).map(c => ({
-    ...c,
+    id: c.id,
+    name: c.name,
+    slug: c.slug,
+    translations: c.translations,
     imageUrl: c.image_url,
     isFeatured: c.is_featured,
     showInHero: c.show_in_hero
   })) as Category[];
+
+  // Filter for Hero explicitly to reduce payload
+  const heroCategories = categories.filter(c => c.showInHero);
 
   return (
     <div className="w-full bg-white">
       {/* 
         HERO SECTION (High Priority - Rendered Immediately) 
       */}
-      {categories.some(c => c.showInHero) ? (
-        <HeroSlider categories={categories} lang={lang} settings={settings} />
+      {heroCategories.length > 0 ? (
+        <HeroSlider categories={heroCategories} lang={lang} settings={settings} />
       ) : (
         <section className="h-[60vh] flex flex-col items-center justify-center bg-gray-50 px-4 text-center">
           <h2 className="text-4xl font-sans font-black text-brand-ink mb-4 tracking-tight">Welcome to {settings.storeName?.[lang] || 'Vinthem'}</h2>

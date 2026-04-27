@@ -95,6 +95,7 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
                   quality={60}
                   sizes="(max-width: 768px) 100vw, 60vw"
                   className="object-cover transition-transform duration-[20s] ease-linear group-hover:scale-110"
+                  decoding="async"
                 />
               )}
             </div>
