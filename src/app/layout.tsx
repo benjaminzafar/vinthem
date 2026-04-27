@@ -101,6 +101,11 @@ export default async function RootLayout({
             anonKey: getEnv('SUPABASE_PUBLISHABLE_KEY') || ''
           }}
         />
+        <script dangerouslySetInnerHTML={{ __html: `
+          console.log('--- CLIENT SUPABASE DEBUG ---');
+          console.log('URL Injected:', !!'${getEnv('SUPABASE_URL') || ''}');
+          console.log('Key Injected:', !!'${getEnv('SUPABASE_PUBLISHABLE_KEY') || ''}');
+        `}} />
         <CookieBannerMount copy={cookieBannerCopy} />
         <AuthProvider>
           <ConfirmationProvider>
