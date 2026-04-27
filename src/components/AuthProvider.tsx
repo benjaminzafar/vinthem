@@ -1,13 +1,11 @@
 "use client";
 import { logger } from '@/lib/logger';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
+import type { AuthChangeEvent, Session, SupabaseClient } from '@supabase/supabase-js';
 import { createClient } from '@/utils/supabase/client';
 import { useAuthStore } from '@/store/useAuthStore';
 import { hasAnalyticsConsent } from '@/lib/consent';
-
-const supabase = createClient();
 
 declare global {
   interface Window {
@@ -18,25 +16,29 @@ declare global {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { setUser, setIsAdmin, setIsAuthLoading } = useAuthStore();
   const initialized = useRef(false);
-  const router = useRouter();
-
+  const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
 
   const identifyUser = (user: { id: string; email?: string; user_metadata?: Record<string, unknown> } | null) => {
     if (user && typeof window !== 'undefined' && hasAnalyticsConsent()) {
-      // 1. Identify in Clarity
       if (window.clarity) {
         window.clarity("set", "user_id", user.id);
         window.clarity("set", "email", user.email || "");
       }
     }
   };
+
   useEffect(() => {
-    if (initialized.current) return;
+    // Initialize supabase only on client side
+    const client = createClient();
+    setSupabase(client);
+  }, []);
+
+  useEffect(() => {
+    if (!supabase || initialized.current) return;
     initialized.current = true;
 
     const initAuth = async () => {
       try {
-        // Only load auth state, settings are handled by StoreHydrator
         const { data, error } = await supabase.auth.getUser();
         
         if (error) {
@@ -52,10 +54,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             .from('users')
             .select('role')
             .eq('id', user.id)
-            .single();
+            .maybeSingle();
 
-          const isAdmin =
-            profile?.role === 'admin';
+          const isAdmin = profile?.role === 'admin';
           setIsAdmin(isAdmin);
         } else {
           setUser(null);
@@ -90,10 +91,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             .from('users')
             .select('role')
             .eq('id', user.id)
-            .single();
+            .maybeSingle();
 
-          const isAdmin =
-            data?.role === 'admin';
+          const isAdmin = data?.role === 'admin';
           setIsAdmin(isAdmin);
         } else {
           setIsAdmin(false);
@@ -103,8 +103,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
 
     return () => subscription.unsubscribe();
-  }, [setUser, setIsAdmin, setIsAuthLoading, supabase]);
+  }, [supabase, setUser, setIsAdmin, setIsAuthLoading]);
 
   return <>{children}</>;
 }
-

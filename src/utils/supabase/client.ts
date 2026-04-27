@@ -1,80 +1,76 @@
 import { createBrowserClient } from '@supabase/ssr';
 
 /**
- * Hardened Supabase Client for Cloudflare Workers
- * Always re-evaluates the environment to prevent stale "missing" connections.
+ * God-Tier Lazy Supabase Client for Cloudflare Workers.
+ * This proxy-based client delays initialization until the first method call,
+ * ensuring that it always picks up the correct URL/Key even if called 
+ * at the top level of a module before hydration.
  */
 
 function getSafeEnv(key: string): string | undefined {
   if (typeof window === 'undefined') return undefined;
-
   const g = globalThis as any;
-  
-  // Priority 1: Values injected by StoreHydrator at runtime
   if (key === 'NEXT_PUBLIC_SUPABASE_URL' && g.__supabase_url) return g.__supabase_url;
   if (key === 'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY' && g.__supabase_key) return g.__supabase_key;
-
-  // Priority 2: Process Env (if baked in)
-  let value = process.env[key] || (process.env as any)[`NEXT_PUBLIC_${key}`];
-  
-  if (value && value.includes('=')) {
-    const parts = value.split('=');
-    if (parts[0].trim().includes('SUPABASE')) {
-      value = parts.slice(1).join('=').trim();
-    }
-  }
-
-  return value;
-}
-
-declare global {
-  var __supabase_client: ReturnType<typeof createBrowserClient> | undefined;
+  return process.env[key] || (process.env as any)[`NEXT_PUBLIC_${key}`];
 }
 
 export function createClient(customUrl?: string, customKey?: string) {
-  // Always get the latest values
-  const currentUrl = customUrl || getSafeEnv('NEXT_PUBLIC_SUPABASE_URL');
-  const currentKey = customKey || getSafeEnv('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY');
-
-  const isDummy = (url?: string) => !url || url.includes('missing') || !url.startsWith('http');
-
-  if (typeof window !== 'undefined') {
-    const g = globalThis as any;
-    
-    // If we have a cached client, check if it's still valid
-    if (g.__supabase_client) {
-      const usedUrl = g.__supabase_url_used;
-      
-      // If we were using a dummy URL but now have a real one, FORCE RECREATION
-      if (isDummy(usedUrl) && !isDummy(currentUrl)) {
-        g.__supabase_client = undefined;
-      } else {
-        return g.__supabase_client;
-      }
-    }
+  if (typeof window === 'undefined') {
+    return createBrowserClient(
+      customUrl || process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://missing.supabase.co',
+      customKey || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || 'missing'
+    );
   }
 
-  const finalUrl = currentUrl || 'https://missing.supabase.co';
-  const finalKey = currentKey || 'missing';
+  const g = globalThis as any;
+  
+  // Return the existing lazy proxy if it exists
+  if (g.__supabase_lazy_proxy && !customUrl) {
+    return g.__supabase_lazy_proxy;
+  }
 
-  const client = createBrowserClient(
-    finalUrl,
-    finalKey,
-    {
+  // Define the target that will hold the real client
+  let realClient: any = null;
+
+  const initialize = () => {
+    const url = customUrl || getSafeEnv('NEXT_PUBLIC_SUPABASE_URL') || 'https://missing.supabase.co';
+    const key = customKey || getSafeEnv('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY') || 'missing';
+    
+    // If we already have a real client and the config hasn't changed from a "missing" state, reuse it
+    if (realClient && !g.__supabase_url_used?.includes('missing')) {
+      return realClient;
+    }
+
+    // If the config is STILL missing, but we already tried once, just return what we have
+    if (url.includes('missing') && realClient) {
+      return realClient;
+    }
+
+    realClient = createBrowserClient(url, key, {
       auth: {
         flowType: 'pkce',
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,
       },
-    }
-  );
+    });
+    g.__supabase_url_used = url;
+    return realClient;
+  };
 
-  if (typeof window !== 'undefined') {
-    const g = globalThis as any;
-    g.__supabase_client = client;
-    g.__supabase_url_used = finalUrl;
+  // Create a Proxy that intercepts all property accesses
+  const proxy = new Proxy({}, {
+    get(_, prop) {
+      const client = initialize();
+      const value = Reflect.get(client, prop);
+      return typeof value === 'function' ? value.bind(client) : value;
+    }
+  });
+
+  if (!customUrl) {
+    g.__supabase_lazy_proxy = proxy;
   }
 
-  return client;
+  return proxy as ReturnType<typeof createBrowserClient>;
 }

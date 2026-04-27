@@ -106,7 +106,10 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
     e.preventDefault();
     if (loading) return;
     setLoading(true);
-    const supabase = createClient();
+    
+    const { getSupabaseConfigAction } = await import('@/app/actions/config');
+    const config = await getSupabaseConfigAction();
+    const supabase = createClient(config.url, config.anonKey);
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email);
