@@ -228,6 +228,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                         ref={searchInputRef}
                         type="text"
                         value={searchQuery}
+                        aria-label="Search catalog"
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder={placeholder || settings?.searchPlaceholder?.[lang] || 'Search products...'}
                         className="w-full h-full py-0 text-lg font-light tracking-tight outline-none bg-transparent placeholder:text-slate-500 text-slate-900"
@@ -237,6 +238,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                   <div className="flex items-center gap-4">
                     <button 
                       onClick={() => setIsOverlayOpen(false)}
+                      aria-label="Close search overlay"
                       className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded"
                     >
                       <X className="w-5 h-5" strokeWidth={1.5} />

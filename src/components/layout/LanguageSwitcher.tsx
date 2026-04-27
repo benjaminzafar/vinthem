@@ -73,6 +73,7 @@ export function LanguageSwitcher({ availableLanguages, variant = 'dropdown', dir
             <button
               key={lng}
               disabled={isPending}
+              aria-label={`Change language to ${getLanguageName(lng)}`}
               onClick={() => changeLanguage(lng)}
               className={`min-w-12 h-10 px-3 flex items-center justify-center text-xs font-black uppercase tracking-widest transition-all relative overflow-hidden ${
                 currentLocale === lng 
@@ -101,6 +102,7 @@ export function LanguageSwitcher({ availableLanguages, variant = 'dropdown', dir
     <div className="relative h-full flex items-center" ref={dropdownRef}>
       <button 
         disabled={isPending}
+        aria-label="Change language"
         onClick={() => setIsOpen(!isOpen)}
         className={`flex items-center space-x-2 p-2 px-3.5 bg-slate-50/80 hover:bg-slate-100 text-brand-ink transition-all text-[11px] font-bold uppercase tracking-widest border border-slate-200/50 rounded-full ${isPending ? 'opacity-50' : ''}`}
       >
@@ -155,6 +157,7 @@ export function LanguageSwitcher({ availableLanguages, variant = 'dropdown', dir
                     <button
                       key={lng}
                       disabled={isPending}
+                      aria-label={`Switch to ${getLanguageName(lng)}`}
                       onClick={() => changeLanguage(lng)}
                       className={`flex items-center justify-between w-full py-4 px-4 rounded-2xl transition-all ${currentLocale === lng ? "bg-slate-50/80" : "bg-transparent hover:bg-slate-50/50"}`}
                     >
@@ -190,6 +193,7 @@ export function LanguageSwitcher({ availableLanguages, variant = 'dropdown', dir
               <button
                 key={lng}
                 disabled={isPending}
+                aria-label={`Switch to ${getLanguageName(lng)}`}
                 onClick={() => changeLanguage(lng)}
                 className={`flex items-center justify-between w-full px-4 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all ${currentLocale === lng ? "text-brand-ink bg-slate-50" : "text-brand-muted hover:text-brand-ink hover:bg-slate-50/50"}`}
               >

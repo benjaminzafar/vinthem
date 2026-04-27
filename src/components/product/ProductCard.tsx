@@ -22,8 +22,8 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
   const { setCartOpen } = useUIStore();
   const [isLoaded, setIsLoaded] = useState(false);
   
-  const href = product.id ? `/product/${product.id}` : '/products';
-  const title = product.translations?.[lang]?.title || product.title;
+  const href = product.id ? `/${lang}/product/${product.id}` : `/${lang}/products`;
+  const title = product.translations?.[lang]?.title || product.title || 'Premium Vinthem Product';
 
   const isVideo = (url: string) => {
     if (!url) return false;
@@ -37,6 +37,7 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
         href={href} 
         className="block relative w-full mb-5 overflow-hidden border border-slate-100 rounded bg-slate-100"
         style={{ paddingBottom: '125%' }} // Stable 4:5 aspect ratio
+        aria-label={`View details for ${title}`}
       >
         {product.isFeatured && (
           <div className="absolute top-4 left-4 z-20">
@@ -56,6 +57,7 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
                 muted
                 playsInline
                 className="w-full h-full object-cover"
+                aria-label={`Video of ${title}`}
               />
             )
           ) : (
@@ -87,6 +89,7 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
                   icon: <Check className="w-5 h-5" />
                 });
               }}
+              aria-label={`Quick add ${title} to cart`}
               className="w-full h-11 bg-white text-brand-ink border border-slate-100 px-6 !text-[12px] !font-black !uppercase !tracking-widest transition-all duration-300 hover:bg-slate-900 hover:text-white flex items-center justify-center gap-2 rounded"
             >
               <ShoppingBag className="w-4 h-4" />
@@ -98,7 +101,7 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
       
       <div className="flex flex-col flex-1 px-1">
         <h3 className="text-[12px] font-bold uppercase tracking-widest text-brand-ink group-hover:text-brand-muted transition-colors truncate mb-2">
-          <Link href={href}>{title}</Link>
+          <Link href={href} aria-label={`View ${title}`}>{title}</Link>
         </h3>
         <div className="mt-auto">
           <p className="text-[14px] font-medium text-brand-ink">

@@ -40,15 +40,16 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
               return (
                 <Link 
                   key={category.id} 
-                  href={`/products?category=${encodeURIComponent(category.slug)}`}
+                  href={`/${lang}/products?category=${encodeURIComponent(category.slug)}`}
                   className="group block"
+                  aria-label={`Browse ${displayName} collection`}
                 >
                   {/* Stable Media Stage - No shadows or heavy filters */}
                   <div className="relative aspect-[3/4] overflow-hidden rounded bg-slate-50 border border-slate-100 mb-4 transform-gpu">
                     {category.imageUrl ? (
                       <Image
                         src={category.imageUrl}
-                        alt={displayName}
+                        alt={`${displayName} collection`}
                         fill
                         sizes="(max-width: 768px) 50vw, 25vw"
                         className="object-cover transition-transform duration-500 group-hover:scale-105"

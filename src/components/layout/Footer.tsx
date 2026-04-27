@@ -34,7 +34,7 @@ export default async function Footer({ settings }: FooterProps) {
                 <span className="!text-[14px] !font-black !uppercase !tracking-[0.2em] text-gray-900">{settings.storeName?.[lang]}</span>
               )}
             </Link>
-            <p className="text-zinc-600 !text-[14px] leading-relaxed max-w-sm">
+            <p className="text-zinc-700 !text-[14px] leading-relaxed max-w-sm">
               {settings.footerDescription?.[lang] || settings.footerDescription?.en || settings.footerDescription?.sv}
             </p>
           </div>
@@ -43,10 +43,10 @@ export default async function Footer({ settings }: FooterProps) {
             {(settings.footerSections || []).map((section, index) => (
               <div key={index}>
                 <h3 className="!text-[12px] !font-bold !uppercase !tracking-widest text-gray-900 mb-6">{section.title?.[lang] || section.title?.en}</h3>
-                <ul className="space-y-4 text-sm text-gray-600">
+                <ul className="space-y-4 text-sm text-gray-700">
                   {(section.links || []).map((link, lIndex) => (
                     <li key={lIndex}>
-                      <Link href={link.href ? localizeHref(lang, link.href) : '#'} className="hover:text-brand-ink transition-colors">
+                      <Link href={localizeHref(lang, link.href || '/')} className="hover:text-brand-ink transition-colors">
                         {link.label?.[lang] || link.label?.en}
                       </Link>
                     </li>
@@ -58,10 +58,10 @@ export default async function Footer({ settings }: FooterProps) {
         </div>
         
         <div className="pt-8 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6">
-          <p className="text-sm text-gray-700">
+          <p className="text-sm text-gray-800">
             &copy; {new Date().getFullYear()} {settings.storeName?.[lang] || settings.storeName?.en}. {settings.footerCopyright?.[lang] || settings.footerCopyright?.en}
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-700">
+          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-800">
             <CookiePreferencesButton label={settings.cookiePreferencesButtonText?.[lang] || 'Cookie Preferences'} />
             <Link href={localizeHref(lang, '/unsubscribe')} className="hover:text-brand-ink transition-colors">
               {settings.unsubscribeLinkText?.[lang] || 'Unsubscribe'}
