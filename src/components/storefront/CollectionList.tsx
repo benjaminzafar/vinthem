@@ -49,26 +49,25 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
                   <Link href={`/products?category=${encodeURIComponent(category.slug)}`} className="group block">
                     <div className="relative aspect-[3/4] overflow-hidden rounded bg-gray-100 mb-4 group-hover:shadow-lg transition-shadow duration-300">
                       {category.imageUrl && category.imageUrl.trim() !== "" ? (
-                          <Image
-                            src={category.imageUrl}
-                            alt={displayName}
-                            fill
-                            sizes="(max-width: 768px) 50vw, 25vw"
-                            className="object-cover transition-transform duration-700 group-hover:scale-105"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.style.display = 'none';
-                              const fallback = target.parentElement?.querySelector('.category-fallback') as HTMLElement;
-                              if (fallback) fallback.style.display = 'flex';
-                            }}
-                          />
-                        ) : null}
-                        <div className={`category-fallback h-full w-full flex items-center justify-center text-slate-200 font-sans text-2xl bg-zinc-50 uppercase tracking-tighter font-black ${category.imageUrl && category.imageUrl.trim() !== "" ? 'hidden' : ''}`}>
-                          {displayName.substring(0, 2)}
-                        </div>
+                        <Image
+                          src={category.imageUrl}
+                          alt={displayName}
+                          fill
+                          sizes="(max-width: 768px) 50vw, 25vw"
+                          className="object-cover transition-transform duration-700 group-hover:scale-105"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            const fallback = target.parentElement?.querySelector('.category-fallback') as HTMLElement;
+                            if (fallback) fallback.style.display = 'flex';
+                          }}
+                        />
+                      ) : null}
+                      <div className={`category-fallback h-full w-full flex items-center justify-center text-slate-200 font-sans text-2xl bg-zinc-50 uppercase tracking-tighter font-black ${category.imageUrl && category.imageUrl.trim() !== "" ? 'hidden' : ''}`}>
+                        {displayName.substring(0, 2)}
                       </div>
                       
-                      {/* Action Button - Exact match to FeaturedProducts */}
+                      {/* Action Button */}
                       <div className="absolute bottom-3 right-3 bg-brand-ink/90 backdrop-blur-md border border-white/10 w-10 h-10 md:w-12 md:h-12 rounded opacity-100 md:opacity-0 group-hover:opacity-100 transition-all duration-300 z-20 flex items-center justify-center hover:scale-110">
                         <ArrowRight className="w-4 h-4 md:w-5 md:h-5 text-white" />
                       </div>

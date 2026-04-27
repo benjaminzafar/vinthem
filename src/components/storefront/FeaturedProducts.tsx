@@ -41,7 +41,7 @@ export function FeaturedProducts({ products, lang, settings }: FeaturedProductsP
           </div>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          {featuredProducts.map((product, index) => {
+          {featuredProducts.map((product) => {
             if (!product) return null;
             const title = product.translations?.[lang]?.title || product.title || 'Product';
             const price = product.price || 0;
@@ -63,11 +63,12 @@ export function FeaturedProducts({ products, lang, settings }: FeaturedProductsP
                         if (fallback) fallback.style.display = 'flex';
                       }}
                     />
-                    ) : null}
-                    <div className={`product-fallback w-full h-full flex items-center justify-center bg-zinc-50 text-zinc-200 ${product.imageUrl && product.imageUrl.trim() !== "" ? 'hidden' : ''}`}>
-                      <Package className="w-8 h-8" />
-                    </div>
+                  ) : null}
+                  <div className={`product-fallback w-full h-full flex items-center justify-center bg-zinc-50 text-zinc-200 ${product.imageUrl && product.imageUrl.trim() !== "" ? 'hidden' : ''}`}>
+                    <Package className="w-8 h-8" />
                   </div>
+                  
+                  {/* Action Button */}
                   <div className="absolute bottom-3 right-3 bg-brand-ink/90 backdrop-blur-md border border-white/10 w-10 h-10 md:w-12 md:h-12 rounded opacity-100 md:opacity-0 group-hover:opacity-100 transition-all duration-300 z-20 flex items-center justify-center hover:scale-110">
                     <ArrowRight className="w-4 h-4 md:w-5 md:h-5 text-white" />
                   </div>
