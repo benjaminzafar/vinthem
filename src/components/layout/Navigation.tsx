@@ -29,17 +29,17 @@ export default async function Navigation() {
     isAdmin = profile?.role === 'admin';
   }
 
-  // Fetch categories for the premium 4x4 grid
+  // Fetch categories for the premium grid and hierarchy
   const { data: categoriesData } = await supabase
     .from('categories')
-    .select('id, name, slug, image_url, icon_url, pinned_in_search, show_in_hero, translations')
-    .is('parent_id', null)
-    .limit(16);
+    .select('id, name, slug, image_url, icon_url, pinned_in_search, show_in_hero, translations, parent_id')
+    .limit(100);
 
   const categories = (categoriesData || []).map(cat => ({
     id: cat.id,
     name: cat.name,
     slug: cat.slug,
+    parentId: cat.parent_id,
     translations: cat.translations,
     imageUrl: cat.image_url,
     iconUrl: cat.icon_url,

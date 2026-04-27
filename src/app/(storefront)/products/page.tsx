@@ -59,13 +59,19 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
   const categories = (categoriesData || []) as Category[];
 
-  // 2. Resolve active category ID (from slug or name)
-  let activeCategoryId: string | null = null;
+  // 2. Resolve active category ID and all descendant IDs (recursive)
+  let categoryIds: string[] = [];
   if (activeCategory !== 'All') {
-    // Try to find by slug first (preferred), then name
     const category = categories.find(c => c.slug === activeCategory || c.name === activeCategory);
-    if (category) {
-      activeCategoryId = category.id!;
+    if (category && category.id) {
+      // Collect this category + all sub-categories recursively
+      const collectIds = (parentId: string) => {
+        categoryIds.push(parentId);
+        categories
+          .filter(c => c.parentId === parentId)
+          .forEach(child => collectIds(child.id!));
+      };
+      collectIds(category.id);
     }
   }
 
@@ -75,8 +81,8 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     .select('*, imageUrl:image_url, isFeatured:is_featured, categoryId:category_id, createdAt:created_at, prices, stripe_tax_code')
     .or(PUBLIC_PRODUCT_STATUS_FILTER);
 
-  if (activeCategoryId) {
-    productQuery = productQuery.eq('category_id', activeCategoryId);
+  if (categoryIds.length > 0) {
+    productQuery = productQuery.in('category_id', categoryIds);
   }
 
   if (searchQuery) {
