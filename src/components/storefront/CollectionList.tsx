@@ -15,7 +15,7 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
   const featuredCategories = categories.filter(c => c.isFeatured);
 
   return (
-    <section id="collection" className="py-20 md:py-32 bg-white" style={{ isolation: 'isolate' }}>
+    <section id="collection" className="py-20 md:py-32 bg-white" style={{ contentVisibility: 'auto', WebkitFontSmoothing: 'antialiased' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center mb-12 md:mb-20 text-center gap-4">
           <p className="text-xs font-bold tracking-[0.2em] uppercase text-slate-500">
@@ -46,7 +46,8 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
                   className="group relative"
                 >
                   <Link href={`/products?category=${encodeURIComponent(category.slug)}`} className="group block">
-                    <div className="relative aspect-[3/4] overflow-hidden rounded bg-gray-100 mb-4" style={{ WebkitTransform: 'translateZ(0)', transform: 'translateZ(0)' }}>
+                    {/* Stable aspect ratio container using padding trick */}
+                    <div className="relative w-full overflow-hidden rounded bg-gray-50 mb-4" style={{ paddingBottom: '133.33%', transform: 'translateZ(0)', willChange: 'transform' }}>
                       {category.imageUrl && category.imageUrl.trim() !== "" ? (
                         <img
                           src={category.imageUrl}
@@ -55,11 +56,15 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
                           // @ts-ignore
                           fetchPriority="high"
                           decoding="async"
-                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                          style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
+                          className="absolute inset-0 w-full h-full object-cover"
+                          style={{ 
+                            backfaceVisibility: 'hidden', 
+                            WebkitBackfaceVisibility: 'hidden',
+                            transform: 'translateZ(0)'
+                          }}
                         />
                       ) : (
-                        <div className="category-fallback h-full w-full flex items-center justify-center text-slate-200 font-sans text-2xl bg-zinc-50 uppercase tracking-tighter font-black">
+                        <div className="absolute inset-0 flex items-center justify-center text-slate-200 font-sans text-2xl bg-zinc-50 uppercase tracking-tighter font-black">
                           {displayName.substring(0, 2)}
                         </div>
                       )}
@@ -71,7 +76,7 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
                     </div>
                     
                     <div className="px-1">
-                      <h3 className="text-[12px] font-bold uppercase tracking-widest text-brand-ink truncate group-hover:text-brand-muted transition-colors">
+                      <h3 className="text-[12px] font-bold uppercase tracking-widest text-brand-ink truncate">
                         {displayName}
                       </h3>
                     </div>

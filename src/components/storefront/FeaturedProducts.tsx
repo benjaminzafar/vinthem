@@ -24,7 +24,7 @@ export function FeaturedProducts({ products, lang, settings }: FeaturedProductsP
   if (featuredProducts.length === 0) return null;
 
   return (
-    <section id="featured" className="py-32 bg-white" style={{ isolation: 'isolate' }}>
+    <section id="featured" className="py-32 bg-white" style={{ contentVisibility: 'auto', WebkitFontSmoothing: 'antialiased' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row justify-between items-center mb-20">
           <div className="text-center mx-auto">
@@ -47,7 +47,7 @@ export function FeaturedProducts({ products, lang, settings }: FeaturedProductsP
             
             return (
               <Link key={product.id} href={`/${lang}/product/${product.id}`} className="group">
-                <div className="relative aspect-[3/4] overflow-hidden rounded bg-gray-100 mb-4" style={{ WebkitTransform: 'translateZ(0)', transform: 'translateZ(0)' }}>
+                <div className="relative w-full overflow-hidden rounded bg-gray-50 mb-4" style={{ paddingBottom: '133.33%', transform: 'translateZ(0)', willChange: 'transform' }}>
                   {product.imageUrl && product.imageUrl.trim() !== "" ? (
                     <img 
                       src={product.imageUrl} 
@@ -56,11 +56,15 @@ export function FeaturedProducts({ products, lang, settings }: FeaturedProductsP
                       // @ts-ignore
                       fetchPriority="high"
                       decoding="async"
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
-                      style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
+                      className="absolute inset-0 w-full h-full object-cover" 
+                      style={{ 
+                        backfaceVisibility: 'hidden', 
+                        WebkitBackfaceVisibility: 'hidden',
+                        transform: 'translateZ(0)'
+                      }}
                     />
                   ) : (
-                    <div className="product-fallback w-full h-full flex items-center justify-center bg-zinc-50 text-zinc-200">
+                    <div className="absolute inset-0 flex items-center justify-center bg-zinc-50 text-zinc-200">
                       <Package className="w-8 h-8" />
                     </div>
                   )}
