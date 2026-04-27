@@ -2,7 +2,6 @@
 
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Product } from '@/store/useCartStore';
 import { StorefrontSettingsType } from '@/types';
 import { formatPrice } from '@/lib/currency';
@@ -25,7 +24,7 @@ export function FeaturedProducts({ products, lang, settings }: FeaturedProductsP
   if (featuredProducts.length === 0) return null;
 
   return (
-    <section id="featured" className="py-32 bg-white">
+    <section id="featured" className="py-32 bg-white" style={{ isolation: 'isolate' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row justify-between items-center mb-20">
           <div className="text-center mx-auto">
@@ -48,28 +47,23 @@ export function FeaturedProducts({ products, lang, settings }: FeaturedProductsP
             
             return (
               <Link key={product.id} href={`/${lang}/product/${product.id}`} className="group">
-                <div className="relative aspect-[3/4] overflow-hidden rounded bg-gray-100 mb-4 group-hover:shadow-lg transition-shadow duration-300">
+                <div className="relative aspect-[3/4] overflow-hidden rounded bg-gray-100 mb-4" style={{ WebkitTransform: 'translateZ(0)', transform: 'translateZ(0)' }}>
                   {product.imageUrl && product.imageUrl.trim() !== "" ? (
-                    <Image 
+                    <img 
                       src={product.imageUrl} 
                       alt={title} 
-                      fill 
-                      sizes="(max-width: 768px) 50vw, 25vw"
-                      className="object-cover transition-transform duration-700 group-hover:scale-105" 
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                        const fallback = target.parentElement?.querySelector('.product-fallback') as HTMLElement;
-                        if (fallback) fallback.style.display = 'flex';
-                      }}
+                      loading="eager"
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                      style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
                     />
-                  ) : null}
-                  <div className={`product-fallback w-full h-full flex items-center justify-center bg-zinc-50 text-zinc-200 ${product.imageUrl && product.imageUrl.trim() !== "" ? 'hidden' : ''}`}>
-                    <Package className="w-8 h-8" />
-                  </div>
+                  ) : (
+                    <div className="product-fallback w-full h-full flex items-center justify-center bg-zinc-50 text-zinc-200">
+                      <Package className="w-8 h-8" />
+                    </div>
+                  )}
                   
                   {/* Action Button */}
-                  <div className="absolute bottom-3 right-3 bg-brand-ink/90 backdrop-blur-md border border-white/10 w-10 h-10 md:w-12 md:h-12 rounded opacity-100 md:opacity-0 group-hover:opacity-100 transition-all duration-300 z-20 flex items-center justify-center hover:scale-110">
+                  <div className="absolute bottom-3 right-3 bg-brand-ink/90 backdrop-blur-md border border-white/10 w-10 h-10 md:w-12 md:h-12 rounded opacity-100 md:opacity-0 group-hover:opacity-100 transition-all duration-300 z-20 flex items-center justify-center">
                     <ArrowRight className="w-4 h-4 md:w-5 md:h-5 text-white" />
                   </div>
                 </div>

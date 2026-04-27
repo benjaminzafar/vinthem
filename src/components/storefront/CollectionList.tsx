@@ -2,7 +2,6 @@
 
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Category, StorefrontSettingsType } from '@/types';
 import { ShoppingBag, ArrowRight } from 'lucide-react';
 
@@ -16,7 +15,7 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
   const featuredCategories = categories.filter(c => c.isFeatured);
 
   return (
-    <section id="collection" className="py-20 md:py-32 bg-white">
+    <section id="collection" className="py-20 md:py-32 bg-white" style={{ isolation: 'isolate' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center mb-12 md:mb-20 text-center gap-4">
           <p className="text-xs font-bold tracking-[0.2em] uppercase text-slate-500">
@@ -47,28 +46,23 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
                   className="group relative"
                 >
                   <Link href={`/products?category=${encodeURIComponent(category.slug)}`} className="group block">
-                    <div className="relative aspect-[3/4] overflow-hidden rounded bg-gray-100 mb-4 group-hover:shadow-lg transition-shadow duration-300">
+                    <div className="relative aspect-[3/4] overflow-hidden rounded bg-gray-100 mb-4" style={{ WebkitTransform: 'translateZ(0)', transform: 'translateZ(0)' }}>
                       {category.imageUrl && category.imageUrl.trim() !== "" ? (
-                        <Image
+                        <img
                           src={category.imageUrl}
                           alt={displayName}
-                          fill
-                          sizes="(max-width: 768px) 50vw, 25vw"
-                          className="object-cover transition-transform duration-700 group-hover:scale-105"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                            const fallback = target.parentElement?.querySelector('.category-fallback') as HTMLElement;
-                            if (fallback) fallback.style.display = 'flex';
-                          }}
+                          loading="eager"
+                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                          style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
                         />
-                      ) : null}
-                      <div className={`category-fallback h-full w-full flex items-center justify-center text-slate-200 font-sans text-2xl bg-zinc-50 uppercase tracking-tighter font-black ${category.imageUrl && category.imageUrl.trim() !== "" ? 'hidden' : ''}`}>
-                        {displayName.substring(0, 2)}
-                      </div>
+                      ) : (
+                        <div className="category-fallback h-full w-full flex items-center justify-center text-slate-200 font-sans text-2xl bg-zinc-50 uppercase tracking-tighter font-black">
+                          {displayName.substring(0, 2)}
+                        </div>
+                      )}
                       
                       {/* Action Button */}
-                      <div className="absolute bottom-3 right-3 bg-brand-ink/90 backdrop-blur-md border border-white/10 w-10 h-10 md:w-12 md:h-12 rounded opacity-100 md:opacity-0 group-hover:opacity-100 transition-all duration-300 z-20 flex items-center justify-center hover:scale-110">
+                      <div className="absolute bottom-3 right-3 bg-brand-ink/90 backdrop-blur-md border border-white/10 w-10 h-10 md:w-12 md:h-12 rounded opacity-100 md:opacity-0 group-hover:opacity-100 transition-all duration-300 z-20 flex items-center justify-center">
                         <ArrowRight className="w-4 h-4 md:w-5 md:h-5 text-white" />
                       </div>
                     </div>
