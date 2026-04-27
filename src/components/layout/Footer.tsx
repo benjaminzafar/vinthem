@@ -34,7 +34,7 @@ export default async function Footer({ settings }: FooterProps) {
                 <span className="!text-[14px] !font-black !uppercase !tracking-[0.2em] text-gray-900">{settings.storeName?.[lang]}</span>
               )}
             </Link>
-            <p className="text-brand-muted !text-[14px] leading-relaxed max-w-sm">
+            <p className="text-zinc-600 !text-[14px] leading-relaxed max-w-sm">
               {settings.footerDescription?.[lang] || settings.footerDescription?.en || settings.footerDescription?.sv}
             </p>
           </div>
@@ -58,10 +58,10 @@ export default async function Footer({ settings }: FooterProps) {
         </div>
         
         <div className="pt-8 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-700">
             &copy; {new Date().getFullYear()} {settings.storeName?.[lang] || settings.storeName?.en}. {settings.footerCopyright?.[lang] || settings.footerCopyright?.en}
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-500">
+          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-700">
             <CookiePreferencesButton label={settings.cookiePreferencesButtonText?.[lang] || 'Cookie Preferences'} />
             <Link href={localizeHref(lang, '/unsubscribe')} className="hover:text-brand-ink transition-colors">
               {settings.unsubscribeLinkText?.[lang] || 'Unsubscribe'}

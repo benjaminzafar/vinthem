@@ -21,9 +21,19 @@ export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSettings();
   const lang = await getServerLocale();
   
+  const siteUrl = getEnv('SITE_URL') || 'https://www.vinthem.com';
+
   return {
     title: settings.seoTitle?.[lang] || settings.storeName?.[lang] || "Vinthem",
     description: settings.seoDescription?.[lang] || "Premium E-commerce",
+    metadataBase: new URL(siteUrl),
+    alternates: {
+      canonical: '/',
+      languages: {
+        'en': '/en',
+        'sv': '/sv',
+      },
+    },
     icons: {
       icon: settings.faviconUrl || "/favicon.ico",
     },
