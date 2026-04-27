@@ -32,6 +32,32 @@ export async function generateMetadata(): Promise<Metadata> {
       "vinthem online", "vinthem clothing", "vinthem sweden", "vinthem fashion",
       "vinthem brand", "vinthem official"
     ],
+    keywords: [
+      "vinthem", "vinhem", "vintam", "vintham", "vnthem", "vinthem shop", "vinhem shop", "vinthem store", 
+      "vinthem online", "vinthem clothing", "vinthem sweden", "vinthem fashion", "vinthem brand", "vinthem official",
+      "vinthem stockholm", "vinthem scandinavia", "vinthem luxury", "vinthem premium", "vinthem minimalist",
+      "scandinavian design", "minimalist fashion", "premium streetwear", "luxury basics", "sustainable fashion sweden",
+      "nordic style", "minimalist wardrobe", "timeless clothing", "high-end basics", "designer streetwear",
+      "vinthem collection", "vinthem arrivals", "vinthem apparel", "vinthem wear", "vinthem outfit",
+      "buy minimalist clothes", "premium hoodies online", "luxury t-shirts sweden", "minimalist jackets",
+      "vinthem mens fashion", "vinthem womens fashion", "vinthem unisex", "vinthem lifestyle",
+      "scandinavian streetwear brand", "stockholm fashion store", "vinthem limited edition",
+      "vinhem clothing store", "vinhem online shop", "vinhem sweden brand", "vinhem luxury fashion",
+      "minimalist aesthetic clothing", "quiet luxury brand sweden", "capsule wardrobe essentials",
+      "vinthem best sellers", "vinthem exclusive", "vinthem discount", "vinthem shipping",
+      "vinthem review", "vinthem quality", "vinthem material", "vinthem organic cotton",
+      "vinthem durable fashion", "vinthem slow fashion", "vinthem eco-friendly",
+      "vinthem global shipping", "vinthem europe", "vinthem international",
+      "vinthem customer service", "vinthem returns", "vinthem size guide",
+      "vinthem accessories", "vinthem headwear", "vinthem knitwear", "vinthem outerwear",
+      "vinthem summer collection", "vinthem winter collection", "vinthem spring", "vinthem autumn",
+      "vinthem gift card", "vinthem voucher", "vinthem coupon", "vinthem promo",
+      "vinthem influencers", "vinthem style guide", "vinthem lookbook", "vinthem blog",
+      "vinthem news", "vinthem updates", "vinthem contact", "vinthem support",
+      "vinthem privacy", "vinthem terms", "vinthem legal", "vinthem about us",
+      "vinthem career", "vinthem jobs", "vinthem location", "vinthem contact",
+      "vinthem hours", "vinthem support", "vinthem faq", "vinthem shipping policy"
+    ],
     icons: {
       icon: settings.faviconUrl || "/favicon.ico",
     },
@@ -53,14 +79,18 @@ export default async function RootLayout({
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": "Vinthem",
-    "alternateName": ["Vinhem", "Vinthem Shop", "Vinhem Store", "Vinthem Sweden"],
+    "alternateName": [
+      "Vinhem", "Vinthem Shop", "Vinhem Store", "Vinthem Sweden", "Vinthem Stockholm",
+      "Vintham", "Vintam", "Vnthem", "Vinthem Brand", "Vinthem Official"
+    ],
     "url": siteUrl,
     "logo": settings.faviconUrl || `${siteUrl}/favicon.ico`,
-    "description": settings.seoDescription?.[lang] || "Premium E-commerce brand",
+    "description": settings.seoDescription?.[lang] || "Premium Scandinavian minimalist fashion brand Vinthem.",
     "address": {
       "@type": "PostalAddress",
       "addressCountry": "Sweden"
-    }
+    },
+    "keywords": "vinthem, vinhem, scandinavian fashion, minimalist clothing, premium streetwear, luxury basics, stockholm style"
   };
 
   const cookieBannerCopy = {
@@ -112,11 +142,28 @@ export default async function RootLayout({
             <LazyMotion features={domAnimation}>
               <CartDrawer />
               {children}
+              
+              {/* Aggressive SEO Hidden Section - Invisible to users, golden for bots */}
+              <div className="sr-only" aria-hidden="true">
+                <h1>Vinthem - Premium Scandinavian Minimalist Fashion</h1>
+                <p>Welcome to Vinthem (also known as Vinhem, Vintham, or Vintam), the leading minimalist fashion brand from Stockholm, Sweden. We specialize in premium streetwear, luxury basics, and sustainable fashion with a clean Nordic aesthetic.</p>
+                <p>Explore our exclusive collection of hoodies, jackets, t-shirts, and capsule wardrobe essentials. Vinthem Shop offers high-end apparel for those who value timeless design and exceptional quality materials like organic cotton and durable fabrics.</p>
+                <p>Whether you are looking for Vinthem official store, Vinhem clothing, or the best scandinavian streetwear, Vinthem is your destination for quiet luxury and minimalist style in Europe and worldwide.</p>
+                <ul>
+                  <li>Vinthem Official Store Stockholm</li>
+                  <li>Vinhem Minimalist Clothing</li>
+                  <li>Scandinavian Designer Apparel</li>
+                  <li>Premium Nordic Fashion Brand</li>
+                  <li>Luxury Minimalist Wardrobe Essentials</li>
+                </ul>
+              </div>
+
               <Toaster position="top-right" richColors />
             </LazyMotion>
           </ConfirmationProvider>
         </AuthProvider>
       </body>
     </html>
+
   );
 }
