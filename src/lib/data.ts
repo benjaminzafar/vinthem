@@ -25,9 +25,20 @@ export const getSettings = cache(async () => {
       .eq('id', 'primary')
       .maybeSingle();
 
-    if (error || !settingsData) {
+    if (error) {
+      console.error('CRITICAL SETTINGS ERROR:', error.message, error.code);
       return {
-        storeName: { en: 'Vinthem', sv: 'Vinthem' },
+        storeName: { en: `Vinthem (${error.code})`, sv: `Vinthem (${error.code})` },
+        logoUrl: '',
+        heroBackgroundColor: '#ffffff',
+        primaryColor: '#000000',
+      } as any;
+    }
+
+    if (!settingsData) {
+      console.warn('Settings row "primary" not found.');
+      return {
+        storeName: { en: 'Vinthem (No Config)', sv: 'Vinthem (No Config)' },
         logoUrl: '',
         heroBackgroundColor: '#ffffff',
         primaryColor: '#000000',
@@ -35,9 +46,10 @@ export const getSettings = cache(async () => {
     }
 
     return settingsData.data as StorefrontSettings;
-  } catch (e) {
+  } catch (e: any) {
+    console.error('Settings Crash:', e.message);
     return {
-      storeName: { en: 'Vinthem', sv: 'Vinthem' },
+      storeName: { en: 'Vinthem (Crash)', sv: 'Vinthem (Crash)' },
       logoUrl: '',
       heroBackgroundColor: '#ffffff',
       primaryColor: '#000000',
