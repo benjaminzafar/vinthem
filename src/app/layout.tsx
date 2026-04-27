@@ -3,10 +3,11 @@ import "./globals.css";
 
 import { ConfirmationProvider } from "@/components/ConfirmationContext";
 import { AuthProvider } from "@/components/AuthProvider";
-import { StoreHydrator } from "@/components/StoreHydrator";
+import StoreHydrator from "@/components/StoreHydrator";
 import { getSettings, getIntegrations } from "@/lib/data";
 import { LazyMotion, domAnimation } from "motion/react";
 import { CookieBannerMount } from "@/components/CookieBannerMount";
+import { getEnv } from "@/lib/env";
 import { CartDrawer } from "@/components/layout/CartDrawer";
 import { getServerLocale } from "@/lib/server-locale";
 import { Toaster } from "sonner";
@@ -93,7 +94,13 @@ export default async function RootLayout({
         <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="" />
       </head>
       <body className="min-h-full flex flex-col font-sans" suppressHydrationWarning>
-        <StoreHydrator settings={settings} />
+        <StoreHydrator 
+          settings={settings} 
+          supabaseConfig={{
+            url: getEnv('SUPABASE_URL') || '',
+            anonKey: getEnv('SUPABASE_PUBLISHABLE_KEY') || ''
+          }}
+        />
         <CookieBannerMount copy={cookieBannerCopy} />
         <AuthProvider>
           <ConfirmationProvider>

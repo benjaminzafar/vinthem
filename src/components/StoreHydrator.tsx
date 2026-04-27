@@ -1,20 +1,31 @@
 "use client";
 
 import { useEffect } from 'react';
-import { StorefrontSettings, useSettingsStore } from '@/store/useSettingsStore';
+import { useSettingsStore, StorefrontSettings } from '@/store/useSettingsStore';
 
 interface StoreHydratorProps {
-  settings: Partial<StorefrontSettings>;
+  settings: StorefrontSettings;
+  supabaseConfig?: {
+    url: string;
+    anonKey: string;
+  };
 }
 
-export function StoreHydrator({ settings }: StoreHydratorProps) {
-  const setSettings = useSettingsStore((state) => state.setSettings);
-  const setSettingsLoaded = useSettingsStore((state) => state.setSettingsLoaded);
+export default function StoreHydrator({ settings, supabaseConfig }: StoreHydratorProps) {
+  const { setSettings, setSettingsLoaded } = useSettingsStore();
 
   useEffect(() => {
-    setSettings(settings);
-    setSettingsLoaded(true);
-  }, [settings, setSettings, setSettingsLoaded]);
+    if (settings) {
+      setSettings(settings);
+      setSettingsLoaded(true);
+    }
+
+    // Persist Supabase config to globalThis for the client-side singleton
+    if (supabaseConfig?.url && supabaseConfig?.anonKey) {
+      (globalThis as any).__supabase_url = supabaseConfig.url;
+      (globalThis as any).__supabase_key = supabaseConfig.anonKey;
+    }
+  }, [settings, setSettings, setSettingsLoaded, supabaseConfig]);
 
   return null;
 }
