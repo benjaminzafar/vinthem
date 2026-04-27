@@ -27,13 +27,6 @@ export async function generateMetadata(): Promise<Metadata> {
     title: settings.seoTitle?.[lang] || settings.storeName?.[lang] || "Vinthem",
     description: settings.seoDescription?.[lang] || "Premium E-commerce",
     metadataBase: new URL(siteUrl),
-    alternates: {
-      canonical: '/',
-      languages: {
-        'en': '/en',
-        'sv': '/sv',
-      },
-    },
     icons: {
       icon: settings.faviconUrl || "/favicon.ico",
     },
