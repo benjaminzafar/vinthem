@@ -41,7 +41,10 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
     e.preventDefault();
     if (loading) return;
     setLoading(true);
-    const supabase = createClient();
+    
+    const { getSupabaseConfigAction } = await import('@/app/actions/config');
+    const config = await getSupabaseConfigAction();
+    const supabase = createClient(config.url, config.anonKey);
 
     try {
       if (isLogin) {
@@ -124,9 +127,13 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
       return;
     }
     
-    const supabase = createClient();
-
     try {
+      // Get the correct config from server right before sign-in
+      const { getSupabaseConfigAction } = await import('@/app/actions/config');
+      const config = await getSupabaseConfigAction();
+      
+      const supabase = createClient(config.url, config.anonKey);
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: { 
