@@ -50,19 +50,20 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
                     <div className="relative aspect-[3/4] overflow-hidden rounded bg-gray-100 mb-4 transition-all">
                       <div className="h-full w-full">
                         {category.imageUrl && category.imageUrl.trim() !== "" ? (
-                          <Image
-                            src={category.imageUrl}
-                            alt={displayName}
-                            fill
-                            sizes="(max-width: 768px) 50vw, 25vw"
-                            className="object-cover transition-transform duration-700 group-hover:scale-105"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.classList.add('hidden');
-                              const fallback = target.parentElement?.querySelector('.category-fallback');
-                              if (fallback) fallback.classList.remove('hidden');
-                            }}
-                          />
+                            <Image
+                              src={category.imageUrl}
+                              alt={displayName}
+                              fill
+                              sizes="(max-width: 768px) 50vw, 25vw"
+                              className="object-cover transition-transform duration-700 group-hover:scale-105"
+                              priority={true}
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.classList.add('hidden');
+                                const fallback = target.parentElement?.querySelector('.category-fallback');
+                                if (fallback) fallback.classList.remove('hidden');
+                              }}
+                            />
                         ) : null}
                         <div className={`category-fallback h-full w-full flex items-center justify-center text-slate-200 font-sans text-2xl bg-zinc-50 uppercase tracking-tighter font-black ${category.imageUrl && category.imageUrl.trim() !== "" ? 'hidden' : ''}`}>
                           {displayName.substring(0, 2)}

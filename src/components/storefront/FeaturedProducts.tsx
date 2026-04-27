@@ -57,7 +57,7 @@ export function FeaturedProducts({ products, lang, settings }: FeaturedProductsP
                         fill 
                         sizes="(max-width: 768px) 50vw, 25vw"
                         className="object-cover transition-transform duration-700 group-hover:scale-105" 
-                        priority={index < 2}
+                        priority={true}
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.classList.add('hidden');
