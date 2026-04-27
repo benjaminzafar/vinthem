@@ -106,7 +106,7 @@ export function ProductClient({
                     onClick={() => setActiveImage(img)}
                     className={`relative aspect-square overflow-hidden rounded border transition-all ${activeImage === img ? 'border-slate-900' : 'border-transparent opacity-60'}`}
                   >
-                    <Image src={img} alt={displayTitle} fill className="object-cover" sizes="150px" />
+                    <Image src={getOptimizedImageUrl(img, 150, 75)} alt={displayTitle} fill className="object-cover" sizes="150px" unoptimized={true} />
                   </button>
                 ))}
               </div>
@@ -119,6 +119,46 @@ export function ProductClient({
             
             <div className="mt-8 prose prose-slate max-w-none">
               <p className="text-slate-600 leading-relaxed">{displayDescription}</p>
+            </div>
+
+            {product.options?.map((option) => (
+              <div key={option.name} className="mt-8">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-slate-950 mb-4">{option.name}</h3>
+                <div className="flex flex-wrap gap-2">
+                  {option.values?.map((value) => (
+                    <button
+                      key={value}
+                      onClick={() => setSelectedOptions(prev => ({ ...prev, [option.name]: value }))}
+                      className={`h-11 px-6 text-sm font-medium transition-all ${
+                        selectedOptions[option.name] === value
+                          ? 'bg-slate-950 text-white'
+                          : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-400'
+                      }`}
+                    >
+                      {value}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+
+            <div className="mt-8">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-slate-950 mb-4">Quantity</h3>
+              <div className="flex h-12 w-32 items-center border border-slate-200">
+                <button 
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  className="flex h-full w-10 items-center justify-center text-slate-600 hover:text-slate-950 transition-colors"
+                >
+                  <Minus className="w-4 h-4" />
+                </button>
+                <span className="flex-1 text-center text-sm font-medium text-slate-950">{quantity}</span>
+                <button 
+                  onClick={() => setQuantity(quantity + 1)}
+                  className="flex h-full w-10 items-center justify-center text-slate-600 hover:text-slate-950 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              </div>
             </div>
 
             <div className="mt-10">
