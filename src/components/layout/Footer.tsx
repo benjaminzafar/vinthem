@@ -21,7 +21,7 @@ export default async function Footer({ settings }: FooterProps) {
           <div className="col-span-1 md:col-span-4 lg:col-span-5 pr-8">
             <Link href={localizeHref(lang, '/')} className="inline-block mb-8 group">
               {settings.logoImage ? (
-                <div className="relative h-10 w-40">
+                <div className="relative h-6 w-24">
                   <Image 
                     src={settings.logoImage} 
                     alt={settings.storeName?.[lang] || 'Vinthem'} 
