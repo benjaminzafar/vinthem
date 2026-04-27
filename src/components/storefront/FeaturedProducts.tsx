@@ -48,22 +48,21 @@ export function FeaturedProducts({ products, lang, settings }: FeaturedProductsP
             
             return (
               <Link key={product.id} href={`/${lang}/product/${product.id}`} className="group">
-                <div className="relative aspect-[3/4] overflow-hidden rounded bg-gray-100 mb-4 transform-gpu">
-                  <div className="absolute inset-0 w-full h-full transform-gpu" style={{ WebkitBackfaceVisibility: 'hidden', WebkitTransform: 'translate3d(0,0,0)' }}>
-                    {product.imageUrl && product.imageUrl.trim() !== "" ? (
-                      <Image 
-                        src={product.imageUrl} 
-                        alt={title} 
-                        fill 
-                        sizes="(max-width: 768px) 50vw, 25vw"
-                        className="object-cover transition-transform duration-700 group-hover:scale-105" 
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                          const fallback = target.parentElement?.querySelector('.product-fallback') as HTMLElement;
-                          if (fallback) fallback.style.display = 'flex';
-                        }}
-                      />
+                <div className="relative aspect-[3/4] overflow-hidden rounded bg-gray-100 mb-4 group-hover:shadow-lg transition-shadow duration-300">
+                  {product.imageUrl && product.imageUrl.trim() !== "" ? (
+                    <Image 
+                      src={product.imageUrl} 
+                      alt={title} 
+                      fill 
+                      sizes="(max-width: 768px) 50vw, 25vw"
+                      className="object-cover transition-transform duration-700 group-hover:scale-105" 
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        const fallback = target.parentElement?.querySelector('.product-fallback') as HTMLElement;
+                        if (fallback) fallback.style.display = 'flex';
+                      }}
+                    />
                     ) : null}
                     <div className={`product-fallback w-full h-full flex items-center justify-center bg-zinc-50 text-zinc-200 ${product.imageUrl && product.imageUrl.trim() !== "" ? 'hidden' : ''}`}>
                       <Package className="w-8 h-8" />

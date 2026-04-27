@@ -9,8 +9,8 @@ import { FeaturedProducts } from '@/components/storefront/FeaturedProducts';
 import dynamic from 'next/dynamic';
 import { getServerLocale } from '@/lib/server-locale';
 
+import { CollectionList } from '@/components/storefront/CollectionList';
 const FutureSections = dynamic(() => import('@/components/storefront/FutureSections').then(mod => mod.FutureSections), { ssr: true });
-const CollectionList = dynamic(() => import('@/components/storefront/CollectionList').then(mod => mod.CollectionList), { ssr: true });
 const NewsletterSection = dynamic(() => import('@/components/storefront/NewsletterSection').then(mod => mod.NewsletterSection), { ssr: true });
 
 export async function generateMetadata() {
@@ -122,9 +122,7 @@ export default async function StorefrontPage() {
       {/* 
         STREAMED SECTIONS (Low Priority - Non-blocking)
       */}
-      <Suspense fallback={<SectionSkeleton />}>
-        <CollectionsWrapper lang={lang} settings={settings} categories={categories} />
-      </Suspense>
+      <CollectionsWrapper lang={lang} settings={settings} categories={categories} />
       
       <Suspense fallback={<SectionSkeleton />}>
         <FutureSections lang={lang} settings={settings} />

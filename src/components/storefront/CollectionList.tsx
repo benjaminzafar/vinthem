@@ -47,22 +47,21 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
                   className="group relative"
                 >
                   <Link href={`/products?category=${encodeURIComponent(category.slug)}`} className="group block">
-                    <div className="relative aspect-[3/4] overflow-hidden rounded bg-gray-100 mb-4 transition-all transform-gpu">
-                      <div className="absolute inset-0 w-full h-full transform-gpu" style={{ WebkitBackfaceVisibility: 'hidden', WebkitTransform: 'translate3d(0,0,0)' }}>
-                        {category.imageUrl && category.imageUrl.trim() !== "" ? (
-                            <Image
-                              src={category.imageUrl}
-                              alt={displayName}
-                              fill
-                              sizes="(max-width: 768px) 50vw, 25vw"
-                              className="object-cover transition-transform duration-700 group-hover:scale-105"
-                              onError={(e) => {
-                                const target = e.target as HTMLImageElement;
-                                target.style.display = 'none';
-                                const fallback = target.parentElement?.querySelector('.category-fallback') as HTMLElement;
-                                if (fallback) fallback.style.display = 'flex';
-                              }}
-                            />
+                    <div className="relative aspect-[3/4] overflow-hidden rounded bg-gray-100 mb-4 group-hover:shadow-lg transition-shadow duration-300">
+                      {category.imageUrl && category.imageUrl.trim() !== "" ? (
+                          <Image
+                            src={category.imageUrl}
+                            alt={displayName}
+                            fill
+                            sizes="(max-width: 768px) 50vw, 25vw"
+                            className="object-cover transition-transform duration-700 group-hover:scale-105"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              const fallback = target.parentElement?.querySelector('.category-fallback') as HTMLElement;
+                              if (fallback) fallback.style.display = 'flex';
+                            }}
+                          />
                         ) : null}
                         <div className={`category-fallback h-full w-full flex items-center justify-center text-slate-200 font-sans text-2xl bg-zinc-50 uppercase tracking-tighter font-black ${category.imageUrl && category.imageUrl.trim() !== "" ? 'hidden' : ''}`}>
                           {displayName.substring(0, 2)}
