@@ -41,37 +41,41 @@ export async function POST(req: NextRequest) {
     const buffer = Buffer.from(arrayBuffer);
 
     const { getR2Credentials, getS3Client } = await import("@/lib/s3");
-    const { bucketName, publicUrl, accountId } = await getR2Credentials();
+    const credentials = await getR2Credentials();
+    const { bucketName, publicUrl, accountId } = credentials;
     const s3Client = await getS3Client();
     const { PutObjectCommand } = await import("@aws-sdk/client-s3");
 
     if (!bucketName) {
-      return NextResponse.json({ error: 'R2_BUCKET_NAME is not configured' }, { status: 500 });
+      return NextResponse.json({ error: 'Configuration Error: R2_BUCKET_NAME is missing. Please check Admin -> Integrations.' }, { status: 500 });
     }
+
+    // Sanitize path: remove spaces and special characters that often break S3 uploads
+    const sanitizedPath = path.replace(/[^\x00-\x7F]/g, '').replace(/\s+/g, '_');
 
     try {
       await s3Client.send(
         new PutObjectCommand({
           Bucket: bucketName,
-          Key: path,
+          Key: sanitizedPath,
           Body: buffer,
           ContentType: file.type || 'application/octet-stream',
         })
       );
 
       const baseUrl = publicUrl ? publicUrl.replace(/\/$/, '') : `https://${accountId}.r2.cloudflarestorage.com/${bucketName}`;
-      const cleanPath = path.replace(/^\//, '');
-      const encodedPath = cleanPath.split('/').map(segment => encodeURIComponent(segment)).join('/');
+      const encodedPath = sanitizedPath.split('/').map(segment => encodeURIComponent(segment)).join('/');
       const finalUrl = `${baseUrl}/${encodedPath}`;
       return NextResponse.json({ url: finalUrl });
-    } catch (uploadError: unknown) {
-      const message = uploadError instanceof Error ? uploadError.message : 'Upload failed';
+    } catch (uploadError: any) {
+      const message = uploadError?.message || 'S3/R2 Network Error during upload';
       logger.error('R2 Upload Error:', message);
-      return NextResponse.json({ error: message }, { status: 500 });
+      return NextResponse.json({ error: `R2 Storage Error: ${message}` }, { status: 500 });
     }
-  } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : 'Upload failed';
-    return NextResponse.json({ error: msg }, { status: 500 });
+  } catch (error: any) {
+    const msg = error?.message || 'Server-side processing failed';
+    logger.error('Global Upload Route Error:', msg);
+    return NextResponse.json({ error: `Upload Route Error: ${msg}` }, { status: 500 });
   }
 }
 
