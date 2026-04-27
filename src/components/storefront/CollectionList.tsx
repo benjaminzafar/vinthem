@@ -5,12 +5,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Category, StorefrontSettingsType } from '@/types';
 import { ShoppingBag, ArrowRight } from 'lucide-react';
+import { motion } from 'motion/react';
 
 export function CollectionList({ categories, lang, settings }: CollectionListProps) {
   const featuredCategories = categories.filter(c => c.isFeatured);
 
   return (
-    <section id="collection" className="py-20 md:py-32 bg-white" style={{ contentVisibility: 'auto' }}>
+    <section id="collection" className="py-20 md:py-32 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center mb-12 md:mb-20 text-center gap-4">
           <p className="text-xs font-bold tracking-[0.2em] uppercase text-slate-500">
@@ -36,7 +37,14 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
             {featuredCategories.map((category, index) => {
               const displayName = category.translations?.[lang]?.name || category.name;
               return (
-                <div key={category.id} className="group relative">
+                <motion.div 
+                  key={category.id} 
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  className="group relative"
+                >
                   <Link href={`/products?category=${encodeURIComponent(category.slug)}`} className="group block">
                     <div className="relative aspect-[3/4] overflow-hidden rounded bg-slate-50 mb-4 border border-slate-100">
                       {category.imageUrl && category.imageUrl.trim() !== "" ? (
@@ -45,7 +53,7 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
                           alt={displayName}
                           fill
                           sizes="(max-width: 768px) 50vw, 25vw"
-                          className="object-cover transition-transform duration-500 group-hover:scale-105"
+                          className="object-cover transition-transform duration-700 group-hover:scale-105"
                           priority={index < 2}
                         />
                       ) : (
@@ -53,17 +61,19 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
                           {displayName.substring(0, 2)}
                         </div>
                       )}
-                      <div className="absolute bottom-3 right-3 bg-brand-ink/90 backdrop-blur-md border border-white/10 w-10 h-10 rounded opacity-100 md:opacity-0 group-hover:opacity-100 transition-all duration-300 z-20 flex items-center justify-center">
-                        <ArrowRight className="w-4 h-4 text-white" />
+                      
+                      <div className="absolute bottom-3 right-3 bg-brand-ink/90 backdrop-blur-md border border-white/10 w-10 h-10 md:w-12 md:h-12 rounded opacity-100 md:opacity-0 group-hover:opacity-100 transition-all duration-300 z-20 flex items-center justify-center">
+                        <ArrowRight className="w-4 h-4 md:w-5 md:h-5 text-white" />
                       </div>
                     </div>
+                    
                     <div className="px-1">
                       <h3 className="text-[12px] font-bold uppercase tracking-widest text-brand-ink truncate">
                         {displayName}
                       </h3>
                     </div>
                   </Link>
-                </div>
+                </motion.div>
               );
             })}
           </div>
