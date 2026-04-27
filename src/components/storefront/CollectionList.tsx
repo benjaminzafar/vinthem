@@ -53,11 +53,15 @@ function CollectionCard({ category, lang, index }: { category: Category; lang: s
   const displayName = category.translations?.[lang]?.name || category.name;
 
   return (
-    <div className="group relative" style={{ contain: 'layout style' }}>
+    <div className="group relative" style={{ isolation: 'isolate' }}>
       <Link href={`/products?category=${encodeURIComponent(category.slug)}`} className="group block">
         <div 
           className="relative w-full overflow-hidden rounded bg-slate-100 mb-4 border border-slate-100"
-          style={{ paddingBottom: '133.33%' }} // Hard-coded 3:4 aspect ratio for absolute stability
+          style={{ 
+            paddingBottom: '133.33%', 
+            transform: 'translate3d(0,0,0)',
+            backfaceVisibility: 'hidden'
+          }}
         >
           {category.imageUrl && category.imageUrl.trim() !== "" ? (
             <Image
@@ -65,9 +69,11 @@ function CollectionCard({ category, lang, index }: { category: Category; lang: s
               alt={displayName}
               fill
               sizes="(max-width: 768px) 50vw, 25vw"
-              className={`object-cover transition-all duration-700 ease-out group-hover:scale-105 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+              className={`object-cover transition-all duration-500 ease-out group-hover:scale-105 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
               onLoad={() => setIsLoaded(true)}
               priority={index < 2}
+              // @ts-ignore
+              decoding="sync"
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center text-slate-300 font-sans text-2xl bg-slate-50 uppercase tracking-tighter font-black">
