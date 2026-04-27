@@ -1,55 +1,55 @@
 import { createBrowserClient } from '@supabase/ssr';
 
 /**
- * Sticky Singleton Supabase Client with Runtime Configuration Support
+ * Hardened Singleton Supabase Client for Cloudflare Workers
+ * Ensures that if the client was initialized with a dummy URL, 
+ * it gets recreated once the real URL is available via hydration.
  */
 
 function getSafeEnv(key: string): string | undefined {
-  // 1. Try globalThis (Persisted by StoreHydrator from Server)
   const g = globalThis as any;
   if (key === 'NEXT_PUBLIC_SUPABASE_URL' && g.__supabase_url) return g.__supabase_url;
   if (key === 'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY' && g.__supabase_key) return g.__supabase_key;
 
-  // 2. Try standard process.env (Build-time)
   let value = process.env[key] || (process.env as any)[`NEXT_PUBLIC_${key}`];
-  
   if (!value) return undefined;
 
-  // Fix common mistake: "NAME=VALUE"
   if (value.includes('=')) {
     const parts = value.split('=');
     if (parts[0].trim() === key || parts[0].trim().includes('SUPABASE')) {
       value = parts.slice(1).join('=').trim();
     }
   }
-
   return value;
 }
-
-const supabaseUrl = getSafeEnv('NEXT_PUBLIC_SUPABASE_URL');
-const supabaseAnonKey = getSafeEnv('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY');
 
 declare global {
   var __supabase_client: ReturnType<typeof createBrowserClient> | undefined;
 }
 
 export function createClient(customUrl?: string, customKey?: string) {
-  const url = customUrl || getSafeEnv('NEXT_PUBLIC_SUPABASE_URL') || supabaseUrl;
-  const key = customKey || getSafeEnv('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY') || supabaseAnonKey;
+  const url = customUrl || getSafeEnv('NEXT_PUBLIC_SUPABASE_URL');
+  const key = customKey || getSafeEnv('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY');
 
+  // If we already have a client, check if it's a "valid" one
   if (typeof window !== 'undefined' && globalThis.__supabase_client) {
-    return globalThis.__supabase_client;
+    const currentUrl = (globalThis as any).__supabase_url_used;
+    
+    // If the current client is using the "missing" fallback but we now have a real URL,
+    // we MUST discard it and create a new one.
+    if (currentUrl?.includes('missing') && url && !url.includes('missing')) {
+      globalThis.__supabase_client = undefined;
+    } else {
+      return globalThis.__supabase_client;
+    }
   }
 
-  if (!url || !key || !url.startsWith('http')) {
-    // If we're on the server or don't have config yet, return a temporary client
-    // StoreHydrator will trigger a re-render once config is available
-    return createBrowserClient(url || 'https://missing.supabase.co', key || 'missing');
-  }
+  const finalUrl = url || 'https://missing.supabase.co';
+  const finalKey = key || 'missing';
 
   const client = createBrowserClient(
-    url,
-    key,
+    finalUrl,
+    finalKey,
     {
       auth: {
         flowType: 'pkce',
@@ -62,6 +62,7 @@ export function createClient(customUrl?: string, customKey?: string) {
 
   if (typeof window !== 'undefined') {
     globalThis.__supabase_client = client;
+    (globalThis as any).__supabase_url_used = finalUrl;
   }
 
   return client;
