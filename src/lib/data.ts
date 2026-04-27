@@ -19,40 +19,15 @@ export const getSettings = cache(async () => {
 
   try {
     const supabase = createAdminClient();
-    
-    // Test connection with a simple count first
-    const { count, error: testError } = await supabase
-      .from('settings')
-      .select('*', { count: 'exact', head: true });
-
-    if (testError) {
-      console.error('SUPABASE PERMISSION ERROR:', testError.message);
-      return {
-        storeName: { en: `Vinthem (Auth Error: ${testError.code})`, sv: `Vinthem (Auth Error: ${testError.code})` },
-        logoUrl: '',
-        heroBackgroundColor: '#ffffff',
-        primaryColor: '#000000',
-      } as any;
-    }
-
     const { data: settingsData, error } = await supabase
       .from('settings')
       .select('data')
       .eq('id', 'primary')
       .maybeSingle();
 
-    if (error) {
+    if (error || !settingsData) {
       return {
-        storeName: { en: `Vinthem (Query Error: ${error.code})`, sv: `Vinthem (Query Error: ${error.code})` },
-        logoUrl: '',
-        heroBackgroundColor: '#ffffff',
-        primaryColor: '#000000',
-      } as any;
-    }
-
-    if (!settingsData) {
-      return {
-        storeName: { en: 'Vinthem (No primary row)', sv: 'Vinthem (No primary row)' },
+        storeName: { en: 'Vinthem', sv: 'Vinthem' },
         logoUrl: '',
         heroBackgroundColor: '#ffffff',
         primaryColor: '#000000',
@@ -60,9 +35,9 @@ export const getSettings = cache(async () => {
     }
 
     return settingsData.data as StorefrontSettings;
-  } catch (e: any) {
+  } catch (e) {
     return {
-      storeName: { en: `Vinthem (System Crash: ${e.message})`, sv: `Vinthem (System Crash: ${e.message})` },
+      storeName: { en: 'Vinthem', sv: 'Vinthem' },
       logoUrl: '',
       heroBackgroundColor: '#ffffff',
       primaryColor: '#000000',
