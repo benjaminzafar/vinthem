@@ -1,6 +1,5 @@
 import 'server-only';
 import { S3Client } from "@aws-sdk/client-s3";
-import { decrypt } from '@/lib/encryption';
 import { createAdminClient } from '@/utils/supabase/server';
 
 type IntegrationRow = {
@@ -28,25 +27,24 @@ export async function getR2Credentials(): Promise<R2Credentials> {
   }
 
   const integrations = (data ?? []) as IntegrationRow[];
-  
+
   const accountIdRaw = integrations.find((row) => row.key === 'R2_ACCOUNT_ID')?.value;
   const encryptedAccessKey = integrations.find((row) => row.key === 'R2_ACCESS_KEY_ID')?.value;
   const encryptedSecretKey = integrations.find((row) => row.key === 'R2_SECRET_ACCESS_KEY')?.value;
   const bucketNameRaw = integrations.find((row) => row.key === 'R2_BUCKET_NAME')?.value;
   const publicUrlRaw = integrations.find((row) => row.key === 'R2_PUBLIC_URL')?.value;
-  
+
   const { maybeDecryptStoredValue } = await import('@/lib/integrations');
 
-  // Enforce Rule 11: Priority to Supabase encrypted keys, fallback to env for migration but ideally env should be purged
   const credentials = {
-    accountId: (accountIdRaw ? await maybeDecryptStoredValue(accountIdRaw) : (process.env.R2_ACCOUNT_ID || '')).trim(),
-    accessKeyId: (encryptedAccessKey ? await maybeDecryptStoredValue(encryptedAccessKey) : (process.env.R2_ACCESS_KEY_ID || '')).trim(),
-    secretAccessKey: (encryptedSecretKey ? await maybeDecryptStoredValue(encryptedSecretKey) : (process.env.R2_SECRET_ACCESS_KEY || '')).trim(),
-    bucketName: (bucketNameRaw ? await maybeDecryptStoredValue(bucketNameRaw) : (process.env.R2_BUCKET_NAME || '')).trim(),
-    publicUrl: (publicUrlRaw ? await maybeDecryptStoredValue(publicUrlRaw) : (process.env.R2_PUBLIC_URL || '')).trim(),
+    accountId: (accountIdRaw ? await maybeDecryptStoredValue(accountIdRaw) : '').trim(),
+    accessKeyId: (encryptedAccessKey ? await maybeDecryptStoredValue(encryptedAccessKey) : '').trim(),
+    secretAccessKey: (encryptedSecretKey ? await maybeDecryptStoredValue(encryptedSecretKey) : '').trim(),
+    bucketName: (bucketNameRaw ? await maybeDecryptStoredValue(bucketNameRaw) : '').trim(),
+    publicUrl: (publicUrlRaw ? await maybeDecryptStoredValue(publicUrlRaw) : '').trim(),
   };
 
-  // Robustness check: Ensure publicUrl is a valid absolute URL and doesn't have protocol mangling
+  // Fix malformed https:/ URLs
   if (credentials.publicUrl && credentials.publicUrl.includes('https:/') && !credentials.publicUrl.includes('https://')) {
     credentials.publicUrl = credentials.publicUrl.replace('https:/', 'https://');
   }
@@ -65,10 +63,9 @@ export async function getS3Client(): Promise<S3Client> {
     throw new Error(`R2 configuration incomplete. Missing: ${missing.join(', ')}. Please update in Admin -> Integrations.`);
   }
 
-  // Ensure accountId doesn't have spaces, protocol, or trailing slashes
   const cleanAccountId = accountId.trim()
     .replace(/^https?:\/\//, '')
-    .replace(/\.r2\.cloudflarestorage\.com$/, '') // Remove suffix if user accidentally included it
+    .replace(/\.r2\.cloudflarestorage\.com$/, '')
     .replace(/\/$/, '');
 
   return new S3Client({
@@ -79,5 +76,8 @@ export async function getS3Client(): Promise<S3Client> {
       secretAccessKey: secretAccessKey.trim(),
     },
     forcePathStyle: true,
+    // fetch-based requestHandler: avoids Node.js 'fs' module, compatible with Cloudflare Workers
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    requestHandler: { metadata: { handlerProtocol: "fetch" } } as any,
   });
 }
