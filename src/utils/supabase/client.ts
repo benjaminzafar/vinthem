@@ -31,23 +31,21 @@ export function createClient(customUrl?: string, customKey?: string) {
   }
 
   // Define the target that will hold the real client
-  let realClient: any = null;
-
   const initialize = () => {
     const url = customUrl || getSafeEnv('NEXT_PUBLIC_SUPABASE_URL') || 'https://missing.supabase.co';
     const key = customKey || getSafeEnv('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY') || 'missing';
     
     // If we already have a real client and the config hasn't changed from a "missing" state, reuse it
-    if (realClient && !g.__supabase_url_used?.includes('missing')) {
-      return realClient;
+    if (g.__supabase_real_client && !g.__supabase_url_used?.includes('missing')) {
+      return g.__supabase_real_client;
     }
 
     // If the config is STILL missing, but we already tried once, just return what we have
-    if (url.includes('missing') && realClient) {
-      return realClient;
+    if (url.includes('missing') && g.__supabase_real_client) {
+      return g.__supabase_real_client;
     }
 
-    realClient = createBrowserClient(url, key, {
+    g.__supabase_real_client = createBrowserClient(url, key, {
       auth: {
         flowType: 'pkce',
         persistSession: true,
@@ -56,7 +54,7 @@ export function createClient(customUrl?: string, customKey?: string) {
       },
     });
     g.__supabase_url_used = url;
-    return realClient;
+    return g.__supabase_real_client;
   };
 
   // Create a Proxy that intercepts all property accesses
