@@ -14,6 +14,7 @@ import { Portal } from './Portal';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { getOptimizedImageUrl } from "@/utils/image-utils";
 
 type CartDrawerProps = {
   initialSettings?: Partial<StorefrontSettings>;

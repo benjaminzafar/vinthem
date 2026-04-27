@@ -8,6 +8,7 @@ import { FaFacebookF, FaTelegramPlane, FaWhatsapp } from 'react-icons/fa';
 import { SiThreads } from 'react-icons/si';
 import { toast } from 'sonner';
 import { usePathname } from 'next/navigation';
+import { getOptimizedImageUrl } from '@/utils/image-utils';
 
 import { BackButton } from '@/components/BackButton';
 import { ProductCard } from '@/components/product/ProductCard';

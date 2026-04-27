@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Product } from '@/store/useCartStore';
 import { formatPrice } from '@/lib/currency';
+import { getOptimizedImageUrl } from '@/utils/image-utils';
 import { ArrowRight, Package } from 'lucide-react';
 
 export function FeaturedProducts({ products, lang, labels }: FeaturedProductsProps) {
