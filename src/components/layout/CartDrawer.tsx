@@ -138,7 +138,7 @@ export function CartDrawer({ initialSettings }: CartDrawerProps) {
                                 className="p-1 text-slate-500 hover:text-red-500 transition-colors shrink-0"
                                 aria-label="Remove item"
                               >
-                                <Trash2 className="w-4 h-4" strokeWidth={2} />
+                                <Trash2 className="w-3.5 h-3.5" strokeWidth={1.5} />
                               </button>
                             </div>
                             <p className="text-[14px] font-medium text-brand-muted">
