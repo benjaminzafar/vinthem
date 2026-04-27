@@ -1,6 +1,6 @@
-import type { Metadata } from "next";
+import { Metadata } from "next";
+import { Inter, Roboto, Outfit } from "next/font/google";
 import "./globals.css";
-
 import { ConfirmationProvider } from "@/components/ConfirmationContext";
 import { AuthProvider } from "@/components/AuthProvider";
 import StoreHydrator from "@/components/StoreHydrator";
@@ -12,85 +12,59 @@ import { CartDrawer } from "@/components/layout/CartDrawer";
 import { getServerLocale } from "@/lib/server-locale";
 import { Toaster } from "sonner";
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const roboto = Roboto({ weight: ["400", "700"], subsets: ["latin"], variable: "--font-roboto" });
+const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
 
 export async function generateMetadata(): Promise<Metadata> {
-  const lang = await getServerLocale();
   const settings = await getSettings();
+  const lang = await getServerLocale();
   
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.vinthem.com';
-  const storeName = settings?.storeName?.[lang] || settings?.storeName?.en || 'Vinthem';
-  
-  const title = settings?.seoTitle?.[lang] || settings?.seoTitle?.en || storeName;
-  const description = settings?.seoDescription?.[lang] || settings?.seoDescription?.en || '';
-  const keywords = settings?.seoKeywords?.[lang] || settings?.seoKeywords?.en || "";
-  const ogImage = settings?.seoImage || `${siteUrl}/og-image.jpg`;
-
   return {
-    title: {
-      template: `%s | ${settings?.storeName?.[lang] || settings?.storeName?.en || 'Vinthem'}`,
-      default: title,
-    },
-    description: description,
-    keywords: keywords,
-    metadataBase: new URL(siteUrl),
-    alternates: {
-      canonical: '/',
-      languages: {
-        'en-US': '/en',
-        'sv-SE': '/sv',
-        'fi-FI': '/fi',
-        'da-DK': '/da',
-        'de-DE': '/de',
-      },
-    },
-    openGraph: {
-      title: title,
-      description: description,
-      url: siteUrl,
-      siteName: settings?.storeName?.[lang] || settings?.storeName?.en || 'Vinthem',
-      images: [
-        {
-          url: ogImage,
-          width: 1200,
-          height: 630,
-          alt: title,
-        },
-      ],
-      locale: lang,
-      type: 'website',
+    title: settings.seoTitle?.[lang] || settings.storeName?.[lang] || "Vinthem",
+    description: settings.seoDescription?.[lang] || "Premium E-commerce",
+    icons: {
+      icon: settings.faviconUrl || "/favicon.ico",
     },
   };
 }
 
-
 export default async function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
+  const settings = await getSettings();
+  const integrations = await getIntegrations();
   const lang = await getServerLocale();
-  // Fetch settings on the server for hydration (cached)
-  const settings = await getSettings() || {};
-  const integrations = await getIntegrations() || {};
+
   const cookieBannerCopy = {
-    eyebrow: settings.consentBannerEyebrowText?.[lang] || "Privacy Controls",
-    description: settings.consentBannerDescriptionText?.[lang] || "Essential cookies keep checkout and login secure. Optional analytics helps us improve the store.",
-    privacyLabel: settings.consentPrivacyLinkText?.[lang] || "Privacy Policy",
-    cookieLabel: settings.consentCookieLinkText?.[lang] || "Cookie Policy",
-    acceptAllLabel: settings.consentAcceptAllText?.[lang] || "Accept all",
-    essentialOnlyLabel: settings.consentEssentialOnlyText?.[lang] || "Essential only",
+    eyebrow: settings.cookieBannerTitle?.[lang] || "Cookies",
+    description: settings.cookieBannerDescription?.[lang] || "We use cookies.",
+    privacyLabel: "Privacy Policy",
+    cookieLabel: "Cookie Settings",
+    acceptAllLabel: settings.cookieBannerAcceptText?.[lang] || "Accept",
+    essentialOnlyLabel: settings.cookieBannerDeclineText?.[lang] || "Decline",
   };
 
-  // Only use Clarity ID from integrations, no hardcoded fallbacks
-  const clarityId = integrations.CLARITY_ID;
-
   return (
-    <html lang={lang} className="h-full antialiased" suppressHydrationWarning>
+    <html lang={lang} className={`${inter.variable} ${roboto.variable} ${outfit.variable} h-full`}>
       <head>
-        <link rel="preconnect" href="https://auth.vinthem.com" crossOrigin="" />
-        <link rel="preconnect" href="https://pub-f44233c26dba4e9795b3ccf51fe6f2cb.r2.dev" crossOrigin="" />
+        {integrations.CLARITY_ID && (
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                (function(c,l,a,r,i,t,y){
+                    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+                    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+                    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+                })(window, document, "clarity", "script", "${integrations.CLARITY_ID}");
+              `,
+            }}
+          />
+        )}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="" />
       </head>
       <body className="min-h-full flex flex-col font-sans" suppressHydrationWarning>
@@ -101,18 +75,13 @@ export default async function RootLayout({
             anonKey: getEnv('SUPABASE_PUBLISHABLE_KEY') || ''
           }}
         />
-        <script dangerouslySetInnerHTML={{ __html: `
-          console.log('--- CLIENT SUPABASE DEBUG ---');
-          console.log('URL Injected:', !!'${getEnv('SUPABASE_URL') || ''}');
-          console.log('Key Injected:', !!'${getEnv('SUPABASE_PUBLISHABLE_KEY') || ''}');
-        `}} />
         <CookieBannerMount copy={cookieBannerCopy} />
         <AuthProvider>
           <ConfirmationProvider>
             <LazyMotion features={domAnimation}>
+              <CartDrawer />
               {children}
-              <CartDrawer initialSettings={settings} />
-              <Toaster position="top-center" expand={false} richColors />
+              <Toaster position="top-right" richColors />
             </LazyMotion>
           </ConfirmationProvider>
         </AuthProvider>
@@ -120,4 +89,3 @@ export default async function RootLayout({
     </html>
   );
 }
-
