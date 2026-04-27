@@ -8,6 +8,7 @@ import { useCartStore, Product } from '@/store/useCartStore';
 import { useUIStore } from '@/store/useUIStore';
 import { StorefrontSettingsType } from '@/types';
 import { formatPrice } from '@/lib/currency';
+import { getOptimizedImageUrl } from '@/utils/image-utils';
 import { toast } from 'sonner';
 
 interface ProductCardProps {
@@ -63,13 +64,14 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
           ) : (
             product.imageUrl && product.imageUrl.trim() !== "" && (
               <Image 
-                src={product.imageUrl} 
+                src={getOptimizedImageUrl(product.imageUrl, 400, 75)} 
                 alt={title}
                 fill
                 sizes="(max-width: 768px) 50vw, 33vw"
                 className={`object-cover transition-all duration-700 ease-out group-hover:scale-105 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
                 onLoad={() => setIsLoaded(true)}
                 priority={priority}
+                unoptimized={true}
               />
             )
           )}

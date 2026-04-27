@@ -113,11 +113,12 @@ export function CartDrawer({ initialSettings }: CartDrawerProps) {
                         <div className="relative w-24 aspect-[4/5] bg-slate-50 border border-slate-100 rounded overflow-hidden shrink-0">
                           {item.imageUrl ? (
                             <Image
-                              src={item.imageUrl}
+                              src={getOptimizedImageUrl(item.imageUrl, 150, 75)}
                               alt={item.title}
                               fill
                               className="object-cover transition-transform duration-500 group-hover:scale-105"
                               sizes="100px"
+                              unoptimized={true}
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-[10px] font-black text-slate-300 uppercase tracking-widest">

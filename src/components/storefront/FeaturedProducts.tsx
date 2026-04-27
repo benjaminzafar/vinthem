@@ -31,12 +31,13 @@ export function FeaturedProducts({ products, lang, labels }: FeaturedProductsPro
                 <div className="relative aspect-[3/4] overflow-hidden rounded bg-slate-50 border border-slate-100 mb-4 transform-gpu">
                   {product.imageUrl ? (
                     <Image 
-                      src={product.imageUrl} 
+                      src={getOptimizedImageUrl(product.imageUrl, 500, 75)} 
                       alt={title} 
                       fill
                       sizes="(max-width: 768px) 50vw, 25vw"
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
                       priority={index < 2}
+                      unoptimized={true}
                     />
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center bg-zinc-50 text-zinc-200">

@@ -1,31 +1,23 @@
 export function getOptimizedImageUrl(src: string, width: number = 800, quality: number = 75) {
   if (!src) return src;
   
+  // Supported domains for optimization
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xeatyjjiywcrkuvifyhm.supabase.co';
+  const customCdnUrl = 'https://cdn.vinthem.com';
   
-  if (!src.startsWith(supabaseUrl)) {
+  const isSupabase = src.startsWith(supabaseUrl);
+  const isCustomCdn = src.startsWith(customCdnUrl);
+
+  if (!isSupabase && !isCustomCdn) {
     return src;
   }
 
+  // Use Weserv.nl as a high-performance, free image proxy for Cloudflare R2/Supabase
+  // This is much faster than standard Next.js optimization on Cloudflare Free Workers
   try {
-    const url = new URL(src);
-    const pathParts = url.pathname.split('/');
-    
-    if (pathParts.includes('object') && pathParts.includes('public')) {
-      const publicIndex = pathParts.indexOf('public');
-      const bucket = pathParts[publicIndex + 1];
-      const path = pathParts.slice(publicIndex + 2).join('/');
-      
-      const params = new URLSearchParams();
-      params.set('width', width.toString());
-      params.set('quality', quality.toString());
-      params.set('format', 'webp');
-
-      return `${supabaseUrl}/storage/v1/render/image/public/${bucket}/${path}?${params.toString()}`;
-    }
+    const encodedUrl = encodeURIComponent(src);
+    return `https://images.weserv.nl/?url=${encodedUrl}&w=${width}&q=${quality}&output=webp&il`;
   } catch (e) {
     return src;
   }
-
-  return src;
 }

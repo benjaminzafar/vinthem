@@ -11,6 +11,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'cdn.vinthem.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'images.weserv.nl',
+      },
     ],
     formats: ['image/avif', 'image/webp'],
   },

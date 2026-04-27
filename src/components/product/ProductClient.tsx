@@ -88,12 +88,13 @@ export function ProductClient({
           <section>
             <div className="relative aspect-square overflow-hidden rounded border border-slate-100 bg-slate-50">
               <Image
-                src={activeImage}
+                src={getOptimizedImageUrl(activeImage, 1200, 85)}
                 alt={displayTitle}
                 fill
                 priority
                 className="object-cover transition-opacity duration-300"
                 sizes="(max-width: 1024px) 100vw, 600px"
+                unoptimized={true}
               />
             </div>
             {allImages.length > 1 && (

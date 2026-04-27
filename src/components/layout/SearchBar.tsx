@@ -415,11 +415,12 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                                       className="block relative aspect-[4/5] overflow-hidden bg-slate-50 border border-slate-100 mb-3 rounded"
                                     >
                                       <Image
-                                        src={product.imageUrl}
+                                        src={getOptimizedImageUrl(product.imageUrl, 400, 500)}
                                         alt={product.translations?.[lang]?.title || product.title}
                                         fill
                                         className="object-cover transition-transform duration-700 group-hover:scale-105"
                                         sizes="(max-width: 768px) 30vw, 15vw"
+                                        unoptimized={true}
                                       />
                                       <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/5 transition-colors" />
                                     </Link>
