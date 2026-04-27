@@ -11,6 +11,7 @@ import { getEnv } from "@/lib/env";
 import { CartDrawer } from "@/components/layout/CartDrawer";
 import { getServerLocale } from "@/lib/server-locale";
 import { Toaster } from "sonner";
+import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const roboto = Roboto({ weight: ["400", "700"], subsets: ["latin"], variable: "--font-roboto" });
@@ -51,7 +52,9 @@ export default async function RootLayout({
     <html lang={lang} className={`${inter.variable} ${roboto.variable} ${outfit.variable} h-full`}>
       <head>
         {integrations.CLARITY_ID && (
-          <script
+          <Script
+            id="clarity-script"
+            strategy="afterInteractive"
             dangerouslySetInnerHTML={{
               __html: `
                 (function(c,l,a,r,i,t,y){

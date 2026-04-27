@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 31536000, // 1 year cache for optimized images
     remotePatterns: [
       {
         protocol: 'https',
@@ -14,12 +16,6 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'lh3.googleusercontent.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
-        port: '',
-        pathname: '/**',
       },
       {
         protocol: 'https',
@@ -64,7 +60,8 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       }
     ],
-    qualities: [60, 75],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
   experimental: {
     optimizePackageImports: ['lucide-react', 'motion/react', 'sonner'],
@@ -75,6 +72,3 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
-
-// Trigger rebuild 1776111100
-
