@@ -106,7 +106,15 @@ export default async function Navigation() {
                   placeholder={settings?.searchPlaceholder?.[lang]}
                   categories={categories}
                   lang={lang}
-                  settings={settings}
+                  labels={{
+                    collections: settings?.searchCollectionsResultsText?.[lang] || 'Collections',
+                    products: settings?.searchProductsResultsText?.[lang] || 'Products',
+                    viewAllResults: settings?.viewAllResultsText?.[lang] || 'View all results',
+                    noResults: settings?.searchNoProductsResultsText?.[lang] || settings?.noProductsMatchingText?.[lang] || 'No products found matching your search.',
+                    sortNewest: settings?.sortNewestText?.[lang] || 'Newest Arrivals',
+                    sortPriceAsc: settings?.sortPriceAscText?.[lang] || 'Price: Low to High',
+                    sortPriceDesc: settings?.sortPriceDescText?.[lang] || 'Price: High to Low'
+                  }}
                 />
               </div>
 
@@ -149,7 +157,7 @@ export default async function Navigation() {
                 <MobileMenu
                   user={user}
                   isAdmin={isAdmin}
-                  settings={settings}
+                  navbarLinks={settings?.navbarLinks || []}
                   lang={lang}
                   categories={categories}
                   availableLanguages={availableLanguages}
@@ -159,7 +167,8 @@ export default async function Navigation() {
                     account: settings?.accountLabel?.[lang] || 'Account',
                     adminDashboard: settings?.adminDashboardText?.[lang] || 'Admin Dashboard',
                     logout: settings?.logoutText?.[lang] || 'Logout',
-                    login: settings?.loginText?.[lang] || 'Login'
+                    login: settings?.loginText?.[lang] || 'Login',
+                    allProducts: settings?.searchProductsResultsText?.[lang] || 'All Products'
                   }}
                 />
               </div>

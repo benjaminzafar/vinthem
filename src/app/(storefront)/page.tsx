@@ -79,14 +79,36 @@ async function ProductsList({ lang, settings }: { lang: string, settings: Storef
       createdAt: product.created_at,
     })) as Product[];
 
-  if (products.length === 0) return null; // Simplified: Don't show anything if no featured items
+  if (products.length === 0) return null;
 
-  return <FeaturedProducts products={products} lang={lang} settings={settings} />;
+  return (
+    <FeaturedProducts 
+      products={products} 
+      lang={lang} 
+      labels={{
+        topSubtitle: settings.featuredTopSubtitle?.[lang] || 'Curated Selection',
+        title: settings.featuredTitle?.[lang] || 'Featured Pieces'
+      }} 
+    />
+  );
 }
 
 async function CollectionsWrapper({ lang, settings, categories }: { lang: string, settings: StorefrontSettings, categories: Category[] }) {
-  if (categories.length === 0) return null;
-  return <CollectionList categories={categories} lang={lang} settings={settings} />;
+  const featuredCategories = categories.filter(c => c.isFeatured);
+  if (featuredCategories.length === 0) return null;
+  
+  return (
+    <CollectionList 
+      categories={featuredCategories} 
+      lang={lang} 
+      labels={{
+        topSubtitle: settings.collectionTopSubtitle?.[lang] || 'Curated Catalog',
+        title: settings.collectionTitle?.[lang],
+        subtitle: settings.collectionSubtitle?.[lang],
+        noCollectionsFound: settings.noCollectionsFoundText?.[lang] || 'No collections found'
+      }} 
+    />
+  );
 }
 
 export default async function StorefrontPage() {
@@ -94,10 +116,10 @@ export default async function StorefrontPage() {
   const settings = await getSettings();
   const lang = await getServerLocale();
 
-  // Fetch only what's needed for the Hero LCP immediately
-  const categoriesRes = await supabase.from('categories').select('*').order('name');
+  // Fetch categories once for the whole page
+  const { data: categoriesData } = await supabase.from('categories').select('*').order('name');
 
-  const categories = (categoriesRes.data || []).map(c => ({
+  const categories = (categoriesData || []).map(c => ({
     ...c,
     imageUrl: c.image_url,
     isFeatured: c.is_featured,
@@ -109,7 +131,7 @@ export default async function StorefrontPage() {
       {/* 
         HERO SECTION (High Priority - Rendered Immediately) 
       */}
-      {categories.length > 0 ? (
+      {categories.some(c => c.showInHero) ? (
         <HeroSlider categories={categories} lang={lang} settings={settings} />
       ) : (
         <section className="h-[60vh] flex flex-col items-center justify-center bg-gray-50 px-4 text-center">
@@ -120,7 +142,7 @@ export default async function StorefrontPage() {
       )}
 
       {/* 
-        STREAMED SECTIONS (Low Priority - Non-blocking)
+        MAIN CONTENT SECTIONS
       */}
       <CollectionsWrapper lang={lang} settings={settings} categories={categories} />
       

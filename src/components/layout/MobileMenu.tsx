@@ -19,7 +19,7 @@ import { localizeHref } from '@/lib/i18n-routing';
 interface MobileMenuProps {
   user: SupabaseUser | null;
   isAdmin: boolean;
-  settings: StorefrontSettings;
+  navbarLinks: MenuLink[];
   lang: string;
   categories: Category[];
   availableLanguages: string[];
@@ -30,10 +30,11 @@ interface MobileMenuProps {
     adminDashboard: string;
     logout: string;
     login: string;
+    allProducts: string;
   };
 }
 
-export function MobileMenu({ user, isAdmin, settings, lang, categories, availableLanguages, labels }: MobileMenuProps) {
+export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, availableLanguages, labels }: MobileMenuProps) {
   const { isMobileMenuOpen, setMobileMenuOpen } = useUIStore();
   const menuRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
@@ -149,7 +150,7 @@ export function MobileMenu({ user, isAdmin, settings, lang, categories, availabl
                     className="group flex items-center justify-between"
                   >
                     <span className="!text-[12px] !font-bold !uppercase !tracking-widest text-brand-ink group-hover:text-brand-ink transition-all duration-300">
-                      {settings?.searchProductsResultsText?.[lang] || 'All Products'}
+                      {labels.allProducts}
                     </span>
                     <ChevronRight className="w-5 h-5 text-brand-muted opacity-0 group-hover:opacity-100 transition-opacity" />
                   </Link>
@@ -173,7 +174,7 @@ export function MobileMenu({ user, isAdmin, settings, lang, categories, availabl
                   )}
 
                   {/* Pages */}
-                  {(settings.navbarLinks || [])
+                  {(navbarLinks || [])
                     .filter((link: MenuLink) => link.href !== '/products' && link.href !== '/products/')
                     .map((link: MenuLink, index: number) => (
                     <Link

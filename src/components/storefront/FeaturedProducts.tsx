@@ -1,37 +1,28 @@
-"use client";
-
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Product } from '@/store/useCartStore';
-import { StorefrontSettingsType } from '@/types';
 import { formatPrice } from '@/lib/currency';
 import { ArrowRight, Package } from 'lucide-react';
 
-export function FeaturedProducts({ products, lang, settings }: FeaturedProductsProps) {
+export function FeaturedProducts({ products, lang, labels }: FeaturedProductsProps) {
   if (!Array.isArray(products) || products.length === 0) return null;
-
-  const featuredProducts = products
-    .filter(p => p && p.isFeatured)
-    .slice(0, 4);
-
-  if (featuredProducts.length === 0) return null;
 
   return (
     <section id="featured" className="py-20 md:py-32 bg-white" style={{ isolation: 'isolate' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center mb-16 text-center">
           <p className="text-[11px] font-bold tracking-[0.3em] uppercase text-slate-400 mb-4">
-            {settings?.featuredTopSubtitle?.[lang] || 'Curated Selection'}
+            {labels.topSubtitle}
           </p>
           <h2 className="text-[28px] md:text-[36px] font-bold text-slate-900 tracking-tight mb-6">
-            {settings?.featuredTitle?.[lang] || 'Featured Pieces'}
+            {labels.title}
           </h2>
           <div className="w-10 h-[2px] bg-slate-900"></div>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
-          {featuredProducts.map((product, index) => {
+          {products.map((product, index) => {
             if (!product) return null;
             const title = product.translations?.[lang]?.title || product.title || 'Product';
             
@@ -78,5 +69,8 @@ export function FeaturedProducts({ products, lang, settings }: FeaturedProductsP
 interface FeaturedProductsProps {
   products: Product[];
   lang: string;
-  settings: StorefrontSettingsType;
+  labels: {
+    topSubtitle: string;
+    title: string;
+  };
 }

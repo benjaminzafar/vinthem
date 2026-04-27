@@ -12,16 +12,16 @@ import { Portal } from './Portal';
 import { createClient } from '@/utils/supabase/client';
 import { formatPrice } from '@/lib/currency';
 import { Product } from '@/store/useCartStore';
-import { Category, StorefrontSettingsType } from '@/types';
+import { Category } from "@/types";
 
 interface SearchBarProps {
   placeholder?: string;
   categories?: Category[];
   lang?: string;
-  settings?: StorefrontSettingsType;
+  labels: { collections: string; products: string; viewAllResults: string; noResults: string; sortNewest: string; sortPriceAsc: string; sortPriceDesc: string; };
 }
 
-export function SearchBar({ placeholder, categories: initialCategories = [], lang = 'en', settings }: SearchBarProps) {
+export function SearchBar({ placeholder, categories: initialCategories = [], lang = 'en', labels }: SearchBarProps) {
   const { setIsFilterDrawerOpen, searchQuery, setSearchQuery } = useUIStore();
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
@@ -230,7 +230,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                         value={searchQuery}
                         aria-label="Search catalog"
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder={placeholder || settings?.searchPlaceholder?.[lang] || 'Search products...'}
+                        placeholder={placeholder || placeholder || 'Search products...'}
                         className="w-full h-full py-0 text-lg font-light tracking-tight outline-none bg-transparent placeholder:text-slate-500 text-slate-900"
                       />
                     </form>
@@ -284,9 +284,9 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                         </h3>
                         <div className="space-y-3">
                           {[
-                            { id: 'newest', label: settings?.sortNewestText?.[lang] || 'Newest Arrivals' },
-                            { id: 'price-asc', label: settings?.sortPriceAscText?.[lang] || 'Price: Low to High' },
-                            { id: 'price-desc', label: settings?.sortPriceDescText?.[lang] || 'Price: High to Low' }
+                            { id: 'newest', label: labels.sortNewest },
+                            { id: 'price-asc', label: labels.sortPriceAsc },
+                            { id: 'price-desc', label: labels.sortPriceDesc }
                           ].map((option) => (
                             <button
                               key={option.id}
@@ -369,7 +369,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                           {filteredResults.categories.length > 0 && (
                             <div>
                               <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-6">
-                                {settings?.searchCollectionsResultsText?.[lang] || 'Collections'}
+                                {labels.collections}
                               </p>
                               <div className="flex flex-wrap gap-2">
                                 {filteredResults.categories.map(cat => (
@@ -392,10 +392,10 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                           <div>
                             <div className="flex items-center justify-between mb-8">
                               <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
-                                {settings?.searchProductsResultsText?.[lang] || 'Products'} ({filteredResults.products.length})
+                                {labels.products} ({filteredResults.products.length})
                               </p>
                               <Link href={`/${lang}/products?search=${encodeURIComponent(searchQuery)}`} onClick={() => setIsOverlayOpen(false)} className="text-[11px] font-bold uppercase tracking-widest text-slate-900 hover:opacity-70">
-                                {settings?.viewAllResultsText?.[lang] || 'View all results'}
+                                {labels.viewAllResults}
                               </Link>
                             </div>
                             
@@ -435,7 +435,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                             ) : (
                               <div className="py-20 text-center border-t border-slate-50 mt-4">
                                 <p className="text-slate-500 text-xs italic tracking-wide">
-                                  {settings?.searchNoProductsResultsText?.[lang] || settings?.noProductsMatchingText?.[lang] || 'No products found matching your search.'}
+                                  {labels.noResults}
                                 </p>
                               </div>
                             )}
