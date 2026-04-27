@@ -9,7 +9,6 @@ import { useUIStore } from '@/store/useUIStore';
 import { StorefrontSettingsType } from '@/types';
 import { formatPrice } from '@/lib/currency';
 import { toast } from 'sonner';
-import { motion } from 'motion/react';
 
 interface ProductCardProps {
   product: Product;
@@ -32,12 +31,7 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      viewport={{ once: true }}
-      className="group flex flex-col h-full bg-white"
-    >
+    <div className="group flex flex-col h-full bg-white">
       <Link 
         href={href} 
         className="block relative aspect-[4/5] mb-5 overflow-hidden border border-slate-100 rounded bg-slate-50"
@@ -68,7 +62,7 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
               alt={title}
               fill
               sizes="(max-width: 768px) 50vw, 33vw"
-              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              className="object-cover transition-opacity duration-300 group-hover:scale-105 transition-transform"
               priority={priority}
             />
           )
@@ -107,6 +101,6 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
           </p>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

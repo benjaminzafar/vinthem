@@ -5,7 +5,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Category, StorefrontSettingsType } from '@/types';
 import { ShoppingBag, ArrowRight } from 'lucide-react';
-import { motion } from 'motion/react';
 
 export function CollectionList({ categories, lang, settings }: CollectionListProps) {
   const featuredCategories = categories.filter(c => c.isFeatured);
@@ -37,14 +36,7 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
             {featuredCategories.map((category, index) => {
               const displayName = category.translations?.[lang]?.name || category.name;
               return (
-                <motion.div 
-                  key={category.id} 
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className="group relative"
-                >
+                <div key={category.id} className="group relative">
                   <Link href={`/products?category=${encodeURIComponent(category.slug)}`} className="group block">
                     <div className="relative aspect-[3/4] overflow-hidden rounded bg-slate-50 mb-4 border border-slate-100">
                       {category.imageUrl && category.imageUrl.trim() !== "" ? (
@@ -53,8 +45,8 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
                           alt={displayName}
                           fill
                           sizes="(max-width: 768px) 50vw, 25vw"
-                          className="object-cover transition-transform duration-700 group-hover:scale-105"
-                          priority={index < 2}
+                          className="object-cover transition-opacity duration-300 group-hover:scale-105 transition-transform"
+                          priority={index === 0}
                         />
                       ) : (
                         <div className="absolute inset-0 flex items-center justify-center text-slate-200 font-sans text-2xl bg-zinc-50 uppercase tracking-tighter font-black">
@@ -73,7 +65,7 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
                       </h3>
                     </div>
                   </Link>
-                </motion.div>
+                </div>
               );
             })}
           </div>
