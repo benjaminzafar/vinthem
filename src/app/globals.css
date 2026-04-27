@@ -90,6 +90,20 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+  /* GPU Acceleration for smooth scrolling and rendering at any refresh rate */
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+/* Force hardware acceleration on images for flicker-free performance */
+img {
+  -webkit-user-drag: none;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  image-rendering: -webkit-optimize-contrast;
 }
 
 h1 { @apply text-[34px] md:text-[40px] font-semibold leading-[1.205] tracking-normal; }
