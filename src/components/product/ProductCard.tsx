@@ -57,7 +57,7 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
               loop
               muted
               playsInline
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
           )
         ) : (
@@ -69,7 +69,7 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
               // @ts-ignore
               fetchPriority={priority ? "high" : "auto"}
               decoding="async"
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
             />
           )
@@ -98,26 +98,6 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
           </div>
         </div>
       </Link>
-      
-      {/* Mobile Quick Add Button - Below Image */}
-      <div className="md:hidden block mb-4 px-1">
-        <button 
-          onClick={(e) => {
-            e.preventDefault();
-            addItem(product);
-            setCartOpen(true);
-            toast.success(`${title} added to cart!`, {
-              className: 'rounded bg-slate-900 text-white !text-[12px] !font-bold !uppercase !tracking-widest border-none px-6 py-3',
-              duration: 2000,
-              icon: <Check className="w-5 h-5" strokeWidth={1.5} />
-            });
-          }}
-          className="w-full h-11 bg-slate-50 text-brand-ink border border-slate-200 px-6 !text-[12px] !font-black !uppercase !tracking-widest flex items-center justify-center gap-2 active:scale-[0.98] rounded"
-        >
-          <ShoppingBag className="w-4 h-4" strokeWidth={1.5} />
-          {settings.quickAddText?.[lang] || 'Quick add'}
-        </button>
-      </div>
       
       <div className="flex flex-col flex-1 px-1">
         <div className="flex items-center gap-2 mb-3">
