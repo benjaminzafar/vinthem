@@ -1,10 +1,7 @@
-/**
- * AES-256-GCM encryption using the Web Crypto API.
- * Compatible with Node.js (>=18), Cloudflare Workers, and Edge runtimes.
- */
+import { getEnv } from './env';
 
 function getEncryptionSecret(): string {
-  const secret = process.env.ENCRYPTION_SECRET;
+  const secret = getEnv('ENCRYPTION_SECRET');
   if (!secret) {
     throw new Error(
       'CRITICAL SECURITY FATAL: ENCRYPTION_SECRET is missing from environment variables. Stopping operation to prevent unencrypted secrets.'

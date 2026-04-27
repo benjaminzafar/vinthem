@@ -1,16 +1,16 @@
 import { createServerClient } from '@supabase/ssr';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
+import { getEnv } from '@/lib/env';
 
 export async function createClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  const url = getEnv('SUPABASE_URL');
+  const key = getEnv('SUPABASE_PUBLISHABLE_KEY');
 
   if (!url || !key) {
     if (process.env.NODE_ENV === 'production') {
-      console.error('Supabase client failed: NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY is missing.');
+      console.error('Supabase client failed: SUPABASE_URL or PUBLISHABLE_KEY is missing.');
     }
-    // Return a dummy client to prevent hard crash
     return createServerClient('https://missing.supabase.co', 'missing', { 
       cookies: { getAll() { return [] }, setAll() {} } 
     });
@@ -32,12 +32,7 @@ export async function createClient() {
               cookieStore.set(name, value, options)
             );
           } catch (error) {
-            if (process.env.NODE_ENV === 'development') {
-              console.warn(
-                'Supabase cookie propagation was skipped because cookies cannot be mutated in this server context.',
-                error
-              );
-            }
+            // Safe to ignore
           }
         },
       },
@@ -46,13 +41,10 @@ export async function createClient() {
 }
 
 export function createAdminClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const url = getEnv('SUPABASE_URL');
+  const serviceRoleKey = getEnv('SUPABASE_SERVICE_ROLE_KEY');
   
   if (!url || !serviceRoleKey) {
-    if (process.env.NODE_ENV === 'production') {
-      console.error('CRITICAL: Supabase URL or SERVICE_ROLE_KEY is missing.');
-    }
     return createSupabaseClient(
       url || 'https://missing.supabase.co',
       'missing-key',

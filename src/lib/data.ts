@@ -2,12 +2,13 @@ import { cache } from 'react';
 import { createAdminClient } from '@/utils/supabase/server';
 import type { StorefrontSettings } from '@/store/useSettingsStore';
 import { maybeDecryptStoredValue } from './integrations';
+import { getEnv } from './env';
 
 export const getSettings = cache(async () => {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-  const adminKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const secret = process.env.ENCRYPTION_SECRET;
+  const url = getEnv('SUPABASE_URL');
+  const key = getEnv('SUPABASE_PUBLISHABLE_KEY');
+  const adminKey = getEnv('SUPABASE_SERVICE_ROLE_KEY');
+  const secret = getEnv('ENCRYPTION_SECRET');
 
   console.log('--- DEBUG: CONNECTION CHECK ---');
   console.log('URL Present:', !!url);
@@ -67,7 +68,7 @@ export const getSettings = cache(async () => {
 });
 
 export const getIntegrations = cache(async (): Promise<Record<string, string>> => {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const url = getEnv('SUPABASE_URL');
   if (!url || url.includes('missing')) return {};
 
   try {
