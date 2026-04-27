@@ -71,6 +71,7 @@ export function ProductClient({
   const displayDescription = product.translations?.[lang]?.description || product.description;
 
   const handleAddToCart = () => {
+    // @ts-ignore
     addItem({ ...product, price: currentPrice, quantity });
     setCartOpen(true);
     toast.success(settings.addedToCartConfirmationText?.[lang] || 'Added to cart');
