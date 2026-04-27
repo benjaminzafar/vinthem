@@ -27,11 +27,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: settings.seoTitle?.[lang] || settings.storeName?.[lang] || "Vinthem",
     description: settings.seoDescription?.[lang] || "Premium E-commerce",
     metadataBase: new URL(siteUrl),
-    keywords: [
-      "vinthem", "vinhem", "vinthem shop", "vinhem shop", "vinthem store", 
-      "vinthem online", "vinthem clothing", "vinthem sweden", "vinthem fashion",
-      "vinthem brand", "vinthem official"
-    ],
+
     keywords: [
       "vinthem", "vinhem", "vind hem", "vindhem", "vind-hem", "vintam", "vintham", "vnthem", "vntem", "vintem", "winthem", "winhem", "findhem", "find hem", "venthem", "vanthem", "vinth-em", "vin-them", "vin-hem",
       "vinthem shop", "vinhem shop", "vind hem shop", "vindhem store", "vinthem official", "vinthem brand", "vinthem online",
