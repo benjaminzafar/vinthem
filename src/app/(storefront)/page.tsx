@@ -10,6 +10,7 @@ import dynamic from 'next/dynamic';
 import { getServerLocale } from '@/lib/server-locale';
 
 import { CollectionList } from '@/components/storefront/CollectionList';
+import { ScrollReveal } from '@/components/ui/ScrollReveal';
 const FutureSections = dynamic(() => import('@/components/storefront/FutureSections').then(mod => mod.FutureSections), { ssr: true });
 const NewsletterSection = dynamic(() => import('@/components/storefront/NewsletterSection').then(mod => mod.NewsletterSection), { ssr: true });
 
@@ -148,19 +149,27 @@ export default async function StorefrontPage() {
       )}
 
       {/* 
-        MAIN CONTENT SECTIONS
+        MAIN CONTENT SECTIONS with ScrollReveal
       */}
-      <CollectionsWrapper lang={lang} settings={settings} categories={categories} />
+      <ScrollReveal>
+        <CollectionsWrapper lang={lang} settings={settings} categories={categories} />
+      </ScrollReveal>
       
-      <Suspense fallback={<SectionSkeleton />}>
-        <FutureSections lang={lang} settings={settings} />
-      </Suspense>
+      <ScrollReveal threshold={0.05}>
+        <Suspense fallback={<SectionSkeleton />}>
+          <FutureSections lang={lang} settings={settings} />
+        </Suspense>
+      </ScrollReveal>
 
-      <Suspense fallback={<SectionSkeleton />}>
-        <ProductsList lang={lang} settings={settings} />
-      </Suspense>
+      <ScrollReveal threshold={0.05}>
+        <Suspense fallback={<SectionSkeleton />}>
+          <ProductsList lang={lang} settings={settings} />
+        </Suspense>
+      </ScrollReveal>
 
-      <NewsletterSection settings={settings} lang={lang} />
+      <ScrollReveal>
+        <NewsletterSection settings={settings} lang={lang} />
+      </ScrollReveal>
     </div>
   );
 }
