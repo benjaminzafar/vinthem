@@ -15,7 +15,7 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
   const featuredCategories = categories.filter(c => c.isFeatured);
 
   return (
-    <section id="collection" className="py-20 md:py-32 bg-white" style={{ contentVisibility: 'auto', WebkitFontSmoothing: 'antialiased' }}>
+    <section id="collection" className="py-20 md:py-32 bg-white" style={{ contentVisibility: 'auto' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center mb-12 md:mb-20 text-center gap-4">
           <p className="text-xs font-bold tracking-[0.2em] uppercase text-slate-500">
@@ -46,8 +46,16 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
                   className="group relative"
                 >
                   <Link href={`/products?category=${encodeURIComponent(category.slug)}`} className="group block">
-                    {/* Stable aspect ratio container using padding trick */}
-                    <div className="relative w-full overflow-hidden rounded bg-gray-50 mb-4" style={{ paddingBottom: '133.33%', transform: 'translateZ(0)', willChange: 'transform' }}>
+                    {/* Ultra-stable container with paint containment */}
+                    <div 
+                      className="relative w-full overflow-hidden rounded mb-4" 
+                      style={{ 
+                        paddingBottom: '133.33%', 
+                        contain: 'paint',
+                        transform: 'translateZ(0) rotate(0.001deg)',
+                        willChange: 'transform'
+                      }}
+                    >
                       {category.imageUrl && category.imageUrl.trim() !== "" ? (
                         <img
                           src={category.imageUrl}
@@ -55,7 +63,7 @@ export function CollectionList({ categories, lang, settings }: CollectionListPro
                           loading="eager"
                           // @ts-ignore
                           fetchPriority="high"
-                          decoding="async"
+                          decoding="sync"
                           className="absolute inset-0 w-full h-full object-cover"
                           style={{ 
                             backfaceVisibility: 'hidden', 
