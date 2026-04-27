@@ -14,17 +14,19 @@ export function UserAvatar({ name, imageUrl, size = 28, className = "" }: UserAv
   if (imageUrl && imageUrl.trim() !== "") {
     return (
       <div 
-        className={`relative rounded-full overflow-hidden border border-slate-100 shrink-0 ${className}`}
-        style={{ width: size, height: size }}
+        className={`relative rounded-full overflow-hidden border border-slate-100 shrink-0 transform-gpu ${className}`}
+        style={{ width: size, height: size, WebkitBackfaceVisibility: 'hidden' }}
       >
-        <Image
-          src={imageUrl}
-          alt={name || "User profile"}
-          fill
-          className="object-cover"
-          referrerPolicy="no-referrer"
-          sizes={`${size}px`}
-        />
+        <div className="absolute inset-0 w-full h-full transform-gpu" style={{ WebkitBackfaceVisibility: 'hidden', WebkitTransform: 'translate3d(0,0,0)' }}>
+          <Image
+            src={imageUrl}
+            alt={name || "User profile"}
+            fill
+            className="object-cover"
+            referrerPolicy="no-referrer"
+            sizes={`${size}px`}
+          />
+        </div>
       </div>
     );
   }
