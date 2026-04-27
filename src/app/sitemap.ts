@@ -7,17 +7,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // For now, we seed the crawler with the primary storefront routes.
   const routes = [
     '',
+    '/sv',
     '/products',
+    '/sv/products',
     '/cart',
-    '/auth',
+    '/sv/cart',
+    '/blog',
+    '/sv/blog',
     '/terms-of-service',
     '/privacy-policy',
-    '/returns',
   ].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
     changeFrequency: 'daily' as const,
-    priority: route === '' ? 1 : 0.8,
+    priority: route === '' || route === '/sv' ? 1 : 0.8,
   }))
  
   return routes

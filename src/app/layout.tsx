@@ -27,6 +27,11 @@ export async function generateMetadata(): Promise<Metadata> {
     title: settings.seoTitle?.[lang] || settings.storeName?.[lang] || "Vinthem",
     description: settings.seoDescription?.[lang] || "Premium E-commerce",
     metadataBase: new URL(siteUrl),
+    keywords: [
+      "vinthem", "vinhem", "vinthem shop", "vinhem shop", "vinthem store", 
+      "vinthem online", "vinthem clothing", "vinthem sweden", "vinthem fashion",
+      "vinthem brand", "vinthem official"
+    ],
     icons: {
       icon: settings.faviconUrl || "/favicon.ico",
     },
@@ -41,6 +46,22 @@ export default async function RootLayout({
   const settings = await getSettings();
   const integrations = await getIntegrations();
   const lang = await getServerLocale();
+
+  const siteUrl = getEnv('SITE_URL') || 'https://www.vinthem.com';
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Vinthem",
+    "alternateName": ["Vinhem", "Vinthem Shop", "Vinhem Store", "Vinthem Sweden"],
+    "url": siteUrl,
+    "logo": settings.faviconUrl || `${siteUrl}/favicon.ico`,
+    "description": settings.seoDescription?.[lang] || "Premium E-commerce brand",
+    "address": {
+      "@type": "PostalAddress",
+      "addressCountry": "Sweden"
+    }
+  };
 
   const cookieBannerCopy = {
     eyebrow: settings.cookieBannerTitle?.[lang] || "Cookies",
@@ -69,6 +90,10 @@ export default async function RootLayout({
             }}
           />
         )}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="" />
