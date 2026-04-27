@@ -1,10 +1,15 @@
 import { getEnv } from './env';
 
+/**
+ * AES-256-GCM encryption using the Web Crypto API.
+ * Compatible with Node.js (>=18), Cloudflare Workers, and Edge runtimes.
+ */
+
 function getEncryptionSecret(): string {
   const secret = getEnv('ENCRYPTION_SECRET');
   if (!secret) {
     throw new Error(
-      'CRITICAL SECURITY FATAL: ENCRYPTION_SECRET is missing from environment variables. Stopping operation to prevent unencrypted secrets.'
+      'CRITICAL SECURITY FATAL: ENCRYPTION_SECRET is missing. Stopping operation.'
     );
   }
   return secret;
@@ -16,7 +21,6 @@ async function deriveKey(secret: string): Promise<CryptoKey> {
     ? hexToBytes(secret)
     : encoder.encode(secret);
 
-  // Import raw bytes as AES-256-GCM key
   if (rawKey.length === 32) {
     return globalThis.crypto.subtle.importKey(
       'raw',
@@ -27,7 +31,6 @@ async function deriveKey(secret: string): Promise<CryptoKey> {
     );
   }
 
-  // Derive 32-byte key via SHA-256 if not already 32 bytes
   const hashBuffer = await globalThis.crypto.subtle.digest('SHA-256', rawKey as any);
   return globalThis.crypto.subtle.importKey(
     'raw',
@@ -57,7 +60,6 @@ export async function encrypt(text: string): Promise<string> {
   const iv = globalThis.crypto.getRandomValues(new Uint8Array(12));
   const encoded = new TextEncoder().encode(text);
 
-  // AES-GCM appends the 16-byte auth tag to the ciphertext
   const cipherBuffer = await globalThis.crypto.subtle.encrypt(
     { name: 'AES-GCM', iv: iv as any },
     key,
@@ -68,21 +70,17 @@ export async function encrypt(text: string): Promise<string> {
   const cipherText = cipherBytes.slice(0, -16);
   const authTag = cipherBytes.slice(-16);
 
-  // Format: iv:authTag:encryptedText (same as before)
   return `${bytesToHex(iv)}:${bytesToHex(authTag)}:${bytesToHex(cipherText)}`;
 }
 
 export async function decrypt(encryptedData: string): Promise<string> {
-  try {
-    const parts = encryptedData.split(':');
-    
-    // Legacy support or plain text check
-    if (parts.length < 3) {
-      // If it looks like plain text or old format we can't decrypt on Edge, 
-      // just return it or throw a descriptive error
-      return encryptedData; 
-    }
+  const parts = encryptedData.split(':');
+  if (parts.length !== 3) {
+    // Return original if not formatted correctly to prevent crash
+    return encryptedData;
+  }
 
+  try {
     const key = await deriveKey(getEncryptionSecret());
     const iv = hexToBytes(parts[0]);
     const authTag = hexToBytes(parts[1]);
@@ -100,9 +98,7 @@ export async function decrypt(encryptedData: string): Promise<string> {
 
     return new TextDecoder().decode(decrypted);
   } catch (e) {
-    console.error('Decryption failed:', e);
-    // Return original data as fallback to prevent total crash, 
-    // though it likely won't work if it was meant to be decrypted.
-    return encryptedData;
+    console.error('Decryption failed for:', encryptedData.substring(0, 10) + '...');
+    return encryptedData; // Return raw string instead of throwing
   }
 }
