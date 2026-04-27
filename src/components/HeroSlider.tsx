@@ -84,7 +84,7 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
  
           {/* Image Content */}
           <div className="w-full lg:w-[55%] order-2 z-0 flex-shrink-0 flex items-center justify-center mt-4 lg:mt-0">
-            <div className="relative w-full max-h-[50vh] lg:max-h-none aspect-[16/10] sm:aspect-[16/9] lg:aspect-[4/3] xl:aspect-[16/10] overflow-hidden rounded-[4px] shadow-sm">
+            <div className="relative w-full max-h-[50vh] lg:max-h-none aspect-[16/10] sm:aspect-[16/9] lg:aspect-[4/3] xl:aspect-[16/10] overflow-hidden rounded-[4px] shadow-sm bg-zinc-50">
               {category.imageUrl && (
                 <Image 
                   src={imageToShow || ''} 
@@ -92,8 +92,8 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
                   fill
                   priority
                   fetchPriority="high"
-                  quality={60}
-                  sizes="(max-width: 768px) 100vw, 60vw"
+                  quality={75}
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px"
                   className="object-cover transition-transform duration-[20s] ease-linear group-hover:scale-110"
                   decoding="async"
                 />
