@@ -7,11 +7,6 @@ import { getEnv } from './env';
 export const getSettings = cache(async () => {
   const url = getEnv('SUPABASE_URL');
   const adminKey = getEnv('SUPABASE_SERVICE_ROLE_KEY');
-  
-  // SERVER-SIDE DEBUG
-  console.log('--- SERVER SUPABASE DEBUG ---');
-  console.log('URL FOUND:', !!url);
-  console.log('ADMIN KEY FOUND:', !!adminKey);
 
   if (!url || url.includes('missing') || !adminKey) {
     return {

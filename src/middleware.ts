@@ -84,16 +84,10 @@ function buildConnectSrc(request: NextRequest) {
     'https://*.clarity.ms',
   ]);
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
-  if (supabaseUrl) {
-    sources.add(supabaseUrl);
-
-    if (supabaseUrl.startsWith('https://')) {
-      sources.add(`wss://${supabaseUrl.slice('https://'.length)}`);
-    } else if (supabaseUrl.startsWith('http://')) {
-      sources.add(`ws://${supabaseUrl.slice('http://'.length)}`);
-    }
-  }
+  // Use the same URL we know is correct for this project
+  const supabaseUrl = 'https://xeatyjjiywcrkuvifyhm.supabase.co';
+  sources.add(supabaseUrl);
+  sources.add(`wss://${supabaseUrl.slice('https://'.length)}`);
 
   return Array.from(sources).filter(Boolean).join(' ');
 }
