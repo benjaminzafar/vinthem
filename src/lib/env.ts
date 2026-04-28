@@ -9,20 +9,7 @@ export function getEnv(key: string): string | undefined {
     if (process.env[publicRef]) return process.env[publicRef];
   }
   
-  // 2. Try Cloudflare Request Context (Edge style)
-  try {
-    // Dynamically require to avoid build-time issues on non-cloudflare envs
-    const { getRequestContext } = require('@opennextjs/cloudflare');
-    const ctx = getRequestContext();
-    if (ctx && ctx.env) {
-      const publicRef = `NEXT_PUBLIC_${key}`;
-      return ctx.env[key] || ctx.env[publicRef];
-    }
-  } catch (e) {
-    // Fallback if context is not available
-  }
-
-  // 3. Try globalThis (Some edge runtimes)
+  // 2. Try globalThis (Cloudflare / Edge style)
   const g = globalThis as any;
   if (g[key]) return g[key];
   const publicRef = `NEXT_PUBLIC_${key}`;
