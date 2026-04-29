@@ -1,5 +1,5 @@
 import React from 'react';
-import { createClient } from '@/utils/supabase/server';
+import { createAdminClient, createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import { Metadata } from 'next';
 import { getSettings } from '@/lib/data';
@@ -30,6 +30,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function ProfilePage() {
   const supabase = await createClient();
+  const adminSupabase = createAdminClient();
   
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -42,28 +43,28 @@ export default async function ProfilePage() {
 
   // Fetch initial data on the server for speed
   const [ordersRes, addressesRes, profileRes, ticketsRes, refundsRes] = await Promise.all([
-    supabase
+    adminSupabase
       .from('orders')
-      .select('*, orderId:order_id, createdAt:created_at, shippingCost:shipping_cost')
+      .select('*, orderId:order_id, createdAt:created_at')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false }),
-    supabase
+    adminSupabase
       .from('addresses')
       .select('*, userId:user_id, firstName:first_name, lastName:last_name, postalCode:postal_code, isDefault:is_default')
       .eq('user_id', user.id),
-    supabase
+    adminSupabase
       .from('users')
       .select('full_name')
       .eq('id', user.id)
       .maybeSingle(),
-    supabase
+    adminSupabase
       .from('support_tickets')
-      .select('id, subject, message, status, created_at, updated_at, messages')
+      .select('id, subject, message, status, created_at, messages')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false }),
-    supabase
+    adminSupabase
       .from('refund_requests')
-      .select('id, order_id, reason, status, created_at, comments')
+      .select('id, order_id, reason, status, created_at')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false }),
   ]);

@@ -44,12 +44,16 @@ export async function getCRMDataAction(): Promise<{ success: boolean; data?: CRM
         id: authUser.id,
         email: authUser.email,
         full_name: profile?.full_name || authUser.user_metadata?.full_name || authUser.user_metadata?.name || null,
-        display_name: profile?.display_name || authUser.user_metadata?.display_name || null,
+        display_name: authUser.user_metadata?.display_name || null,
         role: profile?.role || authUser.user_metadata?.role || 'client',
         created_at: authUser.created_at,
         last_sign_in_at: authUser.last_sign_in_at,
         is_authenticated: true, // Marker for registration
-        preferred_lang: profile?.preferred_lang || 'en'
+        preferred_lang:
+          authUser.user_metadata?.preferred_lang ||
+          authUser.user_metadata?.locale ||
+          authUser.user_metadata?.lang ||
+          'en',
       };
     });
 

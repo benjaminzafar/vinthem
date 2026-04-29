@@ -4,7 +4,7 @@
 import { revalidatePath } from 'next/cache';
 
 import { requireAdminUser } from '@/lib/admin';
-import { createClient } from '@/utils/supabase/server';
+import { createAdminClient, createClient } from '@/utils/supabase/server';
 
 type AdminReviewInput = {
   productId: string;
@@ -30,6 +30,52 @@ type OrderItem = {
 
 function sanitizeReviewComment(value: string): string {
   return value.replace(/[<>]/g, '').trim();
+}
+
+async function hasUserPurchasedProduct(userId: string, productId: string) {
+  const adminSupabase = createAdminClient();
+  const { data: orders, error: ordersError } = await adminSupabase
+    .from('orders')
+    .select('items')
+    .eq('user_id', userId);
+
+  if (ordersError) {
+    throw ordersError;
+  }
+
+  return (orders ?? []).some((order) =>
+    Array.isArray(order.items) &&
+    order.items.some((item: OrderItem) => item.id === productId)
+  );
+}
+
+export async function checkPurchasedProductAction(productId: string): Promise<{ purchased: boolean; error?: string }> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError) {
+      throw userError;
+    }
+
+    if (!user) {
+      return { purchased: false };
+    }
+
+    return {
+      purchased: await hasUserPurchasedProduct(user.id, productId.trim()),
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to verify purchase history.';
+    logger.error('[Action Error] checkPurchasedProductAction:', error);
+    return {
+      purchased: false,
+      error: message,
+    };
+  }
 }
 
 export async function submitProductReviewAction(input: CustomerReviewInput): Promise<ReviewActionResult> {
@@ -60,19 +106,7 @@ export async function submitProductReviewAction(input: CustomerReviewInput): Pro
       throw new Error('Review comment is required.');
     }
 
-    const { data: orders, error: ordersError } = await supabase
-      .from('orders')
-      .select('items')
-      .eq('user_id', user.id);
-
-    if (ordersError) {
-      throw ordersError;
-    }
-
-    const hasPurchased = (orders ?? []).some((order) =>
-      Array.isArray(order.items) &&
-      order.items.some((item: OrderItem) => item.id === productId)
-    );
+    const hasPurchased = await hasUserPurchasedProduct(user.id, productId);
 
     if (!hasPurchased) {
       throw new Error('Only customers who purchased this product can leave a review.');

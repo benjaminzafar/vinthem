@@ -100,17 +100,18 @@ export interface AdminOrder {
   user_id: string | null;
   items: OrderItem[];
   total: number;
-  subtotal: number;
+  subtotal?: number;
   currency?: string;
-  shipping_cost: number;
-  tax_amount: number;
+  customer_email?: string | null;
+  shipping_cost?: number;
+  tax_amount?: number;
   status: 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
-  shipping_details: ShippingDetails;
+  shipping_details?: ShippingDetails;
   created_at: string;
   createdAt?: string; // mapped for UI
-  customerEmail?: string; // mapped for UI
-  trackingCarrier?: string;
-  trackingNumber?: string;
+  customerEmail?: string | null; // mapped for UI
+  trackingCarrier?: string | null;
+  trackingNumber?: string | null;
 }
 
 export interface User {
@@ -130,14 +131,14 @@ export interface SupportTicket {
   status: 'open' | 'closed' | 'archived' | 'resolved' | 'in-progress';
   priority: 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
   image_url?: string;
-  messages: Array<{
+  messages?: Array<{
     role: 'user' | 'admin';
     content: string;
     timestamp: string;
   }>;
   locale?: string;
   created_at: string;
-  updated_at: string;
+  updated_at?: string;
 }
 
 export interface RefundRequest {

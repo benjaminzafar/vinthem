@@ -1,7 +1,7 @@
 import 'server-only';
 import { S3Client } from "@aws-sdk/client-s3";
-import { decrypt } from '@/lib/encryption';
 import { createAdminClient } from '@/utils/supabase/server';
+import { maybeDecryptStoredValue } from '@/lib/integrations';
 
 type IntegrationRow = {
   key: string;
@@ -27,14 +27,22 @@ export async function getR2Credentials(): Promise<R2Credentials> {
 
   const integrations = (data ?? []) as IntegrationRow[];
   
-  const accountId = integrations.find((row) => row.key === 'R2_ACCOUNT_ID')?.value;
-  const encryptedAccessKey = integrations.find((row) => row.key === 'R2_ACCESS_KEY_ID')?.value;
-  const encryptedSecretKey = integrations.find((row) => row.key === 'R2_SECRET_ACCESS_KEY')?.value;
+  const accountId = (await maybeDecryptStoredValue(integrations.find((row) => row.key === 'R2_ACCOUNT_ID')?.value)).trim();
+  const accessKeyId = (await maybeDecryptStoredValue(integrations.find((row) => row.key === 'R2_ACCESS_KEY_ID')?.value)).trim();
+  const secretAccessKey = (await maybeDecryptStoredValue(integrations.find((row) => row.key === 'R2_SECRET_ACCESS_KEY')?.value)).trim();
+
+  if (!accountId) {
+    throw new Error('R2 account ID is missing from encrypted integrations.');
+  }
+
+  if (!accessKeyId || !secretAccessKey) {
+    throw new Error('R2 access credentials are missing from encrypted integrations.');
+  }
 
   return {
-    accountId: accountId || process.env.R2_ACCOUNT_ID || '',
-    accessKeyId: encryptedAccessKey ? await decrypt(encryptedAccessKey) : (process.env.R2_ACCESS_KEY_ID || ''),
-    secretAccessKey: encryptedSecretKey ? await decrypt(encryptedSecretKey) : (process.env.R2_SECRET_ACCESS_KEY || ''),
+    accountId,
+    accessKeyId,
+    secretAccessKey,
   };
 }
 

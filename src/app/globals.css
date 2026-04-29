@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", "Segoe UI", Roboto, Arial, sans-serif;
+  --font-sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
   --font-serif: "New York", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
 
   /* Apple HIG-inspired Dynamic Type scale for the web UI */
@@ -37,6 +37,8 @@
 }
 
 :root {
+  --font-ui: "Helvetica Neue", Helvetica, Arial, sans-serif;
+
   /* Apple Standard Theme (Light) */
   --theme-bg: #ffffff;
   --theme-surface: #f5f5f7;
@@ -80,7 +82,7 @@
 }
 
 body {
-  font-family: var(--font-sans);
+  font-family: var(--font-ui);
   font-size: var(--apple-body-size); 
   line-height: var(--apple-body-line);
   font-weight: 400;
@@ -91,6 +93,73 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
+}
+
+.admin-surface {
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.admin-surface .custom-scrollbar {
+  scrollbar-gutter: stable;
+}
+
+.admin-surface button,
+.admin-surface input,
+.admin-surface select,
+.admin-surface textarea {
+  font: inherit;
+}
+
+.admin-surface table {
+  width: 100%;
+}
+
+.admin-surface th,
+.admin-surface td {
+  vertical-align: middle;
+}
+
+.admin-surface h1 {
+  font-size: 28px;
+  line-height: 34px;
+}
+
+.admin-surface h2 {
+  font-size: 22px;
+  line-height: 28px;
+}
+
+.admin-surface h3 {
+  font-size: 18px;
+  line-height: 24px;
+}
+
+.admin-surface h4 {
+  font-size: 16px;
+  line-height: 22px;
+}
+
+.admin-surface h5,
+.admin-surface h6 {
+  letter-spacing: 0;
+}
+
+@media (max-width: 640px) {
+  .admin-surface {
+    font-size: 13px;
+    line-height: 18px;
+  }
+
+  .admin-surface h1 {
+    font-size: 24px;
+    line-height: 30px;
+  }
+
+  .admin-surface .admin-table-cell {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
 }
 
 /* Stable Image rendering */
@@ -107,7 +176,7 @@ h5 { @apply text-[17px] font-semibold leading-[1.295] tracking-normal; }
 h6 { @apply text-[12px] font-semibold uppercase leading-[1.333] tracking-normal text-zinc-500; }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-sans);
+  font-family: var(--font-ui);
 }
 
 /* Custom Scrollbar */

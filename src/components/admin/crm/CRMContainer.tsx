@@ -125,12 +125,10 @@ export function CRMContainer({ initialData }: { initialData?: CRMData }) {
 
   const normalizedOrders = useMemo<CRMOrder[]>(() => {
     return orders.map((order) => {
-      const shippingDetails = order.shipping_details || {};
-
       return {
         id: String(order.id),
         orderId: order.orderId || String(order.id),
-        customerEmail: order.customerEmail || shippingDetails.email || null,
+        customerEmail: order.customerEmail || order.customer_email || null,
         createdAt: typeof order.created_at === 'string' ? order.created_at : null,
         status: typeof order.status === 'string' ? order.status : 'Processing',
         total: Number(order.total ?? 0),
@@ -173,9 +171,9 @@ export function CRMContainer({ initialData }: { initialData?: CRMData }) {
           text: (m.text || m.content || '').trim(),
           createdAt: m.createdAt || m.timestamp || m.created_at || new Date().toISOString()
         })) : [],
-        imageUrl: typeof ticket.image_url === 'string' ? ticket.image_url : null,
         createdAt: typeof ticket.created_at === 'string' ? ticket.created_at : null,
-        updatedAt: typeof ticket.updated_at === 'string' ? ticket.updated_at : null,
+        imageUrl: null,
+        updatedAt: typeof ticket.created_at === 'string' ? ticket.created_at : null,
         locale: (ticket as any).locale || 'en'
       };
     });

@@ -1,4 +1,4 @@
-import { createClient, createAdminClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/server';
 import { notFound } from 'next/navigation';
 import { Overview } from '@/components/admin/Overview';
 import { IntegrationsManager } from '@/components/admin/IntegrationsManager';
@@ -13,9 +13,11 @@ import { MediaManager } from '@/components/admin/MediaManager';
 import { getIntegrationsAction } from '@/app/actions/integrations';
 import { getCRMDataAction } from '@/app/actions/crm';
 import { mapBlogRow, mapPageRow } from '@/lib/admin-content';
-import { Category, type ShippingDetails } from '@/types';
+import { fetchAdminOverviewStats } from '@/lib/admin-overview';
+import { Category } from '@/types';
 import { Product } from '@/store/useCartStore';
 import type { AdminOrder, OrderItem } from '@/types';
+import { requireAdminUser } from '@/lib/admin';
 
 interface TabPageProps {
   params: Promise<{ tab: string }>;
@@ -31,7 +33,7 @@ type OrderRow = {
   shipping_cost?: number;
   tax_amount?: number;
   status?: AdminOrder['status'];
-  shipping_details?: ShippingDetails;
+  customer_email?: string | null;
   created_at: string;
   order_id?: string;
   trackingCarrier?: string;
@@ -41,28 +43,12 @@ type OrderRow = {
 export default async function AdminTabPage({ params, searchParams }: TabPageProps) {
   const { tab } = await params;
   const sParams = await searchParams;
-  const supabase = await createClient();
+  await requireAdminUser();
+  const supabase = createAdminClient();
 
-  // Defense-in-depth: check role server-side even if middleware is active
-  const { data: { user } } = await supabase.auth.getUser();
-  const { data: profile } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', user?.id || '')
-    .single();
-
-  if (profile?.role !== 'admin') {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-zinc-500">Access Denied. Admin privileges required.</p>
-      </div>
-    );
-  }
-
-  // Valid tabs check
   const validTabs = [
     'overview', 'orders', 'products', 
-    'collections', 'customers', 'blogs', 'pages', 
+    'collections', 'customers', 'blogs', 'pages',
     'storefront', 'integrations', 'media'
   ];
 
@@ -70,28 +56,8 @@ export default async function AdminTabPage({ params, searchParams }: TabPageProp
     notFound();
   }
 
-  // --- Data Fetching Logic per Tab ---
-  
   if (tab === 'overview') {
-    const [ordersRes, productsRes, refundsRes] = await Promise.all([
-      supabase
-        .from('orders')
-        .select('id, total, status, created_at, order_id, items, shipping_details')
-        .order('created_at', { ascending: false }),
-      supabase
-        .from('products')
-        .select('id, stock, title, variants, created_at')
-        .order('created_at', { ascending: false }),
-      supabase
-        .from('refund_requests')
-        .select('id, status, created_at')
-        .order('created_at', { ascending: false })
-    ]);
-    const initialStats = {
-      orders: ordersRes.data || [],
-      products: productsRes.data || [],
-      refunds: refundsRes.data || []
-    };
+    const initialStats = await fetchAdminOverviewStats();
     return <Overview initialStats={initialStats} />;
   }
 
@@ -112,11 +78,11 @@ export default async function AdminTabPage({ params, searchParams }: TabPageProp
         shipping_cost: Number(order.shipping_cost ?? 0),
         tax_amount: Number(order.tax_amount ?? 0),
         status: order.status ?? 'Pending',
-        shipping_details: order.shipping_details ?? { email: '' },
+        shipping_details: undefined,
         created_at: order.created_at,
         createdAt: order.created_at,
         orderId: order.order_id,
-        customerEmail: order.shipping_details?.email,
+        customerEmail: order.customer_email ?? null,
         trackingCarrier: order.trackingCarrier,
         trackingNumber: order.trackingNumber,
       };
@@ -152,7 +118,7 @@ export default async function AdminTabPage({ params, searchParams }: TabPageProp
         imageUrl: product.image_url,
         categoryId: product.category_id,
         isFeatured: product.is_featured,
-        isNewArrival: product.is_new_arrival,
+        isNewArrival: product.is_new ?? product.is_new_arrival ?? false,
         isSale: product.is_sale,
         discountPrice: product.sale_price,
         prices: product.prices,
@@ -167,7 +133,7 @@ export default async function AdminTabPage({ params, searchParams }: TabPageProp
         ...cat,
         isFeatured: cat.is_featured,
         showInHero: cat.show_in_hero,
-        pinnedInSearch: cat.pinned_in_search,
+        pinnedInSearch: false,
         parentId: cat.parent_id,
         imageUrl: cat.image_url,
         iconUrl: cat.icon_url
@@ -233,11 +199,5 @@ export default async function AdminTabPage({ params, searchParams }: TabPageProp
     return <PageManager initialPages={initialPages} />;
   }
   if (tab === 'media') return <MediaManager />;
-
-  return (
-    <div className="p-8 text-center bg-white rounded-xl border border-zinc-200">
-      <h3 className="text-lg font-medium text-zinc-900">Module {tab} is coming soon</h3>
-      <p className="text-zinc-500">We are currently migrating this section to the new Next.js system.</p>
-    </div>
-  );
+  notFound();
 }

@@ -1,5 +1,4 @@
 import { Metadata } from "next";
-import { Inter, Roboto, Outfit } from "next/font/google";
 import "./globals.css";
 import { ConfirmationProvider } from "@/components/ConfirmationContext";
 import { AuthProvider } from "@/components/AuthProvider";
@@ -13,14 +12,24 @@ import { getServerLocale } from "@/lib/server-locale";
 import { Toaster } from "sonner";
 import Script from "next/script";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: 'swap' });
-const roboto = Roboto({ weight: ["400", "700"], subsets: ["latin"], variable: "--font-roboto", display: 'swap' });
-const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit", display: 'swap' });
+function sanitizeClarityId(value: string | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const normalized = value.trim();
+  return /^[a-z0-9]+$/i.test(normalized) ? normalized : null;
+}
+
+function getOptionalStringSetting(source: object, key: string): string {
+  const value = Reflect.get(source, key);
+  return typeof value === 'string' ? value : '';
+}
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSettings();
   const lang = await getServerLocale();
-  
+  const faviconUrl = getOptionalStringSetting(settings, 'faviconUrl');
   const siteUrl = getEnv('SITE_URL') || 'https://www.vinthem.com';
 
   return {
@@ -54,7 +63,7 @@ export async function generateMetadata(): Promise<Metadata> {
       "vinthem hours", "vinthem support", "vinthem faq", "vinthem shipping policy"
     ],
     icons: {
-      icon: settings.faviconUrl || "/favicon.ico",
+      icon: faviconUrl || "/favicon.ico",
     },
   };
 }
@@ -69,6 +78,8 @@ export default async function RootLayout({
   const lang = await getServerLocale();
 
   const siteUrl = getEnv('SITE_URL') || 'https://www.vinthem.com';
+  const clarityId = sanitizeClarityId(integrations.CLARITY_ID);
+  const faviconUrl = getOptionalStringSetting(settings, 'faviconUrl');
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -80,7 +91,7 @@ export default async function RootLayout({
       "Vinthem Shop", "Vinhem Store", "Vinthem Official", "Vinthem Brand", "Vinthem.com"
     ],
     "url": siteUrl,
-    "logo": settings.faviconUrl || `${siteUrl}/favicon.ico`,
+    "logo": faviconUrl || `${siteUrl}/favicon.ico`,
     "description": settings.seoDescription?.[lang] || "Premium Scandinavian minimalist fashion brand Vinthem.",
     "address": {
       "@type": "PostalAddress",
@@ -90,18 +101,18 @@ export default async function RootLayout({
   };
 
   const cookieBannerCopy = {
-    eyebrow: settings.cookieBannerTitle?.[lang] || "Cookies",
-    description: settings.cookieBannerDescription?.[lang] || "We use cookies.",
-    privacyLabel: "Privacy Policy",
-    cookieLabel: "Cookie Settings",
-    acceptAllLabel: settings.cookieBannerAcceptText?.[lang] || "Accept",
-    essentialOnlyLabel: settings.cookieBannerDeclineText?.[lang] || "Decline",
+    eyebrow: settings.consentBannerTitleText?.[lang] || "Cookies",
+    description: settings.consentBannerDescriptionText?.[lang] || "We use cookies.",
+    privacyLabel: settings.consentPrivacyLinkText?.[lang] || "Privacy Policy",
+    cookieLabel: settings.consentCookieLinkText?.[lang] || "Cookie Settings",
+    acceptAllLabel: settings.consentAcceptAllText?.[lang] || "Accept",
+    essentialOnlyLabel: settings.consentEssentialOnlyText?.[lang] || "Decline",
   };
 
   return (
-    <html lang={lang} className={`${inter.variable} ${roboto.variable} ${outfit.variable} h-full`}>
+    <html lang={lang} className="h-full">
       <head>
-        {integrations.CLARITY_ID && (
+        {clarityId && (
           <Script
             id="clarity-script"
             strategy="afterInteractive"
@@ -111,7 +122,7 @@ export default async function RootLayout({
                     c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
                     t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
                     y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-                })(window, document, "clarity", "script", "${integrations.CLARITY_ID}");
+                })(window, document, "clarity", "script", "${clarityId}");
               `,
             }}
           />
@@ -122,8 +133,6 @@ export default async function RootLayout({
         />
         <link rel="dns-prefetch" href="https://xeatyjjiywcrkuvifyhm.supabase.co" />
         <link rel="preconnect" href="https://xeatyjjiywcrkuvifyhm.supabase.co" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="" />
       </head>
       <body className="min-h-full flex flex-col font-sans" suppressHydrationWarning>

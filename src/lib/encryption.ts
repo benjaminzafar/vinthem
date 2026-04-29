@@ -1,8 +1,9 @@
 import { getEnv } from './env';
+import crypto from 'crypto';
 
 /**
- * AES-256-GCM encryption using the Web Crypto API.
- * Compatible with Node.js (>=18), Cloudflare Workers, and Edge runtimes.
+ * AES-256-GCM encryption using Node.js crypto module.
+ * Optimized for reliability in Node environments.
  */
 
 function getEncryptionSecret(): string {
@@ -15,90 +16,49 @@ function getEncryptionSecret(): string {
   return secret;
 }
 
-async function deriveKey(secret: string): Promise<CryptoKey> {
-  const encoder = new TextEncoder();
-  const rawKey = secret.length === 64
-    ? hexToBytes(secret)
-    : encoder.encode(secret);
-
-  if (rawKey.length === 32) {
-    return globalThis.crypto.subtle.importKey(
-      'raw',
-      rawKey as any,
-      { name: 'AES-GCM' },
-      false,
-      ['encrypt', 'decrypt']
-    );
+function deriveKey(secret: string): Buffer {
+  // If the secret is 64 chars of hex, it represents a 32-byte key
+  if (secret.length === 64 && /^[a-f0-9]+$/i.test(secret)) {
+    return Buffer.from(secret, 'hex');
   }
-
-  const hashBuffer = await globalThis.crypto.subtle.digest('SHA-256', rawKey as any);
-  return globalThis.crypto.subtle.importKey(
-    'raw',
-    hashBuffer,
-    { name: 'AES-GCM' },
-    false,
-    ['encrypt', 'decrypt']
-  );
-}
-
-function hexToBytes(hex: string): Uint8Array {
-  const bytes = new Uint8Array(hex.length / 2);
-  for (let i = 0; i < hex.length; i += 2) {
-    bytes[i / 2] = parseInt(hex.slice(i, i + 2), 16);
-  }
-  return bytes;
-}
-
-function bytesToHex(bytes: Uint8Array): string {
-  return Array.from(bytes)
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('');
+  // Otherwise, hash the secret to get a 32-byte key
+  return crypto.createHash('sha256').update(secret).digest();
 }
 
 export async function encrypt(text: string): Promise<string> {
-  const key = await deriveKey(getEncryptionSecret());
-  const iv = globalThis.crypto.getRandomValues(new Uint8Array(12));
-  const encoded = new TextEncoder().encode(text);
-
-  const cipherBuffer = await globalThis.crypto.subtle.encrypt(
-    { name: 'AES-GCM', iv: iv as any },
-    key,
-    encoded as any
-  );
-
-  const cipherBytes = new Uint8Array(cipherBuffer);
-  const cipherText = cipherBytes.slice(0, -16);
-  const authTag = cipherBytes.slice(-16);
-
-  return `${bytesToHex(iv)}:${bytesToHex(authTag)}:${bytesToHex(cipherText)}`;
+  const key = deriveKey(getEncryptionSecret());
+  const iv = crypto.randomBytes(12);
+  
+  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+  let encrypted = cipher.update(text, 'utf8', 'hex');
+  encrypted += cipher.final('hex');
+  
+  const authTag = cipher.getAuthTag().toString('hex');
+  
+  return `${iv.toString('hex')}:${authTag}:${encrypted}`;
 }
 
 export async function decrypt(encryptedData: string): Promise<string> {
   const parts = encryptedData.split(':');
   if (parts.length !== 3) {
-    // Return original if not formatted correctly to prevent crash
     return encryptedData;
   }
 
   try {
-    const key = await deriveKey(getEncryptionSecret());
-    const iv = hexToBytes(parts[0]);
-    const authTag = hexToBytes(parts[1]);
-    const cipherText = hexToBytes(parts[2]);
+    const key = deriveKey(getEncryptionSecret());
+    const iv = Buffer.from(parts[0], 'hex');
+    const authTag = Buffer.from(parts[1], 'hex');
+    const encryptedText = Buffer.from(parts[2], 'hex');
 
-    const combined = new Uint8Array(cipherText.length + authTag.length);
-    combined.set(cipherText);
-    combined.set(authTag, cipherText.length);
-
-    const decrypted = await globalThis.crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv: iv as any },
-      key,
-      combined as any
-    );
-
-    return new TextDecoder().decode(decrypted);
+    const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
+    decipher.setAuthTag(authTag);
+    
+    let decrypted = decipher.update(encryptedText, undefined, 'utf8');
+    decrypted += decipher.final('utf8');
+    
+    return decrypted;
   } catch (e) {
-    console.error('Decryption failed for:', encryptedData.substring(0, 10) + '...');
-    return encryptedData; // Return raw string instead of throwing
+    // If decryption fails, we throw an error that the integration layer will catch
+    throw new Error('DECRYPTION_FAILED');
   }
 }

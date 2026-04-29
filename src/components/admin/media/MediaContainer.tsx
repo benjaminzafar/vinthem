@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { Breadcrumbs } from './Breadcrumbs';
 import { FolderList } from './FolderList';
 import { AssetGrid } from './AssetGrid';
+import { AdminLoadingState } from '@/components/admin/AdminLoadingState';
 
 interface Asset {
   key: string;
@@ -47,7 +48,7 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
   const [copyingKeys, setCopyingKeys] = useState<Set<string>>(new Set());
   const [nextToken, setNextToken] = useState<string | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState<{ key: string, isFolder: boolean } | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{ key: string; isFolder: boolean; url?: string } | null>(null);
 
   const fetchMedia = useCallback(async (pathArr: string[] = currentPath, token?: string) => {
     const isInitial = !token;
@@ -79,7 +80,7 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
         setAssets(prev => [...prev, ...(data.objects || [])]);
       }
       
-      setNextToken(data.stats?.nextContinuationToken || null);
+      setNextToken(data.nextContinuationToken || null);
     } catch (error: unknown) {
       toast.error('Media Cloud Error: ' + (error instanceof Error ? error.message : String(error)), {
         duration: 8000
@@ -155,32 +156,44 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
 
   const handleDelete = async () => {
     if (!confirmDelete) return;
-    const { key, isFolder } = confirmDelete;
+    const { key, isFolder, url } = confirmDelete;
     
     setDeletingKey(key);
     setConfirmDelete(null);
     
     try {
-      const { createClient } = await import('@/utils/supabase/client');
-      const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
+      const params = new URLSearchParams({ key });
+      if (url) {
+        params.set('url', url);
+      }
 
-      if (!session) throw new Error('Authorization required.');
-
-      const res = await fetch('/api/admin/media', {
+      const res = await fetch(`/api/admin/media?${params.toString()}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${session.access_token}`
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ key }),
+        credentials: 'include',
         cache: 'no-store'
       });
-      
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
+
+      const contentType = res.headers.get('content-type') || '';
+      const data = contentType.includes('application/json')
+        ? await res.json()
+        : { error: await res.text() };
+
+      if (!res.ok || data.error) {
+        throw new Error(data.error || `Delete failed with status ${res.status}`);
+      }
+
+      if (isFolder) {
+        setFolders((previous) => previous.filter((folder) => `${[...currentPath, folder].join('/')}/` !== key));
+        setAssets((previous) => previous.filter((asset) => !asset.key.startsWith(key)));
+      } else {
+        setAssets((previous) => previous.filter((asset) => asset.key !== key));
+      }
       
       toast.success(isFolder ? 'Folder evacuated' : 'Asset purged');
-      fetchMedia();
+      void fetchMedia();
     } catch (error: unknown) {
       toast.error('Delete failed: ' + (error instanceof Error ? error.message : String(error)));
     } finally {
@@ -190,7 +203,8 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
 
   const handleCopyUrl = (url: string, key: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    navigator.clipboard.writeText(url);
+    const absoluteUrl = url.startsWith('/') ? `${window.location.origin}${url}` : url;
+    navigator.clipboard.writeText(absoluteUrl);
     setCopyingKeys(prev => {
       const next = new Set(prev);
       next.add(key);
@@ -211,7 +225,7 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
   }, [assets, searchQuery]);
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-8">
       {/* 1. Header - Unified with Overview */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
@@ -221,7 +235,7 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
         {!selectionMode && (
           <div className="flex items-center gap-3">
             <div className="h-10 px-4 bg-white border border-slate-300 rounded text-[13px] font-medium text-slate-600 flex items-center gap-2">
-               <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Storage</span>
+               <span className="text-[11px] font-bold text-slate-500 tracking-widest">Storage</span>
                <span className="text-slate-900 font-bold">{assets.length} Items</span>
             </div>
             <button 
@@ -229,8 +243,8 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
               className="h-10 px-4 border border-slate-300 rounded text-[13px] font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all flex items-center gap-2"
               disabled={loading}
             >
-              <RefreshCcw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
+              <RefreshCcw className="w-4 h-4" />
+              {loading ? 'Refreshing...' : 'Refresh'}
             </button>
           </div>
         )}
@@ -245,11 +259,11 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
               placeholder="Search assets..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-11 bg-slate-50 border border-slate-300 rounded pl-12 pr-6 text-[13px] focus:outline-none focus:border-slate-900 transition-all font-bold uppercase tracking-tight placeholder:text-slate-500"
+              className="w-full h-11 bg-slate-50 border border-slate-300 rounded pl-12 pr-6 text-[13px] focus:outline-none focus:border-slate-900 transition-all font-bold tracking-tight placeholder:text-slate-500"
             />
          </div>
 
-         <label className={`flex items-center justify-center gap-2 h-11 px-8 bg-slate-900 text-white rounded text-[11px] font-bold uppercase tracking-widest hover:bg-slate-800 transition-all cursor-pointer ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
+         <label className={`flex items-center justify-center gap-2 h-11 px-8 bg-slate-900 text-white rounded text-[11px] font-bold tracking-widest hover:bg-slate-800 transition-all cursor-pointer ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
             <FilePlus className="w-4 h-4" />
             <span>{uploading ? 'Processing...' : 'Upload Asset'}</span>
             <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} disabled={uploading} />
@@ -258,7 +272,7 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
 
       {/* 3. Warning Banner if Public URL is missing */}
       {stats.publicUrlMissing && (
-        <div className="bg-amber-50 border border-amber-200 rounded p-6 flex items-start gap-4 animate-in slide-in-from-top-4 duration-500">
+        <div className="bg-amber-50 border border-amber-200 rounded p-6 flex items-start gap-4">
            <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center shrink-0">
               <AlertCircle className="w-6 h-6 text-amber-600" />
            </div>
@@ -285,10 +299,12 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
          
          <div className="mt-8">
             {loading && assets.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-64 space-y-4">
-                <RefreshCcw className="w-6 h-6 animate-spin text-slate-900" />
-                <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Retrieving Asset Metadata...</p>
-              </div>
+              <AdminLoadingState
+                compact
+                eyebrow="Media Center"
+                title="Preparing your asset library"
+                detail="Gathering folders, file previews, and storage metadata from your cloud archive."
+              />
             ) : (
               <>
                 <FolderList 
@@ -308,7 +324,7 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
                   hasMore={!!nextToken}
                   onLoadMore={handleLoadMore}
                   onSelect={onSelect}
-                  onDelete={(asset) => setConfirmDelete({ key: asset.key, isFolder: false })}
+                  onDelete={(asset) => setConfirmDelete({ key: asset.key, url: asset.url, isFolder: false })}
                   onCopyUrl={handleCopyUrl}
                   deletingKey={deletingKey}
                   copyingKeys={copyingKeys}
@@ -329,8 +345,8 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
 
       {/* Final Confirmation Modal */}
       {confirmDelete && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded border border-slate-300 shadow-2xl max-w-sm w-full p-8 animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+          <div className="bg-white rounded border border-slate-300 shadow-2xl max-w-sm w-full p-8">
             <div className="flex flex-col items-center text-center space-y-6">
               <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center">
                 <Trash2 className="w-8 h-8 text-rose-600" />

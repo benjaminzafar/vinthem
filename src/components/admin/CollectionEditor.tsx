@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
-import { Category } from '@/types';
+import { Category, StorefrontSettingsType } from '@/types';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 import { 
   X, Sparkles, Image as ImageIcon, Layout, Settings, 
@@ -11,22 +11,24 @@ import {
   Layers, ChevronDown
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useSettingsStore } from '@/store/useSettingsStore';
 import { genAI } from '@/lib/ai';
 import { safeParseAiResponse } from '@/lib/json';
 import { saveCategoryAction } from '@/app/actions/categories';
 import { MediaPickerModal } from './MediaPickerModal';
 import Image from 'next/image';
+import { logger } from '@/lib/logger';
+import { toMediaProxyUrl } from '@/lib/media';
 import { isValidUrl } from '@/lib/utils';
 
 interface CollectionEditorProps {
   initialCollection?: Category | null;
+  categories?: Category[];
+  settings: StorefrontSettingsType;
 }
 
-export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
+export function CollectionEditor({ initialCollection, categories: initialCategories = [], settings }: CollectionEditorProps) {
   const router = useRouter();
-  const { settings } = useSettingsStore();
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -44,11 +46,25 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
     translations: initialCollection?.translations || {}
   });
 
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<Category[]>(initialCategories);
   const [activeTab, setActiveTab] = useState<'hierarchy' | 'translations' | 'engagement'>('hierarchy');
-  const [selectedLang, setSelectedLang] = useState('en');
+  const [selectedLang, setSelectedLang] = useState(settings.languages?.[0] || 'sv');
   const [aiChatInput, setAiChatInput] = useState('');
   const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
+
+  const getAIErrorMessage = (error: unknown, fallback: string) => {
+    const err = error as Error & { status?: number };
+    if (err.status === 401 || err.status === 403) {
+      return 'Groq API key is missing or invalid in Integrations.';
+    }
+    if (err.status === 429) {
+      return 'AI is temporarily busy. Please wait a few seconds and try again.';
+    }
+    if (err.status === 500 || err.status === 503) {
+      return 'AI service is temporarily overloaded. Please retry in 1-2 minutes.';
+    }
+    return err.message || fallback;
+  };
 
   // Sync form data when initialCollection prop changes (e.g. navigation)
   useEffect(() => {
@@ -68,34 +84,9 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
     }
   }, [initialCollection, formData.id]);
 
-  // Fetch all categories for parent selector
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const supabase = createClient();
-        const { data, error } = await supabase.from('categories').select('*').order('name');
-        if (error) throw error;
-        if (data) {
-          console.log(`[CollectionEditor] Fetched ${data.length} categories for selector`);
-          setCategories(data.map(c => ({
-            ...c,
-            id: c.id,
-            name: c.name,
-            parentId: c.parent_id,
-            isFeatured: c.is_featured,
-            showInHero: c.show_in_hero,
-            pinnedInSearch: c.pinned_in_search,
-            imageUrl: c.image_url,
-            iconUrl: c.icon_url,
-            translations: c.translations || {}
-          })) as Category[]);
-        }
-      } catch (err) {
-        console.error('[CollectionEditor] Failed to fetch categories:', err);
-      }
-    };
-    fetchCategories();
-  }, []);
+    setCategories(initialCategories);
+  }, [initialCategories]);
 
   // Auto-generate slug from name for new collections
   useEffect(() => {
@@ -127,6 +118,7 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
 
       const model = genAI.getGenerativeModel({ 
         model: 'llama-3.3-70b-versatile',
+        promptProfile: 'collection',
         generationConfig: { responseMimeType: 'application/json' }
       });
 
@@ -144,30 +136,8 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
       }));
       toast.success('AI Analysis complete!', { id: toastId });
     } catch (error: unknown) {
-      console.error('AI error:', error);
-      const timestamp = new Date().toLocaleTimeString('sv-SE', { hour12: false });
-      const err = error as { message?: string; status?: number };
-      const errorMessage = err?.message || '';
-      const status = err?.status;
-
-      if (status === 401 || status === 403) {
-        toast.error('Action Required: Please set your Groq API Key in the Integrations Manager.', { 
-          id: toastId,
-          duration: 6000
-        });
-        return;
-      }
-
-      let detailedMessage = '';
-      if (status === 503 || errorMessage.toLowerCase().includes('overloaded') || errorMessage.toLowerCase().includes('congestion')) {
-        detailedMessage = `## Error Type\nConsole Error\n\n## Error Message\n[${timestamp}] AI Service Congestion (503). Service is currently at maximum capacity. Please wait 5-10 minutes for regional demand to subside and try again.`;
-      } else if (status === 429 || errorMessage.toLowerCase().includes('quota')) {
-        detailedMessage = `## Error Type\nConsole Error\n\n## Error Message\n[${timestamp}] RATE LIMIT HIT (429) for llama-3.3-70b-versatile. You are sending requests too fast (RPM limit). Please wait 60 seconds and try again.`;
-      } else {
-        detailedMessage = `## Error Type\nConsole Error\n\n## Error Message\n[${timestamp}] AI Analysis failed. ${errorMessage}`;
-      }
-
-      toast.error(detailedMessage, { id: toastId, duration: 8000 });
+      logger.error('[CollectionEditor] AI image analysis failed:', error);
+      toast.error(getAIErrorMessage(error, 'AI image analysis failed.'), { id: toastId, duration: 5000 });
     } finally {
       setGenerating(false);
     }
@@ -192,6 +162,7 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
 
       const model = genAI.getGenerativeModel({ 
         model: 'llama-3.3-70b-versatile',
+        promptProfile: 'collection',
         generationConfig: { responseMimeType: 'application/json' }
       });
       
@@ -208,30 +179,8 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
       setAiChatInput('');
       toast.success('Collection draft generated!', { id: toastId });
     } catch (error: unknown) {
-      console.error('AI Draft Error:', error);
-      const timestamp = new Date().toLocaleTimeString('sv-SE', { hour12: false });
-      const err = error as { message?: string; status?: number };
-      const errorMessage = err?.message || '';
-      const status = err?.status;
-
-      if (status === 401 || status === 403) {
-        toast.error('Action Required: Please set your Groq API Key in the Integrations Manager.', { 
-          id: toastId,
-          duration: 6000
-        });
-        return;
-      }
-
-      let detailedMessage = '';
-      if (status === 503 || errorMessage.toLowerCase().includes('overloaded') || errorMessage.toLowerCase().includes('congestion')) {
-        detailedMessage = `## Error Type\nConsole Error\n\n## Error Message\n[${timestamp}] AI Service Congestion (503). Service is currently at maximum capacity. Please wait 5-10 minutes for regional demand to subside and try again.`;
-      } else if (status === 429 || errorMessage.toLowerCase().includes('quota')) {
-        detailedMessage = `## Error Type\nConsole Error\n\n## Error Message\n[${timestamp}] RATE LIMIT HIT (429) for llama-3.3-70b-versatile. You are sending requests too fast (RPM limit). Please wait 60 seconds and try again.`;
-      } else {
-        detailedMessage = `## Error Type\nConsole Error\n\n## Error Message\n[${timestamp}] AI Draft failed. ${errorMessage}`;
-      }
-
-      toast.error(detailedMessage, { id: toastId, duration: 8000 });
+      logger.error('[CollectionEditor] AI draft generation failed:', error);
+      toast.error(getAIErrorMessage(error, 'AI draft generation failed.'), { id: toastId, duration: 5000 });
     } finally {
       setGenerating(false);
     }
@@ -301,22 +250,47 @@ export function CollectionEditor({ initialCollection }: CollectionEditorProps) {
   };
 
 
-  const languages = settings.languages || ['sv', 'en'];
+  const languages = Array.from(new Set((settings.languages || ['sv', 'en']).filter(Boolean)));
+
+  const descendantIds = React.useMemo(() => {
+    const descendants = new Set<string>();
+    if (!formData.id) {
+      return descendants;
+    }
+
+    const stack = categories.filter((category) => category.parentId === formData.id).map((category) => category.id).filter(Boolean) as string[];
+    while (stack.length > 0) {
+      const currentId = stack.pop()!;
+      if (descendants.has(currentId)) {
+        continue;
+      }
+      descendants.add(currentId);
+      categories
+        .filter((category) => category.parentId === currentId)
+        .forEach((category) => {
+          if (category.id) {
+            stack.push(category.id);
+          }
+        });
+    }
+
+    return descendants;
+  }, [categories, formData.id]);
 
   const handleAITranslateCollection = async () => {
     if (!formData.name?.trim()) {
       toast.error('Collection name is required for translation.');
       return;
     }
-    const targetLangs = languages;
+    const targetLangs = languages.filter((lang) => lang !== 'sv');
     if (targetLangs.length === 0) {
-      toast.info('No extra languages configured.');
+      toast.info('No target languages configured beyond Swedish.');
       return;
     }
     setGenerating(true);
     const toastId = toast.loading('AI translating collection...');
     try {
-      const prompt = `Translate the following collection information into these languages: ${languages.join(', ')}.
+      const prompt = `Translate the following collection information into these languages: ${targetLangs.join(', ')}.
 Return ONLY a valid raw JSON object. No markdown backticks, no conversational text.
 Schema: Each top-level key must be an ISO 639-1 language code, and each value an object with "name" and "description" fields.
 Example: { "en": { "name": "...", "description": "..." }, "fi": { "name": "...", "description": "..." } }
@@ -326,79 +300,53 @@ Collection Description (Swedish): "${formData.description || ''}"`;
 
       const model = genAI.getGenerativeModel({
         model: 'llama-3.3-70b-versatile',
+        promptProfile: 'collection',
         generationConfig: { responseMimeType: 'application/json' }
       });
       const aiResponse = await model.generateContent(prompt);
       const result = safeParseAiResponse<Record<string, { name?: string; description?: string }>>(aiResponse.response.text(), {}) as any;
 
       const newTranslations = { ...formData.translations };
-      for (const lang of languages) {
+      for (const lang of targetLangs) {
         if (result[lang]) {
           newTranslations[lang] = {
             name: result[lang].name?.trim() || newTranslations[lang]?.name || '',
             description: result[lang].description?.trim() || newTranslations[lang]?.description || ''
           };
-
-          // If we are currently on the 'sv' tab or 'sv' is the target, 
-          // we also update the primary fields if they were used for translation
-          if (lang === 'sv') {
-            setFormData(prev => ({
-              ...prev,
-              name: result[lang].name?.trim() || prev.name,
-              description: result[lang].description?.trim() || prev.description
-            }));
-          }
         }
       }
       setFormData(prev => ({ ...prev, translations: newTranslations }));
       toast.success('Collection translated to all languages', { id: toastId });
     } catch (error: unknown) {
-      const err = error as Error & { status?: number };
-      if (err.status === 401 || err.status === 403) {
-        toast.error('Action Required: Please set your Groq API Key in the Integrations Manager.', { id: toastId, duration: 6000 });
-      } else {
-        toast.error(err.message || 'AI translation failed', { id: toastId, duration: 8000 });
-      }
+      toast.error(getAIErrorMessage(error, 'AI translation failed.'), { id: toastId, duration: 5000 });
     } finally {
       setGenerating(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20">
-      <div className="max-w-[1200px] mx-auto px-6 py-10">
-        
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
-          <div className="flex items-center gap-4">
-            <button onClick={() => router.push('/admin/collections')} className="p-2.5 bg-white border border-slate-200 hover:border-slate-900 rounded-[4px] transition-all">
-              <ArrowLeft className="w-5 h-5 text-slate-600" />
-            </button>
-            <div className="flex flex-col">
-              <h1 className="text-[18px] font-bold text-slate-900 tracking-tight leading-none mb-1.5">
-                {initialCollection ? `Edit: ${formData.name || 'Collection'}` : 'New Collection'}
-              </h1>
-              <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-500">
-                 <Layers className="w-3 h-3" />
-                 Category Configuration
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
-            <button 
-              onClick={handleSave}
-              disabled={saving || uploading}
-              className="px-8 h-11 bg-slate-900 text-white rounded-[4px] text-[11px] font-bold uppercase tracking-widest hover:bg-slate-800 transition-all group flex items-center gap-2"
-            >
-              <Save className="w-4 h-4 group-hover:scale-110 transition-transform" />
-              {saving ? 'Processing...' : 'Publish Collection'}
-            </button>
-          </div>
-        </div>
+    <div className="space-y-6 pb-12">
+      <AdminHeader
+        title={initialCollection ? `Edit Collection: ${formData.name || 'Untitled'}` : 'New Collection'}
+        description="Manage collection structure, translation content, merchandising flags, and banner assets."
+        primaryAction={{
+          label: saving ? 'Saving...' : 'Save Collection',
+          icon: Save,
+          onClick: () => void handleSave({ preventDefault() {} } as React.FormEvent),
+          disabled: saving || uploading,
+        }}
+        secondaryActions={[
+          {
+            label: 'Back to Collections',
+            icon: ArrowLeft,
+            onClick: () => router.push('/admin/collections'),
+          },
+        ]}
+        statsLabel="Collection editor"
+      />
 
         {/* AI Smart Draft Card */}
-        <div className="bg-indigo-50/30 border border-indigo-100 rounded-[4px] p-6 mb-10 flex flex-col md:flex-row items-center gap-6">
+        <div className="bg-indigo-50/30 border border-indigo-100 rounded-[4px] p-4 sm:p-5 flex flex-col lg:flex-row items-start lg:items-center gap-4 sm:gap-5">
           <div className="flex items-center gap-3 shrink-0">
             <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center border border-indigo-100">
                <Sparkles className="w-5 h-5 text-indigo-600 animate-pulse" />
@@ -420,7 +368,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
             <button 
               onClick={handleAIChatAutoFill}
               disabled={generating || !aiChatInput.trim()}
-              className="h-12 bg-indigo-600 text-white px-8 rounded-[4px] text-[11px] font-bold uppercase tracking-widest hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shrink-0"
+              className="h-12 bg-indigo-600 text-white px-5 rounded-[4px] text-[12px] font-medium hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shrink-0"
             >
               {generating ? 'Drafting...' : 'AI Draft'}
               {!generating && <Wand2 className="w-4 h-4" />}
@@ -428,9 +376,9 @@ Collection Description (Swedish): "${formData.description || ''}"`;
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_340px] gap-6 sm:gap-8">
           {/* Main Column */}
-          <div className="space-y-8">
+          <div className="space-y-6">
             
             {/* General Info Section */}
             <section className="bg-white border border-slate-200 rounded-[4px]">
@@ -438,10 +386,10 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                 <Layout className="w-4 h-4 text-slate-500" />
                 <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Collection Details</h3>
               </div>
-              <div className="p-8 space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="p-5 sm:p-6 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-3">
-                    <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Collection Name (Swedish)</label>
+                    <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-[0.16em]">Collection Name (Swedish)</label>
                     <input 
                       type="text" 
                       value={formData.name}
@@ -451,7 +399,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                     />
                   </div>
                   <div className="space-y-3">
-                    <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">URL Slug</label>
+                    <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-[0.16em]">URL Slug</label>
                     <input 
                       type="text" 
                       value={formData.slug}
@@ -462,16 +410,16 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Parent Collection (Hierarchy)</label>
+                  <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-[0.16em]">Parent Collection (Hierarchy)</label>
                   <div className="relative">
                     <select 
                       value={formData.parentId}
                       onChange={(e) => setFormData({...formData, parentId: e.target.value})}
                       disabled={loading || categories.length === 0}
-                      className="w-full h-12 bg-white border border-slate-200 rounded-[4px] px-4 text-sm font-bold appearance-none outline-none focus:border-slate-900 disabled:opacity-50"
+                      className="w-full h-12 bg-white border border-slate-200 rounded-[4px] px-4 text-sm font-medium appearance-none outline-none focus:border-slate-900 disabled:opacity-50"
                     >
                       <option value="">{categories.length === 0 ? 'Loading collections...' : 'No Parent (Main Navigation Root)'}</option>
-                      {categories.filter(c => c.id !== formData.id).map(c => (
+                      {categories.filter(c => c.id !== formData.id && !descendantIds.has(c.id || '')).map(c => (
                         <option key={c.id} value={c.id}>
                           Parent: {c.name}
                         </option>
@@ -479,10 +427,10 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                     </select>
                     <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                   </div>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest italic">Tip: Move this collection under another one to create a sub-menu structure.</p>
+                  <p className="text-[11px] text-slate-400">Move this collection under another one to create a sub-menu structure.</p>
                 </div>
                 <div className="space-y-3">
-                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Swedish Marketing Narrative</label>
+                  <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-[0.16em]">Swedish Marketing Narrative</label>
                   <textarea 
                     value={formData.description}
                     onChange={(e) => setFormData({...formData, description: e.target.value})}
@@ -505,7 +453,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`px-8 py-4 text-[11px] font-bold uppercase tracking-widest border-r border-slate-200 transition-all ${
+                    className={`px-4 sm:px-6 py-4 text-[11px] font-semibold uppercase tracking-[0.16em] border-r border-slate-200 transition-all ${
                       activeTab === tab.id ? 'bg-white text-slate-900' : 'text-slate-500 hover:text-slate-600'
                     }`}
                   >
@@ -513,11 +461,11 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                   </button>
                 ))}
               </div>
-              <div className="p-8">
+              <div className="p-5 sm:p-6">
                 {activeTab === 'hierarchy' && (
                   <div className="space-y-6 animate-in fade-in duration-300">
                     <div className="space-y-4">
-                      <h4 className="text-[11px] font-bold text-slate-900 uppercase tracking-widest mb-2 flex items-center gap-2">
+                      <h4 className="text-[11px] font-semibold text-slate-900 uppercase tracking-[0.16em] mb-2 flex items-center gap-2">
                         <Layers className="w-3.5 h-3.5" />
                         Active Sub-collections
                       </h4>
@@ -527,7 +475,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                             <button 
                               key={c.id}
                               onClick={() => router.push(`/admin/collections/${c.id}`)}
-                              className="p-3 bg-slate-50 border border-slate-200 rounded flex items-center justify-between hover:border-slate-900 transition-all text-left"
+                              className="p-3 bg-slate-50 border border-slate-200 rounded-md flex items-center justify-between hover:border-slate-900 transition-all text-left"
                             >
                               <span className="text-xs font-bold text-slate-700">{c.name}</span>
                               <ChevronRight className="w-3 h-3 text-slate-400" />
@@ -535,7 +483,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                           ))
                         ) : (
                           <div className="col-span-full py-6 text-center border-2 border-dashed border-slate-100 rounded">
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">This collection has no sub-items</p>
+                            <p className="text-[11px] font-medium text-slate-400">This collection has no sub-items</p>
                           </div>
                         )}
                       </div>
@@ -551,7 +499,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                          <button 
                            key={lang}
                            onClick={() => setSelectedLang(lang)}
-                           className={`text-[11px] font-bold uppercase tracking-widest transition-all ${selectedLang === lang ? 'text-slate-900 underline underline-offset-4' : 'text-slate-500 hover:text-slate-600'}`}
+                           className={`text-[11px] font-semibold uppercase tracking-[0.16em] transition-all ${selectedLang === lang ? 'text-slate-900 underline underline-offset-4' : 'text-slate-500 hover:text-slate-600'}`}
                          >
                            {lang}
                          </button>
@@ -560,7 +508,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                       <button
                         onClick={handleAITranslateCollection}
                         disabled={generating || !formData.name?.trim()}
-                        className="flex items-center gap-1.5 px-4 py-1.5 text-[11px] font-bold uppercase tracking-widest bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-all disabled:opacity-50"
+                        className="flex items-center gap-1.5 px-4 h-9 text-[12px] font-medium bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-all disabled:opacity-50"
                       >
                         {generating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Languages className="w-3 h-3" />}
                         AI Translate All
@@ -568,7 +516,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                     </div>
                     <div className="grid grid-cols-1 gap-6">
                       <div className="space-y-3">
-                        <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Local Title ({selectedLang})</label>
+                        <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-[0.16em]">Local Title ({selectedLang})</label>
                         <input 
                           type="text" 
                           value={formData.translations?.[selectedLang]?.name || ''}
@@ -586,7 +534,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                         />
                       </div>
                       <div className="space-y-3">
-                        <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Local Description ({selectedLang})</label>
+                        <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-[0.16em]">Local Description ({selectedLang})</label>
                         <textarea 
                           rows={4}
                           value={formData.translations?.[selectedLang]?.description || ''}
@@ -611,16 +559,16 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in duration-300">
                     <button 
                       onClick={() => setFormData({...formData, isFeatured: !formData.isFeatured})}
-                      className={`h-14 px-6 border rounded-[4px] flex items-center justify-between transition-all ${formData.isFeatured ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-900'}`}
+                      className={`h-12 px-5 border rounded-[4px] flex items-center justify-between transition-all ${formData.isFeatured ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-900'}`}
                     >
-                      <span className="text-[11px] font-bold uppercase tracking-widest">Featured on Homepage</span>
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.16em]">Featured on Homepage</span>
                       <Star className={`w-4 h-4 ${formData.isFeatured ? 'fill-current' : ''}`} />
                     </button>
                     <button 
                       onClick={() => setFormData({...formData, showInHero: !formData.showInHero})}
-                      className={`h-14 px-6 border rounded-[4px] flex items-center justify-between transition-all ${formData.showInHero ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-900'}`}
+                      className={`h-12 px-5 border rounded-[4px] flex items-center justify-between transition-all ${formData.showInHero ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-900'}`}
                     >
-                      <span className="text-[11px] font-bold uppercase tracking-widest">Display in Hero Section</span>
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.16em]">Display in Hero Section</span>
                       <Layout className="w-4 h-4" />
                     </button>
                   </div>
@@ -630,7 +578,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
           </div>
 
           {/* Sidebar Column */}
-          <div className="space-y-8">
+          <div className="space-y-6">
             
             {/* Banner Section */}
             <section className="bg-white border border-slate-200 rounded-[4px] overflow-hidden">
@@ -639,7 +587,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                 <button 
                   onClick={handleAIAutoCompleteCollection}
                   disabled={generating || !formData.imageUrl}
-                  className="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-[11px] font-bold uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all disabled:opacity-50"
+                  className="px-3 h-8 bg-indigo-50 text-indigo-700 rounded-full text-[11px] font-medium hover:bg-indigo-600 hover:text-white transition-all disabled:opacity-50"
                 >
                   Analyze Image
                 </button>
@@ -648,7 +596,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                   <label className="group relative mb-4 h-64 cursor-pointer overflow-hidden rounded-[4px] border-2 border-dashed border-slate-200 bg-slate-50 transition-all hover:border-slate-900 flex items-center justify-center">
                     {isValidUrl(formData.imageUrl) ? (
                       <Image 
-                        src={formData.imageUrl} 
+                        src={toMediaProxyUrl(formData.imageUrl)} 
                         alt="" 
                         fill 
                         sizes="(max-width: 768px) 100vw, 800px" 
@@ -689,9 +637,9 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                     />
                     <button 
                       onClick={() => setIsMediaPickerOpen(true)}
-                      className="h-10 px-4 bg-slate-50 border border-slate-200 rounded text-[11px] font-bold uppercase tracking-widest"
+                      className="h-10 px-4 bg-slate-50 border border-slate-200 rounded-md text-[12px] font-medium"
                     >
-                      Lib
+                      Library
                     </button>
                  </div>
               </div>
@@ -700,7 +648,6 @@ Collection Description (Swedish): "${formData.description || ''}"`;
 
           </div>
         </div>
-      </div>
 
       <MediaPickerModal 
         isOpen={isMediaPickerOpen}

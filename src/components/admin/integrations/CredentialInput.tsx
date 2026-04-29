@@ -7,7 +7,7 @@ interface CredentialInputProps {
   label: string;
   value: string;
   onChange: (value: string) => void;
-  type?: 'text' | 'password' | 'toggle' | 'select';
+  type?: 'text' | 'password' | 'toggle' | 'select' | 'textarea';
   placeholder?: string;
   options?: { value: string; label: string }[];
   description?: string;
@@ -67,6 +67,14 @@ export function CredentialInput({
               <><X className="w-3.5 h-3.5" /> Deactivated</>
             )}
           </button>
+        ) : type === 'textarea' ? (
+          <textarea
+            value={value || ""}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder || `Enter ${label}...`}
+            rows={5}
+            className={`${baseClasses} min-h-[120px] resize-y leading-6`}
+          />
         ) : (
           <>
             <input

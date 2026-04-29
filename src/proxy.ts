@@ -82,12 +82,14 @@ function buildConnectSrc(request: NextRequest) {
     'https://m.stripe.network',
     'https://www.clarity.ms',
     'https://*.clarity.ms',
+    'https://cdn.vinthem.com',
   ]);
 
-  // Use the same URL we know is correct for this project
-  const supabaseUrl = 'https://xeatyjjiywcrkuvifyhm.supabase.co';
-  sources.add(supabaseUrl);
-  sources.add(`wss://${supabaseUrl.slice('https://'.length)}`);
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (supabaseUrl) {
+    sources.add(supabaseUrl);
+    sources.add(`wss://${supabaseUrl.slice('https://'.length)}`);
+  }
 
   return Array.from(sources).filter(Boolean).join(' ');
 }
@@ -122,7 +124,7 @@ function applySecurityHeaders(request: NextRequest, response: NextResponse, nonc
   response.headers.set('Cross-Origin-Resource-Policy', 'cross-origin');
   response.headers.set('X-CSP-Nonce', nonce);
   const isLocalhost = request.nextUrl.hostname === 'localhost' || request.nextUrl.hostname === '127.0.0.1';
-  
+
   response.headers.set(
     'Content-Security-Policy',
     [
@@ -138,7 +140,7 @@ function applySecurityHeaders(request: NextRequest, response: NextResponse, nonc
       "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
       "worker-src 'self' blob:",
       "form-action 'self'",
-      !isLocalhost ? "upgrade-insecure-requests" : "",
+      !isLocalhost ? 'upgrade-insecure-requests' : '',
     ].filter(Boolean).join('; ')
   );
 }
@@ -158,10 +160,10 @@ function getRequestKey(request: NextRequest) {
   return `${method}:${request.nextUrl.pathname}:${ip}:${userAgent}`;
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
-  
-  // 1. Language Routing
+  const authorizationHeader = request.headers.get('authorization');
+
   const userAgent = request.headers.get('user-agent');
   const geoCountry = request.headers.get('cf-ipcountry');
   const isBotRequest = isSearchEngineBot(userAgent);
@@ -188,25 +190,22 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // 2. Auth Session Update
   const { supabaseResponse, user, role } = await updateSession(request);
 
-  // 3. Headers & Security
   let nonce = '';
   try {
-    nonce = (globalThis.crypto as any).randomUUID().replace(/-/g, '');
-  } catch (e) {
+    nonce = crypto.randomUUID().replace(/-/g, '');
+  } catch {
     nonce = Math.random().toString(36).substring(2, 15);
   }
-  
+
   supabaseResponse.headers.set('x-csp-nonce', nonce);
   supabaseResponse.headers.set('x-active-locale', pathnameLocale ?? detectedLocale ?? DEFAULT_LANGUAGE);
   supabaseResponse.headers.set('x-pathname-no-locale', normalizedPathname);
-  
+
   applyCorsHeaders(request, supabaseResponse);
   applySecurityHeaders(request, supabaseResponse, nonce);
 
-  // 4. Rate Limiting
   const rateLimitRule = getRateLimitRule(normalizedPathname);
   const rateLimitResult = await checkRateLimit(getRequestKey(request), rateLimitRule);
   supabaseResponse.headers.set('X-RateLimit-Limit', String(rateLimitRule.limit));
@@ -217,9 +216,9 @@ export async function middleware(request: NextRequest) {
     return new NextResponse('Too Many Requests', { status: 429, headers: supabaseResponse.headers });
   }
 
-  // 5. Admin Protection
   const adminPath = normalizedPathname.startsWith('/admin') || normalizedPathname.startsWith('/api/admin');
-  if (adminPath && (!user || role !== 'admin')) {
+  const isBearerProtectedAdminApi = normalizedPathname.startsWith('/api/admin') && Boolean(authorizationHeader);
+  if (adminPath && !isBearerProtectedAdminApi && (!user || role !== 'admin')) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = pathnameLocale ? `/${pathnameLocale}/auth` : '/auth';
     redirectUrl.searchParams.set('redirect', pathname);
@@ -232,4 +231,5 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|avif|css|js|map|txt|xml|woff2?)).*)'],
 };
-export default middleware;
+
+export default proxy;

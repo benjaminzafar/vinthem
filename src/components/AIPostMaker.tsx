@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Wand2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { genAI } from '@/lib/ai';
+import { safeParseAiResponse } from '@/lib/json';
 import { createClient } from '@/utils/supabase/client';
 
 export function AIPostMaker() {
@@ -22,13 +23,18 @@ export function AIPostMaker() {
 
       const model = genAI.getGenerativeModel({ 
         model: 'llama-3.3-70b-versatile',
+        promptProfile: 'post',
         generationConfig: {
           responseMimeType: 'application/json',
         }
       });
 
       const aiResponse = await model.generateContent(prompt);
-      const post = JSON.parse(aiResponse.response.text() || '{}');
+      const post = safeParseAiResponse<{
+        title?: string;
+        excerpt?: string;
+        content?: string;
+      }>(aiResponse.response.text(), {});
       
       const { error } = await supabase
         .from('blog_posts')

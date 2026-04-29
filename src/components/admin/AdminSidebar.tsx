@@ -1,7 +1,5 @@
 'use client';
 
-'use client';
-
 import React, { useState } from 'react';
 import { 
   LayoutDashboard, 
@@ -51,14 +49,14 @@ function SidebarContent({
   return (
     <>
       <div className="flex items-center px-6 h-16 border-b border-slate-300 bg-white shrink-0">
-        <h1 className="!text-[11px] !font-bold !uppercase !tracking-widest text-slate-900 flex items-center">
+        <h1 className="text-[13px] font-semibold tracking-[0.18em] text-slate-900 flex items-center uppercase">
           <Settings className="w-4 h-4 mr-3 text-slate-900" />
           Admin
         </h1>
       </div>
       
-      <div className="flex-1 overflow-y-auto py-6 px-4 space-y-1 custom-scrollbar">
-        <div className="px-3 mb-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Menu</div>
+      <div className="flex-1 overflow-y-auto py-5 px-3 space-y-1.5 custom-scrollbar">
+        <div className="px-3 mb-3 text-[10px] font-semibold text-slate-500 uppercase tracking-[0.18em]">Menu</div>
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (
@@ -66,32 +64,32 @@ function SidebarContent({
               key={item.id}
               href={item.href}
               onClick={onNavItemClick}
-              className={`w-full flex items-center space-x-3 px-3 py-2 transition-all ${
+              className={`w-full flex items-center gap-3 rounded-md px-3 py-2.5 transition-all ${
                 isActive
-                  ? 'bg-slate-900 text-white'
-                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                  ? 'bg-slate-900 text-white shadow-sm'
+                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
               }`}
             >
-              <item.icon className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-slate-500'}`} />
-              <span className="!text-[11px] !font-bold !uppercase !tracking-widest">{item.label}</span>
+              <item.icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-500'}`} />
+              <span className="text-[13px] font-medium tracking-normal">{item.label}</span>
             </Link>
           );
         })}
       </div>
       
-      <div className="p-6 border-t border-slate-300 bg-white">
-        <div className="flex items-center mb-6 px-1">
-          <div className="w-9 h-9 rounded bg-slate-900 flex items-center justify-center text-white font-bold text-[13px] mr-3 shrink-0">
+      <div className="p-4 border-t border-slate-300 bg-white">
+        <div className="flex items-center mb-4 px-1">
+          <div className="w-10 h-10 rounded-md bg-slate-900 flex items-center justify-center text-white font-semibold text-[13px] mr-3 shrink-0">
             {activeUserEmail?.[0].toUpperCase() || 'A'}
           </div>
           <div className="text-left flex-1 min-w-0">
-            <p className="text-[13px] font-bold text-slate-900 truncate">Admin User</p>
+            <p className="text-[13px] font-semibold text-slate-900 truncate">Admin User</p>
             <p className="text-[11px] text-slate-500 truncate mt-0.5">{activeUserEmail}</p>
           </div>
         </div>
         <button
           onClick={onSignOut}
-          className="w-full flex items-center justify-center space-x-2 px-4 h-10 border border-slate-300 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all text-[11px] font-bold uppercase tracking-widest"
+          className="w-full flex items-center justify-center space-x-2 px-4 h-10 rounded-md border border-slate-300 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all text-[12px] font-medium"
         >
           <LogOut className="w-4 h-4" />
           <span>Sign Out</span>
@@ -122,7 +120,7 @@ export default function AdminSidebar({
   return (
     <>
       {/* Desktop Sidebar */}
-      <div className="hidden lg:flex w-64 bg-white text-slate-600 flex-shrink-0 flex-col h-screen sticky top-0 z-20 border-r border-slate-300 shadow-none">
+      <div className="hidden lg:flex w-[272px] bg-white text-slate-600 flex-shrink-0 flex-col h-screen sticky top-0 z-20 border-r border-slate-300 shadow-none">
         <SidebarContent pathname={pathname} activeUserEmail={activeUserEmail} onSignOut={handleSignOut} />
       </div>
 
@@ -142,7 +140,7 @@ export default function AdminSidebar({
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
-              className="fixed inset-y-0 left-0 w-72 bg-white text-slate-600 z-[60] flex flex-col lg:hidden border-r border-slate-300"
+              className="fixed inset-y-0 left-0 w-72 max-w-[86vw] bg-white text-slate-600 z-[60] flex flex-col lg:hidden border-r border-slate-300"
             >
               <SidebarContent 
                 pathname={pathname} 

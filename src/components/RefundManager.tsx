@@ -3,7 +3,7 @@ import { logger } from '@/lib/logger';
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { RefreshCcw, CheckCircle, XCircle, Clock, DollarSign } from 'lucide-react';
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 import { updateRefundStatusAction } from '@/app/actions/support';
 import { createClient } from '@/utils/supabase/client';
 import { StableChartContainer } from './admin/charts/StableChartContainer';
@@ -19,7 +19,6 @@ type RefundRequest = {
   order_id: string;
   orderId: string;
   reason: string | null;
-  comments?: string | null;
   status: 'Pending' | 'Approved' | 'Rejected' | 'Refunded';
 };
 
@@ -124,9 +123,9 @@ export function RefundManager() {
       {reasonData.length > 0 && (
         <div className="py-8 border-b border-gray-200/60 last:border-0">
           <h3 className="text-sm font-bold text-zinc-900 uppercase tracking-wider mb-6">Refund Reasons Breakdown</h3>
-          <StableChartContainer className="h-64 w-full" minHeight={256}>
-            <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={100}>
-              <PieChart>
+          <StableChartContainer className="w-full" size="compact" minHeight={256}>
+            {({ width, height }) => (
+              <PieChart width={width} height={height}>
                 <Pie
                   data={reasonData}
                   cx="50%"
@@ -145,7 +144,7 @@ export function RefundManager() {
                 />
                 <Legend verticalAlign="bottom" height={36} />
               </PieChart>
-            </ResponsiveContainer>
+            )}
           </StableChartContainer>
         </div>
       )}
@@ -158,7 +157,6 @@ export function RefundManager() {
                 <th className="p-4 font-semibold">Request ID / Date</th>
                 <th className="p-4 font-semibold">Order ID</th>
                 <th className="p-4 font-semibold">Reason</th>
-                <th className="p-4 font-semibold">Comments</th>
                 <th className="p-4 font-semibold">Status</th>
                 <th className="p-4 font-semibold text-right">Actions</th>
               </tr>
@@ -166,11 +164,11 @@ export function RefundManager() {
             <tbody className="divide-y divide-zinc-100">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="p-8 text-center text-zinc-500">Loading requests...</td>
+                  <td colSpan={5} className="p-8 text-center text-zinc-500">Loading requests...</td>
                 </tr>
               ) : filteredRequests.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="p-8 text-center text-zinc-500">
+                  <td colSpan={5} className="p-8 text-center text-zinc-500">
                     <div className="flex flex-col items-center justify-center">
                       <RefreshCcw className="w-8 h-8 text-zinc-300 mb-3" />
                       <p>No refund requests found.</p>
@@ -189,9 +187,6 @@ export function RefundManager() {
                     </td>
                     <td className="p-4">
                       <span className="text-sm text-zinc-900">{req.reason}</span>
-                    </td>
-                    <td className="p-4 max-w-xs truncate text-sm text-zinc-500" title={req.comments ?? undefined}>
-                      {req.comments || '-'}
                     </td>
                     <td className="p-4">
                       {getStatusBadge(req.status)}

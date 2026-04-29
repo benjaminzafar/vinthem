@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useTransition, useCallback } from 'react';
+import React, { useState, useEffect, useTransition, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Globe, Layout, ImageIcon, AlignLeft, Info, Save, 
@@ -17,10 +17,12 @@ import { updateSettingsAction } from '@/app/actions/storefront';
 import { genAI } from '@/lib/ai';
 import { extractFirstJsonObject } from '@/lib/json';
 import Image from 'next/image';
+import { toMediaProxyUrl } from '@/lib/media';
 import { isValidUrl } from '@/lib/utils';
 import { SearchableSelect } from '@/components/SearchableSelect';
 import { createClient } from '@/utils/supabase/client';
 import { Category } from '@/types';
+import { logger } from '@/lib/logger';
 
 const CATEGORIES = [
   { id: 'branding', name: 'Identity & Brand', icon: Sparkles, color: 'text-zinc-900', bg: 'bg-zinc-50' },
@@ -29,6 +31,85 @@ const CATEGORIES = [
   { id: 'labels', name: 'System Labels', icon: AlignLeft, color: 'text-zinc-900', bg: 'bg-zinc-50' },
   { id: 'multilang', name: 'Globalization', icon: Languages, color: 'text-zinc-900', bg: 'bg-zinc-50' },
 ];
+
+const SHIPPING_COUNTRY_PRESETS: Array<{ code: string; name: LocalizedString }> = [
+  { code: 'SE', name: { en: 'Sweden', sv: 'Sverige', fi: 'Ruotsi', da: 'Sverige', de: 'Schweden' } },
+  { code: 'NO', name: { en: 'Norway', sv: 'Norge', fi: 'Norja', da: 'Norge', de: 'Norwegen' } },
+  { code: 'DK', name: { en: 'Denmark', sv: 'Danmark', fi: 'Tanska', da: 'Danmark', de: 'Dänemark' } },
+  { code: 'FI', name: { en: 'Finland', sv: 'Finland', fi: 'Suomi', da: 'Finland', de: 'Finnland' } },
+  { code: 'DE', name: { en: 'Germany', sv: 'Tyskland', fi: 'Saksa', da: 'Tyskland', de: 'Deutschland' } },
+  { code: 'NL', name: { en: 'Netherlands', sv: 'Nederländerna', fi: 'Alankomaat', da: 'Nederlandene', de: 'Niederlande' } },
+  { code: 'BE', name: { en: 'Belgium', sv: 'Belgien', fi: 'Belgia', da: 'Belgien', de: 'Belgien' } },
+  { code: 'FR', name: { en: 'France', sv: 'Frankrike', fi: 'Ranska', da: 'Frankrig', de: 'Frankreich' } },
+  { code: 'ES', name: { en: 'Spain', sv: 'Spanien', fi: 'Espanja', da: 'Spanien', de: 'Spanien' } },
+  { code: 'IT', name: { en: 'Italy', sv: 'Italien', fi: 'Italia', da: 'Italien', de: 'Italien' } },
+  { code: 'AT', name: { en: 'Austria', sv: 'Österrike', fi: 'Itävalta', da: 'Østrig', de: 'Österreich' } },
+  { code: 'CH', name: { en: 'Switzerland', sv: 'Schweiz', fi: 'Sveitsi', da: 'Schweiz', de: 'Schweiz' } },
+  { code: 'GB', name: { en: 'United Kingdom', sv: 'Storbritannien', fi: 'Yhdistynyt kuningaskunta', da: 'Storbritannien', de: 'Vereinigtes Königreich' } },
+  { code: 'IE', name: { en: 'Ireland', sv: 'Irland', fi: 'Irlanti', da: 'Irland', de: 'Irland' } },
+  { code: 'PL', name: { en: 'Poland', sv: 'Polen', fi: 'Puola', da: 'Polen', de: 'Polen' } },
+  { code: 'PT', name: { en: 'Portugal', sv: 'Portugal', fi: 'Portugali', da: 'Portugal', de: 'Portugal' } },
+  { code: 'US', name: { en: 'United States', sv: 'USA', fi: 'Yhdysvallat', da: 'USA', de: 'Vereinigte Staaten' } },
+  { code: 'CA', name: { en: 'Canada', sv: 'Kanada', fi: 'Kanada', da: 'Canada', de: 'Kanada' } },
+];
+
+function buildShippingCountryEntry(input: string, languages: string[]) {
+  const normalized = input.trim();
+  if (!normalized) {
+    return null;
+  }
+
+  const lower = normalized.toLowerCase();
+  const preset = SHIPPING_COUNTRY_PRESETS.find((country) =>
+    country.code.toLowerCase() === lower ||
+    Object.values(country.name).some((label) => label.toLowerCase() === lower)
+  );
+
+  if (preset) {
+    const localizedName = languages.reduce<LocalizedString>((acc, lang) => {
+      acc[lang] = preset.name[lang] || preset.name.en || normalized;
+      return acc;
+    }, {});
+
+    return {
+      code: preset.code,
+      name: localizedName,
+    };
+  }
+
+  const code = normalized.length === 2 ? normalized.toUpperCase() : normalized.slice(0, 2).toUpperCase();
+  const fallbackName = languages.reduce<LocalizedString>((acc, lang) => {
+    acc[lang] = normalized;
+    return acc;
+  }, {});
+
+  return {
+    code,
+    name: fallbackName,
+  };
+}
+
+type AIRequestError = Error & { status?: number };
+
+function isTransientAIError(error: unknown): error is AIRequestError {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  const status = typeof (error as AIRequestError).status === 'number'
+    ? (error as AIRequestError).status
+    : null;
+
+  if (status === 429 || status === 500 || status === 503) {
+    return true;
+  }
+
+  const message = error.message.toLowerCase();
+  return message.includes('temporarily busy') ||
+    message.includes('temporarily unavailable') ||
+    message.includes('overloaded') ||
+    message.includes('rate limit');
+}
 
 export function StorefrontContainer() {
   const initialSettings = useSettingsStore((state) => state.settings);
@@ -43,6 +124,12 @@ export function StorefrontContainer() {
   const [uploadingImage, setUploadingImage] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [supabase] = useState(() => createClient());
+  const [shippingCountryDraft, setShippingCountryDraft] = useState('');
+
+  const shippingCountrySuggestions = useMemo(
+    () => SHIPPING_COUNTRY_PRESETS.map((country) => `${country.name.en} (${country.code})`),
+    [],
+  );
 
   useEffect(() => {
     async function fetchCategories() {
@@ -164,6 +251,7 @@ Text to translate: "${sourceText}"`;
     try {
       const model = genAI.getGenerativeModel({
         model: "llama-3.3-70b-versatile",
+        promptProfile: 'storefront',
         generationConfig: { temperature: 0.1 }
       });
 
@@ -181,7 +269,7 @@ Text to translate: "${sourceText}"`;
         const jsonStr = extractFirstJsonObject(rawText.trim()) || rawText.trim();
         parsed = JSON.parse(jsonStr);
       } catch (e) {
-        console.warn('[AI] JSON Parse failed, attempting fallback regex extraction:', e);
+        logger.warn('[AI] JSON Parse failed, attempting fallback regex extraction.', e);
         // Fallback: Manually extract any "key": "value" pairs that look like languages
         targetLangs.forEach(lang => {
           const aiCode = LANGUAGE_ALIASES[lang.toLowerCase()] || lang.toLowerCase();
@@ -216,7 +304,11 @@ Text to translate: "${sourceText}"`;
 
       return { ...currentFieldState, ...validated };
     } catch (error) {
-      console.error('[AI] translateLocalizedString failed:', error);
+      if (isTransientAIError(error)) {
+        logger.warn('[AI] translateLocalizedString temporary provider failure:', error);
+      } else {
+        logger.error('[AI] translateLocalizedString failed:', error);
+      }
       throw error;
     }
   }, [settings.languages, genAI, settingsLoaded]);
@@ -228,7 +320,7 @@ Text to translate: "${sourceText}"`;
     const toastId = toast.loading(`Generating ${label}...`);
     try {
       const prompt = `Generate a creative and professional ${label} for a premium minimalist e-commerce store named "${settings.storeName?.en || 'Nordic'}". Return ONLY the text content, no quotes or formatting.`;
-      const model = genAI.getGenerativeModel({ model: "llama-3.3-70b-versatile" });
+      const model = genAI.getGenerativeModel({ model: "llama-3.3-70b-versatile", promptProfile: 'storefront' });
       const aiResponse = await model.generateContent(prompt);
       const text = aiResponse.response.text()?.trim() || '';
       
@@ -244,8 +336,12 @@ Text to translate: "${sourceText}"`;
       
       toast.success(`${label} generated (English)`, { id: toastId });
     } catch (error) {
-      console.error('[AI] Auto-Fill failed:', error);
       const err = error as Error;
+      if (isTransientAIError(error)) {
+        logger.warn('[AI] Auto-Fill temporary provider failure:', error);
+      } else {
+        logger.error('[AI] Auto-Fill failed:', error);
+      }
       toast.error(err.message || 'AI generation failed', { id: toastId });
     } finally {
       setGeneratingId(null);
@@ -273,8 +369,12 @@ Text to translate: "${sourceText}"`;
         toast.dismiss(toastId);
       }
     } catch (error) {
-      console.error('[AI] Translation failed:', error);
       const err = error as Error;
+      if (isTransientAIError(error)) {
+        logger.warn('[AI] Translation temporary provider failure:', error);
+      } else {
+        logger.error('[AI] Translation failed:', error);
+      }
       toast.error(err.message || 'Localization failed', { id: toastId });
     } finally {
       setGeneratingId(null);
@@ -380,7 +480,7 @@ Text to translate: "${sourceText}"`;
                   <div className="flex flex-col md:flex-row gap-8">
                     <div className="w-32 h-32 rounded border border-zinc-100 bg-zinc-50 flex items-center justify-center overflow-hidden relative group cursor-pointer hover:bg-zinc-100/50 transition-colors">
                       {isValidUrl(settings.logoImage) ? (
-                        <Image src={settings.logoImage} alt="Logo" fill sizes="128px" className="object-contain p-2" />
+                        <Image src={toMediaProxyUrl(settings.logoImage)} alt="Logo" fill sizes="128px" className="object-contain p-2" />
                       ) : (
                         <ImageIcon className="w-8 h-8 text-zinc-200" />
                       )}
@@ -1085,7 +1185,7 @@ Text to translate: "${sourceText}"`;
                     <div className="space-y-4">
                         <div className="aspect-video bg-zinc-50 border border-zinc-100 rounded-md relative group overflow-hidden">
                            {isValidUrl(settings.authBackgroundImage) ? (
-                              <Image src={settings.authBackgroundImage} alt="Authentication background" fill className="object-cover" />
+                              <Image src={toMediaProxyUrl(settings.authBackgroundImage)} alt="Authentication background" fill className="object-cover" />
                            ) : <ImageIcon className="w-8 h-8 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-zinc-200" />}
                            <input type="file" onChange={e => handleImageUpload(e, 'authBackgroundImage')} className="absolute inset-0 opacity-0 cursor-pointer" />
                            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -1151,51 +1251,82 @@ Text to translate: "${sourceText}"`;
                   
                   <SettingCard id="Shipping" title="Global Shipping Regions" icon={Globe}>
                      <div className="space-y-6">
+                        <div className="rounded-md border border-zinc-200 bg-zinc-50 p-4 sm:p-5 space-y-3">
+                           <label className="text-[11px] font-black uppercase tracking-widest text-zinc-900">Add shipping country</label>
+                           <div className="flex flex-col sm:flex-row gap-3">
+                              <input
+                                type="text"
+                                list="shipping-country-suggestions"
+                                value={shippingCountryDraft}
+                                onChange={(e) => setShippingCountryDraft(e.target.value)}
+                                placeholder="Type country name or ISO code, e.g. Sweden or SE"
+                                className="flex-1 h-11 px-4 bg-white border border-zinc-200 rounded-md text-sm font-medium focus:outline-none focus:border-zinc-900"
+                              />
+                              <datalist id="shipping-country-suggestions">
+                                {shippingCountrySuggestions.map((suggestion) => (
+                                  <option key={suggestion} value={suggestion} />
+                                ))}
+                              </datalist>
+                              <button
+                                onClick={() => {
+                                  const normalizedInput = shippingCountryDraft.replace(/\s*\([A-Z]{2}\)\s*$/, '').trim();
+                                  const nextCountry = buildShippingCountryEntry(normalizedInput, settings.languages);
+                                  if (!nextCountry) {
+                                    toast.error('Enter a country name or ISO code first.');
+                                    return;
+                                  }
+
+                                  const existingCountries = settings.shippingCountries || [];
+                                  const alreadyExists = existingCountries.some(
+                                    (country) => country.code.toUpperCase() === nextCountry.code.toUpperCase()
+                                  );
+
+                                  if (alreadyExists) {
+                                    toast.info(`${nextCountry.name.en || normalizedInput} is already in the shipping list.`);
+                                    return;
+                                  }
+
+                                  handleUpdate('shippingCountries', [...existingCountries, nextCountry]);
+                                  setShippingCountryDraft('');
+                                }}
+                                className="h-11 px-5 bg-zinc-900 text-white rounded-md text-[11px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-all flex items-center justify-center gap-2"
+                              >
+                                <Plus className="w-3.5 h-3.5" /> Add
+                              </button>
+                           </div>
+                           <p className="text-xs text-zinc-500 font-medium">
+                             Just enter the country once. The region code and translated labels are prepared automatically.
+                           </p>
+                        </div>
                         <div className="flex flex-col gap-4">
                            {settings.shippingCountries?.map((country, idx) => (
-                             <div key={idx} className="p-4 bg-zinc-50 border border-zinc-100 rounded-md relative group space-y-4">
+                             <div key={idx} className="p-4 bg-zinc-50 border border-zinc-100 rounded-md relative group space-y-3">
                                <button onClick={() => handleUpdate('shippingCountries', settings.shippingCountries.filter((_, i) => i !== idx))} className="absolute top-2 right-2 p-1.5 text-zinc-300 hover:text-rose-600 transition-colors">
                                  <Trash2 className="w-3.5 h-3.5" />
                                </button>
-                               <div className="space-y-2">
-                                <label className="text-xs font-bold text-zinc-900/80 uppercase tracking-widest">Country Code (ISO)</label>
-                                <input 
-                                  type="text" 
-                                  value={country.code} 
-                                  onChange={e => {
-                                    const newCountries = [...settings.shippingCountries];
-                                    newCountries[idx].code = e.target.value.toUpperCase();
-                                    handleUpdate('shippingCountries', newCountries);
-                                  }}
-                                  className="w-full h-11 px-4 bg-white border border-zinc-200 text-sm font-bold focus:outline-none focus:border-zinc-900"
-                                  placeholder="e.g. US, SE, NO"
-                                  maxLength={2}
-                                />
+                               <div className="flex items-start justify-between gap-4 pr-8">
+                                 <div>
+                                   <p className="text-[11px] font-black uppercase tracking-widest text-zinc-400">ISO Code</p>
+                                   <p className="mt-1 text-sm font-bold text-zinc-900">{country.code}</p>
+                                 </div>
+                                 <div className="text-right">
+                                   <p className="text-[11px] font-black uppercase tracking-widest text-zinc-400">Display Name</p>
+                                   <p className="mt-1 text-sm font-bold text-zinc-900">{country.name?.en || Object.values(country.name || {})[0] || country.code}</p>
+                                 </div>
                                </div>
-                               <LocalizedSettingInput 
-                                 label="Localized Country Name" 
-                                 value={country.name} 
-                                 onChange={v => {
-                                   const newCountries = [...settings.shippingCountries];
-                                   newCountries[idx].name = v;
-                                   handleUpdate('shippingCountries', newCountries);
-                                 }}
-                                 languages={settings.languages}
-                                 onAITranslate={async () => {
-                                   toast.error('AI translation for dynamic array objects requires manual entry for now.');
-                                 }}
-                                 isGenerating={false}
-                               />
+                               <div className="flex flex-wrap gap-2">
+                                 {settings.languages.map((lang) => (
+                                   <span key={`${country.code}-${lang}`} className="inline-flex items-center gap-2 rounded-md border border-zinc-200 bg-white px-3 py-2 text-[11px] font-bold uppercase tracking-widest text-zinc-600">
+                                     <span className="text-zinc-400">{lang}</span>
+                                     <span className="text-zinc-900 normal-case tracking-normal font-medium">
+                                       {country.name?.[lang] || country.name?.en || country.code}
+                                     </span>
+                                   </span>
+                                 ))}
+                               </div>
                              </div>
                            ))}
                         </div>
-                        <button onClick={() => {
-                          const newCountries = [...(settings.shippingCountries || [])];
-                          newCountries.push({ code: 'US', name: { en: 'United States' } });
-                          handleUpdate('shippingCountries', newCountries);
-                        }} className="w-full py-3 border border-dashed border-zinc-200 rounded-md text-[11px] font-black uppercase tracking-widest text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50 transition-all flex items-center justify-center gap-2">
-                           <Plus className="w-3.5 h-3.5" /> Add Shipping Destination
-                        </button>
                      </div>
                   </SettingCard>
                </div>

@@ -12,6 +12,7 @@ import { AdminHeader } from '../AdminHeader';
 import { IntegrationCard } from './IntegrationCard';
 import { CredentialInput } from './CredentialInput';
 import { SUPPORTED_LOCALES } from '@/lib/locales';
+import { AI_PROMPT_DEFINITIONS, AI_PROMPT_INTEGRATION_KEYS } from '@/lib/ai-prompts';
 import { 
   saveIntegrationAction, 
   testStripeConnectionAction, 
@@ -25,6 +26,24 @@ const CATEGORIES = [
   { id: 'shipping', name: 'Logistics', icon: Truck, color: 'text-amber-600', bg: 'bg-amber-50' },
   { id: 'system', name: 'Core Infrastructure', icon: Settings2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
 ];
+
+const CONNECTED_SERVICE_KEYS = [
+  'GROQ_API_KEY_CONNECTED',
+  'CLARITY_ID_CONNECTED',
+  'INSTAGRAM_API_KEY_CONNECTED',
+  'TIKTOK_API_KEY_CONNECTED',
+  'REDDIT_API_KEY_CONNECTED',
+  'FACEBOOK_PIXEL_ID_CONNECTED',
+  'POSTNORD_API_KEY_CONNECTED',
+  'DHL_API_KEY_CONNECTED',
+  'BRING_API_KEY_CONNECTED',
+  'DBSCHENKER_API_KEY_CONNECTED',
+  'UPS_API_KEY_CONNECTED',
+  'STRIPE_SECRET_KEY_CONNECTED',
+  'BREVO_API_KEY_CONNECTED',
+  'R2_ACCESS_KEY_ID_CONNECTED',
+  'GOOGLE_MERCHANT_ID_CONNECTED',
+] as const;
 
 export function IntegrationsContainer({ 
   initialConfig,
@@ -129,7 +148,7 @@ export function IntegrationsContainer({
       <AdminHeader 
         title="Integrations & Settings"
         description="Manage the neural network of your e-commerce ecosystem."
-        statsLabel={`${Object.keys(config).filter(k => k.includes('_CONNECTED')).length} SERVICES LIVE`}
+        statsLabel={`${CONNECTED_SERVICE_KEYS.filter((key) => config[key] === 'true').length} SERVICES LIVE`}
       />
 
       {/* Category Tabs - Sharp Style */}
@@ -172,11 +191,11 @@ export function IntegrationsContainer({
                {id === 'Groq' && (
                  <IntegrationCard
                     id="Groq"
-                    title="Groq AI (LPU High-Speed)"
-                    logo={<Sparkles className="text-indigo-600" />}
-                    isConnected={config['GROQ_API_KEY_CONNECTED'] === 'true'}
-                    isSaving={savingId === 'Groq'}
-                    onSave={() => handleSave('Groq', ['GROQ_MODEL', 'GROQ_API_KEY'])}
+                   title="Groq AI (LPU High-Speed)"
+                   logo={<Sparkles className="text-indigo-600" />}
+                   isConnected={config['GROQ_API_KEY_CONNECTED'] === 'true'}
+                   isSaving={savingId === 'Groq'}
+                    onSave={() => handleSave('Groq', ['GROQ_MODEL', 'GROQ_API_KEY', ...AI_PROMPT_INTEGRATION_KEYS])}
                     tutorial={<p>Get your API key at console.groq.com. Use Llama 3.3 for the best balance of speed and power.</p>}
                   >
                     <CredentialInput 
@@ -197,6 +216,17 @@ export function IntegrationsContainer({
                       type="password"
                       placeholder="gsk_..."
                     />
+                    {AI_PROMPT_DEFINITIONS.map((field) => (
+                      <CredentialInput
+                        key={field.key}
+                        label={field.label}
+                        value={config[field.key] || ''}
+                        onChange={(value) => handleUpdate(field.key, value)}
+                        type="textarea"
+                        placeholder={field.placeholder}
+                        description={field.description}
+                      />
+                    ))}
                   </IntegrationCard>
                )}
                {id === 'Instagram' && (

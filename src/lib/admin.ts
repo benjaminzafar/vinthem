@@ -9,6 +9,14 @@ type UserProfileRow = {
   role: string | null;
 };
 
+type EnsureUserProfilePayload = {
+  id: string;
+  email: string | null;
+  full_name: string;
+  role: string;
+  updated_at: string;
+};
+
 async function getRoleWithSessionClient(
   supabase: SessionClient,
   userId: string
@@ -136,7 +144,7 @@ export async function ensureUserProfile(user: User, name?: string | null, lang?:
   }
 
   // 2. Perform the update with a fallback to avoid "column does not exist" errors
-  const updatePayload: any = {
+  const updatePayload: EnsureUserProfilePayload = {
     id: user.id,
     email: user.email ?? null,
     full_name: name ?? '',

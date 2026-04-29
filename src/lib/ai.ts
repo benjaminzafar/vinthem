@@ -1,4 +1,5 @@
 import { generateAIContentAction } from "@/app/actions/ai";
+import type { AIPromptProfile } from "@/lib/ai-prompts";
 
 /**
  * AI Provider Bridge
@@ -7,9 +8,15 @@ import { generateAIContentAction } from "@/app/actions/ai";
  */
 type AIContentPart = { text: string } | { inlineData: { mimeType: string; data: string } };
 type AIContent = { role: 'user' | 'model'; parts: AIContentPart[] };
+type GenerationConfig = {
+  responseMimeType?: string;
+  responseSchema?: Record<string, unknown>;
+  systemInstruction?: string;
+  temperature?: number;
+};
 
 export const genAI = {
-  getGenerativeModel: (config: { model?: string, generationConfig?: Record<string, unknown> }) => {
+  getGenerativeModel: (config: { model?: string; promptProfile?: AIPromptProfile; generationConfig?: GenerationConfig }) => {
     return {
       generateContent: async (prompt: string | AIContentPart[] | AIContent[]) => {
         // Adapt contents: check if it's already a Content array or if it needs wrapping
@@ -27,14 +34,14 @@ export const genAI = {
         
         const result = await generateAIContentAction({
           model: config.model || "llama-3.3-70b-versatile",
+          promptProfile: config.promptProfile,
           contents: contents,
           generationConfig: config.generationConfig,
           nonce: Date.now().toString()
         });
 
         if (result.error) {
-          const err = new Error(result.error);
-          // @ts-expect-error - Adding status to standard Error object
+          const err = new Error(result.error) as Error & { status?: number };
           err.status = result.status;
           throw err;
         }

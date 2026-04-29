@@ -22,6 +22,9 @@ import Image from 'next/image';
 import { isValidUrl } from '@/lib/utils';
 import { InfiniteScrollSentinel } from '@/components/admin/InfiniteScrollSentinel';
 import { deleteProductAction } from '@/app/actions/admin-products';
+import { AdminLoadingState } from '@/components/admin/AdminLoadingState';
+import { AdminHeader } from '@/components/admin/AdminHeader';
+import { downloadXLSX } from '@/utils/export';
 
 type ProductRecord = {
   id: string;
@@ -33,6 +36,7 @@ type ProductRecord = {
   image_url: string;
   category_id?: string;
   is_featured?: boolean;
+  is_new?: boolean;
   is_new_arrival?: boolean;
   is_sale?: boolean;
   sale_price?: number;
@@ -160,7 +164,7 @@ export function ProductManager({
         imageUrl: p.image_url,
         categoryId: p.category_id,
         isFeatured: p.is_featured,
-        isNewArrival: p.is_new_arrival,
+        isNewArrival: p.is_new ?? p.is_new_arrival ?? false,
         isSale: p.is_sale,
         discountPrice: p.sale_price,
         prices: p.prices,
@@ -318,48 +322,42 @@ export function ProductManager({
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <h1 className="text-[18px] font-bold text-slate-900 tracking-tight">Products</h1>
-          <p className="text-[12px] text-slate-500 mt-0.5">Manage your store's inventory and details</p>
-        </div>
-        
-        <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full md:w-auto">
-          {refreshing && (
-            <div className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-500">
-              <Package className="w-3.5 h-3.5 animate-pulse" />
-              Syncing
-            </div>
-          )}
-          <div className="relative flex-1 sm:flex-none">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-            <input 
-              type="text"
-              placeholder="Search products..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-4 h-10 bg-white border border-slate-300 rounded text-sm focus:outline-none focus:border-slate-900 transition-all w-full sm:w-64 text-slate-900"
-            />
-          </div>
-          <button 
-            onClick={() => router.push('/admin/products/new')}
-            className="h-10 px-4 sm:px-6 bg-slate-900 text-white rounded text-sm font-medium hover:bg-slate-800 transition-all flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">Add Product</span>
-            <span className="sm:hidden text-[11px]">Add</span>
-          </button>
-        </div>
-      </div>
+      <AdminHeader
+        title="Products"
+        description="Manage your store inventory, pricing, publishing state, and category assignment."
+        search={{
+          value: searchQuery,
+          onChange: setSearchQuery,
+          placeholder: 'Search products...'
+        }}
+        primaryAction={{
+          label: 'Add Product',
+          icon: Plus,
+          onClick: () => router.push('/admin/products/new'),
+        }}
+        secondaryActions={[
+          {
+            label: 'Import CSV',
+            icon: FileText,
+            onClick: () => fileInputRef.current?.click(),
+          },
+          {
+            label: 'Export Catalog',
+            icon: Download,
+            onClick: () => downloadXLSX(products, 'products'),
+          },
+        ]}
+        statsLabel={`${products.length} products${refreshing ? ' • syncing' : ''}`}
+      />
 
       <div className="bg-white border border-slate-300 rounded overflow-hidden shadow-none">
-        <div className="px-6 border-b border-slate-300 bg-white flex items-center justify-between h-14">
-          <div className="flex gap-8 h-full">
+        <div className="px-4 sm:px-6 border-b border-slate-300 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-3 sm:h-14 sm:py-0">
+          <div className="flex gap-5 sm:gap-8 h-full flex-wrap">
             {['all', 'active', 'drafts'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab as 'all' | 'active' | 'drafts')}
-                className={`h-full text-[11px] font-bold uppercase tracking-widest border-b-2 transition-all ${
+                className={`h-full py-1 text-[11px] font-bold uppercase tracking-widest border-b-2 transition-all ${
                   activeTab === tab 
                     ? 'text-slate-900 border-slate-900' 
                     : 'text-slate-500 border-transparent hover:text-slate-600'
@@ -369,26 +367,31 @@ export function ProductManager({
               </button>
             ))}
           </div>
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={() => fileInputRef.current?.click()}
-              className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-900 transition-all"
-            >
-              <FileText className="w-4 h-4" />
-              Import CSV
-            </button>
-            <button className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-900 transition-all">
-               <Download className="w-4 h-4" />
-               Export
-            </button>
+          <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+            {refreshing && (
+              <div className="inline-flex items-center gap-2">
+                <Package className="w-3.5 h-3.5 animate-pulse" />
+                Syncing
+              </div>
+            )}
           </div>
         </div>
 
+        {loading && products.length === 0 ? (
+          <div className="p-6">
+            <AdminLoadingState
+              compact
+              eyebrow="Products"
+              title="Building the inventory board"
+              detail="Syncing catalog entries, stock positions, and publishing state from the live store."
+            />
+          </div>
+        ) : (
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full min-w-[760px] text-left border-collapse">
             <thead>
               <tr className="border-b border-slate-300 text-[11px] uppercase font-bold tracking-widest text-slate-500 bg-slate-50">
-                <th className="px-6 py-4 w-12 text-center">
+                <th className="admin-table-cell px-4 sm:px-6 py-4 w-12 text-center">
                   <div 
                     onClick={toggleAll}
                     className={`w-4 h-4 border rounded-sm mx-auto cursor-pointer transition-all flex items-center justify-center ${
@@ -400,12 +403,12 @@ export function ProductManager({
                     {selectedIds.size === products.length && products.length > 0 && <Check className="w-3 h-3 text-white" />}
                   </div>
                 </th>
-                <th className="px-6 py-4">Product</th>
-                <th className="px-6 py-4">Category</th>
-                <th className="px-6 py-4">Price</th>
-                <th className="px-6 py-4">Stock</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4 text-right">Actions</th>
+                <th className="admin-table-cell px-4 sm:px-6 py-4">Product</th>
+                <th className="admin-table-cell px-4 sm:px-6 py-4 hidden md:table-cell">Category</th>
+                <th className="admin-table-cell px-4 sm:px-6 py-4">Price</th>
+                <th className="admin-table-cell px-4 sm:px-6 py-4 hidden sm:table-cell">Stock</th>
+                <th className="admin-table-cell px-4 sm:px-6 py-4">Status</th>
+                <th className="admin-table-cell px-4 sm:px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -422,7 +425,7 @@ export function ProductManager({
                   }`}
                 >
                   <td 
-                    className="px-6 py-4" 
+                    className="admin-table-cell px-4 sm:px-6 py-4" 
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleSelect(product.id);
@@ -436,7 +439,7 @@ export function ProductManager({
                       {selectedIds.has(product.id) && <Check className="w-3 h-3 text-white" />}
                     </div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="admin-table-cell px-4 sm:px-6 py-4">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 bg-slate-50 border border-slate-200 rounded flex items-center justify-center overflow-hidden shrink-0">
                         {isValidUrl(product.imageUrl) ? (
@@ -451,16 +454,16 @@ export function ProductManager({
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-xs font-medium text-slate-600">
+                  <td className="admin-table-cell px-4 sm:px-6 py-4 text-xs font-medium text-slate-600 hidden md:table-cell">
                     {categories.find(c => c.id === product.categoryId)?.name || 'General Item'}
                   </td>
-                  <td className="px-6 py-4 text-sm font-bold text-slate-900 whitespace-nowrap">
+                  <td className="admin-table-cell px-4 sm:px-6 py-4 text-sm font-bold text-slate-900 whitespace-nowrap">
                     {product.price.toLocaleString()} SEK
                   </td>
-                  <td className="px-6 py-4 text-xs font-medium text-slate-500">
+                  <td className="admin-table-cell px-4 sm:px-6 py-4 text-xs font-medium text-slate-500 hidden sm:table-cell">
                     {product.stock} <span className="text-[10px] uppercase opacity-60 ml-1">Units</span>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="admin-table-cell px-4 sm:px-6 py-4">
                     <div className={`inline-flex items-center gap-2 px-2.5 py-1 rounded text-[11px] font-bold uppercase tracking-widest border ${
                       product.status === 'draft' ? 'bg-zinc-100 text-zinc-600 border-zinc-200' :
                       product.stock > 10 ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 
@@ -473,7 +476,7 @@ export function ProductManager({
                       {product.status === 'draft' ? 'Draft' : product.stock > 10 ? 'Active' : product.stock > 0 ? 'Low Stock' : 'Out of Stock'}
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="admin-table-cell px-4 sm:px-6 py-4 text-right">
                     <button 
                       onClick={(e) => handleDelete(product.id, e)} 
                       className="p-2 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded transition-all"
@@ -486,6 +489,7 @@ export function ProductManager({
             </tbody>
           </table>
         </div>
+        )}
 
         <InfiniteScrollSentinel 
           onIntersect={() => void fetchProducts({ reset: false, showLoader: false })}

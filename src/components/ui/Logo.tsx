@@ -44,7 +44,7 @@ export const Logo: React.FC<LogoProps> = ({
             text-lg font-bold tracking-[0.25em] transition-colors
             ${isDark ? 'text-white' : 'text-slate-900'}
           `}
-          style={{ fontFamily: 'var(--font-outfit), sans-serif' }}
+          style={{ fontFamily: 'var(--font-ui), sans-serif' }}
         >
           VINTHEM
         </span>

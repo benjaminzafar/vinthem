@@ -147,7 +147,7 @@ export function NotificationCenter() {
           .limit(6),
         supabase
           .from('support_tickets')
-          .select('id, subject, created_at, user_id, customer_email, status')
+          .select('id, subject, created_at, user_id, status')
           .order('created_at', { ascending: false })
           .limit(6),
         supabase
@@ -209,9 +209,7 @@ export function NotificationCenter() {
         }),
         ...(ticketsRes.data ?? []).map((ticket) => {
           const linkedCustomer = typeof ticket.user_id === 'string' ? customerMap.get(ticket.user_id) : null;
-          const customerLabel = typeof ticket.customer_email === 'string'
-            ? ticket.customer_email
-            : linkedCustomer?.email || linkedCustomer?.name || 'a customer';
+          const customerLabel = linkedCustomer?.email || linkedCustomer?.name || 'a customer';
 
           const statusBadge = ticket.status === 'open' ? 'NEW' : ticket.status.toUpperCase();
 

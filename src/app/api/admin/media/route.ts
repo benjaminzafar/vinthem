@@ -1,168 +1,161 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getS3Client } from '@/lib/s3';
-import { ListObjectsV2Command, DeleteObjectCommand } from '@aws-sdk/client-s3';
-import { requireAdminUser } from '@/lib/admin';
+import { requireAdminBearerUser, requireAdminUser } from '@/lib/admin';
 import { logger } from '@/lib/logger';
+import { extractMediaKey, toMediaProxyUrl } from '@/lib/media';
+import { getS3Client, getR2Credentials, type R2Credentials } from '@/lib/s3';
 
 export const runtime = 'nodejs';
 
+async function requireAdminMediaAccess(req: NextRequest) {
+  const authorizationHeader = req.headers.get('authorization');
+  if (authorizationHeader) {
+    return requireAdminBearerUser(authorizationHeader);
+  }
+
+  return requireAdminUser();
+}
+
+function buildPublicAssetUrl(credentials: R2Credentials, key: string) {
+  const encodedKey = key.split('/').map((segment) => encodeURIComponent(segment)).join('/');
+
+  if (credentials.publicUrl && credentials.publicUrl !== 'DECRYPTION_FAILED') {
+    return `${credentials.publicUrl.replace(/\/$/, '')}/${encodedKey}`;
+  }
+
+  return `https://${credentials.accountId}.r2.cloudflarestorage.com/${credentials.bucketName}/${encodedKey}`;
+}
+
 export async function GET(req: NextRequest) {
   try {
-    await requireAdminUser();
+    await requireAdminMediaAccess(req);
     
     const { searchParams } = new URL(req.url);
     const prefix = searchParams.get('prefix') || '';
     const continuationToken = searchParams.get('token') || undefined;
-    const isDebug = searchParams.get('debug') === 'true';
 
-    const { getR2Credentials, getS3Client } = await import("@/lib/s3");
-    const { bucketName, publicUrl, accountId } = await getR2Credentials();
+    logger.info('[Media API] Listing prefix:', prefix || 'root');
+    
+    const credentials = await getR2Credentials();
+    const { bucketName, accountId } = credentials;
 
-    if (!bucketName) return NextResponse.json({ error: 'R2_BUCKET_NAME not configured' }, { status: 500 });
+    if (!bucketName || bucketName === 'DECRYPTION_FAILED') {
+      logger.error('[Media API] Bucket name missing or decryption failed');
+      return NextResponse.json({ error: 'R2_BUCKET_NAME not configured correctly' }, { status: 500 });
+    }
+    
+    if (!accountId || accountId === 'DECRYPTION_FAILED') {
+      logger.error('[Media API] Account ID missing or decryption failed');
+      return NextResponse.json({ error: 'R2_ACCOUNT_ID not configured correctly' }, { status: 500 });
+    }
   
+    logger.info('[Media API] Initializing S3 Client...');
     const s3Client = await getS3Client();
-    const command = new ListObjectsV2Command({
-      Bucket: bucketName,
-      Prefix: prefix,
-      Delimiter: '/',
-      ContinuationToken: continuationToken,
-      MaxKeys: 50
-    });
-
-    const data = await s3Client.send(command).catch(err => {
-      logger.error('R2 List Error:', err);
-      throw err;
+    
+    logger.info('[Media API] Sending list command...');
+    const data = await s3Client.list(prefix, {
+      continuationToken,
+      delimiter: '/',
+      maxKeys: 200,
     });
     
     // Folders come from CommonPrefixes
-    const folders = data.CommonPrefixes?.map(cp => cp.Prefix?.slice(prefix.length).replace(/\/$/, '')).filter(Boolean) || [];
-    
-    const isPublicUrlMissing = !publicUrl && !process.env.R2_PUBLIC_URL;
+    const folders = data.CommonPrefixes?.map(cp => {
+      const folder = cp.Prefix?.slice(prefix.length).replace(/\/$/, '') || '';
+      return folder;
+    }).filter(Boolean) || [];
     
     // Files come from Contents
     const files = (data.Contents || [])
       .filter(obj => obj.Key && obj.Key !== prefix)
       .map(obj => {
         const key = obj.Key as string;
-        let url = '';
-        
-        if (publicUrl) {
-           const baseUrl = publicUrl.replace(/\/$/, '');
-           const cleanKey = key.startsWith('/') ? key.slice(1) : key;
-           const encodedKey = cleanKey.split('/').map(segment => encodeURIComponent(segment)).join('/');
-           url = `${baseUrl}/${encodedKey}`;
-        } else {
-           const envUrl = process.env.R2_PUBLIC_URL?.replace(/\/$/, '');
-           if (envUrl) {
-             const cleanKey = key.startsWith('/') ? key.slice(1) : key;
-             const encodedKey = cleanKey.split('/').map(segment => encodeURIComponent(segment)).join('/');
-             url = `${envUrl}/${encodedKey}`;
-           } else {
-             // Fallback to S3 endpoint if absolutely no public URL is defined
-             const cleanKey = key.startsWith('/') ? key.slice(1) : key;
-             const encodedKey = cleanKey.split('/').map(segment => encodeURIComponent(segment)).join('/');
-             url = `https://${accountId}.r2.cloudflarestorage.com/${bucketName}/${encodedKey}`;
-           }
-        }
-
         return {
           key: key,
           size: obj.Size,
           lastModified: obj.LastModified,
-          url: url
+          url: toMediaProxyUrl(buildPublicAssetUrl(credentials, key))
         };
       })
       .filter(f => f.url);
 
-    const statsResult = {
-      totalSize: files.reduce((acc, f) => acc + (f.size || 0), 0),
-      fileCount: files.length,
-      nextContinuationToken: data.NextContinuationToken,
-      publicUrlMissing: isPublicUrlMissing
-    };
+    logger.info(`[Media API] Success: ${folders.length} folders, ${files.length} files`);
 
     return NextResponse.json({
       folders: folders.sort(),
       objects: files,
-      stats: statsResult,
-      ...(isDebug ? { 
-        debug: {
-            bucketName,
-            prefix,
-            accountId: accountId?.slice(0, 4) + '...',
-            publicUrl: publicUrl?.slice(0, 10) + '...',
-            rawResponse: {
-                isTruncated: data.IsTruncated,
-                keyCount: data.KeyCount,
-                maxKeys: data.MaxKeys,
-                commonPrefixesCount: data.CommonPrefixes?.length || 0,
-                contentsCount: data.Contents?.length || 0
-            }
-        }
-      } : {})
-    }, {
-      headers: {
-        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0',
-      }
+      stats: {
+        totalSize: files.reduce((acc, f) => acc + (f.size || 0), 0),
+        fileCount: files.length,
+        publicUrlMissing: !credentials.publicUrl,
+      },
+      nextContinuationToken: data.NextContinuationToken ?? null,
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Failed to load media';
-    logger.error('[Media API Error]:', message);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : '';
     
-    // Return structured error
+    logger.error('[Media API Error]:', { message: errorMessage, stack: errorStack });
+    
     return NextResponse.json({ 
-        error: message,
-        code: (error && typeof error === 'object' && 'name' in error) ? (error as { name: string }).name : 'UNKNOWN_ERROR',
-        suggestion: message.includes('AccessKeyId') ? 'Verify your Access Key ID and Secret in Integrations.' : 
-                   message.includes('Bucket') ? 'Verify that the bucket name "onlineshop" exists in your Cloudflare dashboard.' : 
-                   undefined
+      error: errorMessage,
+      suggestion: 'Check server logs for the full stack trace. Ensure R2 credentials are valid.',
+      details: process.env.NODE_ENV === 'development' ? errorStack : undefined
     }, { status: 500 });
   }
 }
 
 export async function DELETE(req: NextRequest) {
   try {
-    await requireAdminUser();
-    
-    const body = await req.json();
-    const key = body.key ? decodeURIComponent(body.key) : null;
-    
-    if (!key) return NextResponse.json({ error: 'Missing object key' }, { status: 400 });
+    await requireAdminMediaAccess(req);
+    const { searchParams } = new URL(req.url);
+    let rawKey = searchParams.get('key');
+    let rawUrl = searchParams.get('url');
 
-    const { getR2Credentials, getS3Client } = await import("@/lib/s3");
-    const { bucketName } = await getR2Credentials();
-    const s3Client = await getS3Client();
-
-    // Recursive delete for prefixes (folders)
-    if (key.endsWith('/')) {
-      const listCommand = new ListObjectsV2Command({
-        Bucket: bucketName,
-        Prefix: key
-      });
-      const listedObjects = await s3Client.send(listCommand);
-      
-      if (listedObjects.Contents && listedObjects.Contents.length > 0) {
-        const { DeleteObjectsCommand } = await import('@aws-sdk/client-s3');
-        const deleteParams = {
-          Bucket: bucketName,
-          Delete: {
-            Objects: listedObjects.Contents.map(({ Key }) => ({ Key }))
-          }
-        };
-        await s3Client.send(new DeleteObjectsCommand(deleteParams));
+    if (!rawKey && !rawUrl) {
+      try {
+        const body = await req.json();
+        rawKey = typeof body.key === 'string' ? body.key : null;
+        rawUrl = typeof body.url === 'string' ? body.url : null;
+      } catch {
+        rawKey = null;
+        rawUrl = null;
       }
+    }
+
+    const key = rawKey
+      ? decodeURIComponent(rawKey)
+      : rawUrl
+        ? extractMediaKey(rawUrl)
+        : null;
+
+    if (!key) return NextResponse.json({ error: 'Missing key' }, { status: 400 });
+
+    const s3Client = await getS3Client();
+    if (key.endsWith('/')) {
+      let continuationToken: string | undefined;
+      do {
+        const data = await s3Client.list(key, {
+          continuationToken,
+          delimiter: undefined,
+          maxKeys: 200,
+        });
+        const objectKeys = (data.Contents || [])
+          .map((object) => object.Key)
+          .filter((objectKey): objectKey is string => Boolean(objectKey));
+
+        for (const objectKey of objectKeys) {
+          await s3Client.delete(objectKey);
+        }
+
+        continuationToken = data.NextContinuationToken;
+      } while (continuationToken);
     } else {
-      await s3Client.send(new DeleteObjectCommand({
-        Bucket: bucketName,
-        Key: key
-      }));
+      await s3Client.delete(key);
     }
 
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Failed to delete media';
+    const message = error instanceof Error ? error.message : 'Failed to delete media asset';
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

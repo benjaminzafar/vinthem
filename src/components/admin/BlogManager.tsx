@@ -87,20 +87,20 @@ export function BlogManager({ initialPosts = [] }: BlogManagerProps) {
           <p className="mt-2 px-1 text-[11px] font-bold uppercase tracking-widest text-slate-500">Editorial Library & Storytelling</p>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="group relative">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 w-full md:w-auto">
+          <div className="group relative flex-1 md:flex-none">
             <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 transition-colors group-focus-within:text-slate-900" />
             <input
               type="text"
               placeholder="Search journal entries..."
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
-              className="h-11 w-64 rounded-[4px] border border-slate-200 bg-white pl-10 pr-4 text-xs font-medium text-slate-900 transition-all focus:border-slate-900 focus:outline-none"
+              className="h-11 w-full md:w-64 rounded-[4px] border border-slate-200 bg-white pl-10 pr-4 text-xs font-medium text-slate-900 transition-all focus:border-slate-900 focus:outline-none"
             />
           </div>
           <button
             onClick={() => router.push('/admin/blogs/new')}
-            className="flex h-11 items-center gap-2 rounded-[4px] bg-slate-900 px-8 text-[11px] font-bold uppercase tracking-widest text-white transition-all hover:bg-slate-800"
+            className="flex h-11 items-center justify-center gap-2 rounded-[4px] bg-slate-900 px-6 sm:px-8 text-[11px] font-bold uppercase tracking-widest text-white transition-all hover:bg-slate-800"
           >
             <Plus className="h-4 w-4" />
             New Entry
@@ -109,7 +109,7 @@ export function BlogManager({ initialPosts = [] }: BlogManagerProps) {
       </div>
 
       <div className="overflow-hidden rounded-[4px] border border-slate-200 bg-white">
-        <div className="flex h-14 items-center justify-between border-b border-slate-100 bg-slate-50/50 px-6">
+        <div className="flex min-h-14 flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 bg-slate-50/50 px-4 sm:px-6 py-3 sm:py-0 gap-2">
           <div className="flex items-center gap-3">
             <Sparkles className="h-4 w-4 text-slate-500" />
             <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Editorial Archive</h3>
@@ -134,7 +134,7 @@ export function BlogManager({ initialPosts = [] }: BlogManagerProps) {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-left">
+          <table className="w-full min-w-[700px] border-collapse text-left">
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50/50 text-[11px] font-bold uppercase tracking-widest text-slate-500">
                 <th className="w-12 px-6 py-4">

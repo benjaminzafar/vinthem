@@ -258,18 +258,11 @@ export async function startCheckout(
     .from('orders')
     .insert({
       user_id: user?.id ?? null,
+      customer_email: shippingDetails.email || null,
       items: validatedItems,
-      shipping_details: {
-        ...shippingDetails,
-        locale: market.locale,
-        preferredCurrency: market.currency,
-      },
-      shipping_cost: estimate.shipping,
-      subtotal: estimate.subtotal,
       total: estimate.total,
       currency: BASE_CURRENCY,
       status: 'Pending',
-      tax_amount: estimate.tax,
     })
     .select('id')
     .single();
@@ -335,11 +328,6 @@ export async function startCheckout(
     success_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}${locale ? `/${locale}` : ''}/profile?checkout=success&order=${orderData.id}`,
     cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}${locale ? `/${locale}` : ''}/payment?checkout=cancelled`,
   });
-
-  await adminClient
-    .from('orders')
-    .update({ checkout_session_id: session.id })
-    .eq('id', orderData.id);
 
   return {
     success: true,

@@ -1,11 +1,14 @@
 "use server";
 
 import OpenAI from "openai";
-import { createClient } from "@/utils/supabase/server";
 import { decrypt } from "@/lib/encryption";
+import { requireAdminUser } from "@/lib/admin";
+import { buildSystemInstruction, getDefaultPromptValue, getPromptKeyForProfile, type AIPromptProfile } from "@/lib/ai-prompts";
+import { logger } from "@/lib/logger";
 
 interface AIContentParams {
   model: string;
+  promptProfile?: AIPromptProfile;
   contents: Array<{
     role: string;
     parts: Array<{
@@ -26,24 +29,39 @@ interface AIContentParams {
   nonce?: string; // Cache-busting nonce
 }
 
+function isTransientGroqStatus(status: number): boolean {
+  return status === 429 || status === 500 || status === 503;
+}
+
+function getErrorStatus(error: unknown): number | null {
+  if (typeof error === "object" && error && "status" in error) {
+    const status = (error as { status?: unknown }).status;
+    return typeof status === "number" ? status : null;
+  }
+
+  return null;
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export async function generateAIContentAction(params: AIContentParams) {
   const now = new Date().toLocaleTimeString();
   let activeModel = "llama-3.3-70b-versatile"; // Default Groq fallback
 
   try {
-    const supabase = await createClient();
-
-    // 1. Auth check
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      throw new Error("Unauthorized: Admin access required.");
+    const { supabase } = await requireAdminUser();
+    const profilePromptKey = getPromptKeyForProfile(params.promptProfile);
+    const integrationKeys = ["GROQ_API_KEY", "GROQ_MODEL", "AI_DEFAULT_PROMPT"];
+    if (profilePromptKey) {
+      integrationKeys.push(profilePromptKey);
     }
 
-    // 2. Fetch & Decrypt Key & Model (Switching to GROQ namespace)
     const { data: integrations, error: integrationError } = await supabase
       .from("integrations")
       .select("key, value")
-      .in("key", ["GROQ_API_KEY", "GROQ_MODEL"]);
+      .in("key", integrationKeys);
 
     if (integrationError) throw integrationError;
     
@@ -52,15 +70,15 @@ export async function generateAIContentAction(params: AIContentParams) {
     const groqModel = integrationsMap["GROQ_MODEL"] || "llama-3.3-70b-versatile";
 
     if (!groqKey) {
-      console.warn(`[Groq Action] [${now}] GROQ_API_KEY is missing from 'integrations' table.`);
+      logger.warn(`[Groq Action] [${now}] GROQ_API_KEY is missing from 'integrations' table.`);
       throw new Error("Groq API Key not found in integrations. Please set it in the Integrations Manager.");
     }
 
     let apiKey = "";
     try {
       apiKey = await decrypt(groqKey);
-    } catch (decryptErr) {
-      console.error(`[Groq Action] [${now}] FAILED TO DECRYPT GROQ_API_KEY. The ENCRYPTION_SECRET might be invalid or have changed.`, decryptErr);
+    } catch (decryptErr: unknown) {
+      logger.error(`[Groq Action] [${now}] FAILED TO DECRYPT GROQ_API_KEY. The ENCRYPTION_SECRET might be invalid or have changed.`, decryptErr);
       throw new Error("Security Error: Failed to decrypt AI credentials. Please re-save your Groq API Key in the Integrations Manager.");
     }
 
@@ -86,10 +104,15 @@ export async function generateAIContentAction(params: AIContentParams) {
 
     // 5. Convert Gemini Contents structure to OpenAI Messages structure
     const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [];
-    
-    // Add system instruction if provided
-    if (params.generationConfig?.systemInstruction) {
-      messages.push({ role: "system", content: params.generationConfig.systemInstruction });
+
+    const systemInstruction = buildSystemInstruction([
+      integrationsMap["AI_DEFAULT_PROMPT"] || getDefaultPromptValue("AI_DEFAULT_PROMPT"),
+      profilePromptKey ? integrationsMap[profilePromptKey] || getDefaultPromptValue(profilePromptKey) : undefined,
+      params.generationConfig?.systemInstruction,
+    ]);
+
+    if (systemInstruction) {
+      messages.push({ role: "system", content: systemInstruction });
     }
 
     for (const content of params.contents) {
@@ -107,8 +130,8 @@ export async function generateAIContentAction(params: AIContentParams) {
               const base64 = Buffer.from(buffer).toString('base64');
               const mime = res.headers.get('content-type') || 'image/jpeg';
               dataUrl = `data:${mime};base64,${base64}`;
-            } catch (err) {
-              console.warn("[GROQ] Failed to fetch image:", part.image_url);
+            } catch (err: unknown) {
+              logger.warn("[GROQ] Failed to fetch image:", part.image_url, err);
               return { type: "text" as const, text: "[Image Error]" };
             }
           } else if (part.inlineData?.data) {
@@ -124,33 +147,86 @@ export async function generateAIContentAction(params: AIContentParams) {
       }));
       
       const filteredParts = parts.filter((p): p is NonNullable<typeof p> => p !== null);
-      messages.push({ 
-        role, 
-        content: filteredParts.length === 1 && filteredParts[0].type === 'text' 
-          ? filteredParts[0].text 
-          : (filteredParts as any) 
-      });
+      const userContent: OpenAI.Chat.ChatCompletionUserMessageParam['content'] =
+        filteredParts.length === 1 && filteredParts[0].type === 'text'
+          ? filteredParts[0].text
+          : filteredParts.map((part) =>
+              part.type === 'text'
+                ? { type: 'text', text: part.text }
+                : { type: 'image_url', image_url: part.image_url }
+            );
+
+      if (role === 'assistant') {
+        const assistantContent: OpenAI.Chat.ChatCompletionAssistantMessageParam['content'] =
+          typeof userContent === 'string'
+            ? userContent
+            : userContent.map((part) =>
+                part.type === 'text'
+                  ? part
+                  : { type: 'text', text: '[Image omitted from assistant history]' }
+              );
+
+        messages.push({
+          role: 'assistant',
+          content: assistantContent,
+        });
+      } else {
+        messages.push({
+          role: 'user',
+          content: userContent,
+        });
+      }
     }
 
-    const completion = await client.chat.completions.create({
-      model: activeModel,
-      messages: messages,
-      response_format: params.generationConfig?.responseMimeType === "application/json" 
-        ? { type: "json_object" } 
-        : undefined,
-      temperature: params.generationConfig?.temperature !== undefined 
-        ? Number(params.generationConfig.temperature) 
-        : 0.7,
-    });
+    let completion: OpenAI.Chat.Completions.ChatCompletion | null = null;
+    let lastCompletionError: unknown = null;
+
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      try {
+        completion = await client.chat.completions.create({
+          model: activeModel,
+          messages: messages,
+          response_format: params.generationConfig?.responseMimeType === "application/json"
+            ? { type: "json_object" }
+            : undefined,
+          temperature: params.generationConfig?.temperature !== undefined
+            ? Number(params.generationConfig.temperature)
+            : 0.7,
+        });
+        break;
+      } catch (error: unknown) {
+        lastCompletionError = error;
+        const status = getErrorStatus(error);
+        if (attempt === 0 && status !== null && isTransientGroqStatus(status)) {
+          logger.warn(`[Groq Action] transient failure on attempt ${attempt + 1}, retrying once.`, error);
+          await sleep(900);
+          continue;
+        }
+        throw error;
+      }
+    }
+
+    if (!completion) {
+      throw lastCompletionError instanceof Error
+        ? lastCompletionError
+        : new Error("Groq did not return a completion.");
+    }
 
     return { text: completion?.choices[0]?.message?.content || "" };
 
   } catch (error: unknown) {
-    console.error("[Groq Action Error]:", error);
-    
     const now = new Date().toLocaleTimeString();
-    const err = error as { status?: number; message?: string };
-    const status = err.status || 500;
+    const err = error instanceof Error ? error : new Error("An unexpected error occurred during Groq AI generation.");
+    const status =
+      typeof error === 'object' && error && 'status' in error && typeof (error as { status?: unknown }).status === 'number'
+        ? ((error as { status?: number }).status ?? 500)
+        : 500;
+
+    if (isTransientGroqStatus(status)) {
+      logger.warn("[Groq Action Temporary Error]:", error);
+    } else {
+      logger.error("[Groq Action Error]:", error);
+    }
 
     if (status === 401 || status === 403) {
       return { 
@@ -161,14 +237,14 @@ export async function generateAIContentAction(params: AIContentParams) {
 
     if (status === 429) {
       return { 
-        error: `[${now}] GROQ RATE LIMIT (429). Groq is processing requests too fast for your current tier. Please wait a few seconds and try again.`,
+        error: `[${now}] AI is temporarily busy. Please wait a few seconds and try again.`,
         status: status
       };
     }
 
     if (status === 503 || status === 500) {
       return {
-        error: `[${now}] GROQ SERVICE OVERLOAD (503/500). Groq's high-speed chips are currently at maximum capacity. Please wait 1-2 minutes.`,
+        error: `[${now}] AI translation is temporarily unavailable because the provider is overloaded. Please try again in 1-2 minutes.`,
         status: status
       };
     }

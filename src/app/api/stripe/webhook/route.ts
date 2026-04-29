@@ -42,19 +42,9 @@ export async function POST(req: NextRequest) {
           .from('orders')
           .update({
             status: session.payment_status === 'paid' ? 'Processing' : 'Pending',
-            payment_method: 'Stripe Checkout',
+            customer_email: session.customer_details?.email ?? null,
             payment_intent_id: typeof session.payment_intent === 'string' ? session.payment_intent : null,
             total: typeof session.amount_total === 'number' ? session.amount_total / 100 : null,
-            shipping_cost: typeof session.total_details?.amount_shipping === 'number'
-              ? session.total_details.amount_shipping / 100
-              : null,
-            presentment_currency: session.presentment_details?.presentment_currency ?? null,
-            presentment_total: typeof session.presentment_details?.presentment_amount === 'number'
-              ? session.presentment_details.presentment_amount / 100
-              : null,
-            tax_amount: typeof session.total_details?.amount_tax === 'number'
-              ? session.total_details.amount_tax / 100
-              : null,
           })
           .eq('id', orderId);
 

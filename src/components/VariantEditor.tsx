@@ -6,6 +6,7 @@ import { Plus, X, ImageIcon, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { MediaPickerModal } from './admin/MediaPickerModal';
 import { buildVariantsFromOptions } from '@/lib/product-variants';
+import { toMediaProxyUrl } from '@/lib/media';
 
 interface VariantEditorProps {
   formData: Partial<Product>;
@@ -180,7 +181,7 @@ export function VariantEditor({ formData, setFormData }: VariantEditorProps) {
                       <div className="relative w-full aspect-square rounded-md border border-gray-200/60 overflow-hidden flex items-center justify-center group bg-white">
                         {imageUrl ? (
                           <Image 
-                            src={imageUrl} 
+                            src={toMediaProxyUrl(imageUrl)} 
                             alt={colorVal} 
                             width={160}
                             height={160}
@@ -277,7 +278,7 @@ export function VariantEditor({ formData, setFormData }: VariantEditorProps) {
                         <div className="relative w-12 h-12 rounded-lg border border-gray-200/60 overflow-hidden flex items-center justify-center group bg-white">
                           {variant.imageUrl || (variant as any).image_url ? (
                             <Image 
-                              src={variant.imageUrl || (variant as any).image_url} 
+                              src={toMediaProxyUrl(variant.imageUrl || (variant as any).image_url)} 
                               alt="Variant" 
                               width={48}
                               height={48}

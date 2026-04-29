@@ -60,7 +60,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   const categories = (categoriesData || []) as Category[];
 
   // 2. Resolve active category ID and all descendant IDs (recursive)
-  let categoryIds: string[] = [];
+  const categoryIds: string[] = [];
   if (activeCategory !== 'All') {
     const category = categories.find(c => c.slug === activeCategory || c.name === activeCategory);
     if (category && category.id) {

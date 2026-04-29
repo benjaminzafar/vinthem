@@ -1,22 +1,14 @@
 "use client";
-
-const isValidUrl = (url: string) => {
-  try {
-    new URL(url);
-    return true;
-  } catch {
-    return false;
-  }
-};
-
-
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronDown, ChevronRight, MessageSquare, Clock, AlertCircle, Trash2, Truck, Globe, ImageIcon } from 'lucide-react';
 import { replySupportTicketAction, deleteSupportTicketAction } from '@/app/actions/support';
+import { toMediaProxyUrl } from '@/lib/media';
+import { isValidUrl } from '@/lib/utils';
 import { toast } from 'sonner';
 import type { SupportTicket } from './types';
+import { useCustomConfirm } from '@/components/ConfirmationContext';
 
 interface SupportManagerProps {
   tickets: SupportTicket[];
@@ -24,6 +16,7 @@ interface SupportManagerProps {
 }
 
 export function SupportManager({ tickets, loading }: SupportManagerProps) {
+  const customConfirm = useCustomConfirm();
   const [expandedTicketId, setExpandedTicketId] = useState<string | null>(null);
   const [draftReplies, setDraftReplies] = useState<Record<string, string>>({});
   const [replyImages, setReplyImages] = useState<Record<string, string>>({});
@@ -96,7 +89,13 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
   };
 
   const handleDeleteTicket = async (ticketId: string) => {
-    if (!window.confirm('Are you absolutely sure you want to permanently delete this ticket and all its messages? This action cannot be undone.')) {
+    const confirmed = await customConfirm(
+      'Delete Ticket',
+      'Permanently delete this ticket and all associated messages? This action cannot be undone.',
+      { confirmLabel: 'Delete Ticket', confirmVariant: 'danger' }
+    );
+
+    if (!confirmed) {
       return;
     }
 
@@ -194,7 +193,7 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
                                       </p>
                                       {msg.imageUrl && isValidUrl(msg.imageUrl) && (
                                         <div className="mt-3 relative aspect-video w-full rounded overflow-hidden border border-slate-200">
-                                          <Image src={msg.imageUrl} alt="Attachment" fill className="object-cover" />
+                                          <Image src={toMediaProxyUrl(msg.imageUrl)} alt="Attachment" fill className="object-cover" />
                                         </div>
                                       )}
                                       <span className="text-[9px] font-bold uppercase tracking-widest block mt-2 text-slate-500">
@@ -221,7 +220,7 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
                                 <div className="absolute bottom-4 right-4 flex items-center gap-2">
                                   {replyImages[ticket.id] ? (
                                     <div className="relative w-10 h-10 border border-slate-300 bg-white">
-                                      <Image src={replyImages[ticket.id]} alt="Reply preview" fill className="object-cover" />
+                                      <Image src={toMediaProxyUrl(replyImages[ticket.id])} alt="Reply preview" fill className="object-cover" />
                                       <button onClick={() => setReplyImages(prev => ({ ...prev, [ticket.id]: '' }))} className="absolute -top-1.5 -right-1.5 bg-white border border-slate-300 rounded-full p-0.5 text-slate-500">
                                         <ChevronDown className="w-2.5 h-2.5 rotate-45" />
                                       </button>
@@ -301,12 +300,16 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
                                   ].map((action) => {
                                     const langSuffix = (ticket.locale || 'en').toUpperCase();
                                     return (
-                                      <button 
+                                        <button 
                                         key={action.id}
                                         onClick={async () => {
                                           const isRefund = action.id === 'Refunded';
-                                          const confirm = isRefund 
-                                            ? window.confirm('This will trigger a real financial REFUND via Stripe. Proceed?') 
+                                          const confirm = isRefund
+                                            ? await customConfirm(
+                                                'Issue Refund',
+                                                'This will trigger a real Stripe refund for the customer. Continue?',
+                                                { confirmLabel: 'Issue Refund', confirmVariant: 'danger' }
+                                              )
                                             : true;
                                           
                                           if (!confirm) return;
@@ -317,7 +320,7 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
                                             const { updateReturnWorkflowAction } = await import('@/app/actions/support');
                                             const res = await updateReturnWorkflowAction({
                                               requestId: ticket.id,
-                                              status: action.id as any,
+                                              status: action.id as 'Approved' | 'WaitingItem' | 'Received' | 'Exchanged' | 'Refunded',
                                               orderId: ticket.orderId ?? undefined
                                             });
                                             if (res.success) toast.success(res.message, { id: toastId });
@@ -361,7 +364,7 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
                                 <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Attachment</h4>
                                 <a href={ticket.imageUrl} target="_blank" rel="noopener noreferrer" className="block rounded border border-slate-300 overflow-hidden">
                                   <div className="relative aspect-[4/3] w-full">
-                                    <Image src={ticket.imageUrl} alt="" fill className="object-cover grayscale hover:grayscale-0 transition-all" sizes="(max-width: 1024px) 100vw, 320px" />
+                                    <Image src={toMediaProxyUrl(ticket.imageUrl)} alt="" fill className="object-cover grayscale hover:grayscale-0 transition-all" sizes="(max-width: 1024px) 100vw, 320px" />
                                   </div>
                                 </a>
                               </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { logger } from '@/lib/logger';
@@ -18,7 +18,6 @@ import {
   Area,
   AreaChart,
   CartesianGrid,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
@@ -26,6 +25,8 @@ import {
 import { Product } from '@/store/useCartStore';
 import { downloadXLSX } from '@/utils/export';
 import { StableChartContainer } from '@/components/admin/charts/StableChartContainer';
+import { AdminLoadingState } from '@/components/admin/AdminLoadingState';
+import type { RawOverviewStats } from '@/lib/admin-overview';
 
 interface OverviewOrder {
   id: string;
@@ -36,7 +37,6 @@ interface OverviewOrder {
   order_id: string;
   customerEmail?: string;
   items?: Record<string, unknown>[];
-  shipping_details?: Record<string, unknown>;
 }
 
 interface RefundRequest {
@@ -58,12 +58,6 @@ interface OverviewStats {
   refunds: RefundRequest[];
 }
 
-interface RawOverviewStats {
-  orders: Record<string, unknown>[];
-  products: Record<string, unknown>[];
-  refunds: Record<string, unknown>[];
-}
-
 interface OverviewProps {
   initialStats?: RawOverviewStats;
   onProductClick?: (product: Product) => void;
@@ -71,11 +65,6 @@ interface OverviewProps {
 }
 
 function normalizeOrder(order: Record<string, unknown>): OverviewOrder {
-  const shippingDetails =
-    order.shipping_details && typeof order.shipping_details === 'object'
-      ? (order.shipping_details as Record<string, unknown>)
-      : undefined;
-
   return {
     id: String(order.id ?? ''),
     total: Number(order.total ?? 0),
@@ -83,9 +72,8 @@ function normalizeOrder(order: Record<string, unknown>): OverviewOrder {
     created_at: String(order.created_at ?? ''),
     createdAt: String(order.created_at ?? ''),
     order_id: String(order.order_id ?? ''),
-    customerEmail: typeof shippingDetails?.email === 'string' ? shippingDetails.email : undefined,
+    customerEmail: typeof order.customer_email === 'string' ? order.customer_email : undefined,
     items: Array.isArray(order.items) ? (order.items as Record<string, unknown>[]) : [],
-    shipping_details: shippingDetails,
   };
 }
 
@@ -114,6 +102,7 @@ function toProduct(product: OverviewProduct): Product {
 export function Overview({ initialStats, onProductClick, onSeedClick }: OverviewProps) {
   const router = useRouter();
   const [supabase] = useState(() => createClient());
+  const refreshTimerRef = useRef<number | null>(null);
   const [timeRange, setTimeRange] = useState('6months');
   const [metric, setMetric] = useState('revenue');
   const normalizedInitialStats = useMemo<OverviewStats>(
@@ -147,27 +136,23 @@ export function Overview({ initialStats, onProductClick, onSeedClick }: Overview
           setRefreshing(true);
         }
 
-        const [ordersRes, productsRes, refundsRes] = await Promise.all([
-          supabase.from('orders').select('*').order('created_at', { ascending: false }),
-          supabase.from('products').select('*').order('created_at', { ascending: false }),
-          supabase.from('refund_requests').select('*').order('created_at', { ascending: false }),
-        ]);
+        const response = await fetch('/api/admin/overview', {
+          method: 'GET',
+          cache: 'no-store',
+          credentials: 'include',
+          headers: {
+            accept: 'application/json',
+          },
+        });
 
-        if (ordersRes.error) {
-          throw ordersRes.error;
+        if (!response.ok) {
+          throw new Error(`Overview refresh failed with status ${response.status}`);
         }
 
-        if (productsRes.error) {
-          throw productsRes.error;
-        }
-
-        if (refundsRes.error) {
-          throw refundsRes.error;
-        }
-
-        setOrders((ordersRes.data ?? []).map((order) => normalizeOrder(order as Record<string, unknown>)));
-        setProducts((productsRes.data ?? []).map((product) => normalizeProduct(product as Record<string, unknown>)));
-        setRefundRequests((refundsRes.data ?? []).map((refund) => normalizeRefund(refund as Record<string, unknown>)));
+        const payload = (await response.json()) as RawOverviewStats;
+        setOrders((payload.orders ?? []).map((order) => normalizeOrder(order as Record<string, unknown>)));
+        setProducts((payload.products ?? []).map((product) => normalizeProduct(product as Record<string, unknown>)));
+        setRefundRequests((payload.refunds ?? []).map((refund) => normalizeRefund(refund as Record<string, unknown>)));
       } catch (error) {
         logger.error('Error fetching admin overview data', error);
       } finally {
@@ -175,8 +160,18 @@ export function Overview({ initialStats, onProductClick, onSeedClick }: Overview
         setRefreshing(false);
       }
     },
-    [supabase],
+    [],
   );
+
+  const scheduleRefresh = useCallback(() => {
+    if (refreshTimerRef.current !== null) {
+      window.clearTimeout(refreshTimerRef.current);
+    }
+
+    refreshTimerRef.current = window.setTimeout(() => {
+      void fetchAdminData(false);
+    }, 180);
+  }, [fetchAdminData]);
 
   useEffect(() => {
     if (!initialStats) {
@@ -186,20 +181,58 @@ export function Overview({ initialStats, onProductClick, onSeedClick }: Overview
     const channel = supabase
       .channel('overview-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
-        void fetchAdminData(false);
+        scheduleRefresh();
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
-        void fetchAdminData(false);
+        scheduleRefresh();
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'refund_requests' }, () => {
-        void fetchAdminData(false);
+        scheduleRefresh();
       })
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          void fetchAdminData(false);
+        }
+
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          logger.warn(`[Overview] Realtime channel status: ${status}`);
+          scheduleRefresh();
+        }
+
+        if (status === 'CLOSED') {
+          scheduleRefresh();
+        }
+      });
+
+    const handleVisibilitySync = () => {
+      if (document.visibilityState === 'visible') {
+        void fetchAdminData(false);
+      }
+    };
+
+    const handleWindowFocus = () => {
+      void fetchAdminData(false);
+    };
+
+    const pollInterval = window.setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        void fetchAdminData(false);
+      }
+    }, 60000);
+
+    window.addEventListener('focus', handleWindowFocus);
+    document.addEventListener('visibilitychange', handleVisibilitySync);
 
     return () => {
+      if (refreshTimerRef.current !== null) {
+        window.clearTimeout(refreshTimerRef.current);
+      }
+      window.clearInterval(pollInterval);
+      window.removeEventListener('focus', handleWindowFocus);
+      document.removeEventListener('visibilitychange', handleVisibilitySync);
       void supabase.removeChannel(channel);
     };
-  }, [fetchAdminData, initialStats, supabase]);
+  }, [fetchAdminData, initialStats, scheduleRefresh, supabase]);
 
   const filteredOrders = useMemo(() => {
     const now = new Date();
@@ -411,9 +444,11 @@ export function Overview({ initialStats, onProductClick, onSeedClick }: Overview
 
   if (loading) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <RefreshCw className="h-8 w-8 animate-spin text-zinc-900" />
-      </div>
+      <AdminLoadingState
+        eyebrow="Overview"
+        title="Composing store intelligence"
+        detail="Pulling revenue, inventory, and order activity into a live operational snapshot."
+      />
     );
   }
 
@@ -478,9 +513,9 @@ export function Overview({ initialStats, onProductClick, onSeedClick }: Overview
           </div>
         </div>
 
-        <StableChartContainer className="h-[350px] w-full min-h-[300px]">
-          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={100} debounce={100}>
-            <AreaChart data={trendData} margin={{ top: 10, right: 0, bottom: 0, left: -15 }}>
+        <StableChartContainer className="w-full" size="feature">
+          {({ width, height }) => (
+            <AreaChart width={width} height={height} data={trendData} margin={{ top: 10, right: 0, bottom: 0, left: -15 }}>
               <defs>
                 <linearGradient id="colorMetric" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#0f172a" stopOpacity={0.05} />
@@ -530,7 +565,7 @@ export function Overview({ initialStats, onProductClick, onSeedClick }: Overview
                 activeDot={{ r: 5, strokeWidth: 0 }}
               />
             </AreaChart>
-          </ResponsiveContainer>
+          )}
         </StableChartContainer>
       </div>
 

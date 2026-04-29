@@ -13,7 +13,7 @@ export default function AdminShell({ children, activeUserEmail }: AdminShellProp
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-slate-50 flex w-full font-sans selection:bg-slate-900/10">
+    <div className="admin-surface min-h-screen bg-slate-50 flex w-full font-sans selection:bg-slate-900/10">
       <AdminSidebar 
         activeUserEmail={activeUserEmail} 
         isOpen={isSidebarOpen} 
@@ -23,8 +23,8 @@ export default function AdminShell({ children, activeUserEmail }: AdminShellProp
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         <AdminNavHeader onToggle={() => setIsSidebarOpen(true)} />
         
-        <main className="flex-1 overflow-y-auto p-4 sm:p-8 lg:px-12 lg:py-10 custom-scrollbar relative">
-          <div className="max-w-7xl mx-auto w-full pb-20">
+        <main className="flex-1 overflow-y-auto px-3 py-4 sm:px-6 sm:py-6 lg:px-10 lg:py-8 custom-scrollbar relative">
+          <div className="max-w-[1400px] mx-auto w-full pb-16 sm:pb-20">
             {children}
           </div>
         </main>

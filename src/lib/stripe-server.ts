@@ -2,7 +2,7 @@ import 'server-only';
 
 import Stripe from 'stripe';
 
-import { decrypt } from '@/lib/encryption';
+import { maybeDecryptStoredValue } from '@/lib/integrations';
 import { createAdminClient } from '@/utils/supabase/server';
 
 type IntegrationRow = {
@@ -15,7 +15,7 @@ export interface StripeCredentials {
   webhookSecret: string;
 }
 
-export async function getStripeCredentials(): Promise<StripeCredentials> {
+async function loadStripeIntegrationValues() {
   const adminClient = createAdminClient();
   const { data, error } = await adminClient
     .from('integrations')
@@ -26,18 +26,47 @@ export async function getStripeCredentials(): Promise<StripeCredentials> {
     throw new Error(`Failed to load Stripe integrations: ${error.message}`);
   }
 
-  const integrations = (data ?? []) as IntegrationRow[];
-  const encryptedSecretKey = integrations.find((row) => row.key === 'STRIPE_SECRET_KEY')?.value;
-  const encryptedWebhookSecret = integrations.find((row) => row.key === 'STRIPE_WEBHOOK_SECRET')?.value;
+  return (data ?? []) as IntegrationRow[];
+}
+
+export async function getStripeCredentials(): Promise<StripeCredentials> {
+  const integrations = await loadStripeIntegrationValues();
+  const secretKey = (await maybeDecryptStoredValue(
+    integrations.find((row) => row.key === 'STRIPE_SECRET_KEY')?.value,
+  )).trim();
+  const webhookSecret = (await maybeDecryptStoredValue(
+    integrations.find((row) => row.key === 'STRIPE_WEBHOOK_SECRET')?.value,
+  )).trim();
+
+  if (secretKey === 'DECRYPTION_FAILED') {
+    throw new Error('Stripe secret key could not be decrypted. Please re-save it in Admin > Integrations.');
+  }
+
+  if (webhookSecret === 'DECRYPTION_FAILED') {
+    throw new Error('Stripe webhook secret could not be decrypted. Please re-save it in Admin > Integrations.');
+  }
 
   return {
-    secretKey: encryptedSecretKey ? await decrypt(encryptedSecretKey) : '',
-    webhookSecret: encryptedWebhookSecret ? await decrypt(encryptedWebhookSecret) : '',
+    secretKey,
+    webhookSecret,
   };
 }
 
+export async function getStripeSecretKey(): Promise<string> {
+  const integrations = await loadStripeIntegrationValues();
+  const secretKey = (await maybeDecryptStoredValue(
+    integrations.find((row) => row.key === 'STRIPE_SECRET_KEY')?.value,
+  )).trim();
+
+  if (secretKey === 'DECRYPTION_FAILED') {
+    throw new Error('Stripe secret key could not be decrypted. Please re-save it in Admin > Integrations.');
+  }
+
+  return secretKey;
+}
+
 export async function getStripeClient(): Promise<Stripe | null> {
-  const { secretKey } = await getStripeCredentials();
+  const secretKey = await getStripeSecretKey();
 
   if (!secretKey) {
     return null;

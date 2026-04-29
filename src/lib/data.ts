@@ -3,18 +3,26 @@ import { createAdminClient } from '@/utils/supabase/server';
 import type { StorefrontSettings } from '@/store/useSettingsStore';
 import { maybeDecryptStoredValue } from './integrations';
 import { getEnv } from './env';
+import { logger } from './logger';
+
+const DEFAULT_SETTINGS: Partial<StorefrontSettings> = {
+  storeName: { en: 'Vinthem', sv: 'Vinthem' },
+  logoImage: '',
+  heroBackgroundColor: '#ffffff',
+};
+
+function sanitizeClarityId(value: string): string {
+  const normalized = value.trim();
+  return /^[a-z0-9]+$/i.test(normalized) ? normalized : '';
+}
 
 export const getSettings = cache(async () => {
   const url = getEnv('SUPABASE_URL');
   const adminKey = getEnv('SUPABASE_SERVICE_ROLE_KEY');
 
   if (!url || url.includes('missing') || !adminKey) {
-    return {
-      storeName: { en: 'Vinthem', sv: 'Vinthem' },
-      logoUrl: '',
-      heroBackgroundColor: '#ffffff',
-      primaryColor: '#000000',
-    } as any;
+    logger.warn('[Settings] Supabase configuration missing. Falling back to default storefront settings.');
+    return DEFAULT_SETTINGS as StorefrontSettings;
   }
 
   try {
@@ -26,22 +34,16 @@ export const getSettings = cache(async () => {
       .maybeSingle();
 
     if (error || !settingsData) {
-      return {
-        storeName: { en: 'Vinthem', sv: 'Vinthem' },
-        logoUrl: '',
-        heroBackgroundColor: '#ffffff',
-        primaryColor: '#000000',
-      } as any;
+      if (error) {
+        logger.error('[Settings] Failed to load settings row:', error);
+      }
+      return DEFAULT_SETTINGS as StorefrontSettings;
     }
 
     return settingsData.data as StorefrontSettings;
-  } catch (e) {
-    return {
-      storeName: { en: 'Vinthem', sv: 'Vinthem' },
-      logoUrl: '',
-      heroBackgroundColor: '#ffffff',
-      primaryColor: '#000000',
-    } as any;
+  } catch (error) {
+    logger.error('[Settings] Unexpected settings loader failure:', error);
+    return DEFAULT_SETTINGS as StorefrontSettings;
   }
 });
 
@@ -67,9 +69,10 @@ export const getIntegrations = cache(async (): Promise<Record<string, string>> =
 
     return decryptedIntegrations.reduce((acc, curr) => ({
       ...acc,
-      [curr.key]: curr.value
+      [curr.key]: curr.key === 'CLARITY_ID' ? sanitizeClarityId(curr.value) : curr.value
     }), {} as Record<string, string>);
-  } catch (e) {
+  } catch (error) {
+    logger.error('[Integrations] Failed to load public integrations:', error);
     return {};
   }
 });

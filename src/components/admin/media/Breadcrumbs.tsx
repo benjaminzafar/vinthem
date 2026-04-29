@@ -28,7 +28,7 @@ export function Breadcrumbs({ currentPath, onNavigate }: BreadcrumbsProps) {
           </div>
           <button 
             onClick={() => onNavigate(currentPath.slice(0, i + 1))}
-            className={`flex items-center h-9 px-3 rounded border transition-all text-[11px] font-bold uppercase tracking-widest whitespace-nowrap ${
+            className={`flex items-center h-9 px-3 rounded border transition-all text-[11px] font-bold tracking-widest whitespace-nowrap ${
               i === currentPath.length - 1 
                 ? 'bg-slate-900 text-white border-slate-900' 
                 : 'bg-white border-slate-300 text-slate-500 hover:text-slate-900 hover:bg-slate-50'

@@ -49,6 +49,7 @@ type FeaturedProductRow = {
   price: number;
   image_url?: string | null;
   is_featured?: boolean | null;
+  is_new?: boolean | null;
   is_new_arrival?: boolean | null;
   created_at?: string | null;
   status?: string | null;
@@ -76,7 +77,7 @@ async function ProductsList({ lang, settings }: { lang: string, settings: Storef
       ...product,
       imageUrl: product.image_url,
       isFeatured: product.is_featured,
-      isNewArrival: product.is_new_arrival,
+      isNewArrival: product.is_new ?? product.is_new_arrival ?? false,
       createdAt: product.created_at,
     })) as Product[];
 

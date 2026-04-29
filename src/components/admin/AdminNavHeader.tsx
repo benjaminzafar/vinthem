@@ -12,7 +12,7 @@ export default function AdminNavHeader({ onToggle }: { onToggle: () => void }) {
 
   return (
     <header className="bg-white border-b border-slate-300 sticky top-0 z-30 flex-shrink-0">
-      <div className="flex items-center justify-between px-4 sm:px-8 h-16">
+      <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 h-16 gap-3">
         <div className="flex items-center">
           <button 
             onClick={onToggle}
@@ -22,21 +22,21 @@ export default function AdminNavHeader({ onToggle }: { onToggle: () => void }) {
             <Menu className="w-5 h-5" />
           </button>
           
-          <div className="hidden lg:flex items-center space-x-2 text-[11px] font-bold uppercase tracking-widest text-slate-500">
+          <div className="hidden lg:flex items-center space-x-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
              <span>Admin</span>
              <span className="text-slate-300">/</span>
              <span className="text-slate-900">{currentTab.replace('-', ' ')}</span>
           </div>
         </div>
         
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-3 sm:space-x-4">
           {!isIntegrationsPage && (
             <div className="hidden md:flex relative">
               <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
               <input 
                 type="text" 
                 placeholder="Search..." 
-                className="pl-10 pr-4 h-9 bg-slate-50 border border-slate-300 rounded text-[13px] focus:outline-none focus:border-slate-900 transition-all w-32 lg:w-64 placeholder:text-slate-500 text-slate-900"
+                className="pl-10 pr-4 h-9 bg-slate-50 border border-slate-300 rounded-md text-[13px] focus:outline-none focus:border-slate-900 transition-all w-36 lg:w-64 placeholder:text-slate-500 text-slate-900"
               />
             </div>
           )}

@@ -8,7 +8,6 @@ import {
   XAxis,
   YAxis,
   Tooltip,
-  ResponsiveContainer,
 } from 'recharts';
 import {
   Users,
@@ -143,10 +142,10 @@ export function CRMAnalytics({ tickets, customers, refunds, orders }: CRMAnalyti
             </div>
           </div>
           
-          <StableChartContainer className="h-[200px] w-full" minHeight={200}>
+          <StableChartContainer className="w-full" size="compact">
             {tickets.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-                <BarChart data={ticketDistribution} layout="vertical" margin={{ left: -10, right: 30, top: 0, bottom: 0 }} barSize={12}>
+              ({ width, height }) => (
+                <BarChart width={width} height={height} data={ticketDistribution} layout="vertical" margin={{ left: -10, right: 30, top: 0, bottom: 0 }} barSize={12}>
                   <XAxis type="number" hide />
                   <YAxis 
                     dataKey="name" 
@@ -176,7 +175,7 @@ export function CRMAnalytics({ tickets, customers, refunds, orders }: CRMAnalyti
                     ))}
                   </Bar>
                 </BarChart>
-              </ResponsiveContainer>
+              )
             ) : (
               <EmptyPanel message="No support signal detected" />
             )}
@@ -208,10 +207,10 @@ export function CRMAnalytics({ tickets, customers, refunds, orders }: CRMAnalyti
             </div>
           </div>
 
-          <StableChartContainer className="h-[200px] w-full" minHeight={200}>
+          <StableChartContainer className="w-full" size="compact">
             {refunds.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-                <BarChart data={refundDistribution} layout="vertical" margin={{ left: -10, right: 30, top: 0, bottom: 0 }} barSize={12}>
+              ({ width, height }) => (
+                <BarChart width={width} height={height} data={refundDistribution} layout="vertical" margin={{ left: -10, right: 30, top: 0, bottom: 0 }} barSize={12}>
                   <XAxis type="number" hide />
                   <YAxis 
                     dataKey="name" 
@@ -241,7 +240,7 @@ export function CRMAnalytics({ tickets, customers, refunds, orders }: CRMAnalyti
                     ))}
                   </Bar>
                 </BarChart>
-              </ResponsiveContainer>
+              )
             ) : (
               <EmptyPanel message="No logistics flow data" />
             )}

@@ -49,6 +49,36 @@ export type CategoryActionResponse = {
   error?: string;
 };
 
+async function collectDescendantCategoryIds(supabase: ReturnType<typeof createAdminClient>, seedIds: string[]) {
+  const discovered = new Set(seedIds);
+  const queue = [...seedIds];
+
+  while (queue.length > 0) {
+    const parentId = queue.shift();
+    if (!parentId) {
+      continue;
+    }
+
+    const { data, error } = await supabase
+      .from('categories')
+      .select('id')
+      .eq('parent_id', parentId);
+
+    if (error) {
+      throw error;
+    }
+
+    for (const child of data || []) {
+      if (!discovered.has(child.id)) {
+        discovered.add(child.id);
+        queue.push(child.id);
+      }
+    }
+  }
+
+  return [...discovered];
+}
+
 async function requireAdmin() {
   await requireAdminUser();
 }
@@ -213,15 +243,7 @@ export async function deleteCategoriesAction(input: DeleteCategoriesInput): Prom
 
     const supabase = createAdminClient();
 
-    // 1. Find all sub-categories recursively to ensure full deletion
-    // We fetch all sub-categories that have these as parents
-    const { data: subCats } = await supabase
-      .from('categories')
-      .select('id')
-      .in('parent_id', categoryIds);
-    
-    const subCatIds = (subCats || []).map(c => c.id);
-    const allIdsToDelete = [...new Set([...categoryIds, ...subCatIds])];
+    const allIdsToDelete = await collectDescendantCategoryIds(supabase, categoryIds);
 
     // 2. Unlink products (safety measure even with set null constraints)
     // We set category_id to null for any products in these categories

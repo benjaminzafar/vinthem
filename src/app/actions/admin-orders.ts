@@ -44,15 +44,11 @@ export async function updateOrderAction(input: OrderUpdateInput): Promise<OrderA
       updates.status = sanitizedStatus ?? 'Pending';
     }
 
-    if (sanitizedTrackingCarrier !== undefined) {
-      updates.tracking_carrier = sanitizedTrackingCarrier;
-    }
-
-    if (sanitizedTrackingNumber !== undefined) {
-      updates.tracking_number = sanitizedTrackingNumber;
-    }
-
     if (Object.keys(updates).length === 0) {
+      if (sanitizedTrackingCarrier !== undefined || sanitizedTrackingNumber !== undefined) {
+        throw new Error('Tracking fields are not available in the current order schema yet.');
+      }
+
       throw new Error('No order changes were provided.');
     }
 

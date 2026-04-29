@@ -8,12 +8,6 @@ const BREVO_API_URL = 'https://api.brevo.com/v3';
  * Retrieves the Brevo API Key from the encrypted integrations table.
  */
 async function getBrevoApiKey(): Promise<string | null> {
-  // First check .env.local for local development convenience
-  if (process.env.BREVO_API_KEY) {
-    console.log('[Brevo Debug] Using API Key from environment variables.');
-    return process.env.BREVO_API_KEY;
-  }
-
   try {
     const supabase = createAdminClient();
     const { data: row } = await supabase
@@ -23,15 +17,16 @@ async function getBrevoApiKey(): Promise<string | null> {
       .single();
 
     if (!row) {
-      console.warn('[Brevo Debug] BREVO_API_KEY not found in integrations table.');
+      logger.warn('[Brevo] BREVO_API_KEY not found in integrations table.');
       return null;
     }
-    const key = maybeDecryptStoredValue(row.value);
+
+    const key = await maybeDecryptStoredValue(row.value);
+
     if (!key) {
-      console.warn('[Brevo Debug] BREVO_API_KEY found but is empty after decryption.');
-    } else {
-      console.log('[Brevo Debug] BREVO_API_KEY successfully retrieved from DB.');
+      logger.warn('[Brevo] BREVO_API_KEY found but is empty after decryption.');
     }
+
     return key;
   } catch (error) {
     logger.error('Failed to get Brevo API Key from DB:', error);
@@ -48,7 +43,7 @@ export async function sendTransactionalEmail(payload: {
   subject: string;
   htmlContent?: string;
   templateId?: number;
-  params?: Record<string, any>;
+  params?: Record<string, unknown>;
 }) {
   const apiKey = await getBrevoApiKey();
   if (!apiKey) {
@@ -83,10 +78,10 @@ export async function sendTransactionalEmail(payload: {
 /**
  * Adds or updates a contact in Brevo.
  */
-export async function syncContactToBrevo(email: string, attributes?: Record<string, any>, listIds: number[] = []) {
+export async function syncContactToBrevo(email: string, attributes?: Record<string, unknown>, listIds: number[] = []) {
   const apiKey = await getBrevoApiKey();
   if (!apiKey) {
-    console.warn('[Brevo Sync] No API Key found. Skipping sync.');
+    logger.warn('[Brevo Sync] No API Key found. Skipping sync.');
     return;
   }
 
@@ -115,15 +110,15 @@ export async function syncContactToBrevo(email: string, attributes?: Record<stri
     const data = await response.json();
     
     if (!response.ok) {
-      console.error('[Brevo Sync Error]', {
+      logger.error('[Brevo Sync Error]', {
         status: response.status,
         email,
         data
       });
     } else {
-      console.log(`[Brevo Sync Success] Contact synced: ${email}`);
+      logger.info(`[Brevo Sync Success] Contact synced: ${email}`);
     }
   } catch (error) {
-    console.error('[Brevo Sync Exception]', error);
+    logger.error('[Brevo Sync Exception]', error);
   }
 }

@@ -1,7 +1,7 @@
 "use client";
 import { logger } from '@/lib/logger';
 import React, { useEffect, useState } from 'react';
-import { submitProductReviewAction } from '@/app/actions/reviews';
+import { checkPurchasedProductAction, submitProductReviewAction } from '@/app/actions/reviews';
 import { createClient } from '@/utils/supabase/client';
 import { Review } from '@/types';
 import { Star, CheckCircle2, AlertCircle } from 'lucide-react';
@@ -11,13 +11,6 @@ import type { StorefrontSettings } from '@/store/useSettingsStore';
 import { useStorefrontSettings } from '@/hooks/useStorefrontSettings';
 
 import { User } from '@supabase/supabase-js';
-
-interface OrderItem {
-  id: string;
-  title: string;
-  quantity: number;
-  price: number;
-}
 
 interface ReviewsProps {
   productId: string;
@@ -76,18 +69,8 @@ export default function Reviews({ productId, initialSettings, lang }: ReviewsPro
       }
 
       try {
-        const { data: orders, error } = await supabase
-          .from('orders')
-          .select('items')
-          .eq('user_id', user.id);
-
-        if (error) throw error;
-        
-        const purchased = orders.some(order => 
-          order.items?.some((item: OrderItem) => item.id === productId)
-        );
-        
-        setHasPurchased(purchased);
+        const result = await checkPurchasedProductAction(productId);
+        setHasPurchased(result.purchased);
       } catch (error) {
         logger.error("Error checking purchase status:", error);
         setHasPurchased(false);
@@ -95,7 +78,7 @@ export default function Reviews({ productId, initialSettings, lang }: ReviewsPro
     };
 
     checkPurchase();
-  }, [productId]);
+  }, [productId, supabase]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

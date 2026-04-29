@@ -34,15 +34,13 @@ export async function syncCurrentUserProfileAction(name?: string): Promise<AuthA
     // Check if profile already exists with identical data to avoid unnecessary writes
     const { data: existingProfile } = await supabase
       .from('users')
-      .select('full_name, preferred_lang')
+      .select('full_name')
       .eq('id', user.id)
       .maybeSingle();
 
     const sanitizedName = name?.replace(/[<>]/g, '').trim() || user.user_metadata?.full_name;
 
-    if (existingProfile && 
-        existingProfile.full_name === sanitizedName && 
-        existingProfile.preferred_lang === lang) {
+    if (existingProfile && existingProfile.full_name === sanitizedName) {
       return {
         success: true,
         message: 'Profile already up to date.',

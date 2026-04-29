@@ -19,6 +19,7 @@ import { InfiniteScrollSentinel } from '@/components/admin/InfiniteScrollSentine
 import { updateOrderAction } from '@/app/actions/admin-orders';
 import { AdminOrder, OrderItem } from '@/types';
 import Image from 'next/image';
+import { AdminLoadingState } from '@/components/admin/AdminLoadingState';
 
 export function OrderManager({ 
   onSeedClick,
@@ -76,7 +77,7 @@ export function OrderManager({
         ...o,
         createdAt: o.created_at,
         orderId: o.order_id,
-        customerEmail: o.shipping_details?.email
+        customerEmail: o.customer_email ?? null,
       }));
 
       if (reset) {
@@ -126,8 +127,6 @@ export function OrderManager({
       const result = await updateOrderAction({
         orderId,
         status: typeof updates.status === 'string' ? updates.status : undefined,
-        trackingCarrier: typeof updates.trackingCarrier === 'string' ? updates.trackingCarrier : undefined,
-        trackingNumber: typeof updates.trackingNumber === 'string' ? updates.trackingNumber : undefined,
       });
       if (!result.success) {
         throw new Error(result.message);
@@ -172,21 +171,31 @@ export function OrderManager({
         statsLabel={`${orders.length} orders${refreshing ? ' • syncing' : ''}`}
       />
 
-      <div className="bg-slate-50 border border-slate-300 rounded p-4 text-sm text-slate-700 flex items-center gap-3">
+      <div className="bg-slate-50 border border-slate-300 rounded-md p-4 text-sm text-slate-700 flex items-start sm:items-center gap-3">
         <RefreshCcw className="w-5 h-5 text-slate-500 shrink-0" />
         <p>Automated label printing requires configuration. Please go to Shipping Settings to enable your preferred service.</p>
       </div>
 
       <div className="bg-white border border-slate-300 rounded overflow-hidden shadow-none">
+        {loading && orders.length === 0 ? (
+          <div className="p-6">
+            <AdminLoadingState
+              compact
+              eyebrow="Orders"
+              title="Preparing the order ledger"
+              detail="Collecting recent transactions, customer records, and delivery status updates."
+            />
+          </div>
+        ) : (
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[800px]">
+          <table className="w-full text-left border-collapse min-w-[680px]">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-300 text-[11px] font-bold uppercase tracking-widest text-slate-500">
-                <th className="px-6 py-4">Order ID</th>
-                <th className="px-6 py-4">Date</th>
-                <th className="px-6 py-4">Customer</th>
-                <th className="px-6 py-4">Total</th>
-                <th className="px-6 py-4">Status</th>
+                <th className="admin-table-cell px-4 sm:px-6 py-4">Order ID</th>
+                <th className="admin-table-cell px-4 sm:px-6 py-4 hidden md:table-cell">Date</th>
+                <th className="admin-table-cell px-4 sm:px-6 py-4 hidden sm:table-cell">Customer</th>
+                <th className="admin-table-cell px-4 sm:px-6 py-4">Total</th>
+                <th className="admin-table-cell px-4 sm:px-6 py-4">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -205,18 +214,18 @@ export function OrderManager({
                     className="hover:bg-slate-50 transition-colors cursor-pointer group"
                     onClick={() => setExpandedOrderId(expandedOrderId === order.id ? null : order.id)}
                   >
-                    <td className="px-6 py-4 font-bold text-slate-900 text-[13px] flex items-center">
+                    <td className="admin-table-cell px-4 sm:px-6 py-4 font-bold text-slate-900 text-[13px] flex items-center">
                       <div className="w-6 flex items-center shrink-0">
                         {expandedOrderId === order.id ? <ChevronDown className="w-4 h-4 text-slate-500" /> : <ChevronRight className="w-4 h-4 text-slate-500" />}
                       </div>
                       <span className="truncate">#{order.orderId || order.id.slice(0, 8)}</span>
                     </td>
-                    <td className="px-6 py-4 text-[13px] text-slate-500 whitespace-nowrap">
+                    <td className="admin-table-cell px-4 sm:px-6 py-4 text-[13px] text-slate-500 whitespace-nowrap hidden md:table-cell">
                       {order.createdAt ? new Date(order.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'}
                     </td>
-                    <td className="px-6 py-4 text-[13px] text-slate-900 font-medium truncate max-w-[200px]">{order.customerEmail || 'Guest'}</td>
-                    <td className="px-6 py-4 font-bold text-slate-900 whitespace-nowrap text-[13px]">{order.total?.toLocaleString()} SEK</td>
-                    <td className="px-6 py-4">
+                    <td className="admin-table-cell px-4 sm:px-6 py-4 text-[13px] text-slate-900 font-medium truncate max-w-[200px] hidden sm:table-cell">{order.customerEmail || 'Guest'}</td>
+                    <td className="admin-table-cell px-4 sm:px-6 py-4 font-bold text-slate-900 whitespace-nowrap text-[13px]">{order.total?.toLocaleString()} SEK</td>
+                    <td className="admin-table-cell px-4 sm:px-6 py-4">
                       <span className={`inline-flex items-center px-2.5 py-1 rounded text-[11px] font-bold uppercase tracking-widest border ${
                         order.status === 'Delivered' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 
                         order.status === 'Shipped' ? 'bg-blue-50 text-blue-700 border-blue-100' :
@@ -228,7 +237,7 @@ export function OrderManager({
                   </tr>
                   {expandedOrderId === order.id && (
                     <tr className="bg-slate-50/50">
-                      <td colSpan={5} className="px-12 py-8 border-b border-slate-200">
+                      <td colSpan={5} className="px-4 sm:px-8 lg:px-12 py-6 sm:py-8 border-b border-slate-200">
                         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
                           <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-6 border-b border-slate-200 pb-2">Order Line Items</h4>
                           <div className="space-y-4">
@@ -271,18 +280,9 @@ export function OrderManager({
                             </div>
                             
                             <div>
-                              <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-4">Logistics</h4>
-                              <div className="flex flex-col gap-3">
-                                <input
-                                  type="text" placeholder="Carrier" defaultValue={order.trackingCarrier || ''}
-                                  onBlur={(e) => e.target.value !== order.trackingCarrier && handleUpdateOrder(order.id, { trackingCarrier: e.target.value })}
-                                  className="bg-white border border-slate-300 text-slate-900 text-sm rounded h-10 px-3 focus:outline-none focus:border-slate-900"
-                                />
-                                <input
-                                  type="text" placeholder="Tracking #" defaultValue={order.trackingNumber || ''}
-                                  onBlur={(e) => e.target.value !== order.trackingNumber && handleUpdateOrder(order.id, { trackingNumber: e.target.value })}
-                                  className="bg-white border border-slate-300 text-slate-900 text-sm rounded h-10 px-3 focus:outline-none focus:border-slate-900"
-                                />
+                              <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-4">Fulfillment</h4>
+                              <div className="rounded border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500">
+                                Delivery tracking fields are hidden until the live order schema includes carrier storage.
                               </div>
                             </div>
                           </div>
@@ -295,6 +295,7 @@ export function OrderManager({
             </tbody>
           </table>
         </div>
+        )}
 
         <InfiniteScrollSentinel 
           onIntersect={() => void fetchOrders({ reset: false, showLoader: false })}

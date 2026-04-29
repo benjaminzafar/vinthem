@@ -14,21 +14,25 @@ function looksEncrypted(value: string): boolean {
 }
 
 export async function maybeDecryptStoredValue(value: string | null | undefined): Promise<string> {
-  if (!value) {
+  if (!value || value.trim() === '') {
     return '';
   }
 
+  // If it doesn't even look encrypted, it's a raw value
   if (!looksEncrypted(value)) {
-    return value;
+    return value.trim();
   }
 
   try {
-    return await decrypt(value);
+    const decrypted = await decrypt(value);
+    if (!decrypted) return '';
+    return decrypted.trim();
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
-      logger.warn('Encrypted integration value could not be decrypted. Falling back to the stored raw value.', error);
+      logger.warn('DECRYPTION_FAILURE: Falling back to empty string to prevent URL crashes.', { value: value.slice(0, 10) + '...' });
     }
-    return value;
+    // Return a safe string that our S3 client validation will catch
+    return 'DECRYPTION_FAILED';
   }
 }
 

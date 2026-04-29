@@ -3,21 +3,22 @@ import { logger } from '@/lib/logger';
 import React, { useState, useEffect } from 'react';
 import { Product } from '@/store/useCartStore';
 import { Category, StorefrontSettingsType } from '@/types';
-import { X, Save, ArrowLeft, Sparkles, ImageIcon, Plus, ChevronRight, Layout, Package, Tag, Globe, Truck, MoreHorizontal, Languages, Wand2, Loader2 } from 'lucide-react';
+import { X, Save, ArrowLeft, Sparkles, ImageIcon, Plus, Layout, Package, Tag, Globe, Truck, Languages, Wand2, Loader2 } from 'lucide-react';
 import { SearchableSelect } from '../SearchableSelect';
 import { VariantEditor } from '../VariantEditor';
 import { toast } from 'sonner';
-import { createClient } from '@/utils/supabase/client';
 import { genAI } from '@/lib/ai';
 import { MediaPickerModal } from './MediaPickerModal';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { toMediaProxyUrl } from '@/lib/media';
 import { isValidUrl } from '@/lib/utils';
 import { normalizeProductOptions, inferOptionsFromLegacyArrays, normalizeGeneratedVariants, buildVariantsFromOptions } from '@/lib/product-variants';
 import { safeParseAiResponse } from '@/lib/json';
 import { parseCatalogPrompt } from '@/lib/product-import';
 import { saveProductAction } from '@/app/actions/products';
 import type { ProductVariantInput } from '@/app/actions/products';
+import { AdminHeader } from '@/components/admin/AdminHeader';
 
 const STRIPE_TAX_CODE_OPTIONS = [
   { value: '', label: 'Auto from category' },
@@ -69,7 +70,6 @@ type ProductRecord = Product & {
 
 export function ProductEditor({ initialProduct, categories, settings }: ProductEditorProps) {
   const router = useRouter();
-  const supabase = createClient();
   const languages = settings.languages || ['sv'];
   const [formData, setFormData] = useState<Partial<Product>>({
     title: '',
@@ -100,6 +100,20 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
   const [mediaPickerTarget, setMediaPickerTarget] = useState<'main' | 'gallery'>('main');
   const [selectedLang, setSelectedLang] = useState('sv');
   const [aiChatInput, setAiChatInput] = useState('');
+
+  const getAIErrorMessage = (error: unknown, fallback: string) => {
+    const err = error as Error & { status?: number };
+    if (err.status === 401 || err.status === 403) {
+      return 'Groq API key is missing or invalid in Integrations.';
+    }
+    if (err.status === 429) {
+      return 'AI is temporarily busy. Please wait a few seconds and try again.';
+    }
+    if (err.status === 500 || err.status === 503) {
+      return 'AI service is temporarily overloaded. Please retry in 1-2 minutes.';
+    }
+    return err.message || fallback;
+  };
 
   const mapDbToForm = (p: ProductRecord): Partial<Product> => {
     if (!p) return {};
@@ -228,7 +242,11 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
         "tags": ["string"]
       }`;
 
-      const model = genAI.getGenerativeModel({ model: 'llama-3.3-70b-versatile', generationConfig: { responseMimeType: 'application/json' }});
+      const model = genAI.getGenerativeModel({
+        model: 'llama-3.3-70b-versatile',
+        promptProfile: 'product',
+        generationConfig: { responseMimeType: 'application/json' }
+      });
       const aiResponse = await model.generateContent(prompt);
       const result = safeParseAiResponse<ProductAIDraft>(aiResponse.response.text(), {});
       
@@ -256,33 +274,10 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
       setAiChatInput('');
       toast.success('AI Draft Generated!', { id: toastId });
     } catch (error: unknown) {
-      const err = error as Error & { status?: number };
-      logger.error('AI Processing Error:', err);
-      
-      const timestamp = new Date().toLocaleTimeString('sv-SE', { hour12: false });
-      const errorMessage = err?.message || '';
-      const status = err?.status;
-
-      if (status === 401 || status === 403) {
-        toast.error('Action Required: Please set your Groq API Key in the Integrations Manager.', { 
-          id: toastId,
-          duration: 6000
-        });
-        return;
-      }
-
-      let detailedMessage = '';
-      if (status === 503 || errorMessage.toLowerCase().includes('overloaded') || errorMessage.toLowerCase().includes('congestion')) {
-        detailedMessage = `## Error Type\nConsole Error\n\n## Error Message\n[${timestamp}] AI Service Congestion (503). Service is currently at maximum capacity. Please wait 5-10 minutes for regional demand to subside and try again.`;
-      } else if (status === 429 || errorMessage.toLowerCase().includes('quota')) {
-        detailedMessage = `## Error Type\nConsole Error\n\n## Error Message\n[${timestamp}] RATE LIMIT HIT (429) for llama-3.3-70b-versatile. You are sending requests too fast (RPM limit). Please wait 60 seconds and try again.`;
-      } else {
-        detailedMessage = `## Error Type\nConsole Error\n\n## Error Message\n[${timestamp}] AI Draft failed. ${errorMessage}`;
-      }
-
-      toast.error(detailedMessage, { 
+      logger.error('AI Processing Error:', error);
+      toast.error(getAIErrorMessage(error, 'AI draft generation failed.'), {
         id: toastId,
-        duration: 8000
+        duration: 5000
       });
     } finally {
       setGenerating(false);
@@ -321,6 +316,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
 
       const model = genAI.getGenerativeModel({
         model: 'llama-3.3-70b-versatile',
+        promptProfile: 'product',
         generationConfig: { responseMimeType: 'application/json' }
       });
       const aiResponse = await model.generateContent(prompt);
@@ -350,12 +346,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
       setFormData(prev => ({ ...prev, translations: newTranslations }));
       toast.success('Product translated to all languages', { id: toastId });
     } catch (error: unknown) {
-      const err = error as Error & { status?: number };
-      if (err.status === 401 || err.status === 403) {
-        toast.error('Action Required: Please set your Groq API Key in the Integrations Manager.', { id: toastId, duration: 6000 });
-      } else {
-        toast.error(err.message || 'AI translation failed', { id: toastId, duration: 8000 });
-      }
+      toast.error(getAIErrorMessage(error, 'AI translation failed.'), { id: toastId, duration: 5000 });
     } finally {
       setGenerating(false);
     }
@@ -394,55 +385,41 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20">
-      <div className="max-w-[1200px] mx-auto px-6 py-10">
-        {/* Simple Scrolling Header - Removed all sticky and fixed behaviors */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
-          <div className="flex items-center gap-4">
-            <button onClick={() => router.push('/admin/products')} className="p-2.5 bg-white border border-slate-200 hover:border-slate-900 rounded-[4px] transition-all">
-              <ArrowLeft className="w-5 h-5 text-slate-600" />
-            </button>
-            <div className="flex flex-col">
-              <h1 className="text-[18px] font-bold text-slate-900 tracking-tight leading-none mb-1.5">
-                {initialProduct ? `Edit: ${formData.title || 'Product'}` : 'Create New Product'}
-              </h1>
-              <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${formData.status === 'published' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-                <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
-                  {formData.status || 'Draft'} Mode
-                </span>
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
-            <button 
-              onClick={() => handleSave('draft')}
-              disabled={loading}
-              className="px-6 h-11 bg-white border border-slate-200 rounded-[4px] text-[11px] font-bold uppercase tracking-widest text-slate-600 hover:border-slate-900 hover:text-slate-900 transition-all flex items-center"
-            >
-              Save as Draft
-            </button>
-            <button 
-              onClick={() => handleSave('published')}
-              disabled={loading}
-              className="px-8 h-11 bg-slate-900 text-white rounded-[4px] text-[11px] font-bold uppercase tracking-widest hover:bg-slate-800 transition-all group flex items-center gap-2"
-            >
-              <Save className="w-4 h-4 group-hover:scale-110 transition-transform" />
-              Publish Product
-            </button>
-          </div>
-        </div>
+    <div className="space-y-6 pb-12">
+      <AdminHeader
+        title={initialProduct ? `Edit Product: ${formData.title || 'Untitled'}` : 'New Product'}
+        description="Manage merchandising content, pricing, variants, tax handling, and storefront translations."
+        primaryAction={{
+          label: loading ? 'Publishing...' : 'Publish Product',
+          icon: Save,
+          onClick: () => void handleSave('published'),
+          disabled: loading,
+        }}
+        secondaryActions={[
+          {
+            label: 'Save as Draft',
+            icon: Save,
+            onClick: () => void handleSave('draft'),
+            disabled: loading,
+          },
+          {
+            label: 'Back to Products',
+            icon: ArrowLeft,
+            onClick: () => router.push('/admin/products'),
+          },
+        ]}
+        statsLabel={`${formData.status || 'draft'} mode`}
+      />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_340px] gap-6 sm:gap-8">
         {/* Main Content */}
-        <div className="lg:col-span-2 space-y-8">
+        <div className="space-y-6">
           
           {/* AI Drafting Section */}
-          <div className="bg-white border border-slate-200 rounded-[4px] p-6 shadow-sm">
+          <div className="bg-white border border-slate-200 rounded-[4px] p-5 sm:p-6">
              <div className="flex items-center gap-2 mb-4">
                 <Sparkles className="w-4 h-4 text-indigo-600" />
-                <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">AI Designer Assistance</h3>
+                <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-900">AI Product Assistant</h3>
              </div>
              <div className="flex flex-col sm:flex-row gap-3">
                 <input 
@@ -455,7 +432,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                 <button 
                   onClick={handleAIChatAutoFill}
                   disabled={generating || !aiChatInput.trim()}
-                  className="h-11 px-8 bg-indigo-600 text-white rounded-[4px] text-[11px] font-bold uppercase tracking-widest hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shrink-0"
+                  className="h-11 px-5 bg-indigo-600 text-white rounded-[4px] text-[12px] font-medium hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shrink-0"
                 >
                   {generating ? 'Processing...' : 'Auto-Draft'}
                   {!generating && <Wand2 className="w-4 h-4" />}
@@ -467,11 +444,11 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
           <section className="bg-white border border-slate-200 rounded-[4px]">
             <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
               <Layout className="w-4 h-4 text-slate-500" />
-              <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">General Information</h3>
+              <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-900">General Information</h3>
             </div>
             <div className="p-6 space-y-6">
               <div className="space-y-2">
-                <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Product Title</label>
+                <label className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Product Title</label>
                 <input 
                   type="text" 
                   value={formData.title}
@@ -480,7 +457,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Description</label>
+                <label className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Description</label>
                 <textarea 
                   rows={8}
                   value={formData.description}
@@ -490,7 +467,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                  <div className="space-y-2">
-                    <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Category</label>
+                    <label className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Category</label>
                     <SearchableSelect 
                       options={categories.map(c => ({ value: c.id!, label: c.name }))}
                       value={formData.categoryId || ''}
@@ -498,7 +475,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                     />
                  </div>
                  <div className="space-y-2">
-                    <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Tags</label>
+                    <label className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Tags</label>
                     <input 
                       type="text" 
                       value={formData.tags?.join(', ')}
@@ -515,29 +492,29 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
           <section className="bg-white border border-slate-200 rounded-[4px]">
             <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
               <Package className="w-4 h-4 text-slate-500" />
-              <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">{getLabel(settings.inventoryTitleText, "Pricing & Inventory")}</h3>
+              <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-900">{getLabel(settings.inventoryTitleText, "Pricing & Inventory")}</h3>
             </div>
             <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-2">
-                   <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">{getLabel(settings.regularPriceText, "Regular Price (SEK)")}</label>
+                   <label className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">{getLabel(settings.regularPriceText, "Regular Price (SEK)")}</label>
                    <input 
                      type="number"
                      value={formData.price || ''}
                      onChange={(e) => setFormData({...formData, price: parseFloat(e.target.value) || 0})}
-                     className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm font-bold"
+                     className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm font-medium"
                    />
                 </div>
                 <div className="space-y-2">
-                   <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">{getLabel(settings.salePriceText, "Sale Price (SEK)")}</label>
+                   <label className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">{getLabel(settings.salePriceText, "Sale Price (SEK)")}</label>
                    <input 
                      type="number"
                      value={formData.discountPrice || ''}
                      onChange={(e) => setFormData({...formData, discountPrice: parseFloat(e.target.value) || 0, isSale: parseFloat(e.target.value) > 0})}
-                     className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm font-bold text-rose-600"
+                     className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm font-medium text-rose-600"
                    />
                 </div>
                 <div className="space-y-2">
-                   <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">{getLabel(settings.skuCodeText, "SKU Code")}</label>
+                   <label className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">{getLabel(settings.skuCodeText, "SKU Code")}</label>
                    <input 
                      type="text"
                      value={formData.sku || ''}
@@ -546,7 +523,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                    />
                 </div>
                 <div className="space-y-2">
-                   <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">{getLabel(settings.initialStockText, "Initial Stock")}</label>
+                   <label className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">{getLabel(settings.initialStockText, "Initial Stock")}</label>
                    <input 
                      type="number"
                      value={formData.stock || 0}
@@ -555,7 +532,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                    />
                 </div>
                 <div className="space-y-2">
-                   <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">{getLabel(settings.weightKgText, "Weight (kg)")}</label>
+                   <label className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">{getLabel(settings.weightKgText, "Weight (kg)")}</label>
                    <input 
                      type="number"
                      value={formData.weight || 0}
@@ -564,7 +541,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                    />
                 </div>
                 <div className="space-y-2">
-                   <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">{getLabel(settings.shippingClassText, "Shipping Class")}</label>
+                   <label className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">{getLabel(settings.shippingClassText, "Shipping Class")}</label>
                    <select 
                      value={formData.shippingClass || ''}
                      onChange={(e) => setFormData({...formData, shippingClass: e.target.value})}
@@ -582,11 +559,11 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
           <section className="bg-white border border-slate-200 rounded-[4px]">
             <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
               <Truck className="w-4 h-4 text-slate-500" />
-              <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Tax Configuration</h3>
+              <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-900">Tax Configuration</h3>
             </div>
             <div className="p-6 space-y-6">
               <div className="space-y-2">
-                <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Stripe Tax Code</label>
+                <label className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Stripe Tax Code</label>
                 <select
                   value={formData.stripeTaxCode || ''}
                   onChange={(e) => setFormData({ ...formData, stripeTaxCode: e.target.value })}
@@ -613,7 +590,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
              <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                    <Tag className="w-4 h-4 text-slate-500" />
-                   <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Advanced Variants</h3>
+                   <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-900">Advanced Variants</h3>
                 </div>
              </div>
              <div className="p-6">
@@ -626,12 +603,12 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
              <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
                <div className="flex items-center gap-2">
                  <Globe className="w-4 h-4 text-slate-500" />
-                 <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Translations</h3>
+                 <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-900">Translations</h3>
                </div>
                <button
                  onClick={handleAITranslateProduct}
                  disabled={generating || !formData.title?.trim()}
-                 className="flex items-center gap-1.5 px-4 py-1.5 text-[11px] font-bold uppercase tracking-widest bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-all disabled:opacity-50"
+                 className="flex items-center gap-1.5 px-4 h-9 text-[12px] font-medium bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-all disabled:opacity-50"
                >
                  {generating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Languages className="w-3 h-3" />}
                  AI Translate All
@@ -643,7 +620,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                     <button 
                       key={lang}
                       onClick={() => setSelectedLang(lang)}
-                      className={`px-6 py-1.5 rounded-[2px] text-[11px] font-bold uppercase tracking-widest transition-all ${selectedLang === lang ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-slate-100'}`}
+                    className={`px-5 py-1.5 rounded-[2px] text-[11px] font-semibold uppercase tracking-[0.16em] transition-all ${selectedLang === lang ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-slate-100'}`}
                     >
                       {lang}
                     </button>
@@ -651,7 +628,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                </div>
                <div className="grid grid-cols-1 gap-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Translated Title ({selectedLang})</label>
+                    <label className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Translated Title ({selectedLang})</label>
                     <input 
                       type="text" 
                       value={formData.translations?.[selectedLang]?.title || ''}
@@ -669,7 +646,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Translated Description ({selectedLang})</label>
+                    <label className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Translated Description ({selectedLang})</label>
                     <textarea 
                       rows={4}
                       value={formData.translations?.[selectedLang]?.description || ''}
@@ -689,7 +666,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
 
                   {formData.translations?.[selectedLang]?.options && formData.translations[selectedLang].options!.length > 0 && (
                     <div className="space-y-4 pt-4 border-t border-slate-100">
-                       <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Translated Attributes ({selectedLang})</label>
+                       <label className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Translated Attributes ({selectedLang})</label>
                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           {formData.translations[selectedLang].options!.map((option, optIdx) => (
                             <div key={`${selectedLang}-opt-${optIdx}`} className="space-y-2 p-3 bg-slate-50 rounded border border-slate-100">
@@ -712,7 +689,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                                      }
                                    });
                                  }}
-                                 className="w-full text-[11px] font-bold uppercase tracking-widest bg-transparent border-none p-0 focus:ring-0 text-slate-900"
+                                 className="w-full text-[11px] font-semibold uppercase tracking-[0.16em] bg-transparent border-none p-0 focus:ring-0 text-slate-900"
                                  placeholder="Attribute Name"
                                />
                                <div className="flex flex-wrap gap-1">
@@ -754,12 +731,12 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
         </div>
 
         {/* Sidebar Column */}
-        <div className="space-y-8">
+        <div className="space-y-6">
            
            {/* Main Media Visual */}
            <section className="bg-white border border-slate-200 rounded-[4px] overflow-hidden">
               <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
-                <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Main Product Image</h3>
+                <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-900">Main Product Image</h3>
               </div>
               <div className="p-6 pt-2">
                 <label className="relative aspect-square bg-slate-50 border-2 border-dashed border-slate-200 rounded-[4px] flex items-center justify-center overflow-hidden hover:border-slate-900 transition-all cursor-pointer group mb-4">
@@ -767,7 +744,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                    {isValidUrl(formData.imageUrl) ? (
                      <div className="relative w-full h-full">
                        <Image 
-                         src={formData.imageUrl} 
+                         src={toMediaProxyUrl(formData.imageUrl)} 
                          alt="Main product asset" 
                          fill 
                          sizes="(max-width: 768px) 100vw, 400px" 
@@ -792,12 +769,12 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                    ) : (
                      <div className="text-center p-6">
                         <ImageIcon className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                        <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Click to upload main image</p>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Click to upload main image</p>
                      </div>
                    )}
                    <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all z-10 pointer-events-none">
-                      <span className="text-[11px] font-bold uppercase tracking-widest text-white border-white border px-4 py-2">Change Image</span>
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white border-white border px-4 py-2">Change Image</span>
                    </div>
                 </label>
 
@@ -807,16 +784,16 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                      placeholder="Or paste image URL..."
                      value={formData.imageUrl}
                      onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
-                     className="flex-1 h-10 border border-slate-200 rounded-[4px] px-3 text-xs"
+                     className="flex-1 h-10 border border-slate-200 rounded-[4px] px-3 text-[12px]"
                    />
                    <button 
                      onClick={() => {
                         setMediaPickerTarget('main');
                         setIsMediaPickerOpen(true);
                      }}
-                     className="h-10 px-4 bg-slate-50 border border-slate-200 rounded text-[10px] font-black uppercase tracking-widest hover:border-slate-900 transition-all"
+                     className="h-10 px-4 bg-slate-50 border border-slate-200 rounded-md text-[12px] font-medium hover:border-slate-900 transition-all"
                    >
-                     Lib
+                     Library
                    </button>
                 </div>
               </div>
@@ -825,13 +802,13 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
            {/* Organization & Visibility */}
            <section className="bg-white border border-slate-200 rounded-[4px] overflow-hidden">
              <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
-               <h3 className="text-xs font-black uppercase tracking-widest text-slate-900">Optimization</h3>
+               <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-900">Optimization</h3>
              </div>
              <div className="p-6 space-y-6">
                 <div className="flex items-center justify-between">
                    <div className="space-y-0.5">
-                     <p className="text-[11px] font-black uppercase tracking-widest text-slate-900">Featured Product</p>
-                     <p className="text-[10px] text-slate-500">Show on homepage collections</p>
+                     <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-900">Featured Product</p>
+                     <p className="text-[11px] text-slate-500">Show on homepage collections</p>
                    </div>
                    <input 
                     type="checkbox" 
@@ -842,8 +819,8 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                 </div>
                 <div className="flex items-center justify-between">
                    <div className="space-y-0.5">
-                     <p className="text-[11px] font-black uppercase tracking-widest text-slate-900">New Arrival Badge</p>
-                     <p className="text-[10px] text-slate-500">Apply visual tag on storefront</p>
+                     <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-900">New Arrival Badge</p>
+                     <p className="text-[11px] text-slate-500">Apply visual tag on storefront</p>
                    </div>
                    <input 
                     type="checkbox" 
@@ -858,14 +835,14 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
            {/* Gallery Summary */}
            <section className="bg-white border border-slate-200 rounded-[4px] overflow-hidden">
               <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
-                <h3 className="text-xs font-black uppercase tracking-widest text-slate-900">Product Gallery</h3>
+                <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-900">Product Gallery</h3>
               </div>
               <div className="p-6">
                 <div className="grid grid-cols-4 gap-2 mb-4">
                    {formData.additionalImages?.map((url, idx) => (
                      <div key={idx} className="relative aspect-square bg-slate-50 border border-slate-100 rounded-md overflow-hidden group/img">
                         <Image 
-                          src={url} 
+                          src={toMediaProxyUrl(url)} 
                           alt={`Gallery asset ${idx + 2}`} 
                           fill 
                           sizes="120px" 
@@ -968,7 +945,6 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
           setIsMediaPickerOpen(false); 
         }}
       />
-      </div>
     </div>
   );
 }

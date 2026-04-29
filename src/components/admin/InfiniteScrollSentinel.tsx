@@ -51,27 +51,28 @@ export function InfiniteScrollSentinel({
     };
   }, [hasMore, isLoading, onIntersect]);
 
+  if (!isLoading && !hasMore) {
+    return <div ref={sentinelRef} className="h-px w-full opacity-0" aria-hidden="true" />;
+  }
+
   return (
     <div 
       ref={sentinelRef} 
-      className={`py-8 flex flex-col items-center justify-center gap-3 ${className}`}
+      className={`flex min-h-0 w-full items-center justify-center ${className}`}
     >
       {isLoading && (
-        <>
-          <RefreshCcw className="w-5 h-5 animate-spin text-slate-500" />
-          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 animate-pulse">
+        <div className="flex items-center gap-2 rounded-full border border-slate-200/70 bg-white/80 px-3 py-1.5 shadow-[0_10px_30px_rgba(15,23,42,0.04)] backdrop-blur-sm">
+          <RefreshCcw className="h-3.5 w-3.5 animate-spin text-slate-400" />
+          <p className="text-[10px] font-medium tracking-[0.12em] text-slate-500 uppercase">
             {loadingMessage}
           </p>
-        </>
-      )}
-      {!hasMore && !isLoading && (
-        <div className="w-full flex items-center gap-4 px-6">
-          <div className="h-px bg-slate-200 flex-1" />
-          <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-300">
-            End of records
-          </span>
-          <div className="h-px bg-slate-200 flex-1" />
         </div>
+      )}
+      {!isLoading && hasMore && (
+        <div
+          aria-hidden="true"
+          className="h-px w-full opacity-0 pointer-events-none"
+        />
       )}
     </div>
   );

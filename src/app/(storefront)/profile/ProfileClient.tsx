@@ -1,15 +1,4 @@
 "use client";
-
-const isValidUrl = (url: string) => {
-  try {
-    new URL(url);
-    return true;
-  } catch {
-    return false;
-  }
-};
-
-
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -42,6 +31,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { createClient } from '@/utils/supabase/client';
 import { toast } from 'sonner';
 import { formatPrice } from '@/lib/currency';
+import { toMediaProxyUrl } from '@/lib/media';
+import { isValidUrl } from '@/lib/utils';
 import { submitSupportRequestAction } from '@/app/actions/support';
 import { deleteAddressAction, saveAddressAction, setDefaultAddressAction } from '@/app/actions/profile';
 import type { StorefrontSettings } from '@/store/useSettingsStore';
@@ -118,7 +109,6 @@ type RefundRequestRecord = {
   id: string;
   order_id?: string | null;
   reason?: string | null;
-  comments?: string | null;
   status?: string | null;
   created_at?: string | null;
 };
@@ -764,7 +754,6 @@ export function ProfileClient({
                               Order #{refund.order_id || refund.id.slice(0, 8).toUpperCase()}
                             </h4>
                             <p className="mt-3 text-sm leading-6 text-slate-600">{refund.reason || 'No reason provided.'}</p>
-                            {refund.comments && <p className="mt-2 text-sm leading-6 text-slate-500">{refund.comments}</p>}
                           </div>
                           <div className="space-y-2 text-right">
                             <span className="inline-flex border border-slate-300 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-slate-700">
@@ -1206,7 +1195,7 @@ export function ProfileClient({
                                 <div className="flex items-center gap-4">
                                   {supportImageUrl ? (
                                     <div className="relative w-24 h-24 border border-slate-300 bg-white group">
-                                      <Image src={supportImageUrl} alt="Support attachment" fill className="object-cover" />
+                                      <Image src={toMediaProxyUrl(supportImageUrl)} alt="Support attachment" fill className="object-cover" />
                                       <button 
                                         onClick={() => setSupportImageUrl('')}
                                         className="absolute -top-2 -right-2 w-6 h-6 bg-white border border-slate-300 rounded flex items-center justify-center shadow-sm hover:border-slate-900"

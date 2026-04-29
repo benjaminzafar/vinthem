@@ -9,6 +9,7 @@ import {
   isSensitiveIntegrationKey,
   maybeDecryptStoredValue,
 } from '@/lib/integrations';
+import { AI_PROMPT_DEFAULTS } from '@/lib/ai-prompts';
 
 export type IntegrationActionResponse = {
   success: boolean;
@@ -49,6 +50,12 @@ export async function getIntegrationsAction(): Promise<IntegrationActionResponse
         continue;
       }
       config[item.key] = await maybeDecryptStoredValue(item.value);
+    }
+
+    for (const [key, defaultValue] of Object.entries(AI_PROMPT_DEFAULTS)) {
+      if (!config[key]?.trim()) {
+        config[key] = defaultValue;
+      }
     }
 
     return { 

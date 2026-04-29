@@ -14,6 +14,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { InfiniteScrollSentinel } from '@/components/admin/InfiniteScrollSentinel';
 import Image from 'next/image';
 import { isValidUrl } from '@/lib/utils';
+import { AdminLoadingState } from '@/components/admin/AdminLoadingState';
+import { toMediaProxyUrl } from '@/lib/media';
 
 export function CollectionManager({ 
   initialCategories = [],
@@ -40,10 +42,6 @@ export function CollectionManager({
   const [supabase] = useState(() => createClient());
 
   const fetchCategories = useCallback(async ({ reset = false, showLoader = false }: { reset?: boolean; showLoader?: boolean } = {}) => {
-    if (reset) {
-      pageRef.current = 0;
-    }
-
     if (showLoader) {
       setLoading(true);
     } else if (reset) {
@@ -52,67 +50,25 @@ export function CollectionManager({
       setLoadingMore(true);
     }
 
-    const from = pageRef.current * ITEMS_PER_PAGE;
-    const to = from + ITEMS_PER_PAGE - 1;
-
     try {
       let query = supabase
         .from('categories')
-        .select('*', { count: 'exact' });
+        .select('*');
 
       if (debouncedSearchQuery) {
         query = query.ilike('name', `%${debouncedSearchQuery}%`);
-      } else {
-        query = query.is('parent_id', null);
       }
 
-      const { data: rootData, count, error } = await query
-        .order('name')
-        .range(from, to);
+      const { data, error } = await query.order('name');
 
       if (error) throw error;
 
-      let batchCategories = (rootData || []).map((c) => ({
+      const batchCategories = (data || []).map((c) => ({
         ...c, isFeatured: c.is_featured, showInHero: c.show_in_hero, 
         parentId: c.parent_id, imageUrl: c.image_url, iconUrl: c.icon_url
       })) as unknown as Category[];
-
-      if (!debouncedSearchQuery && rootData && rootData.length > 0) {
-        const rootIds = rootData.map(r => r.id);
-        const { data: childrenData } = await supabase
-          .from('categories')
-          .select('*')
-          .in('parent_id', rootIds);
-        
-        if (childrenData) {
-          const mappedChildren = childrenData.map((c) => ({
-            ...c, isFeatured: c.is_featured, showInHero: c.show_in_hero, 
-            parentId: c.parent_id, imageUrl: c.image_url, iconUrl: c.icon_url
-          })) as unknown as Category[];
-          batchCategories = [...batchCategories, ...mappedChildren];
-        }
-      }
-
-      if (reset) {
-        setCategories(batchCategories);
-      } else {
-        setCategories(prev => {
-          const combined = [...prev, ...batchCategories];
-          const unique = Array.from(new Map(combined.map(c => [c.id, c])).values());
-          return unique;
-        });
-      }
-
-      const hasNoResults = rootData?.length === 0;
-      const fetchedRootsSoFar = from + (rootData?.length || 0);
-      const reachedCount = count ? fetchedRootsSoFar >= count : false;
-      const partialPage = (rootData?.length || 0) < ITEMS_PER_PAGE;
-      
-      setHasMore(!hasNoResults && !reachedCount && !partialPage);
-      
-      if (rootData && rootData.length > 0) {
-        pageRef.current += 1;
-      }
+      setCategories(batchCategories);
+      setHasMore(false);
 
     } catch (error: unknown) {
       const err = error as Error;
@@ -210,20 +166,20 @@ export function CollectionManager({
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pb-20">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-6">
         <div>
-          <h1 className="text-[18px] font-bold text-slate-900 tracking-tight leading-none">Collections</h1>
+          <h1 className="text-[16px] sm:text-[18px] font-bold text-slate-900 tracking-tight leading-none">Collections</h1>
           <p className="text-[12px] text-slate-500 mt-2 font-medium">Manage your catalog hierarchy and structure</p>
         </div>
         
-        <div className="flex flex-wrap items-center gap-4">
+        <div className="flex flex-wrap items-center gap-3 sm:gap-4 w-full md:w-auto">
           {refreshing && (
             <div className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-500">
               <Layers className="h-3.5 w-3.5 animate-pulse" />
               Syncing
             </div>
           )}
-          <div className="relative group flex-1 md:flex-none">
+          <div className="relative group flex-1 md:flex-none min-w-[220px]">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-slate-900 transition-colors" />
             <input 
               type="text"
@@ -245,18 +201,28 @@ export function CollectionManager({
       </div>
 
       <div className="bg-white border border-slate-300 rounded overflow-hidden shadow-none">
-        <div className="px-6 border-b border-slate-300 bg-white flex items-center justify-between h-14">
+        <div className="px-4 sm:px-6 border-b border-slate-300 bg-white flex items-center justify-between h-14">
           <div className="flex items-center gap-3">
              <Layers className="w-4 h-4 text-slate-500" />
              <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Structure & Hierarchy</h3>
           </div>
         </div>
 
+        {loading && categories.length === 0 ? (
+          <div className="p-6">
+            <AdminLoadingState
+              compact
+              eyebrow="Collections"
+              title="Mapping collection structure"
+              detail="Loading root collections, nested groups, and their linked catalog counts."
+            />
+          </div>
+        ) : (
         <div className="overflow-x-auto overflow-y-hidden">
-          <table className="w-full text-left border-collapse min-w-[800px] lg:min-w-0">
+          <table className="w-full text-left border-collapse min-w-[560px] lg:min-w-0">
             <thead>
               <tr className="border-b border-slate-300 text-[11px] font-bold uppercase tracking-widest text-slate-500 bg-slate-50/80">
-                <th className="px-6 py-4 w-12 text-center">
+                <th className="admin-table-cell px-4 sm:px-6 py-4 w-12 text-center">
                    <div 
                      onClick={toggleAll}
                      className={`w-4 h-4 border rounded-sm mx-auto cursor-pointer transition-all flex items-center justify-center ${
@@ -268,10 +234,10 @@ export function CollectionManager({
                      {selectedCollections.length > 0 && <Check className="w-3 h-3 text-white" />}
                    </div>
                 </th>
-                <th className="px-6 py-4">Collection</th>
-                <th className="px-6 py-4">Type</th>
-                <th className="px-6 py-4 text-center">Inventory</th>
-                <th className="px-6 py-4 text-right">Actions</th>
+                <th className="admin-table-cell px-4 sm:px-6 py-4">Collection</th>
+                <th className="admin-table-cell px-4 sm:px-6 py-4 hidden md:table-cell">Type</th>
+                <th className="admin-table-cell px-4 sm:px-6 py-4 text-center hidden sm:table-cell">Inventory</th>
+                <th className="admin-table-cell px-4 sm:px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-300">
@@ -287,7 +253,7 @@ export function CollectionManager({
                     selectedCollections.includes(parent.id!) ? 'bg-slate-50' : 'hover:bg-slate-50'
                   }`}
                 >
-                  <td className="px-6 py-4" onClick={(e) => toggleSelect(parent.id!, e)}>
+                  <td className="admin-table-cell px-4 sm:px-6 py-4" onClick={(e) => toggleSelect(parent.id!, e)}>
                     <div className={`w-4 h-4 border rounded-sm mx-auto transition-all flex items-center justify-center ${
                       selectedCollections.includes(parent.id!)
                         ? 'bg-slate-900 border-slate-900' 
@@ -299,7 +265,7 @@ export function CollectionManager({
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-4" style={{ marginLeft: `${level * 24}px` }}>
                       <div className="w-12 h-12 bg-slate-50 border border-slate-200 rounded flex items-center justify-center overflow-hidden shrink-0 group-hover:border-slate-900 transition-all relative">
-                        {isValidUrl(parent.imageUrl) ? <Image src={parent.imageUrl} alt={parent.name} fill sizes="48px" className="object-cover" /> : <Package className="w-5 h-5 text-slate-300" />}
+                        {isValidUrl(parent.imageUrl) ? <Image src={toMediaProxyUrl(parent.imageUrl)} alt={parent.name} fill sizes="48px" className="object-cover" /> : <Package className="w-5 h-5 text-slate-300" />}
                       </div>
                       <div className="min-w-0">
                          <p className="font-bold text-slate-900 text-[13px] tracking-tight truncate">{parent.name}</p>
@@ -309,7 +275,7 @@ export function CollectionManager({
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell">
                      <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${
                         level === 0 
                           ? 'bg-slate-100 text-slate-700 border-slate-200' 
@@ -318,7 +284,7 @@ export function CollectionManager({
                         {level === 0 ? 'Root Collection' : 'Sub Collection'}
                      </span>
                   </td>
-                  <td className="px-6 py-4 text-[11px] font-bold text-slate-900 text-center">
+                  <td className="px-6 py-4 text-[11px] font-bold text-slate-900 text-center hidden sm:table-cell">
                     {products.filter(p => p.categoryId === parent.id).length} Items
                   </td>
 
@@ -346,6 +312,7 @@ export function CollectionManager({
             </tbody>
           </table>
         </div>
+        )}
 
         <InfiniteScrollSentinel 
           onIntersect={() => void fetchCategories({ reset: false, showLoader: false })}

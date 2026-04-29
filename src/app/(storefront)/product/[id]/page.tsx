@@ -77,7 +77,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   // Fetch all categories for the universal filter drawer
   const { data: categoriesData } = await supabase
     .from('categories')
-    .select('*, imageUrl:image_url, iconUrl:icon_url, parentId:parent_id, pinnedInSearch:pinned_in_search')
+    .select('*, imageUrl:image_url, iconUrl:icon_url, parentId:parent_id')
     .order('name');
 
   const categories = (categoriesData || []).map(cat => ({
@@ -85,7 +85,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     imageUrl: cat.image_url,
     iconUrl: cat.icon_url,
     parentId: cat.parent_id,
-    pinnedInSearch: cat.pinned_in_search
+    pinnedInSearch: false
   }));
 
   return (

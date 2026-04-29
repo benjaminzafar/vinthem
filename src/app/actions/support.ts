@@ -45,6 +45,48 @@ function sanitizeMessage(value: string): string {
   return value.replace(/[<>]/g, '').trim();
 }
 
+function normalizeSupportMessages(value: unknown): SupportTicketMessage[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((entry) => {
+    if (!entry || typeof entry !== 'object') {
+      return [];
+    }
+
+    const record = entry as Record<string, unknown>;
+    const textValue =
+      typeof record.text === 'string'
+        ? record.text
+        : typeof record.content === 'string'
+          ? record.content
+          : '';
+
+    if (!textValue.trim()) {
+      return [];
+    }
+
+    return [{
+      sender: record.sender === 'admin' || record.role === 'admin' ? 'admin' : 'customer',
+      text: textValue.trim(),
+      imageUrl: typeof record.imageUrl === 'string'
+        ? record.imageUrl
+        : typeof record.image_url === 'string'
+          ? record.image_url
+          : undefined,
+      createdAt:
+        typeof record.createdAt === 'string'
+          ? record.createdAt
+          : typeof record.created_at === 'string'
+            ? record.created_at
+            : typeof record.timestamp === 'string'
+              ? record.timestamp
+              : new Date().toISOString(),
+    }];
+  });
+}
+
 function revalidateSupportViews() {
   revalidatePath('/profile');
   revalidatePath('/[lang]/profile', 'page');
@@ -96,18 +138,21 @@ export async function submitSupportRequestAction(input: SupportRequestInput): Pr
           ? `Chat Inquiry: ${safeOrderId}`
           : `Order Help: ${safeOrderId}`;
 
+      const initialMessage: SupportTicketMessage = {
+        sender: 'customer',
+        text: safeMessage,
+        imageUrl: input.imageUrl ? sanitizeMessage(input.imageUrl) : undefined,
+        createdAt: new Date().toISOString(),
+      };
+
       const { error } = await supabase.from('support_tickets').insert({
+        customer_email: user.email ?? null,
         subject,
         message: safeMessage,
-        messages: [
-          {
-            sender: 'customer',
-            text: safeMessage,
-            imageUrl: input.imageUrl,
-            createdAt: new Date().toISOString(),
-          }
-        ],
+        description: safeMessage,
+        messages: [initialMessage],
         user_id: user.id,
+        priority: input.type === 'replacement' ? 'HIGH' : 'NORMAL',
         status: 'open',
       });
 
@@ -191,32 +236,42 @@ export async function replySupportTicketAction(input: ReplySupportTicketInput): 
       throw new Error('Invalid support ticket status.');
     }
 
-    const existingMessages = (input.existingMessages ?? []).filter(
-      (message) => message && (message.sender === 'admin' || message.sender === 'customer') && sanitizeMessage(message.text)
-    );
+    if (!replyText && input.status === undefined) {
+      throw new Error('Reply text or a status change is required.');
+    }
 
+    const { data: currentTicket, error: ticketReadError } = await supabase
+      .from('support_tickets')
+      .select('message, messages')
+      .eq('id', ticketId)
+      .maybeSingle();
+
+    if (ticketReadError) {
+      throw ticketReadError;
+    }
+
+    const existingMessage = typeof currentTicket?.message === 'string' ? currentTicket.message.trim() : '';
+    const existingMessages = normalizeSupportMessages(currentTicket?.messages);
     const nextMessages = replyText
       ? [
           ...existingMessages,
           {
             sender: 'admin' as const,
             text: replyText,
-            imageUrl: input.imageUrl,
+            imageUrl: input.imageUrl ? sanitizeMessage(input.imageUrl) : undefined,
             createdAt: new Date().toISOString(),
           },
         ]
       : existingMessages;
-
-    if (!replyText && input.status === undefined) {
-      throw new Error('Reply text or a status change is required.');
-    }
+    const appendedReply = replyText
+      ? `${existingMessage}${existingMessage ? '\n\n' : ''}[ADMIN ${new Date().toISOString()}] ${replyText}`
+      : existingMessage;
 
     const { error } = await supabase
       .from('support_tickets')
       .update({
-        messages: nextMessages,
         status: nextStatus,
-        updated_at: new Date().toISOString(),
+        ...(replyText ? { message: appendedReply, messages: nextMessages } : {}),
       })
       .eq('id', ticketId);
 
@@ -297,14 +352,13 @@ export async function updateReturnWorkflowAction(input: {
     // 1. Fetch Request & User Info (Email and Language)
     const { data: request, error: fetchErr } = await adminSupabase
       .from('refund_requests')
-      .select('*, users!inner(email, preferred_lang, full_name)')
+      .select('*, users!inner(email, full_name)')
       .eq('id', input.requestId)
       .single();
 
     if (fetchErr || !request) throw new Error('Return request not found.');
 
     const userEmail = request.users.email;
-    const userLang = (request.users.preferred_lang || 'en').toLowerCase();
     const userName = request.users.full_name || 'Customer';
 
     // 1.5 Fetch Active Locales from settings to ensure true dynamic globalization
@@ -315,7 +369,7 @@ export async function updateReturnWorkflowAction(input: {
       .single();
     
     const activeLocales = settingsRow?.data?.languages || ['en'];
-    const effectiveLang = activeLocales.includes(userLang) ? userLang : 'en';
+    const effectiveLang = activeLocales.includes('en') ? 'en' : activeLocales[0] || 'en';
 
     // 2. Perform Financial Action if Status is 'Refunded'
     if (input.status === 'Refunded' && input.orderId) {
@@ -326,19 +380,10 @@ export async function updateReturnWorkflowAction(input: {
     }
 
     // 3. Update Status and Append System Message Log
-    const existingMessages = request.messages || [];
-    const systemLog = {
-      sender: 'admin' as const,
-      text: `[SYSTEM] Automation: Changed status to ${input.status}. Localized email triggered in ${effectiveLang.toUpperCase()}.`,
-      createdAt: new Date().toISOString(),
-    };
-
     const { error: updateErr } = await adminSupabase
       .from('refund_requests')
       .update({ 
-        status: input.status, 
-        messages: [...existingMessages, systemLog],
-        updated_at: new Date().toISOString() 
+        status: input.status
       })
       .eq('id', input.requestId);
 

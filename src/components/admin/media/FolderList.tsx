@@ -27,8 +27,8 @@ export function FolderList({ folders, onNavigate, onDelete, selectionMode }: Fol
               <Folder className="w-5 h-5" />
             </div>
             <div className="truncate">
-              <span className="block text-sm font-bold text-slate-900 truncate uppercase tracking-tight">{folder}</span>
-              <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">Directory</span>
+              <span className="block text-sm font-bold text-slate-900 truncate tracking-tight">{folder}</span>
+              <span className="block text-[10px] font-bold text-slate-500 tracking-widest mt-0.5">Directory</span>
             </div>
           </div>
           
