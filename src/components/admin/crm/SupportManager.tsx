@@ -9,7 +9,6 @@ import { isValidUrl } from '@/lib/utils';
 import { toast } from 'sonner';
 import type { SupportTicket } from './types';
 import { useCustomConfirm } from '@/components/ConfirmationContext';
-import { createClient as createSupabaseClient } from '@/utils/supabase/client';
 
 interface SupportManagerProps {
   tickets: SupportTicket[];
@@ -18,7 +17,6 @@ interface SupportManagerProps {
 
 export function SupportManager({ tickets, loading }: SupportManagerProps) {
   const customConfirm = useCustomConfirm();
-  const supabase = createSupabaseClient();
   const [expandedTicketId, setExpandedTicketId] = useState<string | null>(null);
   const [draftReplies, setDraftReplies] = useState<Record<string, string>>({});
   const [replyImages, setReplyImages] = useState<Record<string, string>>({});
@@ -252,7 +250,6 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
                                           setIsUpdating(true);
                                           const tId = toast.loading('Uploading clinical evidence...');
                                           try {
-                                            const { data: sessionData } = await supabase.auth.getSession();
                                             const fd = new FormData();
                                             fd.append('file', file);
                                             fd.append('path', `support/admin/replies/${Date.now()}_${file.name}`);
@@ -260,9 +257,6 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
                                               method: 'POST',
                                               body: fd,
                                               credentials: 'include',
-                                              headers: sessionData.session?.access_token
-                                                ? { Authorization: `Bearer ${sessionData.session.access_token}` }
-                                                : undefined,
                                             });
                                             const payload = await parseApiPayload(res);
                                             if (!res.ok || typeof payload.error === 'string' || typeof payload.url !== 'string') {

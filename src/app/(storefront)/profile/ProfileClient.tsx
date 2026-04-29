@@ -220,7 +220,6 @@ export function ProfileClient({
     setIsUploadingSupportImage(true);
     const toastId = toast.loading('Uploading evidence asset...');
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
       const formDataUpload = new FormData();
       formDataUpload.append('file', file);
       formDataUpload.append('path', `support/${user?.id}/${Date.now()}_${file.name}`);
@@ -229,9 +228,6 @@ export function ProfileClient({
         method: 'POST',
         body: formDataUpload,
         credentials: 'include',
-        headers: sessionData.session?.access_token
-          ? { Authorization: `Bearer ${sessionData.session.access_token}` }
-          : undefined,
       });
 
       const data = await parseApiPayload(res);
