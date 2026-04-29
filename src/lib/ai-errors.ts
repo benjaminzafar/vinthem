@@ -13,6 +13,17 @@ const PROVIDER_BUSY_PATTERNS = [
   'please try again in 1-2 minutes',
 ];
 
+const PROVIDER_AUTH_PATTERNS = [
+  'invalid api key',
+  'incorrect api key',
+  'api key',
+  'authentication',
+  'unauthorized',
+  'forbidden',
+  'invalid or missing groq api key',
+  'groq api key',
+];
+
 function getErrorMessage(error: unknown): string {
   if (error instanceof Error) {
     return error.message || '';
@@ -23,6 +34,11 @@ function getErrorMessage(error: unknown): string {
   }
 
   return '';
+}
+
+function isProviderAuthError(error: unknown): boolean {
+  const message = getErrorMessage(error).toLowerCase();
+  return PROVIDER_AUTH_PATTERNS.some((pattern) => message.includes(pattern));
 }
 
 export function isTransientAIError(error: unknown): error is AIRequestError {
@@ -50,7 +66,12 @@ export function getAIErrorMessage(error: unknown, fallback: string): string {
   const err = error as AIRequestError;
 
   if (err?.status === 401 || err?.status === 403) {
-    return 'Groq API key is missing or invalid in Integrations.';
+    if (isProviderAuthError(error)) {
+      return 'Groq API key is missing or invalid in Integrations.';
+    }
+
+    const message = getErrorMessage(error).trim();
+    return message || fallback;
   }
 
   if (err?.status === 429) {

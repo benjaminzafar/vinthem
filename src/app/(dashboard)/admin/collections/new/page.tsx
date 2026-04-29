@@ -1,6 +1,39 @@
 import { createClient } from '@/utils/supabase/server';
 import { CollectionEditor } from '@/components/admin/CollectionEditor';
-import type { StorefrontSettingsType } from '@/types';
+import type { Category, StorefrontSettingsType } from '@/types';
+
+type RawCategoryRecord = {
+  id?: string;
+  name?: string;
+  slug?: string;
+  description?: string | null;
+  translations?: Category['translations'];
+  is_featured?: boolean | null;
+  isFeatured?: boolean | null;
+  show_in_hero?: boolean | null;
+  showInHero?: boolean | null;
+  parent_id?: string | null;
+  parentId?: string | null;
+  image_url?: string | null;
+  imageUrl?: string | null;
+  icon_url?: string | null;
+  iconUrl?: string | null;
+};
+
+function mapCategoryRecord(category: RawCategoryRecord): Category {
+  return {
+    id: category.id,
+    name: category.name || '',
+    slug: category.slug || '',
+    description: category.description || '',
+    translations: category.translations || {},
+    isFeatured: category.is_featured ?? category.isFeatured ?? false,
+    showInHero: category.show_in_hero ?? category.showInHero ?? false,
+    parentId: category.parent_id ?? category.parentId ?? '',
+    imageUrl: category.image_url ?? category.imageUrl ?? '',
+    iconUrl: category.icon_url ?? category.iconUrl ?? '',
+  };
+}
 
 export default async function NewCollectionPage() {
   const supabase = await createClient();
@@ -9,8 +42,8 @@ export default async function NewCollectionPage() {
     supabase.from('settings').select('data').eq('id', 'primary').single(),
   ]);
 
-  const categories = categoriesRes.data || [];
+  const categories = (categoriesRes.data || []).map((category) => mapCategoryRecord(category as RawCategoryRecord));
   const settings = (settingsRes.data?.data || { languages: ['sv', 'en'] }) as StorefrontSettingsType;
 
-  return <CollectionEditor categories={categories as any} settings={settings} />;
+  return <CollectionEditor categories={categories} settings={settings} />;
 }

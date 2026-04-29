@@ -3,13 +3,22 @@ export function extractMediaKey(source: string | null | undefined): string | nul
     return null;
   }
 
-  if (source.startsWith('/api/media?key=')) {
-    const key = source.split('/api/media?key=')[1];
+  const trimmed = source.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  if (trimmed.startsWith('/api/media?key=')) {
+    const key = trimmed.split('/api/media?key=')[1];
     return key ? decodeURIComponent(key) : null;
   }
 
+  if (!trimmed.startsWith('/') && !/^(https?:|mailto:|tel:|#)/i.test(trimmed)) {
+    return decodeURIComponent(trimmed.replace(/^\/+/, ''));
+  }
+
   try {
-    const parsed = source.startsWith('http') ? new URL(source) : new URL(source, 'http://localhost');
+    const parsed = trimmed.startsWith('http') ? new URL(trimmed) : new URL(trimmed, 'http://localhost');
     const pathname = parsed.pathname.replace(/^\/+/, '');
 
     if (!pathname) {

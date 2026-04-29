@@ -81,6 +81,21 @@ function isProviderBusyError(error: unknown): boolean {
   return PROVIDER_BUSY_PATTERNS.some((pattern) => message.includes(pattern));
 }
 
+function isProviderAuthError(error: unknown): boolean {
+  const message = getErrorMessage(error).toLowerCase();
+
+  return [
+    'invalid api key',
+    'incorrect api key',
+    'api key',
+    'authentication',
+    'unauthorized',
+    'forbidden',
+    'invalid or missing groq api key',
+    'groq api key',
+  ].some((pattern) => message.includes(pattern));
+}
+
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -267,7 +282,7 @@ export async function generateAIContentAction(params: AIContentParams) {
       logger.error("[Groq Action Error]:", error);
     }
 
-    if (status === 401 || status === 403) {
+    if ((status === 401 || status === 403) && isProviderAuthError(error)) {
       return { 
         error: "Invalid or missing Groq API Key. Please check your integrations settings.",
         status: status

@@ -189,3 +189,61 @@ export async function testBrevoApiAction(apiKey: string): Promise<IntegrationAct
     return { success: false, message: `Brevo API connection failed: ${message}` };
   }
 }
+
+/**
+ * Test Groq API Connection
+ */
+export async function testGroqConnectionAction(apiKey: string): Promise<IntegrationActionResponse> {
+  try {
+    const { supabase } = await requireAdminUser();
+
+    if (!apiKey || apiKey === '********') {
+      const { data: row, error } = await supabase
+        .from('integrations')
+        .select('value')
+        .eq('key', 'GROQ_API_KEY')
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      apiKey = await maybeDecryptStoredValue(row?.value);
+    }
+
+    if (!apiKey || apiKey === '********' || apiKey === 'DECRYPTION_FAILED') {
+      return { success: false, message: 'Groq API key is missing or could not be decrypted.' };
+    }
+
+    const response = await fetch('https://api.groq.com/openai/v1/models', {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+      },
+      cache: 'no-store',
+    });
+
+    const text = await response.text();
+    let payload: { error?: { message?: string } } | null = null;
+
+    try {
+      payload = JSON.parse(text) as { error?: { message?: string } };
+    } catch {
+      payload = null;
+    }
+
+    if (!response.ok) {
+      const providerMessage = payload?.error?.message?.trim();
+      throw new Error(providerMessage || `Groq request failed (${response.status}).`);
+    }
+
+    return {
+      success: true,
+      message: 'Groq API verified successfully.',
+    };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Groq test failed';
+    logger.error('[Integrations] Groq API test failed:', error);
+    return { success: false, message: `Groq connection failed: ${message}` };
+  }
+}

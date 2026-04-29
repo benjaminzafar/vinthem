@@ -1,13 +1,12 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/utils/supabase/client';
 import { Category, StorefrontSettingsType } from '@/types';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 import { 
-  X, Sparkles, Image as ImageIcon, Layout, Settings, 
-  Globe, Trash2, Wand2, Star, Check, Plus, Loader2,
-  ChevronRight, ArrowLeft, Save, Languages, Search,
+  Sparkles, Image as ImageIcon, Layout,
+  Wand2, Star, Loader2,
+  ChevronRight, ArrowLeft, Save, Languages,
   Layers, ChevronDown
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -27,28 +26,48 @@ interface CollectionEditorProps {
   settings: StorefrontSettingsType;
 }
 
+interface CollectionAIDraft {
+  name?: string;
+  slug?: string;
+  description?: string;
+}
+
+interface CollectionTranslationResult {
+  [lang: string]: {
+    name?: string;
+    description?: string;
+  };
+}
+
+type CollectionEditorTab = 'hierarchy' | 'translations' | 'engagement';
+
+function mapCollectionToForm(collection?: Category | null): Category {
+  return {
+    id: collection?.id,
+    name: collection?.name || '',
+    slug: collection?.slug || '',
+    description: collection?.description || '',
+    isFeatured: collection?.isFeatured ?? false,
+    showInHero: collection?.showInHero ?? false,
+    parentId: collection?.parentId || '',
+    imageUrl: collection?.imageUrl || '',
+    iconUrl: collection?.iconUrl || '',
+    translations: collection?.translations || {},
+  };
+}
+
 export function CollectionEditor({ initialCollection, categories: initialCategories = [], settings }: CollectionEditorProps) {
   const router = useRouter();
   const [loading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [bannerLoadFailed, setBannerLoadFailed] = useState(false);
   
-  const [formData, setFormData] = useState<Category>({
-    id: initialCollection?.id,
-    name: initialCollection?.name || '',
-    slug: initialCollection?.slug || '',
-    description: initialCollection?.description || '',
-    isFeatured: initialCollection?.isFeatured ?? false,
-    showInHero: initialCollection?.showInHero ?? false,
-    parentId: initialCollection?.parentId || '',
-    imageUrl: initialCollection?.imageUrl || '',
-    iconUrl: initialCollection?.iconUrl || '',
-    translations: initialCollection?.translations || {}
-  });
+  const [formData, setFormData] = useState<Category>(mapCollectionToForm(initialCollection));
 
   const [categories, setCategories] = useState<Category[]>(initialCategories);
-  const [activeTab, setActiveTab] = useState<'hierarchy' | 'translations' | 'engagement'>('hierarchy');
+  const [activeTab, setActiveTab] = useState<CollectionEditorTab>('hierarchy');
   const [selectedLang, setSelectedLang] = useState(settings.languages?.[0] || 'sv');
   const [aiChatInput, setAiChatInput] = useState('');
   const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
@@ -56,24 +75,25 @@ export function CollectionEditor({ initialCollection, categories: initialCategor
   // Sync form data when initialCollection prop changes (e.g. navigation)
   useEffect(() => {
     if (initialCollection && initialCollection.id !== formData.id) {
-      setFormData({
-        id: initialCollection.id,
-        name: initialCollection.name || '',
-        slug: initialCollection.slug || '',
-        description: initialCollection.description || '',
-        isFeatured: initialCollection.isFeatured ?? false,
-        showInHero: initialCollection.showInHero ?? false,
-        parentId: initialCollection.parentId || '',
-        imageUrl: initialCollection.imageUrl || '',
-        iconUrl: initialCollection.iconUrl || '',
-        translations: initialCollection.translations || {}
-      });
+      setFormData(mapCollectionToForm(initialCollection));
     }
   }, [initialCollection, formData.id]);
 
   useEffect(() => {
     setCategories(initialCategories);
   }, [initialCategories]);
+
+  const bannerPreviewUrl = useMemo(() => {
+    if (!formData.imageUrl?.trim()) {
+      return '';
+    }
+
+    return toMediaProxyUrl(formData.imageUrl);
+  }, [formData.imageUrl]);
+
+  useEffect(() => {
+    setBannerLoadFailed(false);
+  }, [bannerPreviewUrl]);
 
   // Auto-generate slug from name for new collections
   useEffect(() => {
@@ -94,7 +114,10 @@ export function CollectionEditor({ initialCollection, categories: initialCategor
     setGenerating(true);
     const toastId = toast.loading('AI is analyzing the collection banner...');
     try {
-      const response = await fetch(formData.imageUrl);
+      const response = await fetch(bannerPreviewUrl);
+      if (!response.ok) {
+        throw new Error('Collection banner could not be loaded for AI analysis.');
+      }
       const blob = await response.blob();
       const reader = new FileReader();
       const base64Promise = new Promise<string>((resolve) => {
@@ -113,7 +136,7 @@ export function CollectionEditor({ initialCollection, categories: initialCategor
         { inlineData: { data: base64Data, mimeType: blob.type } }
       ]);
 
-      const result = safeParseAiResponse(aiResponse.response.text(), {}) as any;
+      const result = safeParseAiResponse<CollectionAIDraft>(aiResponse.response.text(), {});
       setFormData(prev => ({
         ...prev,
         name: result.name || prev.name,
@@ -129,8 +152,7 @@ export function CollectionEditor({ initialCollection, categories: initialCategor
     }
   };
 
-  const handleAIChatAutoFill = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAIChatAutoFill = async () => {
     if (!aiChatInput.trim()) return;
 
     setGenerating(true);
@@ -152,7 +174,7 @@ export function CollectionEditor({ initialCollection, categories: initialCategor
       });
       
       const aiResponse = await model.generateContent(prompt);
-      const result = safeParseAiResponse(aiResponse.response.text(), {}) as any;
+      const result = safeParseAiResponse<CollectionAIDraft>(aiResponse.response.text(), {});
       
       setFormData(prev => ({
         ...prev,
@@ -171,8 +193,7 @@ export function CollectionEditor({ initialCollection, categories: initialCategor
     }
   };
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSave = async () => {
     if (saving || uploading) return;
     setSaving(true);
     const toastId = toast.loading('Saving collection...');
@@ -288,7 +309,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
         generationConfig: { responseMimeType: 'application/json' }
       });
       const aiResponse = await model.generateContent(prompt);
-      const result = safeParseAiResponse<Record<string, { name?: string; description?: string }>>(aiResponse.response.text(), {}) as any;
+      const result = safeParseAiResponse<CollectionTranslationResult>(aiResponse.response.text(), {});
 
       const newTranslations = { ...formData.translations };
       for (const lang of targetLangs) {
@@ -316,7 +337,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
         primaryAction={{
           label: saving ? 'Saving...' : 'Save Collection',
           icon: Save,
-          onClick: () => void handleSave({ preventDefault() {} } as React.FormEvent),
+          onClick: () => void handleSave(),
           disabled: saving || uploading,
         }}
         secondaryActions={[
@@ -329,32 +350,31 @@ Collection Description (Swedish): "${formData.description || ''}"`;
         statsLabel="Collection editor"
       />
 
-        {/* AI Smart Draft Card */}
-        <div className="bg-indigo-50/30 border border-indigo-100 rounded-[4px] p-4 sm:p-5 flex flex-col lg:flex-row items-start lg:items-center gap-4 sm:gap-5">
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center border border-indigo-100">
-               <Sparkles className="w-5 h-5 text-indigo-600 animate-pulse" />
-            </div>
-            <div className="flex flex-col">
-               <span className="text-[11px] font-bold text-indigo-900 uppercase tracking-widest">Collection Assistant</span>
-               <span className="text-[11px] text-indigo-400 font-bold uppercase tracking-widest">Generative Metadata</span>
-            </div>
+        <div className="bg-white border border-slate-200 rounded-[4px] p-5 sm:p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles className="w-4 h-4 text-indigo-600" />
+            <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-900">AI Collection Assistant</h3>
           </div>
-          <div className="flex-1 w-full flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             <input 
               type="text" 
-              placeholder="Describe the collection vibe (e.g. minimalist autumn clothing collection)..."
+              placeholder="Describe the collection mood, curation, or source text here..."
               value={aiChatInput}
               onChange={(e) => setAiChatInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleAIChatAutoFill(e)}
-              className="flex-1 h-12 bg-white border border-indigo-100 rounded-[4px] px-5 text-sm font-medium focus:outline-none focus:border-indigo-400 transition-all placeholder:text-indigo-200"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  void handleAIChatAutoFill();
+                }
+              }}
+              className="w-full sm:flex-1 h-11 bg-white border border-slate-200 rounded-[4px] px-4 text-sm font-medium focus:outline-none focus:border-indigo-500 transition-all"
             />
             <button 
-              onClick={handleAIChatAutoFill}
+              onClick={() => void handleAIChatAutoFill()}
               disabled={generating || !aiChatInput.trim()}
-              className="h-12 bg-indigo-600 text-white px-5 rounded-[4px] text-[12px] font-medium hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shrink-0"
+              className="h-11 px-5 bg-indigo-600 text-white rounded-[4px] text-[12px] font-medium hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shrink-0"
             >
-              {generating ? 'Drafting...' : 'AI Draft'}
+              {generating ? 'Processing...' : 'Auto-Draft'}
               {!generating && <Wand2 className="w-4 h-4" />}
             </button>
           </div>
@@ -400,7 +420,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                       value={formData.parentId}
                       onChange={(e) => setFormData({...formData, parentId: e.target.value})}
                       disabled={loading || categories.length === 0}
-                      className="w-full h-12 bg-white border border-slate-200 rounded-[4px] px-4 text-sm font-medium appearance-none outline-none focus:border-slate-900 disabled:opacity-50"
+                      className="w-full h-12 bg-white border border-slate-200 rounded-[4px] px-4 pr-10 text-sm font-medium appearance-none outline-none focus:border-slate-900 disabled:opacity-50"
                     >
                       <option value="">{categories.length === 0 ? 'Loading collections...' : 'No Parent (Main Navigation Root)'}</option>
                       {categories.filter(c => c.id !== formData.id && !descendantIds.has(c.id || '')).map(c => (
@@ -428,7 +448,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
 
             {/* Hierarchy & Localisation Section */}
             <section className="bg-white border border-slate-200 rounded-[4px]">
-              <div className="flex border-b border-slate-200 bg-slate-50">
+              <div className="flex flex-wrap border-b border-slate-200 bg-slate-50">
                 {[
                   { id: 'hierarchy', label: 'Organization' },
                   { id: 'translations', label: 'Localisation' },
@@ -436,9 +456,9 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                 ].map((tab) => (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id as any)}
-                    className={`px-4 sm:px-6 py-4 text-[11px] font-semibold uppercase tracking-[0.16em] border-r border-slate-200 transition-all ${
-                      activeTab === tab.id ? 'bg-white text-slate-900' : 'text-slate-500 hover:text-slate-600'
+                    onClick={() => setActiveTab(tab.id as CollectionEditorTab)}
+                    className={`px-4 sm:px-6 py-4 text-[11px] font-semibold uppercase tracking-[0.16em] border-r border-b border-slate-200 transition-all ${
+                      activeTab === tab.id ? 'bg-white text-slate-900' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'
                     }`}
                   >
                     {tab.label}
@@ -477,13 +497,13 @@ Collection Description (Swedish): "${formData.description || ''}"`;
 
                 {activeTab === 'translations' && (
                   <div className="space-y-8 animate-in fade-in duration-300">
-                    <div className="flex items-center justify-between">
-                      <div className="flex gap-4 border-b border-slate-100 pb-2">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                      <div className="flex flex-wrap gap-2 rounded bg-slate-50 p-1 w-fit">
                        {languages.map(lang => (
                          <button 
                            key={lang}
                            onClick={() => setSelectedLang(lang)}
-                           className={`text-[11px] font-semibold uppercase tracking-[0.16em] transition-all ${selectedLang === lang ? 'text-slate-900 underline underline-offset-4' : 'text-slate-500 hover:text-slate-600'}`}
+                           className={`min-w-[52px] rounded-[2px] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] transition-all ${selectedLang === lang ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-white hover:text-slate-700'}`}
                          >
                            {lang}
                          </button>
@@ -492,7 +512,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                       <button
                         onClick={handleAITranslateCollection}
                         disabled={generating || !formData.name?.trim()}
-                        className="flex items-center gap-1.5 px-4 h-9 text-[12px] font-medium bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-all disabled:opacity-50"
+                        className="flex h-10 items-center justify-center gap-1.5 px-4 text-[12px] font-medium bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-all disabled:opacity-50 w-full lg:w-auto"
                       >
                         {generating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Languages className="w-3 h-3" />}
                         AI Translate All
@@ -500,7 +520,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                     </div>
                     <div className="grid grid-cols-1 gap-6">
                       <div className="space-y-3">
-                        <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-[0.16em]">Local Title ({selectedLang})</label>
+                        <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-[0.16em]">Translated Title ({selectedLang})</label>
                         <input 
                           type="text" 
                           value={formData.translations?.[selectedLang]?.name || ''}
@@ -514,11 +534,11 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                               } 
                             }
                           })}
-                          className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm"
+                          className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm focus:outline-none focus:border-slate-900 transition-all"
                         />
                       </div>
                       <div className="space-y-3">
-                        <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-[0.16em]">Local Description ({selectedLang})</label>
+                        <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-[0.16em]">Translated Description ({selectedLang})</label>
                         <textarea 
                           rows={4}
                           value={formData.translations?.[selectedLang]?.description || ''}
@@ -532,7 +552,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                               } 
                             }
                           })}
-                          className="w-full border border-slate-200 rounded-[4px] p-4 text-sm resize-none"
+                          className="w-full border border-slate-200 rounded-[4px] p-4 text-sm resize-none focus:outline-none focus:border-slate-900 transition-all"
                         />
                       </div>
                     </div>
@@ -540,7 +560,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                 )}
 
                 {activeTab === 'engagement' && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in duration-300">
+                  <div className="grid grid-cols-1 gap-4 animate-in fade-in duration-300">
                     <button 
                       onClick={() => setFormData({...formData, isFeatured: !formData.isFeatured})}
                       className={`h-12 px-5 border rounded-[4px] flex items-center justify-between transition-all ${formData.isFeatured ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-900'}`}
@@ -570,40 +590,32 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                 <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Collection Banner</h3>
                 <button 
                   onClick={handleAIAutoCompleteCollection}
-                  disabled={generating || !formData.imageUrl}
-                  className="px-3 h-8 bg-indigo-50 text-indigo-700 rounded-full text-[11px] font-medium hover:bg-indigo-600 hover:text-white transition-all disabled:opacity-50"
+                  disabled={generating || !bannerPreviewUrl}
+                  className="px-3 h-8 bg-indigo-50 text-indigo-700 rounded-md text-[11px] font-medium hover:bg-indigo-600 hover:text-white transition-all disabled:opacity-50"
                 >
                   Analyze Image
                 </button>
               </div>
               <div className="p-6">
-                  <label className="group relative mb-4 h-64 cursor-pointer overflow-hidden rounded-[4px] border-2 border-dashed border-slate-200 bg-slate-50 transition-all hover:border-slate-900 flex items-center justify-center">
-                    {isValidUrl(formData.imageUrl) ? (
+                  <label className="group relative mb-4 aspect-[4/3] min-h-[220px] cursor-pointer overflow-hidden rounded-[4px] border-2 border-dashed border-slate-200 bg-slate-50 transition-all hover:border-slate-900 flex items-center justify-center">
+                    {isValidUrl(bannerPreviewUrl) && !bannerLoadFailed ? (
                       <Image 
-                        src={toMediaProxyUrl(formData.imageUrl)} 
-                        alt="" 
+                        src={bannerPreviewUrl} 
+                        alt="Collection banner preview"
                         fill 
-                        sizes="(max-width: 768px) 100vw, 800px" 
+                        sizes="(max-width: 768px) 100vw, 360px" 
                         className="object-cover" 
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                          const parent = target.parentElement;
-                          if (parent && !parent.querySelector('.broken-indicator')) {
-                            const diag = document.createElement('div');
-                            diag.className = 'broken-indicator absolute inset-0 flex flex-col items-center justify-center p-4 text-center bg-slate-50 border-2 border-dashed border-slate-200 pointer-events-none';
-                            diag.innerHTML = `
-                              <svg class="w-6 h-6 text-slate-300 mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/><path d="m9 10 2 2 4-4"/><path d="M12 18v-4"/><path d="M12 8h.01"/></svg>
-                              <p style="font-size: 8px; font-weight: 900; color: #64748b; text-transform: uppercase;">Banner Private or Broken</p>
-                            `;
-                            parent.appendChild(diag);
-                          }
-                        }}
+                        onError={() => setBannerLoadFailed(true)}
                       />
                     ) : (
                       <div className="text-center p-6">
                          <ImageIcon className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                         <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500 text-center">Standard Aspect 16:9 for Best Results</p>
+                         <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500 text-center">
+                           {bannerLoadFailed ? 'Banner image is private or broken' : 'Standard Aspect 16:9 for Best Results'}
+                         </p>
+                         {bannerLoadFailed && formData.imageUrl ? (
+                           <p className="mt-2 text-[11px] text-slate-400 break-all">{formData.imageUrl}</p>
+                         ) : null}
                       </div>
                     )}
                     <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
@@ -611,21 +623,53 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                        <span className="text-[11px] font-bold uppercase tracking-widest text-white border-white border px-4 py-2">Change Image</span>
                     </div>
                   </label>
-                 <div className="flex gap-2">
+                 <div className="flex flex-col sm:flex-row gap-2">
                     <input 
                       type="text" 
-                      placeholder="Or paste banner URL..."
+                      placeholder="Paste banner URL or storage key..."
                       value={formData.imageUrl}
                       onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
-                      className="flex-1 h-10 border border-slate-200 rounded-[4px] px-3 text-xs"
+                      className="flex-1 h-10 border border-slate-200 rounded-[4px] px-3 text-[12px] focus:outline-none focus:border-slate-900 transition-all"
                     />
                     <button 
                       onClick={() => setIsMediaPickerOpen(true)}
-                      className="h-10 px-4 bg-slate-50 border border-slate-200 rounded-md text-[12px] font-medium"
+                      className="h-10 px-4 bg-slate-50 border border-slate-200 rounded-md text-[12px] font-medium hover:border-slate-900 transition-all"
                     >
                       Library
                     </button>
                  </div>
+              </div>
+            </section>
+
+            <section className="bg-white border border-slate-200 rounded-[4px] overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
+                <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-900">Optimization</h3>
+              </div>
+              <div className="p-6 space-y-6">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="space-y-0.5">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-900">Featured Collection</p>
+                    <p className="text-[11px] text-slate-500">Show this collection in high-visibility merchandising zones.</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={formData.isFeatured}
+                    onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
+                    className="w-4 h-4 rounded-sm border-slate-300 transition-all"
+                  />
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <div className="space-y-0.5">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-900">Hero Placement</p>
+                    <p className="text-[11px] text-slate-500">Allow this collection to appear inside storefront hero surfaces.</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={Boolean(formData.showInHero)}
+                    onChange={(e) => setFormData({ ...formData, showInHero: e.target.checked })}
+                    className="w-4 h-4 rounded-sm border-slate-300 transition-all"
+                  />
+                </div>
               </div>
             </section>
 

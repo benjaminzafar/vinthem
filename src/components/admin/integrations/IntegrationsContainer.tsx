@@ -15,6 +15,7 @@ import { SUPPORTED_LOCALES } from '@/lib/locales';
 import { AI_PROMPT_DEFINITIONS, AI_PROMPT_INTEGRATION_KEYS } from '@/lib/ai-prompts';
 import { 
   saveIntegrationAction, 
+  testGroqConnectionAction,
   testStripeConnectionAction, 
   testBrevoApiAction 
 } from '@/app/actions/integrations';
@@ -98,6 +99,13 @@ export function IntegrationsContainer({
   const handleTestStripe = async () => {
     const toastId = toast.loading('Establishing secure connection to Stripe...');
     const result = await testStripeConnectionAction(config['STRIPE_SECRET_KEY']);
+    if (result.success) toast.success(result.message, { id: toastId });
+    else toast.error(result.message, { id: toastId });
+  };
+
+  const handleTestGroq = async () => {
+    const toastId = toast.loading('Verifying Groq API connection...');
+    const result = await testGroqConnectionAction(config['GROQ_API_KEY']);
     if (result.success) toast.success(result.message, { id: toastId });
     else toast.error(result.message, { id: toastId });
   };
@@ -226,6 +234,9 @@ export function IntegrationsContainer({
                         description={field.description}
                       />
                     ))}
+                    <button onClick={handleTestGroq} className="text-[11px] font-bold text-zinc-600 hover:text-zinc-900 flex items-center gap-1 mt-2 transition-colors focus:outline-none">
+                       <ShieldCheck className="w-3.5 h-3.5" /> Verify Groq Connection
+                    </button>
                   </IntegrationCard>
                )}
                {id === 'Instagram' && (

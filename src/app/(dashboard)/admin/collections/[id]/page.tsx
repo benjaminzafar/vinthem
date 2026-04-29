@@ -1,10 +1,43 @@
 import { createClient } from '@/utils/supabase/server';
 import { notFound } from 'next/navigation';
 import { CollectionEditor } from '@/components/admin/CollectionEditor';
-import type { StorefrontSettingsType } from '@/types';
+import type { Category, StorefrontSettingsType } from '@/types';
 
 interface PageProps {
   params: Promise<{ id: string }>;
+}
+
+type RawCategoryRecord = {
+  id?: string;
+  name?: string;
+  slug?: string;
+  description?: string | null;
+  translations?: Category['translations'];
+  is_featured?: boolean | null;
+  isFeatured?: boolean | null;
+  show_in_hero?: boolean | null;
+  showInHero?: boolean | null;
+  parent_id?: string | null;
+  parentId?: string | null;
+  image_url?: string | null;
+  imageUrl?: string | null;
+  icon_url?: string | null;
+  iconUrl?: string | null;
+};
+
+function mapCategoryRecord(category: RawCategoryRecord): Category {
+  return {
+    id: category.id,
+    name: category.name || '',
+    slug: category.slug || '',
+    description: category.description || '',
+    translations: category.translations || {},
+    isFeatured: category.is_featured ?? category.isFeatured ?? false,
+    showInHero: category.show_in_hero ?? category.showInHero ?? false,
+    parentId: category.parent_id ?? category.parentId ?? '',
+    imageUrl: category.image_url ?? category.imageUrl ?? '',
+    iconUrl: category.icon_url ?? category.iconUrl ?? '',
+  };
 }
 
 export default async function EditCollectionPage({ params }: PageProps) {
@@ -23,20 +56,8 @@ export default async function EditCollectionPage({ params }: PageProps) {
     notFound();
   }
 
-  const categories = categoriesRes.data || [];
+  const categories = (categoriesRes.data || []).map((entry) => mapCategoryRecord(entry as RawCategoryRecord));
   const settings = (settingsRes.data?.data || { languages: ['sv', 'en'] }) as StorefrontSettingsType;
 
-  // Map database fields to Category type
-  const mappedCategory = {
-    ...category,
-    isFeatured: category.is_featured,
-    showInHero: category.show_in_hero,
-    pinnedInSearch: category.pinned_in_search,
-    parentId: category.parent_id,
-    imageUrl: category.image_url,
-    iconUrl: category.icon_url,
-    translations: category.translations || {}
-  };
-
-  return <CollectionEditor initialCollection={mappedCategory} categories={categories as any} settings={settings} />;
+  return <CollectionEditor initialCollection={mapCategoryRecord(category as RawCategoryRecord)} categories={categories} settings={settings} />;
 }
