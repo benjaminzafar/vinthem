@@ -23,6 +23,11 @@ interface AuthClientProps {
   };
 }
 
+type RuntimeSupabaseConfigResponse = {
+  url?: string;
+  anonKey?: string;
+};
+
 export function AuthClient({ initialSettings, supabaseConfig }: AuthClientProps) {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
@@ -50,6 +55,54 @@ export function AuthClient({ initialSettings, supabaseConfig }: AuthClientProps)
 
     return createClient(authClientConfig.url, authClientConfig.anonKey);
   }, [authClientConfig.anonKey, authClientConfig.url, isSupabaseConfigReady]);
+
+  const resolveRuntimeSupabaseConfig = async (): Promise<RuntimeSupabaseConfigResponse | null> => {
+    const g = globalThis as typeof globalThis & {
+      __supabase_url?: string;
+      __supabase_key?: string;
+    };
+
+    if (g.__supabase_url && g.__supabase_key) {
+      return {
+        url: g.__supabase_url,
+        anonKey: g.__supabase_key,
+      };
+    }
+
+    try {
+      const response = await fetch('/api/supabase-config', {
+        cache: 'no-store',
+        credentials: 'same-origin',
+      });
+
+      if (!response.ok) {
+        return null;
+      }
+
+      const config = await response.json() as RuntimeSupabaseConfigResponse;
+      if (config.url && config.anonKey) {
+        setAuthClientConfig({ url: config.url, anonKey: config.anonKey });
+        return config;
+      }
+    } catch {
+      return null;
+    }
+
+    return null;
+  };
+
+  const ensureSupabaseClient = async (): Promise<SupabaseClient | null> => {
+    if (supabase) {
+      return supabase;
+    }
+
+    const runtimeConfig = await resolveRuntimeSupabaseConfig();
+    if (!runtimeConfig?.url || !runtimeConfig.anonKey) {
+      return null;
+    }
+
+    return createClient(runtimeConfig.url, runtimeConfig.anonKey);
+  };
 
   useEffect(() => {
     if (supabaseConfig.url && supabaseConfig.anonKey) {
@@ -136,26 +189,23 @@ export function AuthClient({ initialSettings, supabaseConfig }: AuthClientProps)
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     if (loading) return;
-    if (!isSupabaseConfigReady) {
-      toast.error('Authentication is still loading. Please wait a moment and try again.');
-      return;
-    }
-    if (!supabase) {
-      toast.error('Authentication client is not ready yet. Please try again.');
-      return;
-    }
     setLoading(true);
 
     try {
+      const authClient = await ensureSupabaseClient();
+      if (!authClient) {
+        throw new Error('Authentication is still loading. Please try again in a moment.');
+      }
+
       if (isLogin) {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await authClient.auth.signInWithPassword({ email, password });
         if (error) throw error;
 
         if (!data.session) {
           throw new Error('Login did not create a valid session. Please try again.');
         }
 
-        await supabase.auth.getUser();
+        await authClient.auth.getUser();
       } else {
         if (!acceptedTerms || !acceptedPrivacy) {
           throw new Error('Please accept the Terms and Privacy Policy.');
@@ -166,7 +216,7 @@ export function AuthClient({ initialSettings, supabaseConfig }: AuthClientProps)
           throw new Error(settings.userAlreadyExistsErrorText?.[lang] || 'Account already exists.');
         }
 
-        const { data, error } = await supabase.auth.signUp({ 
+        const { data, error } = await authClient.auth.signUp({ 
           email, 
           password,
           options: {
@@ -193,16 +243,17 @@ export function AuthClient({ initialSettings, supabaseConfig }: AuthClientProps)
       toast.success(isLogin ? settings.loginSuccessText?.[lang] : settings.accountCreatedSuccessText?.[lang]);
       window.location.assign(resolvePostAuthRedirect(redirectTarget));
       
-    } catch (error: any) {
-      if (error.message?.toLowerCase().includes('email not confirmed')) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Auth failed';
+      if (errorMessage.toLowerCase().includes('email not confirmed')) {
         setShowOTP(true);
         setOtpType('signup');
       } else {
-        let errorMessage = error.message || 'Auth failed';
-        if (errorMessage.toLowerCase().includes('invalid login credentials')) {
-          errorMessage = settings.invalidLoginErrorText?.[lang] || 'Invalid email or password.';
+        let localizedErrorMessage = errorMessage;
+        if (localizedErrorMessage.toLowerCase().includes('invalid login credentials')) {
+          localizedErrorMessage = settings.invalidLoginErrorText?.[lang] || 'Invalid email or password.';
         }
-        toast.error(errorMessage);
+        toast.error(localizedErrorMessage);
       }
       setLoading(false);
     }
@@ -211,54 +262,47 @@ export function AuthClient({ initialSettings, supabaseConfig }: AuthClientProps)
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (loading) return;
-    if (!isSupabaseConfigReady) {
-      toast.error('Authentication is still loading. Please wait a moment and try again.');
-      return;
-    }
-    if (!supabase) {
-      toast.error('Authentication client is not ready yet. Please try again.');
-      return;
-    }
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      const authClient = await ensureSupabaseClient();
+      if (!authClient) {
+        throw new Error('Authentication is still loading. Please try again in a moment.');
+      }
+
+      const { error } = await authClient.auth.resetPasswordForEmail(email);
       if (error) throw error;
       toast.success(settings.resetPasswordSentSuccessText?.[lang] || 'Code sent!');
       setOtpType('recovery');
       setShowOTP(true);
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to send reset link');
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Failed to send reset link');
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
-    if (!isSupabaseConfigReady) {
-      toast.error('Authentication is still loading. Please wait a moment and try again.');
-      return;
-    }
-    if (!supabase) {
-      toast.error('Authentication client is not ready yet. Please try again.');
-      return;
-    }
-
     if (!settings.googleAuthEnabled) {
       toast.error(settings.googleLoginUnavailableText?.[lang] || 'Google login disabled.');
       return;
     }
     
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const authClient = await ensureSupabaseClient();
+      if (!authClient) {
+        throw new Error('Authentication is still loading. Please try again in a moment.');
+      }
+
+      const { error } = await authClient.auth.signInWithOAuth({
         provider: 'google',
         options: { 
           redirectTo: `${window.location.origin}/auth/callback` 
         },
       });
       if (error) throw error;
-    } catch (error: any) {
-      toast.error(error.message || 'Google login failed');
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Google login failed');
     }
   };
 
