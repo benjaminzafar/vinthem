@@ -55,11 +55,16 @@ export async function getR2Credentials(): Promise<R2Credentials> {
     publicUrl: (await maybeDecryptStoredValue(findValue('R2_PUBLIC_URL') || '')).trim().replace(/\/$/, ''),
   };
 
-  if (!credentials.accountId || credentials.accountId === 'DECRYPTION_FAILED') {
-    throw new Error('[R2_CONFIG] Cloudflare R2 Account ID is missing or decryption failed. Please re-enter credentials in Integrations.');
+  if (credentials.accountId === 'DECRYPTION_FAILED' || credentials.bucketName === 'DECRYPTION_FAILED') {
+    throw new Error('[R2_CONFIG] Decryption failed for Cloudflare R2 credentials. This usually means the ENCRYPTION_SECRET in your production environment does not match the one used to save these settings. Please re-enter and save the credentials in the Integrations panel.');
   }
-  if (!credentials.bucketName || credentials.bucketName === 'DECRYPTION_FAILED') {
-    throw new Error('[R2_CONFIG] Cloudflare R2 Bucket Name is missing or decryption failed. Please re-enter credentials in Integrations.');
+
+  if (!credentials.accountId) {
+    throw new Error('[R2_CONFIG] Cloudflare R2 Account ID is missing. Please enter it in the Integrations panel.');
+  }
+
+  if (!credentials.bucketName) {
+    throw new Error('[R2_CONFIG] Cloudflare R2 Bucket Name is missing. Please enter it in the Integrations panel.');
   }
 
   return credentials;

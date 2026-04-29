@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getBearerUserWithRole } from '@/lib/admin';
 import { logger } from '@/lib/logger';
 import { toMediaProxyUrl } from '@/lib/media';
-import { getS3Client } from '@/lib/s3';
+import { getR2Credentials, getS3Client } from '@/lib/s3';
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 function normalizeUploadPath(path: string) {
   const trimmedPath = path.trim().replace(/^\/+/, '').replace(/\\/g, '/');
@@ -13,6 +13,20 @@ function normalizeUploadPath(path: string) {
   }
 
   return trimmedPath.replace(/[^\x00-\x7F]/g, '').replace(/\s+/g, '_');
+}
+
+function buildPublicAssetUrl(
+  accountId: string,
+  bucketName: string,
+  publicUrl: string,
+  key: string
+) {
+  const encodedKey = key.split('/').map((segment) => encodeURIComponent(segment)).join('/');
+  if (publicUrl) {
+    return `${publicUrl.replace(/\/$/, '')}/${encodedKey}`;
+  }
+
+  return `https://${accountId}.r2.cloudflarestorage.com/${bucketName}/${encodedKey}`;
 }
 
 export async function POST(req: NextRequest) {
@@ -48,8 +62,15 @@ export async function POST(req: NextRequest) {
 
     const s3Client = await getS3Client();
     await s3Client.upload(sanitizedPath, arrayBuffer, file.type || 'application/octet-stream');
+    const credentials = await getR2Credentials();
+    const publicAssetUrl = buildPublicAssetUrl(
+      credentials.accountId,
+      credentials.bucketName,
+      credentials.publicUrl,
+      sanitizedPath
+    );
 
-    return NextResponse.json({ url: toMediaProxyUrl(`https://cdn.vinthem.com/${sanitizedPath}`) });
+    return NextResponse.json({ url: toMediaProxyUrl(publicAssetUrl) });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Upload failed';
     logger.error('Upload Error:', message);

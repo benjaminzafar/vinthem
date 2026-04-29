@@ -4,7 +4,7 @@ import { logger } from '@/lib/logger';
 import { extractMediaKey, toMediaProxyUrl } from '@/lib/media';
 import { getS3Client, getR2Credentials, type R2Credentials } from '@/lib/s3';
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 async function requireAdminMediaAccess(req: NextRequest) {
   const authorizationHeader = req.headers.get('authorization');

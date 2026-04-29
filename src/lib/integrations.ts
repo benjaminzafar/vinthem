@@ -28,11 +28,15 @@ export async function maybeDecryptStoredValue(value: string | null | undefined):
     if (!decrypted) return '';
     return decrypted.trim();
   } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      logger.warn('DECRYPTION_FAILURE: Falling back to empty string to prevent URL crashes.', { value: value.slice(0, 10) + '...' });
+    if (error instanceof Error && error.message === 'DECRYPTION_FAILED') {
+      if (process.env.NODE_ENV === 'development') {
+        logger.warn('DECRYPTION_FAILURE: Falling back to empty string to prevent URL crashes.', { value: value.slice(0, 10) + '...' });
+      }
+      return 'DECRYPTION_FAILED';
     }
-    // Return a safe string that our S3 client validation will catch
-    return 'DECRYPTION_FAILED';
+    
+    // Re-throw critical errors (like missing ENCRYPTION_SECRET)
+    throw error;
   }
 }
 

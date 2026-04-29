@@ -3,7 +3,7 @@ import { requireAdminBearerUser, requireAdminUser } from '@/lib/admin';
 import { toMediaProxyUrl } from '@/lib/media';
 import { getR2Credentials, getS3Client } from '@/lib/s3';
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 async function requireAdminPresignedAccess(req: NextRequest) {
   const authorizationHeader = req.headers.get('authorization');

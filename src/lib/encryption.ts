@@ -1,10 +1,10 @@
 import { getEnv } from './env';
-import crypto from 'crypto';
 
-/**
- * AES-256-GCM encryption using Node.js crypto module.
- * Optimized for reliability in Node environments.
- */
+const AES_IV_LENGTH = 12;
+const AUTH_TAG_LENGTH = 16;
+const HEX_SECRET_LENGTH = 64;
+const textEncoder = new TextEncoder();
+const textDecoder = new TextDecoder();
 
 function getEncryptionSecret(): string {
   const secret = getEnv('ENCRYPTION_SECRET');
@@ -13,29 +13,66 @@ function getEncryptionSecret(): string {
       'CRITICAL SECURITY FATAL: ENCRYPTION_SECRET is missing. Stopping operation.'
     );
   }
+
   return secret;
 }
 
-function deriveKey(secret: string): Buffer {
-  // If the secret is 64 chars of hex, it represents a 32-byte key
-  if (secret.length === 64 && /^[a-f0-9]+$/i.test(secret)) {
-    return Buffer.from(secret, 'hex');
+function bytesToHex(bytes: Uint8Array): string {
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
+function hexToBytes(hex: string): Uint8Array {
+  if (hex.length % 2 !== 0) {
+    throw new Error('Invalid hex string');
   }
-  // Otherwise, hash the secret to get a 32-byte key
-  return crypto.createHash('sha256').update(secret).digest();
+
+  const bytes = new Uint8Array(hex.length / 2);
+  for (let index = 0; index < hex.length; index += 2) {
+    bytes[index / 2] = Number.parseInt(hex.slice(index, index + 2), 16);
+  }
+
+  return bytes;
+}
+
+async function deriveRawKey(secret: string): Promise<Uint8Array> {
+  if (secret.length === HEX_SECRET_LENGTH && /^[a-f0-9]+$/i.test(secret)) {
+    return hexToBytes(secret);
+  }
+
+  const digest = await crypto.subtle.digest('SHA-256', textEncoder.encode(secret));
+  return new Uint8Array(digest);
+}
+
+function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+  return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
+}
+
+async function importAesKey(secret: string, usages: KeyUsage[]): Promise<CryptoKey> {
+  const rawKey = await deriveRawKey(secret);
+  return crypto.subtle.importKey(
+    'raw',
+    toArrayBuffer(rawKey),
+    { name: 'AES-GCM' },
+    false,
+    usages
+  );
 }
 
 export async function encrypt(text: string): Promise<string> {
-  const key = deriveKey(getEncryptionSecret());
-  const iv = crypto.randomBytes(12);
-  
-  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
-  let encrypted = cipher.update(text, 'utf8', 'hex');
-  encrypted += cipher.final('hex');
-  
-  const authTag = cipher.getAuthTag().toString('hex');
-  
-  return `${iv.toString('hex')}:${authTag}:${encrypted}`;
+  const key = await importAesKey(getEncryptionSecret(), ['encrypt']);
+  const iv = crypto.getRandomValues(new Uint8Array(AES_IV_LENGTH));
+  const encryptedBuffer = await crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv: toArrayBuffer(iv), tagLength: AUTH_TAG_LENGTH * 8 },
+    key,
+    toArrayBuffer(textEncoder.encode(text))
+  );
+
+  const encryptedBytes = new Uint8Array(encryptedBuffer);
+  const authTagStart = encryptedBytes.length - AUTH_TAG_LENGTH;
+  const cipherBytes = encryptedBytes.slice(0, authTagStart);
+  const authTag = encryptedBytes.slice(authTagStart);
+
+  return `${bytesToHex(iv)}:${bytesToHex(authTag)}:${bytesToHex(cipherBytes)}`;
 }
 
 export async function decrypt(encryptedData: string): Promise<string> {
@@ -44,21 +81,25 @@ export async function decrypt(encryptedData: string): Promise<string> {
     return encryptedData;
   }
 
-  try {
-    const key = deriveKey(getEncryptionSecret());
-    const iv = Buffer.from(parts[0], 'hex');
-    const authTag = Buffer.from(parts[1], 'hex');
-    const encryptedText = Buffer.from(parts[2], 'hex');
+  const [ivHex, authTagHex, encryptedHex] = parts;
 
-    const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
-    decipher.setAuthTag(authTag);
-    
-    let decrypted = decipher.update(encryptedText, undefined, 'utf8');
-    decrypted += decipher.final('utf8');
-    
-    return decrypted;
-  } catch (e) {
-    // If decryption fails, we throw an error that the integration layer will catch
+  try {
+    const key = await importAesKey(getEncryptionSecret(), ['decrypt']);
+    const iv = hexToBytes(ivHex);
+    const authTag = hexToBytes(authTagHex);
+    const encryptedBytes = hexToBytes(encryptedHex);
+    const combined = new Uint8Array(encryptedBytes.length + authTag.length);
+    combined.set(encryptedBytes);
+    combined.set(authTag, encryptedBytes.length);
+
+    const decryptedBuffer = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv: toArrayBuffer(iv), tagLength: AUTH_TAG_LENGTH * 8 },
+      key,
+      toArrayBuffer(combined)
+    );
+
+    return textDecoder.decode(decryptedBuffer);
+  } catch {
     throw new Error('DECRYPTION_FAILED');
   }
 }
