@@ -41,7 +41,6 @@ const CONNECTED_SERVICE_KEYS = [
   'UPS_API_KEY_CONNECTED',
   'STRIPE_SECRET_KEY_CONNECTED',
   'BREVO_API_KEY_CONNECTED',
-  'R2_ACCESS_KEY_ID_CONNECTED',
   'GOOGLE_MERCHANT_ID_CONNECTED',
 ] as const;
 
@@ -115,7 +114,7 @@ export function IntegrationsContainer({
       case 'ai': return ['Groq'];
       case 'marketing': return ['Clarity', 'Instagram', 'TikTok', 'Reddit', 'Facebook'];
       case 'shipping': return ['PostNord', 'DHL', 'Bring', 'DBSchenker', 'UPS'];
-      case 'system': return ['Stripe', 'BrevoAPI', 'R2', 'GoogleShopping'];
+      case 'system': return ['Stripe', 'BrevoAPI', 'GoogleShopping'];
       default: return [];
     }
   };
@@ -410,23 +409,6 @@ export function IntegrationsContainer({
                      <button onClick={handleTestBrevo} className="text-[11px] font-bold text-zinc-600 hover:text-zinc-900 flex items-center gap-1 mt-2 transition-colors focus:outline-none">
                         <Activity className="w-3.5 h-3.5" /> Verify API Connection
                      </button>
-                  </IntegrationCard>
-               )}
-               {id === 'R2' && (
-                 <IntegrationCard
-                    id="R2"
-                    title="Cloudflare R2 Storage"
-                    logo={<div className="bg-white w-full h-full flex items-center justify-center font-bold text-orange-500 leading-none text-[10px]">R2</div>}
-                    isConnected={config['R2_SECRET_ACCESS_KEY_CONNECTED'] === 'true'}
-                    isSaving={savingId === 'R2'}
-                    onSave={() => handleSave('R2', ['R2_ACCOUNT_ID', 'R2_ACCESS_KEY_ID', 'R2_SECRET_ACCESS_KEY', 'R2_BUCKET_NAME', 'R2_PUBLIC_URL'])}
-                    tutorial={<p>Credentials can be found in your Cloudflare dashboard under R2 &rarr; Manage R2 API Tokens.</p>}
-                  >
-                    <CredentialInput label="Account ID" value={config['R2_ACCOUNT_ID']} onChange={v => handleUpdate('R2_ACCOUNT_ID', v)} />
-                    <CredentialInput label="Access Key ID" value={config['R2_ACCESS_KEY_ID']} onChange={v => handleUpdate('R2_ACCESS_KEY_ID', v)} />
-                    <CredentialInput label="Secret Access Key" value={config['R2_SECRET_ACCESS_KEY']} onChange={v => handleUpdate('R2_SECRET_ACCESS_KEY', v)} type="password" />
-                    <CredentialInput label="Bucket Name" value={config['R2_BUCKET_NAME']} onChange={v => handleUpdate('R2_BUCKET_NAME', v)} placeholder="e.g. my-shop-assets" />
-                    <CredentialInput label="Public URL (Custom Domain or R2.dev)" value={config['R2_PUBLIC_URL']} onChange={v => handleUpdate('R2_PUBLIC_URL', v)} placeholder="https://pub-xyz.r2.dev" />
                   </IntegrationCard>
                )}
                {id === 'GoogleShopping' && (

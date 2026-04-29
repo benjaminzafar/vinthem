@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getBearerUserWithRole } from '@/lib/admin';
 import { logger } from '@/lib/logger';
-import { getR2Credentials, getS3Client, hasMediaBucketBinding, toMediaProxyKeyUrl } from '@/lib/s3';
+import { getS3Client, hasMediaBucketBinding, toMediaProxyKeyUrl } from '@/lib/s3';
 
 export const runtime = 'edge';
 
@@ -12,20 +12,6 @@ function normalizeUploadPath(path: string) {
   }
 
   return trimmedPath.replace(/[^\x00-\x7F]/g, '').replace(/\s+/g, '_');
-}
-
-function buildPublicAssetUrl(
-  accountId: string,
-  bucketName: string,
-  publicUrl: string,
-  key: string
-) {
-  const encodedKey = key.split('/').map((segment) => encodeURIComponent(segment)).join('/');
-  if (publicUrl) {
-    return `${publicUrl.replace(/\/$/, '')}/${encodedKey}`;
-  }
-
-  return `https://${accountId}.r2.cloudflarestorage.com/${bucketName}/${encodedKey}`;
 }
 
 export async function POST(req: NextRequest) {
@@ -58,23 +44,15 @@ export async function POST(req: NextRequest) {
     }
 
     const arrayBuffer = await file.arrayBuffer();
+    const usesBinding = await hasMediaBucketBinding();
+    if (!usesBinding) {
+      return NextResponse.json({ error: 'MEDIA_BUCKET binding is not configured for this deployment.' }, { status: 500 });
+    }
 
     const s3Client = await getS3Client();
     await s3Client.upload(sanitizedPath, arrayBuffer, file.type || 'application/octet-stream');
-    const usesBinding = hasMediaBucketBinding();
-    let publicAssetUrl = toMediaProxyKeyUrl(sanitizedPath);
 
-    if (!usesBinding) {
-      const credentials = await getR2Credentials();
-      publicAssetUrl = buildPublicAssetUrl(
-        credentials.accountId,
-        credentials.bucketName,
-        credentials.publicUrl,
-        sanitizedPath
-      );
-    }
-
-    return NextResponse.json({ url: publicAssetUrl });
+    return NextResponse.json({ url: toMediaProxyKeyUrl(sanitizedPath) });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Upload failed';
     logger.error('Upload Error:', message);

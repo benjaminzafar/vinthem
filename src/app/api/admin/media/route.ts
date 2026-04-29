@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminBearerUser, requireAdminUser } from '@/lib/admin';
 import { logger } from '@/lib/logger';
 import { extractMediaKey } from '@/lib/media';
-import { getS3Client, getR2Credentials, hasMediaBucketBinding, toMediaProxyKeyUrl, type R2Credentials } from '@/lib/s3';
+import { getS3Client, hasMediaBucketBinding, toMediaProxyKeyUrl } from '@/lib/s3';
 
 export const runtime = 'edge';
 
@@ -15,16 +15,6 @@ async function requireAdminMediaAccess(req: NextRequest) {
   return requireAdminUser();
 }
 
-function buildPublicAssetUrl(credentials: R2Credentials, key: string) {
-  const encodedKey = key.split('/').map((segment) => encodeURIComponent(segment)).join('/');
-
-  if (credentials.publicUrl && credentials.publicUrl !== 'DECRYPTION_FAILED') {
-    return `${credentials.publicUrl.replace(/\/$/, '')}/${encodedKey}`;
-  }
-
-  return `https://${credentials.accountId}.r2.cloudflarestorage.com/${credentials.bucketName}/${encodedKey}`;
-}
-
 export async function GET(req: NextRequest) {
   try {
     await requireAdminMediaAccess(req);
@@ -35,21 +25,10 @@ export async function GET(req: NextRequest) {
 
     logger.info('[Media API] Listing prefix:', prefix || 'root');
     
-    const usesBinding = hasMediaBucketBinding();
-    const credentials = usesBinding ? null : await getR2Credentials();
-    const bucketName = credentials?.bucketName;
-    const accountId = credentials?.accountId;
-
+    const usesBinding = await hasMediaBucketBinding();
     if (!usesBinding) {
-      if (!bucketName || bucketName === 'DECRYPTION_FAILED') {
-        logger.error('[Media API] Bucket name missing or decryption failed');
-        return NextResponse.json({ error: 'R2_BUCKET_NAME not configured correctly' }, { status: 500 });
-      }
-
-      if (!accountId || accountId === 'DECRYPTION_FAILED') {
-        logger.error('[Media API] Account ID missing or decryption failed');
-        return NextResponse.json({ error: 'R2_ACCOUNT_ID not configured correctly' }, { status: 500 });
-      }
+      logger.error('[Media API] MEDIA_BUCKET binding missing');
+      return NextResponse.json({ error: 'MEDIA_BUCKET binding is not configured for this deployment.' }, { status: 500 });
     }
   
     logger.info('[Media API] Initializing S3 Client...');
@@ -77,9 +56,7 @@ export async function GET(req: NextRequest) {
           key: key,
           size: obj.Size,
           lastModified: obj.LastModified,
-          url: usesBinding || !credentials
-            ? toMediaProxyKeyUrl(key)
-            : buildPublicAssetUrl(credentials, key)
+          url: toMediaProxyKeyUrl(key)
         };
       })
       .filter(f => f.url);
@@ -92,7 +69,7 @@ export async function GET(req: NextRequest) {
       stats: {
         totalSize: files.reduce((acc, f) => acc + (f.size || 0), 0),
         fileCount: files.length,
-        publicUrlMissing: usesBinding ? false : !credentials?.publicUrl,
+        publicUrlMissing: false,
       },
       nextContinuationToken: data.NextContinuationToken ?? null,
     });
