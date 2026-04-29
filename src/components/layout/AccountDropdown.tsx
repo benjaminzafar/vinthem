@@ -2,21 +2,19 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { User, Settings, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { createClient } from '@/utils/supabase/client';
-import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
 import { UserAvatar } from '../ui/UserAvatar';
 import { getClientLocale } from '@/lib/locale';
-
-import { User as UserType } from '@/types';
+import { localizeHref } from '@/lib/i18n-routing';
+import { performClientLogout } from '@/lib/client-auth';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface AccountDropdownProps {
   user: SupabaseUser;
   isAdmin: boolean;
+  locale: string;
   labels: {
     profile: string;
     adminPanel: string;
@@ -25,11 +23,10 @@ interface AccountDropdownProps {
   };
 }
 
-export function AccountDropdown({ user, isAdmin, labels }: AccountDropdownProps) {
+export function AccountDropdown({ user, isAdmin, locale, labels }: AccountDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
-  const navigate = useRouter();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -46,18 +43,13 @@ export function AccountDropdown({ user, isAdmin, labels }: AccountDropdownProps)
   const handleLogout = async () => {
     try {
       setIsOpen(false);
-      
-      // 1. Clear server cookies via API
-      const response = await fetch('/api/auth/logout', { method: 'POST' });
-      
-      // 2. Client-side fallback + cleanup
-      await supabase.auth.signOut();
-      
-      // 3. Absolute hard refresh to root
-      window.location.href = `/${getClientLocale(window.location.pathname)}`;
+      await performClientLogout({
+        supabase,
+        redirectTo: localizeHref(getClientLocale(window.location.pathname) || locale, '/'),
+      });
     } catch (error) {
       console.error('Logout error:', error);
-      window.location.href = `/${getClientLocale(window.location.pathname)}`;
+      window.location.assign(localizeHref(getClientLocale(window.location.pathname) || locale, '/'));
     }
   };
 
@@ -91,7 +83,7 @@ export function AccountDropdown({ user, isAdmin, labels }: AccountDropdownProps)
             </div>
             
             <Link 
-              href="/profile" 
+              href={localizeHref(locale, '/profile')} 
               onClick={() => setIsOpen(false)}
               className="flex items-center px-6 py-2.5 text-sm text-gray-600 hover:text-brand-ink hover:bg-gray-50 transition-colors"
             >

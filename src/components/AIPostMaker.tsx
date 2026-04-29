@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { genAI } from '@/lib/ai';
 import { safeParseAiResponse } from '@/lib/json';
 import { createClient } from '@/utils/supabase/client';
+import { getAIErrorMessage } from '@/lib/ai-errors';
 
 export function AIPostMaker() {
   const supabase = createClient();
@@ -22,7 +23,6 @@ export function AIPostMaker() {
       Return the response in JSON format: {"title": "string", "excerpt": "string", "content": "string"}.`;
 
       const model = genAI.getGenerativeModel({ 
-        model: 'llama-3.3-70b-versatile',
         promptProfile: 'post',
         generationConfig: {
           responseMimeType: 'application/json',
@@ -52,19 +52,7 @@ export function AIPostMaker() {
       setTopic('');
     } catch (error: unknown) {
       logger.error('Error generating post:', error);
-      const timestamp = new Date().toLocaleTimeString('sv-SE', { hour12: false });
-      const errorMessage = (error as Record<string, unknown>)?.message || '';
-      const status = (error as Record<string, unknown>)?.status;
-
-      if (status === 401 || status === 403) {
-        toast.error('Action Required: Please set your Groq API Key in the Integrations Manager.', { 
-          id: toastId,
-          duration: 6000
-        });
-        return;
-      }
-
-      toast.error(`## Error Type\nConsole Error\n\n## Error Message\n[${timestamp}] AI Post Generation failed. ${errorMessage}`, { 
+      toast.error(getAIErrorMessage(error, 'AI post generation failed.'), { 
         id: toastId, 
         duration: 8000 
       });

@@ -36,6 +36,8 @@ import { isValidUrl } from '@/lib/utils';
 import { submitSupportRequestAction } from '@/app/actions/support';
 import { deleteAddressAction, saveAddressAction, setDefaultAddressAction } from '@/app/actions/profile';
 import type { StorefrontSettings } from '@/store/useSettingsStore';
+import { localizeHref } from '@/lib/i18n-routing';
+import { performClientLogout } from '@/lib/client-auth';
 
 interface ProfileClientProps {
   initialOrders: ProfileOrder[];
@@ -127,7 +129,7 @@ export function ProfileClient({
   settings,
   lang,
 }: ProfileClientProps) {
-  const { user, setUser, setIsAdmin } = useAuthStore();
+  const { user } = useAuthStore();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('orders');
   const [orders] = useState(initialOrders);
@@ -179,11 +181,10 @@ export function ProfileClient({
   };
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setIsAdmin(false);
-    router.push(`/${lang}`);
-    toast.success('Signed out successfully');
+    await performClientLogout({
+      supabase,
+      redirectTo: localizeHref(lang, '/'),
+    });
   };
 
   const handlePasswordUpdate = async (e: React.FormEvent) => {

@@ -134,6 +134,7 @@ export default async function Navigation() {
                   <AccountDropdown
                     user={user}
                     isAdmin={isAdmin}
+                    locale={lang}
                     labels={{
                       profile: settings?.myProfileText?.[lang] || 'My Profile',
                       adminPanel: settings?.adminPanelText?.[lang] || 'Admin Panel',

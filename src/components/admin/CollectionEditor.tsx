@@ -19,6 +19,7 @@ import Image from 'next/image';
 import { logger } from '@/lib/logger';
 import { toMediaProxyUrl } from '@/lib/media';
 import { isValidUrl } from '@/lib/utils';
+import { getAIErrorMessage } from '@/lib/ai-errors';
 
 interface CollectionEditorProps {
   initialCollection?: Category | null;
@@ -51,20 +52,6 @@ export function CollectionEditor({ initialCollection, categories: initialCategor
   const [selectedLang, setSelectedLang] = useState(settings.languages?.[0] || 'sv');
   const [aiChatInput, setAiChatInput] = useState('');
   const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
-
-  const getAIErrorMessage = (error: unknown, fallback: string) => {
-    const err = error as Error & { status?: number };
-    if (err.status === 401 || err.status === 403) {
-      return 'Groq API key is missing or invalid in Integrations.';
-    }
-    if (err.status === 429) {
-      return 'AI is temporarily busy. Please wait a few seconds and try again.';
-    }
-    if (err.status === 500 || err.status === 503) {
-      return 'AI service is temporarily overloaded. Please retry in 1-2 minutes.';
-    }
-    return err.message || fallback;
-  };
 
   // Sync form data when initialCollection prop changes (e.g. navigation)
   useEffect(() => {
@@ -117,7 +104,6 @@ export function CollectionEditor({ initialCollection, categories: initialCategor
       const base64Data = await base64Promise;
 
       const model = genAI.getGenerativeModel({ 
-        model: 'llama-3.3-70b-versatile',
         promptProfile: 'collection',
         generationConfig: { responseMimeType: 'application/json' }
       });
@@ -161,7 +147,6 @@ export function CollectionEditor({ initialCollection, categories: initialCategor
       }`;
 
       const model = genAI.getGenerativeModel({ 
-        model: 'llama-3.3-70b-versatile',
         promptProfile: 'collection',
         generationConfig: { responseMimeType: 'application/json' }
       });
@@ -299,7 +284,6 @@ Collection Name (Swedish): "${formData.name}"
 Collection Description (Swedish): "${formData.description || ''}"`;
 
       const model = genAI.getGenerativeModel({
-        model: 'llama-3.3-70b-versatile',
         promptProfile: 'collection',
         generationConfig: { responseMimeType: 'application/json' }
       });

@@ -100,6 +100,23 @@ export const AI_PROMPT_DEFAULTS = Object.fromEntries(
   AI_PROMPT_DEFINITIONS.map((definition) => [definition.key, definition.defaultValue]),
 ) as Record<string, string>;
 
+const MAX_PROMPT_SECTION_CHARS = 2400;
+const MAX_SYSTEM_INSTRUCTION_CHARS = 6000;
+
+function sanitizePromptText(value: string, maxChars: number): string {
+  const normalized = value
+    .replace(/\r\n/g, '\n')
+    .replace(/\u0000/g, '')
+    .replace(/[ \t]+\n/g, '\n')
+    .trim();
+
+  if (normalized.length <= maxChars) {
+    return normalized;
+  }
+
+  return normalized.slice(0, maxChars).trim();
+}
+
 export function getPromptKeyForProfile(profile?: AIPromptProfile | null): string | null {
   if (!profile || profile === 'default') {
     return null;
@@ -109,12 +126,50 @@ export function getPromptKeyForProfile(profile?: AIPromptProfile | null): string
   return definition?.key ?? null;
 }
 
-export function buildSystemInstruction(parts: Array<string | null | undefined>): string | undefined {
-  const instruction = parts
-    .map((part) => part?.trim())
-    .filter((part): part is string => Boolean(part))
-    .join('\n\n');
+export function normalizePromptSettingValue(key: string, value: string): string {
+  if (!(key in AI_PROMPT_DEFAULTS)) {
+    return value.trim();
+  }
 
+  return sanitizePromptText(value, MAX_PROMPT_SECTION_CHARS);
+}
+
+export function buildSystemInstruction(parts: Array<string | null | undefined>): string | undefined {
+  const sanitizedParts = parts
+    .map((part) => (part ? sanitizePromptText(part, MAX_PROMPT_SECTION_CHARS) : undefined))
+    .filter((part): part is string => Boolean(part));
+
+  if (sanitizedParts.length === 0) {
+    return undefined;
+  }
+
+  const finalParts: string[] = [];
+  let remainingChars = MAX_SYSTEM_INSTRUCTION_CHARS;
+
+  for (const part of sanitizedParts) {
+    if (remainingChars <= 0) {
+      break;
+    }
+
+    const separatorLength = finalParts.length > 0 ? 2 : 0;
+    const availableChars = remainingChars - separatorLength;
+    if (availableChars <= 0) {
+      break;
+    }
+
+    const clippedPart = part.length > availableChars
+      ? part.slice(0, availableChars).trim()
+      : part;
+
+    if (!clippedPart) {
+      continue;
+    }
+
+    finalParts.push(clippedPart);
+    remainingChars -= clippedPart.length + separatorLength;
+  }
+
+  const instruction = finalParts.join('\n\n');
   return instruction || undefined;
 }
 

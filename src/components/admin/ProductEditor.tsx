@@ -19,6 +19,7 @@ import { parseCatalogPrompt } from '@/lib/product-import';
 import { saveProductAction } from '@/app/actions/products';
 import type { ProductVariantInput } from '@/app/actions/products';
 import { AdminHeader } from '@/components/admin/AdminHeader';
+import { getAIErrorMessage } from '@/lib/ai-errors';
 
 const STRIPE_TAX_CODE_OPTIONS = [
   { value: '', label: 'Auto from category' },
@@ -100,20 +101,6 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
   const [mediaPickerTarget, setMediaPickerTarget] = useState<'main' | 'gallery'>('main');
   const [selectedLang, setSelectedLang] = useState('sv');
   const [aiChatInput, setAiChatInput] = useState('');
-
-  const getAIErrorMessage = (error: unknown, fallback: string) => {
-    const err = error as Error & { status?: number };
-    if (err.status === 401 || err.status === 403) {
-      return 'Groq API key is missing or invalid in Integrations.';
-    }
-    if (err.status === 429) {
-      return 'AI is temporarily busy. Please wait a few seconds and try again.';
-    }
-    if (err.status === 500 || err.status === 503) {
-      return 'AI service is temporarily overloaded. Please retry in 1-2 minutes.';
-    }
-    return err.message || fallback;
-  };
 
   const mapDbToForm = (p: ProductRecord): Partial<Product> => {
     if (!p) return {};
@@ -243,7 +230,6 @@ export function ProductEditor({ initialProduct, categories, settings }: ProductE
       }`;
 
       const model = genAI.getGenerativeModel({
-        model: 'llama-3.3-70b-versatile',
         promptProfile: 'product',
         generationConfig: { responseMimeType: 'application/json' }
       });
@@ -315,7 +301,6 @@ Product Description (Swedish): "${formData.description || ''}"
 Product Options: ${JSON.stringify(formData.options || [])}`;
 
       const model = genAI.getGenerativeModel({
-        model: 'llama-3.3-70b-versatile',
         promptProfile: 'product',
         generationConfig: { responseMimeType: 'application/json' }
       });

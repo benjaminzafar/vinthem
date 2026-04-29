@@ -18,9 +18,10 @@ import {
   User as UserIcon
 } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { createClient } from '@/utils/supabase/client';
+import { performClientLogout } from '@/lib/client-auth';
 
 const navItems = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard, href: '/admin/overview' },
@@ -109,12 +110,13 @@ export default function AdminSidebar({
   onClose: () => void;
 }) {
   const pathname = usePathname();
-  const router = useRouter();
   const supabase = createClient();
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    router.push('/');
+    await performClientLogout({
+      supabase,
+      redirectTo: '/',
+    });
   };
 
   return (

@@ -12,6 +12,7 @@ import { genAI } from '@/lib/ai';
 import { slugify } from '@/lib/admin-content';
 import { safeParseAiResponse } from '@/lib/json';
 import { AdminHeader } from '@/components/admin/AdminHeader';
+import { getAIErrorMessage } from '@/lib/ai-errors';
 
 type PageEditorProps = {
   initialPage?: StaticPage | null;
@@ -43,14 +44,6 @@ export function PageEditor({ initialPage }: PageEditorProps) {
     content: initialPage?.content ?? buildEmptyLocalizedRecord(languages),
   });
 
-  const getAIErrorMessage = (error: unknown, fallback: string) => {
-    const err = error as Error & { status?: number };
-    if (err.status === 401 || err.status === 403) return 'Groq API key is missing or invalid in Integrations.';
-    if (err.status === 429) return 'AI is temporarily busy. Please wait a few seconds and try again.';
-    if (err.status === 500 || err.status === 503) return 'AI service is temporarily overloaded. Please retry in 1-2 minutes.';
-    return err.message || fallback;
-  };
-
   const handleAIAutoComplete = async () => {
     if (!formData.title.en.trim()) {
       toast.error('Add an English page title first.');
@@ -64,7 +57,7 @@ export function PageEditor({ initialPage }: PageEditorProps) {
       const prompt = `Generate premium markdown content for an ecommerce static page titled "${formData.title.en}".
 Return ONLY the markdown body.`;
 
-      const model = genAI.getGenerativeModel({ model: 'llama-3.3-70b-versatile', promptProfile: 'page' });
+      const model = genAI.getGenerativeModel({ promptProfile: 'page' });
       const aiResponse = await model.generateContent(prompt);
 
       setFormData((current) => ({
@@ -105,7 +98,6 @@ Title: "${formData.title.en}"
 Content: "${formData.content.en}"`;
 
       const model = genAI.getGenerativeModel({
-        model: 'llama-3.3-70b-versatile',
         promptProfile: 'page',
         generationConfig: { responseMimeType: 'application/json' },
       });

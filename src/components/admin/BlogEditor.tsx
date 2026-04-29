@@ -15,6 +15,7 @@ import { safeParseAiResponse } from '@/lib/json';
 import { toMediaProxyUrl } from '@/lib/media';
 import { isValidUrl } from '@/lib/utils';
 import { AdminHeader } from '@/components/admin/AdminHeader';
+import { getAIErrorMessage } from '@/lib/ai-errors';
 
 type BlogEditorProps = {
   initialPost?: BlogPost | null;
@@ -63,14 +64,6 @@ export function BlogEditor({ initialPost }: BlogEditorProps) {
       day: 'numeric',
     });
   }, [initialPost?.createdAt]);
-
-  const getAIErrorMessage = (error: unknown, fallback: string) => {
-    const err = error as Error & { status?: number };
-    if (err.status === 401 || err.status === 403) return 'Groq API key is missing or invalid in Integrations.';
-    if (err.status === 429) return 'AI is temporarily busy. Please wait a few seconds and try again.';
-    if (err.status === 500 || err.status === 503) return 'AI service is temporarily overloaded. Please retry in 1-2 minutes.';
-    return err.message || fallback;
-  };
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -121,7 +114,6 @@ Return ONLY JSON matching:
 Title: "${formData.title.en}"`;
 
       const model = genAI.getGenerativeModel({
-        model: 'llama-3.3-70b-versatile',
         promptProfile: 'blog',
         generationConfig: { responseMimeType: 'application/json' },
       });
@@ -173,7 +165,6 @@ Excerpt: "${formData.excerpt.en}"
 Content: "${formData.content.en}"`;
 
       const model = genAI.getGenerativeModel({
-        model: 'llama-3.3-70b-versatile',
         promptProfile: 'blog',
         generationConfig: { responseMimeType: 'application/json' },
       });

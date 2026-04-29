@@ -23,6 +23,7 @@ import { SearchableSelect } from '@/components/SearchableSelect';
 import { createClient } from '@/utils/supabase/client';
 import { Category } from '@/types';
 import { logger } from '@/lib/logger';
+import { getAIErrorMessage, isTransientAIError } from '@/lib/ai-errors';
 
 const CATEGORIES = [
   { id: 'branding', name: 'Identity & Brand', icon: Sparkles, color: 'text-zinc-900', bg: 'bg-zinc-50' },
@@ -87,28 +88,6 @@ function buildShippingCountryEntry(input: string, languages: string[]) {
     code,
     name: fallbackName,
   };
-}
-
-type AIRequestError = Error & { status?: number };
-
-function isTransientAIError(error: unknown): error is AIRequestError {
-  if (!(error instanceof Error)) {
-    return false;
-  }
-
-  const status = typeof (error as AIRequestError).status === 'number'
-    ? (error as AIRequestError).status
-    : null;
-
-  if (status === 429 || status === 500 || status === 503) {
-    return true;
-  }
-
-  const message = error.message.toLowerCase();
-  return message.includes('temporarily busy') ||
-    message.includes('temporarily unavailable') ||
-    message.includes('overloaded') ||
-    message.includes('rate limit');
 }
 
 export function StorefrontContainer() {
@@ -250,7 +229,6 @@ Text to translate: "${sourceText}"`;
 
     try {
       const model = genAI.getGenerativeModel({
-        model: "llama-3.3-70b-versatile",
         promptProfile: 'storefront',
         generationConfig: { temperature: 0.1 }
       });
@@ -320,7 +298,7 @@ Text to translate: "${sourceText}"`;
     const toastId = toast.loading(`Generating ${label}...`);
     try {
       const prompt = `Generate a creative and professional ${label} for a premium minimalist e-commerce store named "${settings.storeName?.en || 'Nordic'}". Return ONLY the text content, no quotes or formatting.`;
-      const model = genAI.getGenerativeModel({ model: "llama-3.3-70b-versatile", promptProfile: 'storefront' });
+      const model = genAI.getGenerativeModel({ promptProfile: 'storefront' });
       const aiResponse = await model.generateContent(prompt);
       const text = aiResponse.response.text()?.trim() || '';
       
@@ -336,13 +314,12 @@ Text to translate: "${sourceText}"`;
       
       toast.success(`${label} generated (English)`, { id: toastId });
     } catch (error) {
-      const err = error as Error;
       if (isTransientAIError(error)) {
         logger.warn('[AI] Auto-Fill temporary provider failure:', error);
       } else {
         logger.error('[AI] Auto-Fill failed:', error);
       }
-      toast.error(err.message || 'AI generation failed', { id: toastId });
+      toast.error(getAIErrorMessage(error, 'AI generation failed'), { id: toastId });
     } finally {
       setGeneratingId(null);
     }
@@ -369,13 +346,12 @@ Text to translate: "${sourceText}"`;
         toast.dismiss(toastId);
       }
     } catch (error) {
-      const err = error as Error;
       if (isTransientAIError(error)) {
         logger.warn('[AI] Translation temporary provider failure:', error);
       } else {
         logger.error('[AI] Translation failed:', error);
       }
-      toast.error(err.message || 'Localization failed', { id: toastId });
+      toast.error(getAIErrorMessage(error, 'Localization failed'), { id: toastId });
     } finally {
       setGeneratingId(null);
     }
@@ -407,8 +383,7 @@ Text to translate: "${sourceText}"`;
         toast.dismiss(toastId);
       }
     } catch (error) {
-      const err = error as Error;
-      toast.error(err.message || 'Translation failed', { id: toastId });
+      toast.error(getAIErrorMessage(error, 'Translation failed'), { id: toastId });
     } finally {
       setGeneratingId(null);
     }

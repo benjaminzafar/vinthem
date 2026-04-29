@@ -15,6 +15,7 @@ import { Portal } from './Portal';
 import { UserAvatar } from '../ui/UserAvatar';
 import { Category } from '@/types';
 import { localizeHref } from '@/lib/i18n-routing';
+import { performClientLogout } from '@/lib/client-auth';
 
 interface MobileMenuProps {
   user: SupabaseUser | null;
@@ -85,16 +86,12 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
     e.stopPropagation();
     
     try {
-      // 1. Clear server cookies
-      await fetch('/api/auth/logout', { method: 'POST' });
-      
-      // 2. Client-side cleanup
-      await supabase.auth.signOut();
-      
-      // 3. Absolute hard refresh
-      window.location.href = `/${lang}`;
+      await performClientLogout({
+        supabase,
+        redirectTo: localizeHref(lang, '/'),
+      });
     } catch (error) {
-      window.location.href = `/${lang}`;
+      window.location.assign(localizeHref(lang, '/'));
     }
   };
 

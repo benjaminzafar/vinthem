@@ -5,6 +5,7 @@ import { cookies } from 'next/headers';
 import { CookiePreferencesButton } from '@/components/CookiePreferencesButton';
 import { localizeHref } from '@/lib/i18n-routing';
 import { StorefrontSettingsType } from '@/types';
+import { normalizeSocialUrl } from '@/lib/utils';
 
 interface FooterProps {
   settings: StorefrontSettingsType;
@@ -13,6 +14,10 @@ interface FooterProps {
 export default async function Footer({ settings }: FooterProps) {
   const cookieStore = await cookies();
   const lang = cookieStore.get('NEXT_LOCALE')?.value || 'en';
+  const instagramUrl = normalizeSocialUrl(settings.socialInstagram, 'instagram');
+  const tiktokUrl = normalizeSocialUrl(settings.socialTikTok, 'tiktok');
+  const facebookUrl = normalizeSocialUrl(settings.socialFacebook, 'facebook');
+  const twitterUrl = normalizeSocialUrl(settings.socialTwitter, 'twitter');
 
   return (
     <footer className="bg-white border-t border-gray-200 pt-24 pb-12 mt-auto">
@@ -66,10 +71,10 @@ export default async function Footer({ settings }: FooterProps) {
             <Link href={localizeHref(lang, '/unsubscribe')} className="hover:text-brand-ink transition-colors">
               {settings.unsubscribeLinkText?.[lang] || 'Unsubscribe'}
             </Link>
-            {settings.socialInstagram && <a href={settings.socialInstagram} target="_blank" rel="noopener noreferrer" className="hover:text-brand-ink transition-colors" aria-label="Visit our Instagram">{settings.instagramText?.[lang] || 'Instagram'}</a>}
-            {settings.socialTikTok && <a href={settings.socialTikTok} target="_blank" rel="noopener noreferrer" className="hover:text-brand-ink transition-colors" aria-label="Visit our TikTok">{settings.tiktokText?.[lang] || 'TikTok'}</a>}
-            {settings.socialFacebook && <a href={settings.socialFacebook} target="_blank" rel="noopener noreferrer" className="hover:text-brand-ink transition-colors" aria-label="Visit our Facebook">{settings.facebookText?.[lang] || 'Facebook'}</a>}
-            {settings.socialTwitter && <a href={settings.socialTwitter} target="_blank" rel="noopener noreferrer" className="hover:text-brand-ink transition-colors" aria-label="Visit our Twitter">{settings.twitterText?.[lang] || 'Twitter'}</a>}
+            {instagramUrl && <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="hover:text-brand-ink transition-colors" aria-label="Visit our Instagram">{settings.instagramText?.[lang] || 'Instagram'}</a>}
+            {tiktokUrl && <a href={tiktokUrl} target="_blank" rel="noopener noreferrer" className="hover:text-brand-ink transition-colors" aria-label="Visit our TikTok">{settings.tiktokText?.[lang] || 'TikTok'}</a>}
+            {facebookUrl && <a href={facebookUrl} target="_blank" rel="noopener noreferrer" className="hover:text-brand-ink transition-colors" aria-label="Visit our Facebook">{settings.facebookText?.[lang] || 'Facebook'}</a>}
+            {twitterUrl && <a href={twitterUrl} target="_blank" rel="noopener noreferrer" className="hover:text-brand-ink transition-colors" aria-label="Visit our Twitter">{settings.twitterText?.[lang] || 'Twitter'}</a>}
           </div>
         </div>
       </div>

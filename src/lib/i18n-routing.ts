@@ -49,18 +49,24 @@ export function normalizeLocalizedPath(pathname: string, locale: string): string
 }
 
 export function localizeHref(locale: string, href: string): string {
-  if (!href.startsWith('/')) {
+  if (!href) {
+    return '/';
+  }
+
+  if (/^(https?:|mailto:|tel:|#)/i.test(href)) {
     return href;
   }
+
+  const normalizedHref = href.startsWith('/') ? href : `/${href}`;
 
   if (
-    INTERNAL_PATH_PREFIXES_TO_SKIP.some((prefix) => href.startsWith(prefix))
-    || href.startsWith('/auth/callback')
+    INTERNAL_PATH_PREFIXES_TO_SKIP.some((prefix) => normalizedHref.startsWith(prefix))
+    || normalizedHref.startsWith('/auth/callback')
   ) {
-    return href;
+    return normalizedHref;
   }
 
-  return normalizeLocalizedPath(href, locale);
+  return normalizeLocalizedPath(normalizedHref, locale);
 }
 
 export function resolveLanguageFromCountry(countryCode?: string | null): SupportedLanguage | null {

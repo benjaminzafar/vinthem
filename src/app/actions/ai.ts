@@ -33,6 +33,19 @@ function isTransientGroqStatus(status: number): boolean {
   return status === 429 || status === 500 || status === 503;
 }
 
+const PROVIDER_BUSY_PATTERNS = [
+  'overloaded',
+  'overload',
+  'temporarily busy',
+  'temporarily unavailable',
+  'rate limit',
+  'too many requests',
+  'capacity',
+  'service unavailable',
+  'try again in 1-2 minutes',
+  'please try again in 1-2 minutes',
+];
+
 function getErrorStatus(error: unknown): number | null {
   if (typeof error === "object" && error && "status" in error) {
     const status = (error as { status?: unknown }).status;
@@ -40,6 +53,32 @@ function getErrorStatus(error: unknown): number | null {
   }
 
   return null;
+}
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message || '';
+  }
+
+  if (typeof error === 'string') {
+    return error;
+  }
+
+  return '';
+}
+
+function isProviderBusyError(error: unknown): boolean {
+  const status = getErrorStatus(error);
+  if (status === 429) {
+    return true;
+  }
+
+  if (status !== 500 && status !== 503) {
+    return false;
+  }
+
+  const message = getErrorMessage(error).toLowerCase();
+  return PROVIDER_BUSY_PATTERNS.some((pattern) => message.includes(pattern));
 }
 
 function sleep(ms: number) {
@@ -222,7 +261,7 @@ export async function generateAIContentAction(params: AIContentParams) {
         ? ((error as { status?: number }).status ?? 500)
         : 500;
 
-    if (isTransientGroqStatus(status)) {
+    if (isProviderBusyError(error)) {
       logger.warn("[Groq Action Temporary Error]:", error);
     } else {
       logger.error("[Groq Action Error]:", error);
@@ -242,7 +281,7 @@ export async function generateAIContentAction(params: AIContentParams) {
       };
     }
 
-    if (status === 503 || status === 500) {
+    if ((status === 503 || status === 500) && isProviderBusyError(error)) {
       return {
         error: `[${now}] AI translation is temporarily unavailable because the provider is overloaded. Please try again in 1-2 minutes.`,
         status: status
@@ -250,7 +289,7 @@ export async function generateAIContentAction(params: AIContentParams) {
     }
 
     return { 
-      error: err.message || "An unexpected error occurred during Groq AI generation.",
+      error: err.message || "AI request failed. Check the saved Groq model and prompt settings in Integrations.",
       status: status
     };
   }

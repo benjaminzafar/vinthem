@@ -33,7 +33,7 @@ export const genAI = {
         }
         
         const result = await generateAIContentAction({
-          model: config.model || "llama-3.3-70b-versatile",
+          model: config.model || "",
           promptProfile: config.promptProfile,
           contents: contents,
           generationConfig: config.generationConfig,

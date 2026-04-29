@@ -19,3 +19,43 @@ export function isValidUrl(url: unknown): url is string {
     return false;
   }
 }
+
+export function normalizeSocialUrl(
+  value: string | null | undefined,
+  platform: 'instagram' | 'tiktok' | 'facebook' | 'twitter'
+): string | null {
+  const trimmed = value?.trim();
+  if (!trimmed || trimmed === '#') {
+    return null;
+  }
+
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+
+  const handle = trimmed.replace(/^@/, '').replace(/^\/+/, '');
+
+  if (platform === 'instagram') {
+    return `https://www.instagram.com/${handle}`;
+  }
+
+  if (platform === 'tiktok') {
+    return `https://www.tiktok.com/@${handle}`;
+  }
+
+  if (platform === 'twitter') {
+    if (trimmed.includes('.')) {
+      return `https://${trimmed}`;
+    }
+    return `https://x.com/${handle}`;
+  }
+
+  if (platform === 'facebook') {
+    if (trimmed.includes('.')) {
+      return `https://${trimmed}`;
+    }
+    return `https://www.facebook.com/${handle}`;
+  }
+
+  return null;
+}

@@ -9,7 +9,7 @@ import {
   isSensitiveIntegrationKey,
   maybeDecryptStoredValue,
 } from '@/lib/integrations';
-import { AI_PROMPT_DEFAULTS } from '@/lib/ai-prompts';
+import { AI_PROMPT_DEFAULTS, normalizePromptSettingValue } from '@/lib/ai-prompts';
 
 export type IntegrationActionResponse = {
   success: boolean;
@@ -85,7 +85,7 @@ export async function saveIntegrationAction(updates: Record<string, string>): Pr
     for (const [key, value] of Object.entries(updates)) {
       if (typeof value === 'string' && value.trim() !== '' && value !== '********') {
         const sanitizedValue = value.replace(/[<>]/g, '');
-        const normalizedValue = sanitizedValue;
+        const normalizedValue = normalizePromptSettingValue(key, sanitizedValue);
         const finalValue = isSensitiveIntegrationKey(key)
           ? await encrypt(normalizedValue)
           : normalizedValue;
