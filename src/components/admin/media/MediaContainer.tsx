@@ -36,6 +36,19 @@ interface MediaContainerProps {
   selectionMode?: boolean;
 }
 
+async function parseApiPayload(response: Response): Promise<Record<string, unknown>> {
+  const contentType = response.headers.get('content-type') || '';
+
+  if (contentType.includes('application/json')) {
+    return await response.json() as Record<string, unknown>;
+  }
+
+  const rawText = await response.text();
+  return {
+    error: rawText || `Request failed with status ${response.status}`,
+  };
+}
+
 export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps) {
   const [folders, setFolders] = useState<string[]>([]);
   const [assets, setAssets] = useState<Asset[]>([]);
@@ -63,24 +76,28 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
     
     try {
       const res = await fetch(url, { cache: 'no-store' });
-      const data = await res.json();
+      const data = await parseApiPayload(res);
       
-      if (data.error) {
-        const fullMessage = data.suggestion ? `${data.error}. ${data.suggestion}` : data.error;
+      if (!res.ok || typeof data.error === 'string') {
+        const fullMessage = typeof data.suggestion === 'string'
+          ? `${data.error}. ${data.suggestion}`
+          : typeof data.error === 'string'
+            ? data.error
+            : `Media request failed with status ${res.status}`;
         throw new Error(fullMessage);
       }
       
       if (isInitial) {
-        setFolders(data.folders || []);
-        setAssets(data.objects || []);
+        setFolders(Array.isArray(data.folders) ? data.folders as string[] : []);
+        setAssets(Array.isArray(data.objects) ? data.objects as Asset[] : []);
         if (data.stats) {
-          setStats(data.stats);
+          setStats(data.stats as MediaStats);
         }
       } else {
-        setAssets(prev => [...prev, ...(data.objects || [])]);
+        setAssets(prev => [...prev, ...(Array.isArray(data.objects) ? data.objects as Asset[] : [])]);
       }
       
-      setNextToken(data.nextContinuationToken || null);
+      setNextToken(typeof data.nextContinuationToken === 'string' ? data.nextContinuationToken : null);
     } catch (error: unknown) {
       toast.error('Media Cloud Error: ' + (error instanceof Error ? error.message : String(error)), {
         duration: 8000
@@ -141,8 +158,10 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
         body: formData,
         cache: 'no-store'
       });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
+      const data = await parseApiPayload(res);
+      if (!res.ok || typeof data.error === 'string') {
+        throw new Error(typeof data.error === 'string' ? data.error : `Upload failed with status ${res.status}`);
+      }
 
       toast.success(`Success: ${sanitizedName} uploaded`);
       fetchMedia();
