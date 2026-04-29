@@ -34,6 +34,7 @@ export function CollectionList({ categories, lang, labels }: CollectionListProps
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
             {categories.map((category, index) => {
               const displayName = category.translations?.[lang]?.name || category.name;
+              const imageSrc = category.imageUrl ? getOptimizedImageUrl(category.imageUrl, 400, 75) : '';
               return (
                 <Link 
                   key={category.id} 
@@ -43,9 +44,9 @@ export function CollectionList({ categories, lang, labels }: CollectionListProps
                 >
                   {/* Stable Media Stage - No shadows or heavy filters */}
                   <div className="relative aspect-[3/4] overflow-hidden rounded bg-slate-50 border border-slate-100 mb-4 transform-gpu">
-                    {category.imageUrl ? (
+                    {imageSrc ? (
                       <Image
-                        src={getOptimizedImageUrl(category.imageUrl, 400, 75)}
+                        src={imageSrc}
                         alt={`${displayName} collection`}
                         fill
                         sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 300px"

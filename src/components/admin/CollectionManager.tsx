@@ -13,7 +13,6 @@ import { useCustomConfirm } from '@/components/ConfirmationContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { InfiniteScrollSentinel } from '@/components/admin/InfiniteScrollSentinel';
 import Image from 'next/image';
-import { isValidUrl } from '@/lib/utils';
 import { AdminLoadingState } from '@/components/admin/AdminLoadingState';
 import { toMediaProxyUrl } from '@/lib/media';
 
@@ -245,7 +244,9 @@ export function CollectionManager({
                 <tr><td colSpan={6} className="py-20 text-center text-slate-500 font-bold uppercase tracking-widest text-xs">Retrieving Catalog Structure...</td></tr>
               ) : sortedData.length === 0 ? (
                 <tr><td colSpan={6} className="py-20 text-center text-slate-500 font-bold uppercase tracking-widest text-xs">No collections found</td></tr>
-              ) : sortedData.map(({ category: parent, level }) => (
+              ) : sortedData.map(({ category: parent, level }) => {
+                const previewSrc = parent.imageUrl ? toMediaProxyUrl(parent.imageUrl) : '';
+                return (
                 <tr 
                   key={parent.id} 
                   onClick={() => router.push(`/admin/collections/${parent.id}`)}
@@ -265,7 +266,7 @@ export function CollectionManager({
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-4" style={{ marginLeft: `${level * 24}px` }}>
                       <div className="w-12 h-12 bg-slate-50 border border-slate-200 rounded flex items-center justify-center overflow-hidden shrink-0 group-hover:border-slate-900 transition-all relative">
-                        {isValidUrl(parent.imageUrl) ? <Image src={toMediaProxyUrl(parent.imageUrl)} alt={parent.name} fill sizes="48px" className="object-cover" /> : <Package className="w-5 h-5 text-slate-300" />}
+                        {previewSrc ? <Image src={previewSrc} alt={parent.name} fill sizes="48px" className="object-cover" /> : <Package className="w-5 h-5 text-slate-300" />}
                       </div>
                       <div className="min-w-0">
                          <p className="font-bold text-slate-900 text-[13px] tracking-tight truncate">{parent.name}</p>
@@ -308,7 +309,7 @@ export function CollectionManager({
                      </div>
                   </td>
                 </tr>
-              ))}
+              )})}
             </tbody>
           </table>
         </div>

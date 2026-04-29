@@ -9,6 +9,7 @@ import { Category, StorefrontSettingsType } from '@/types';
 import { useStorefrontSettings } from '@/hooks/useStorefrontSettings';
 import { localizeHref } from '@/lib/i18n-routing';
 import { getOptimizedImageUrl } from '@/utils/image-utils';
+import { extractMediaKey } from '@/lib/media';
 
 interface HeroSliderProps {
   categories: Category[];
@@ -32,22 +33,9 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
   if (featuredCategories.length === 0) return null;
 
   const category = featuredCategories[currentIndex];
-  // Fallback if the image URL is broken, missing, or just a folder path
-  const isValidImage = (url: string | null | undefined) => {
-    if (!url || typeof url !== 'string') return false;
-    const cleanUrl = url.trim().toLowerCase();
-    // Must have a valid image extension and should not end with common folder names
-    const hasExtension = cleanUrl.match(/\.(jpg|jpeg|png|webp|avif|gif|svg)$/i);
-    const isFolder = cleanUrl.endsWith('/') || 
-                    cleanUrl.endsWith('/uploads') || 
-                    cleanUrl.endsWith('products');
-    
-    return !!hasExtension && !isFolder;
-  };
-
-  const imageToShow = isValidImage(category.imageUrl) 
-    ? category.imageUrl 
-    : 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=2000&auto=format&fit=crop';
+  const resolvedCategoryImage = category.imageUrl ? getOptimizedImageUrl(category.imageUrl, 1200, 75) : '';
+  const categoryImageKey = extractMediaKey(category.imageUrl);
+  const hasValidCategoryImage = Boolean(categoryImageKey || /^https?:\/\//i.test(category.imageUrl || ''));
 
   return (
     <section className="relative w-full h-[calc(100vh-70px)] lg:h-[calc(100vh-80px)] flex flex-col justify-center overflow-hidden py-4 lg:py-0" style={{ backgroundColor: settings.heroBackgroundColor || '#ffffff' }}>
@@ -86,9 +74,9 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
           {/* Image Content */}
           <div className="w-full lg:w-[55%] order-2 z-0 flex-shrink-0 flex items-center justify-center mt-4 lg:mt-0">
             <div className="relative w-full max-h-[50vh] lg:max-h-none aspect-[16/10] sm:aspect-[16/9] lg:aspect-[4/3] xl:aspect-[16/10] overflow-hidden rounded-[4px] shadow-sm bg-zinc-50">
-              {category.imageUrl && (
+              {hasValidCategoryImage ? (
                 <Image 
-                  src={getOptimizedImageUrl(imageToShow || '', 1200, 75)} 
+                  src={resolvedCategoryImage} 
                   alt={category.translations?.[lang]?.name || category.name} 
                   fill
                   priority
@@ -98,7 +86,7 @@ export function HeroSlider({ categories, lang, settings: propSettings }: HeroSli
                   decoding="async"
                   unoptimized={true}
                 />
-              )}
+              ) : null}
             </div>
           </div>
  
