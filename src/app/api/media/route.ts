@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getS3Client } from '@/lib/s3';
 
-export const runtime = 'edge';
-
 function normalizeMediaKey(key: string) {
   const trimmed = key.trim().replace(/^\/+/, '').replace(/\\/g, '/');
   if (!trimmed || trimmed.includes('..')) {

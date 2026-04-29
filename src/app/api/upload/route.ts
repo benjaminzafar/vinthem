@@ -3,8 +3,6 @@ import { getBearerUserWithRole } from '@/lib/admin';
 import { logger } from '@/lib/logger';
 import { getS3Client, hasMediaBucketBinding, toMediaProxyKeyUrl } from '@/lib/s3';
 
-export const runtime = 'edge';
-
 function normalizeUploadPath(path: string) {
   const trimmedPath = path.trim().replace(/^\/+/, '').replace(/\\/g, '/');
   if (!trimmedPath || trimmedPath.includes('..')) {

@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getCloudflareEnv } from '@/lib/cloudflare-context';
 
-export const runtime = 'edge';
-
 export async function GET() {
   try {
     const bucket = getCloudflareEnv().MEDIA_BUCKET;

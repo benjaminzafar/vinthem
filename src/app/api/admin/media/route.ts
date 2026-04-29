@@ -4,8 +4,6 @@ import { logger } from '@/lib/logger';
 import { extractMediaKey } from '@/lib/media';
 import { getS3Client, hasMediaBucketBinding, toMediaProxyKeyUrl } from '@/lib/s3';
 
-export const runtime = 'edge';
-
 async function requireAdminMediaAccess(req: NextRequest) {
   const authorizationHeader = req.headers.get('authorization');
   if (authorizationHeader) {

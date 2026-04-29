@@ -2,8 +2,6 @@ import { NextResponse } from 'next/server';
 import { getCloudflareEnv } from '@/lib/cloudflare-context';
 import { getS3Client, hasMediaBucketBinding } from '@/lib/s3';
 
-export const runtime = 'edge';
-
 export async function GET() {
   try {
     const bindingAvailable = await hasMediaBucketBinding();
