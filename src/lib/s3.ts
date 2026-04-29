@@ -55,6 +55,10 @@ export interface R2Credentials {
   publicUrl: string;
 }
 
+export function toMediaProxyKeyUrl(key: string): string {
+  return `/api/media?key=${encodeURIComponent(key)}`;
+}
+
 interface ListOptions {
   continuationToken?: string;
   delimiter?: string;
@@ -360,14 +364,22 @@ export async function getR2Credentials(): Promise<R2Credentials> {
 }
 
 export class EdgeR2Client {
-  constructor(private readonly credentials: R2Credentials) {}
+  constructor(private readonly credentials: R2Credentials | null) {}
 
-  private getBucketBinding(): BoundR2Bucket | null {
+  getBucketBinding(): BoundR2Bucket | null {
     try {
       return getCloudflareContext().env.MEDIA_BUCKET ?? null;
     } catch {
       return null;
     }
+  }
+
+  private requireCredentials(): R2Credentials {
+    if (!this.credentials) {
+      throw new Error('[R2_CONFIG] Cloudflare R2 credentials are missing and MEDIA_BUCKET binding is not available.');
+    }
+
+    return this.credentials;
   }
 
   private async signedFetch(args: {
@@ -377,9 +389,10 @@ export class EdgeR2Client {
     body?: Uint8Array;
     extraHeaders?: Record<string, string>;
   }): Promise<Response> {
+    const credentials = this.requireCredentials();
     const payloadHash = args.body ? await sha256Hex(args.body) : EMPTY_BODY_HASH;
     const auth = await createAuthHeaders({
-      credentials: this.credentials,
+      credentials,
       method: args.method,
       objectKey: args.objectKey,
       queryParams: args.queryParams,
@@ -388,7 +401,7 @@ export class EdgeR2Client {
     });
 
     const canonicalQuery = buildCanonicalQuery(args.queryParams ?? []);
-    const response = await fetch(buildObjectUrl(this.credentials, args.objectKey, canonicalQuery ? `?${canonicalQuery}` : ''), {
+    const response = await fetch(buildObjectUrl(credentials, args.objectKey, canonicalQuery ? `?${canonicalQuery}` : ''), {
       method: args.method,
       headers: {
         ...auth.headers,
@@ -522,45 +535,20 @@ export class EdgeR2Client {
     };
   }
 
-  async getPresignedUrl(path: string, contentType: string, expiresIn: number = 900): Promise<string> {
-    const now = new Date();
-    const { amzDate, dateStamp } = getAmzDates(now);
-    const host = `${this.credentials.accountId}.r2.cloudflarestorage.com`;
-    const credentialScope = `${dateStamp}/auto/s3/aws4_request`;
-    const signedHeaders = 'content-type;host';
-    const queryParams: Array<[string, string]> = [
-      ['X-Amz-Algorithm', AWS_ALGORITHM],
-      ['X-Amz-Credential', `${this.credentials.accessKeyId}/${credentialScope}`],
-      ['X-Amz-Date', amzDate],
-      ['X-Amz-Expires', String(expiresIn)],
-      ['X-Amz-SignedHeaders', signedHeaders],
-    ];
+}
 
-    const canonicalHeaders = `content-type:${contentType}\nhost:${host}\n`;
-    const canonicalRequest = [
-      'PUT',
-      `/${this.credentials.bucketName}/${encodePathSegments(path)}`,
-      buildCanonicalQuery(queryParams),
-      canonicalHeaders,
-      signedHeaders,
-      'UNSIGNED-PAYLOAD',
-    ].join('\n');
-
-    const stringToSign = [
-      AWS_ALGORITHM,
-      amzDate,
-      credentialScope,
-      await sha256Hex(canonicalRequest),
-    ].join('\n');
-
-    const signingKey = await buildSigningKey(this.credentials.secretAccessKey, dateStamp);
-    const signature = bytesToHex(await hmacSha256(signingKey, stringToSign));
-    const finalQuery = buildCanonicalQuery([...queryParams, ['X-Amz-Signature', signature]]);
-
-    return buildObjectUrl(this.credentials, path, `?${finalQuery}`);
+export function hasMediaBucketBinding(): boolean {
+  try {
+    return Boolean(getCloudflareContext().env.MEDIA_BUCKET);
+  } catch {
+    return false;
   }
 }
 
 export async function getS3Client(): Promise<EdgeR2Client> {
+  if (hasMediaBucketBinding()) {
+    return new EdgeR2Client(null);
+  }
+
   return new EdgeR2Client(await getR2Credentials());
 }

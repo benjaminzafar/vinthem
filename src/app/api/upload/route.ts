@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getBearerUserWithRole } from '@/lib/admin';
 import { logger } from '@/lib/logger';
-import { toMediaProxyUrl } from '@/lib/media';
-import { getR2Credentials, getS3Client } from '@/lib/s3';
+import { getR2Credentials, getS3Client, hasMediaBucketBinding, toMediaProxyKeyUrl } from '@/lib/s3';
 
 export const runtime = 'edge';
 
@@ -62,15 +61,20 @@ export async function POST(req: NextRequest) {
 
     const s3Client = await getS3Client();
     await s3Client.upload(sanitizedPath, arrayBuffer, file.type || 'application/octet-stream');
-    const credentials = await getR2Credentials();
-    const publicAssetUrl = buildPublicAssetUrl(
-      credentials.accountId,
-      credentials.bucketName,
-      credentials.publicUrl,
-      sanitizedPath
-    );
+    const usesBinding = hasMediaBucketBinding();
+    let publicAssetUrl = toMediaProxyKeyUrl(sanitizedPath);
 
-    return NextResponse.json({ url: toMediaProxyUrl(publicAssetUrl) });
+    if (!usesBinding) {
+      const credentials = await getR2Credentials();
+      publicAssetUrl = buildPublicAssetUrl(
+        credentials.accountId,
+        credentials.bucketName,
+        credentials.publicUrl,
+        sanitizedPath
+      );
+    }
+
+    return NextResponse.json({ url: publicAssetUrl });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Upload failed';
     logger.error('Upload Error:', message);

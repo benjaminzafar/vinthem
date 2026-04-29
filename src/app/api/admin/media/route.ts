@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminBearerUser, requireAdminUser } from '@/lib/admin';
 import { logger } from '@/lib/logger';
-import { extractMediaKey, toMediaProxyUrl } from '@/lib/media';
-import { getS3Client, getR2Credentials, type R2Credentials } from '@/lib/s3';
+import { extractMediaKey } from '@/lib/media';
+import { getS3Client, getR2Credentials, hasMediaBucketBinding, toMediaProxyKeyUrl, type R2Credentials } from '@/lib/s3';
 
 export const runtime = 'edge';
 
@@ -35,17 +35,21 @@ export async function GET(req: NextRequest) {
 
     logger.info('[Media API] Listing prefix:', prefix || 'root');
     
-    const credentials = await getR2Credentials();
-    const { bucketName, accountId } = credentials;
+    const usesBinding = hasMediaBucketBinding();
+    const credentials = usesBinding ? null : await getR2Credentials();
+    const bucketName = credentials?.bucketName;
+    const accountId = credentials?.accountId;
 
-    if (!bucketName || bucketName === 'DECRYPTION_FAILED') {
-      logger.error('[Media API] Bucket name missing or decryption failed');
-      return NextResponse.json({ error: 'R2_BUCKET_NAME not configured correctly' }, { status: 500 });
-    }
-    
-    if (!accountId || accountId === 'DECRYPTION_FAILED') {
-      logger.error('[Media API] Account ID missing or decryption failed');
-      return NextResponse.json({ error: 'R2_ACCOUNT_ID not configured correctly' }, { status: 500 });
+    if (!usesBinding) {
+      if (!bucketName || bucketName === 'DECRYPTION_FAILED') {
+        logger.error('[Media API] Bucket name missing or decryption failed');
+        return NextResponse.json({ error: 'R2_BUCKET_NAME not configured correctly' }, { status: 500 });
+      }
+
+      if (!accountId || accountId === 'DECRYPTION_FAILED') {
+        logger.error('[Media API] Account ID missing or decryption failed');
+        return NextResponse.json({ error: 'R2_ACCOUNT_ID not configured correctly' }, { status: 500 });
+      }
     }
   
     logger.info('[Media API] Initializing S3 Client...');
@@ -73,7 +77,9 @@ export async function GET(req: NextRequest) {
           key: key,
           size: obj.Size,
           lastModified: obj.LastModified,
-          url: toMediaProxyUrl(buildPublicAssetUrl(credentials, key))
+          url: usesBinding || !credentials
+            ? toMediaProxyKeyUrl(key)
+            : buildPublicAssetUrl(credentials, key)
         };
       })
       .filter(f => f.url);
@@ -86,7 +92,7 @@ export async function GET(req: NextRequest) {
       stats: {
         totalSize: files.reduce((acc, f) => acc + (f.size || 0), 0),
         fileCount: files.length,
-        publicUrlMissing: !credentials.publicUrl,
+        publicUrlMissing: usesBinding ? false : !credentials?.publicUrl,
       },
       nextContinuationToken: data.NextContinuationToken ?? null,
     });
