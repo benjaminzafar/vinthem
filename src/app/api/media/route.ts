@@ -13,6 +13,10 @@ function normalizeMediaKey(key: string) {
 }
 
 function toReadableStream(body: unknown): ReadableStream<Uint8Array> {
+  if (body instanceof ReadableStream) {
+    return body;
+  }
+
   if (body && typeof body === 'object') {
     const bodyWithTransform = body as { transformToWebStream?: () => ReadableStream<Uint8Array> };
     if (typeof bodyWithTransform.transformToWebStream === 'function') {

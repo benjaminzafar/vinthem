@@ -1,4 +1,3 @@
-import { createClient } from '@/utils/supabase/client';
 import { logger } from '@/lib/logger';
 
 export async function uploadImageWithTimeout(
@@ -15,34 +14,28 @@ export async function uploadImageWithTimeout(
     }, timeoutMs);
 
     try {
-      const presignedRes = await fetch('/api/admin/media/presigned', {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('path', finalPath);
+
+      const uploadRes = await fetch('/api/upload', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ path: finalPath, contentType: file.type })
-      });
-
-      if (!presignedRes.ok) {
-        const errorText = await presignedRes.text();
-        throw new Error(`Failed to get upload permission: ${presignedRes.status} ${errorText}`);
-      }
-      
-      const { uploadUrl, publicUrl } = await presignedRes.json();
-
-      // 2. Upload DIRECTLY to Cloudflare R2
-      const uploadRes = await fetch(uploadUrl, {
-        method: 'PUT',
-        headers: { 'Content-Type': file.type },
-        body: file
+        body: formData,
       });
 
       if (!uploadRes.ok) {
         const errorText = await uploadRes.text();
-        logger.error('[Upload] R2 Error Response:', errorText);
-        throw new Error(`Direct upload to R2 failed: ${uploadRes.status} ${errorText}`);
+        logger.error('[Upload] API Error Response:', errorText);
+        throw new Error(`Upload failed: ${uploadRes.status} ${errorText}`);
+      }
+
+      const { url } = await uploadRes.json() as { url?: string };
+      if (!url) {
+        throw new Error('Upload completed without a media URL.');
       }
 
       clearTimeout(timeout);
-      resolve(publicUrl);
+      resolve(url);
 
     } catch (error: unknown) {
       clearTimeout(timeout);
