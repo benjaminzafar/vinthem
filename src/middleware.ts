@@ -160,7 +160,7 @@ function getRequestKey(request: NextRequest) {
   return `${method}:${request.nextUrl.pathname}:${ip}:${userAgent}`;
 }
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const authorizationHeader = request.headers.get('authorization');
 
@@ -232,4 +232,4 @@ export const config = {
   matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|avif|css|js|map|txt|xml|woff2?)).*)'],
 };
 
-export default proxy;
+export default middleware;
