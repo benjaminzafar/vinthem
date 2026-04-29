@@ -1,7 +1,6 @@
 "use client";
 import { logger } from '@/lib/logger';
-import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import type { AuthChangeEvent, Session, SupabaseClient } from '@supabase/supabase-js';
 import { createClient } from '@/utils/supabase/client';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -15,7 +14,6 @@ declare global {
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { setUser, setIsAdmin, setIsAuthLoading } = useAuthStore();
-  const initialized = useRef(false);
   const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
 
   const identifyUser = (user: { id: string; email?: string; user_metadata?: Record<string, unknown> } | null) => {
@@ -28,14 +26,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    // Initialize supabase only on client side
-    const client = createClient();
-    setSupabase(client);
+    const refreshSupabaseClient = () => {
+      setSupabase(createClient());
+    };
+
+    refreshSupabaseClient();
+    window.addEventListener('supabase-config-ready', refreshSupabaseClient);
+
+    return () => {
+      window.removeEventListener('supabase-config-ready', refreshSupabaseClient);
+    };
   }, []);
 
   useEffect(() => {
-    if (!supabase || initialized.current) return;
-    initialized.current = true;
+    if (!supabase) return;
 
     const initAuth = async () => {
       try {

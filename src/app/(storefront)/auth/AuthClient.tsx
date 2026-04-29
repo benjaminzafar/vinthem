@@ -1,5 +1,5 @@
 "use client";
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -40,10 +40,75 @@ export function AuthClient({ initialSettings, supabaseConfig }: AuthClientProps)
   const pathname = usePathname();
   const lang = getClientLocale(pathname);
   const redirectTarget = searchParams.get('redirect') || searchParams.get('next') || '/';
+  const [authClientConfig, setAuthClientConfig] = useState(supabaseConfig);
   const supabase = useMemo(
-    () => createClient(supabaseConfig.url, supabaseConfig.anonKey),
-    [supabaseConfig.anonKey, supabaseConfig.url]
+    () => createClient(authClientConfig.url, authClientConfig.anonKey),
+    [authClientConfig.anonKey, authClientConfig.url]
   );
+  const isSupabaseConfigReady = Boolean(authClientConfig.url && authClientConfig.anonKey);
+
+  useEffect(() => {
+    if (supabaseConfig.url && supabaseConfig.anonKey) {
+      setAuthClientConfig(supabaseConfig);
+    }
+  }, [supabaseConfig]);
+
+  useEffect(() => {
+    if (authClientConfig.url && authClientConfig.anonKey) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const syncClientConfig = async () => {
+      const g = globalThis as typeof globalThis & {
+        __supabase_url?: string;
+        __supabase_key?: string;
+      };
+
+      if (g.__supabase_url && g.__supabase_key) {
+        if (!cancelled) {
+          setAuthClientConfig({ url: g.__supabase_url, anonKey: g.__supabase_key });
+        }
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/supabase-config', {
+          cache: 'no-store',
+          credentials: 'same-origin',
+        });
+        if (!response.ok) {
+          return;
+        }
+
+        const config = await response.json() as { url?: string; anonKey?: string };
+        if (!cancelled && config.url && config.anonKey) {
+          setAuthClientConfig({ url: config.url, anonKey: config.anonKey });
+        }
+      } catch {
+        // The form will remain disabled and surface the config issue instead of using a broken auth client.
+      }
+    };
+
+    const handleSupabaseConfigReady = () => {
+      const g = globalThis as typeof globalThis & {
+        __supabase_url?: string;
+        __supabase_key?: string;
+      };
+      if (g.__supabase_url && g.__supabase_key) {
+        setAuthClientConfig({ url: g.__supabase_url, anonKey: g.__supabase_key });
+      }
+    };
+
+    window.addEventListener('supabase-config-ready', handleSupabaseConfigReady);
+    void syncClientConfig();
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener('supabase-config-ready', handleSupabaseConfigReady);
+    };
+  }, [authClientConfig.anonKey, authClientConfig.url]);
 
   const resolvePostAuthRedirect = (target: string) => {
     if (!target) {
@@ -67,6 +132,10 @@ export function AuthClient({ initialSettings, supabaseConfig }: AuthClientProps)
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     if (loading) return;
+    if (!isSupabaseConfigReady) {
+      toast.error('Authentication is still loading. Please wait a moment and try again.');
+      return;
+    }
     setLoading(true);
 
     try {
@@ -134,6 +203,10 @@ export function AuthClient({ initialSettings, supabaseConfig }: AuthClientProps)
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (loading) return;
+    if (!isSupabaseConfigReady) {
+      toast.error('Authentication is still loading. Please wait a moment and try again.');
+      return;
+    }
     setLoading(true);
 
     try {
@@ -150,6 +223,11 @@ export function AuthClient({ initialSettings, supabaseConfig }: AuthClientProps)
   };
 
   const handleGoogleLogin = async () => {
+    if (!isSupabaseConfigReady) {
+      toast.error('Authentication is still loading. Please wait a moment and try again.');
+      return;
+    }
+
     if (!settings.googleAuthEnabled) {
       toast.error(settings.googleLoginUnavailableText?.[lang] || 'Google login disabled.');
       return;
@@ -262,7 +340,7 @@ export function AuthClient({ initialSettings, supabaseConfig }: AuthClientProps)
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !isSupabaseConfigReady}
               className="w-full h-11 bg-zinc-900 text-white text-[14px] font-semibold uppercase tracking-wider transition-all hover:bg-black disabled:opacity-50 rounded flex items-center justify-center border-none shadow-none"
             >
               {loading ? (
@@ -308,7 +386,7 @@ export function AuthClient({ initialSettings, supabaseConfig }: AuthClientProps)
               <button
                 type="button"
                 onClick={handleGoogleLogin}
-                disabled={!settings.googleAuthEnabled}
+                disabled={!settings.googleAuthEnabled || !isSupabaseConfigReady}
                 className="w-full group flex items-center justify-center gap-3 h-11 border border-slate-200 rounded text-[14px] font-semibold uppercase tracking-wider text-zinc-950 bg-white hover:bg-zinc-50 transition-all active:scale-[0.98] disabled:opacity-30 disabled:grayscale shadow-none"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24">
