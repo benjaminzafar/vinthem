@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getCloudflareContext } from '@opennextjs/cloudflare';
+import { getCloudflareEnv } from '@/lib/cloudflare-context';
 import { getS3Client, hasMediaBucketBinding } from '@/lib/s3';
 
 export const runtime = 'edge';
@@ -16,8 +16,7 @@ export async function GET() {
       }, { status: 500 });
     }
 
-    const context = await getCloudflareContext({ async: true });
-    const bucketName = context.env.MEDIA_BUCKET ? 'MEDIA_BUCKET_ATTACHED' : 'MISSING';
+    const bucketName = getCloudflareEnv().MEDIA_BUCKET ? 'MEDIA_BUCKET_ATTACHED' : 'MISSING';
 
     const s3Client = await getS3Client();
     const probe = await s3Client.list('', { maxKeys: 1 });

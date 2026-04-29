@@ -1,5 +1,5 @@
 import 'server-only';
-import { getCloudflareContext } from '@opennextjs/cloudflare';
+import { getCloudflareEnv } from '@/lib/cloudflare-context';
 
 interface BoundR2Object {
   key: string;
@@ -80,7 +80,7 @@ export function toMediaProxyKeyUrl(key: string): string {
 
 async function getBucketBinding(): Promise<BoundR2Bucket> {
   try {
-    const bucket = (await getCloudflareContext({ async: true })).env.MEDIA_BUCKET;
+    const bucket = getCloudflareEnv().MEDIA_BUCKET;
     if (!bucket) {
       throw new Error('MEDIA_BUCKET binding is missing from the Cloudflare runtime.');
     }

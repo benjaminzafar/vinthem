@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
+import { getCloudflareEnv } from '@/lib/cloudflare-context';
 
 export const runtime = 'edge';
 
 export async function GET() {
   try {
-    const { getCloudflareContext } = await import('@opennextjs/cloudflare');
-    const context = await getCloudflareContext({ async: true });
-    const bucket = context.env.MEDIA_BUCKET;
+    const bucket = getCloudflareEnv().MEDIA_BUCKET;
 
     if (!bucket) {
       return NextResponse.json({
