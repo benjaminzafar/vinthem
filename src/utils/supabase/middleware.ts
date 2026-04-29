@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { getEnv } from '@/lib/env';
+import { logger } from '@/lib/logger';
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -52,7 +53,7 @@ export async function updateSession(request: NextRequest) {
 
     return { supabaseResponse, user, role: profile?.role ?? null };
   } catch (e) {
+    logger.error('[Middleware] Session refresh failed', e);
     return { supabaseResponse, user: null, role: null };
   }
 }
-

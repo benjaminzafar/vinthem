@@ -41,6 +41,16 @@ function shouldBypassLocaleRouting(pathname: string) {
   );
 }
 
+function shouldBypassSessionRefresh(pathname: string) {
+  return (
+    pathname === '/api/r2-health'
+    || pathname === '/api/media'
+    || pathname.startsWith('/api/upload')
+    || pathname === '/api/admin/media/health'
+    || pathname.startsWith('/api/admin/media')
+  );
+}
+
 function getAllowedOrigins(request: NextRequest) {
   const configuredOrigins = process.env.ALLOWED_ORIGINS
     ?.split(',')
@@ -179,9 +189,12 @@ function createRedirect(url: string | URL, supabaseResponse: NextResponse) {
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const authorizationHeader = request.headers.get('authorization');
+  const bypassSessionRefresh = shouldBypassSessionRefresh(pathname);
 
-  // 1. Update session first - this is critical for all subsequent logic
-  const { supabaseResponse, user, role } = await updateSession(request);
+  // 1. Update session only on routes that actually need middleware auth/session refresh.
+  const { supabaseResponse, user, role } = bypassSessionRefresh
+    ? { supabaseResponse: NextResponse.next({ request }), user: null, role: null }
+    : await updateSession(request);
 
   const userAgent = request.headers.get('user-agent');
   const geoCountry = request.headers.get('cf-ipcountry');
@@ -240,7 +253,12 @@ export async function middleware(request: NextRequest) {
   const adminPath = normalizedPathname.startsWith('/admin') || normalizedPathname.startsWith('/api/admin');
   const isBearerProtectedAdminApi = normalizedPathname.startsWith('/api/admin') && Boolean(authorizationHeader);
   
-  if (adminPath && !isBearerProtectedAdminApi && (!user || role !== 'admin')) {
+  if (
+    adminPath
+    && !bypassSessionRefresh
+    && !isBearerProtectedAdminApi
+    && (!user || role !== 'admin')
+  ) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = pathnameLocale ? `/${pathnameLocale}/auth` : '/auth';
     redirectUrl.searchParams.set('redirect', pathname);
@@ -255,4 +273,3 @@ export const config = {
 };
 
 export default middleware;
-
