@@ -21,15 +21,21 @@ export default function StoreHydrator({ settings, supabaseConfig }: StoreHydrato
     }
 
     if (supabaseConfig?.url && supabaseConfig?.anonKey) {
-      const g = globalThis as any;
+      const g = globalThis as typeof globalThis & {
+        __supabase_url?: string;
+        __supabase_key?: string;
+        __supabase_real_client?: unknown;
+        __supabase_signature?: string;
+      };
       
       // Update the global variables
       g.__supabase_url = supabaseConfig.url;
       g.__supabase_key = supabaseConfig.anonKey;
 
-      // Force cleanup of the old client if it exists
-      if (g.__supabase_client && g.__supabase_url_used?.includes('missing')) {
-        g.__supabase_client = undefined;
+      // Force cleanup of the old lazy client if it was initialized before config landed
+      if (g.__supabase_signature?.includes('missing')) {
+        g.__supabase_real_client = undefined;
+        g.__supabase_signature = undefined;
       }
     }
   }, [settings, setSettings, setSettingsLoaded, supabaseConfig]);

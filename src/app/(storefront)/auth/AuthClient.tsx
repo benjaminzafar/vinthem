@@ -16,9 +16,13 @@ import { extractLanguageFromPathname, localizeHref } from '@/lib/i18n-routing';
 
 interface AuthClientProps {
   initialSettings: Partial<StorefrontSettings>;
+  supabaseConfig: {
+    url: string;
+    anonKey: string;
+  };
 }
 
-export function AuthClient({ initialSettings }: AuthClientProps) {
+export function AuthClient({ initialSettings, supabaseConfig }: AuthClientProps) {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -36,7 +40,10 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
   const pathname = usePathname();
   const lang = getClientLocale(pathname);
   const redirectTarget = searchParams.get('redirect') || searchParams.get('next') || '/';
-  const supabase = useMemo(() => createClient(), []);
+  const supabase = useMemo(
+    () => createClient(supabaseConfig.url, supabaseConfig.anonKey),
+    [supabaseConfig.anonKey, supabaseConfig.url]
+  );
 
   const resolvePostAuthRedirect = (target: string) => {
     if (!target) {

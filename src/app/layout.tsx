@@ -127,6 +127,16 @@ export default async function RootLayout({
             }}
           />
         )}
+        <Script
+          id="supabase-browser-config"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.__supabase_url = ${JSON.stringify(getEnv('SUPABASE_URL') || '')};
+              window.__supabase_key = ${JSON.stringify(getEnv('SUPABASE_PUBLISHABLE_KEY') || '')};
+            `,
+          }}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
