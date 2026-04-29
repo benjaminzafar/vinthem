@@ -48,6 +48,7 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
   const supabase = createClient();
   const [isDesktop, setIsDesktop] = useState(false);
   const [categoryTrail, setCategoryTrail] = useState<CategoryTrailItem[]>(createRootCategoryTrail(labels.allProducts));
+  const [categoryDirection, setCategoryDirection] = useState(1);
 
   const getCategoryLabel = (category: Category) => category.translations?.[lang]?.name || category.name;
 
@@ -121,6 +122,7 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
   };
 
   const openCategoryLevel = (category: Category) => {
+    setCategoryDirection(1);
     setCategoryTrail((previous) => [
       ...previous,
       {
@@ -131,6 +133,7 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
   };
 
   const goBackCategoryLevel = () => {
+    setCategoryDirection(-1);
     setCategoryTrail((previous) => (
       previous.length > 1 ? previous.slice(0, previous.length - 1) : previous
     ));
@@ -144,6 +147,7 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
         className="lg:hidden p-2 text-slate-600 hover:text-brand-ink transition-colors"
         onClick={() => {
           if (!isMobileMenuOpen) {
+            setCategoryDirection(1);
             setCategoryTrail(createRootCategoryTrail(labels.allProducts));
           }
           setMobileMenuOpen(!isMobileMenuOpen);
@@ -193,63 +197,68 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                     <span className="!text-[12px] !font-bold !uppercase !tracking-widest text-brand-ink group-hover:text-brand-ink transition-all duration-300">
                       {labels.allProducts}
                     </span>
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-500 transition-all group-hover:border-slate-300 group-hover:text-slate-700">
-                      <ChevronRight className="w-4 h-4" />
-                    </span>
+                    <ChevronRight className="w-4 h-4 text-slate-400 transition-colors group-hover:text-slate-700" />
                   </Link>
 
-                  <div className="space-y-2">
-                    {categoryTrail.length > 1 ? (
-                      <button
-                        type="button"
-                        onClick={goBackCategoryLevel}
-                        className="flex w-full items-center gap-2 pb-2 text-left text-[11px] font-bold uppercase tracking-widest text-slate-500 transition-colors hover:text-slate-900"
+                  <div className="overflow-hidden">
+                    <AnimatePresence mode="wait" initial={false}>
+                      <motion.div
+                        key={currentParentId || 'root'}
+                        initial={{ x: categoryDirection > 0 ? 40 : -40, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        exit={{ x: categoryDirection > 0 ? -40 : 40, opacity: 0 }}
+                        transition={{ duration: 0.22, ease: 'easeOut' }}
+                        className="space-y-2"
                       >
-                        <ChevronLeft className="h-4 w-4" />
-                        {categoryTrail[categoryTrail.length - 2]?.label || labels.allProducts}
-                      </button>
-                    ) : null}
+                        {categoryTrail.length > 1 ? (
+                          <button
+                            type="button"
+                            onClick={goBackCategoryLevel}
+                            className="flex w-full items-center gap-2 pb-2 text-left text-[11px] font-bold uppercase tracking-widest text-slate-500 transition-colors hover:text-slate-900"
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                            {categoryTrail[categoryTrail.length - 2]?.label || labels.allProducts}
+                          </button>
+                        ) : null}
 
-                    {currentCategories.map((category) => {
-                      const childCategories = categoryChildrenMap.get(category.id || null) || [];
-                      const hasChildren = childCategories.length > 0;
-                      const categoryHref = `/${lang}/products?category=${encodeURIComponent(category.slug)}`;
+                        {currentCategories.map((category) => {
+                          const childCategories = categoryChildrenMap.get(category.id || null) || [];
+                          const hasChildren = childCategories.length > 0;
+                          const categoryHref = `/${lang}/products?category=${encodeURIComponent(category.slug)}`;
 
-                      return (
-                        <div key={category.id} className="rounded-md border border-slate-100 bg-white">
-                          <div className="flex items-stretch">
-                            <Link
-                              href={categoryHref}
-                              onClick={() => setMobileMenuOpen(false)}
-                              className="flex min-w-0 flex-1 items-center px-4 py-3"
-                            >
-                              <span className="!text-[12px] !font-bold !uppercase !tracking-widest text-brand-ink transition-all duration-300">
-                                {getCategoryLabel(category)}
-                              </span>
-                            </Link>
+                          return (
+                            <div key={category.id} className="rounded-md border border-slate-100 bg-white">
+                              <div className="flex items-stretch">
+                                <Link
+                                  href={categoryHref}
+                                  onClick={() => setMobileMenuOpen(false)}
+                                  className="flex min-w-0 flex-1 items-center px-4 py-3"
+                                >
+                                  <span className="!text-[12px] !font-bold !uppercase !tracking-widest text-brand-ink transition-all duration-300">
+                                    {getCategoryLabel(category)}
+                                  </span>
+                                </Link>
 
-                            {hasChildren ? (
-                              <button
-                                type="button"
-                                onClick={() => openCategoryLevel(category)}
-                                className="group flex shrink-0 items-center justify-center px-3 text-slate-500 transition-colors hover:text-slate-900"
-                                aria-label={`Open subcategories for ${getCategoryLabel(category)}`}
-                              >
-                                <span className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-slate-50 transition-all group-hover:border-slate-300 group-hover:bg-slate-100">
-                                  <ChevronRight className="h-4 w-4" />
-                                </span>
-                              </button>
-                            ) : (
-                              <span className="flex shrink-0 items-center justify-center px-3 text-slate-300">
-                                <span className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-100 bg-slate-50/70">
-                                  <ChevronRight className="h-4 w-4" />
-                                </span>
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
+                                {hasChildren ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => openCategoryLevel(category)}
+                                    className="group flex shrink-0 items-center justify-center px-3 text-slate-500 transition-colors hover:text-slate-900"
+                                    aria-label={`Open subcategories for ${getCategoryLabel(category)}`}
+                                  >
+                                    <ChevronRight className="h-4 w-4" />
+                                  </button>
+                                ) : (
+                                  <span className="flex shrink-0 items-center justify-center px-3 text-slate-300">
+                                    <ChevronRight className="h-4 w-4" />
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </motion.div>
+                    </AnimatePresence>
                   </div>
                   
                   {categories.length > 0 && (
@@ -269,9 +278,7 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                       <span className="!text-[12px] !font-bold !uppercase !tracking-widest text-brand-ink group-hover:text-brand-ink transition-all duration-300">
                         {link.label[lang] || link.label['en']}
                       </span>
-                      <span className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-500 transition-all group-hover:border-slate-300 group-hover:text-slate-700">
-                        <ChevronRight className="w-4 h-4" />
-                      </span>
+                      <ChevronRight className="w-4 h-4 text-slate-400 transition-colors group-hover:text-slate-700" />
                     </Link>
                   ))}
                 </nav>
