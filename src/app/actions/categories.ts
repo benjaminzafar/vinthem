@@ -4,6 +4,7 @@
 import { revalidatePath } from 'next/cache';
 import { createAdminClient, createClient } from '@/utils/supabase/server';
 import { requireAdminUser } from '@/lib/admin';
+import { extractMediaKey } from '@/lib/media';
 
 /**
  * SECURITY NOTE:
@@ -93,6 +94,14 @@ function slugifyCategoryName(name: string) {
   );
 }
 
+function normalizeCategoryMediaValue(value: string | null | undefined) {
+  if (!value) {
+    return null;
+  }
+
+  return extractMediaKey(value) || value.trim() || null;
+}
+
 async function ensureUniqueSlug(baseSlug: string, currentId?: string) {
   const supabase = await createClient();
   for (let index = 0; index < 50; index += 1) {
@@ -126,8 +135,8 @@ export async function saveCategoryAction(input: SaveCategoryInput): Promise<Cate
       is_featured: input.isFeatured,
       show_in_hero: input.showInHero,
       parent_id: input.parentId || null,
-      image_url: input.imageUrl || null,
-      icon_url: input.iconUrl || null,
+      image_url: normalizeCategoryMediaValue(input.imageUrl),
+      icon_url: normalizeCategoryMediaValue(input.iconUrl),
       translations: input.translations || {},
     };
 

@@ -2,17 +2,15 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { motion, AnimatePresence } from 'motion/react';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
-import { Menu, X, ChevronRight, User, Settings, LogOut, Languages } from 'lucide-react';
+import { Menu, X, ChevronRight, ChevronLeft, User, Settings, LogOut } from 'lucide-react';
 import { useUIStore } from '@/store/useUIStore';
 import { StorefrontSettings, MenuLink } from '@/store/useSettingsStore';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { Portal } from './Portal';
-import { UserAvatar } from '../ui/UserAvatar';
 import { Category } from '@/types';
 import { localizeHref } from '@/lib/i18n-routing';
 import { performClientLogout } from '@/lib/client-auth';
@@ -35,12 +33,39 @@ interface MobileMenuProps {
   };
 }
 
+type CategoryTrailItem = {
+  id: string | null;
+  label: string;
+};
+
+const createRootCategoryTrail = (label: string): CategoryTrailItem[] => [
+  { id: null, label },
+];
+
 export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, availableLanguages, labels }: MobileMenuProps) {
   const { isMobileMenuOpen, setMobileMenuOpen } = useUIStore();
   const menuRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
-  const navigate = useRouter();
   const [isDesktop, setIsDesktop] = useState(false);
+  const [categoryTrail, setCategoryTrail] = useState<CategoryTrailItem[]>(createRootCategoryTrail(labels.allProducts));
+
+  const getCategoryLabel = (category: Category) => category.translations?.[lang]?.name || category.name;
+
+  const categoryChildrenMap = new Map<string | null, Category[]>();
+
+  for (const category of categories) {
+    const parentId = category.parentId || null;
+    const existing = categoryChildrenMap.get(parentId) || [];
+    existing.push(category);
+    categoryChildrenMap.set(parentId, existing);
+  }
+
+  for (const entry of categoryChildrenMap.values()) {
+    entry.sort((left, right) => getCategoryLabel(left).localeCompare(getCategoryLabel(right), lang));
+  }
+
+  const currentParentId = categoryTrail[categoryTrail.length - 1]?.id ?? null;
+  const currentCategories = categoryChildrenMap.get(currentParentId) || [];
 
   useEffect(() => {
     const handleResize = () => {
@@ -95,6 +120,22 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
     }
   };
 
+  const openCategoryLevel = (category: Category) => {
+    setCategoryTrail((previous) => [
+      ...previous,
+      {
+        id: category.id || null,
+        label: getCategoryLabel(category),
+      },
+    ]);
+  };
+
+  const goBackCategoryLevel = () => {
+    setCategoryTrail((previous) => (
+      previous.length > 1 ? previous.slice(0, previous.length - 1) : previous
+    ));
+  };
+
   if (isDesktop) return null;
 
   return (
@@ -102,6 +143,9 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
       <button
         className="lg:hidden p-2 text-slate-600 hover:text-brand-ink transition-colors"
         onClick={() => {
+          if (!isMobileMenuOpen) {
+            setCategoryTrail(createRootCategoryTrail(labels.allProducts));
+          }
           setMobileMenuOpen(!isMobileMenuOpen);
         }}
         aria-label="Open mobile menu"
@@ -149,22 +193,64 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                     <span className="!text-[12px] !font-bold !uppercase !tracking-widest text-brand-ink group-hover:text-brand-ink transition-all duration-300">
                       {labels.allProducts}
                     </span>
-                    <ChevronRight className="w-5 h-5 text-brand-muted opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-500 transition-all group-hover:border-slate-300 group-hover:text-slate-700">
+                      <ChevronRight className="w-4 h-4" />
+                    </span>
                   </Link>
 
-                  {categories.map((cat) => (
-                    <Link
-                      key={cat.id}
-                      href={`/${lang}/products?category=${encodeURIComponent(cat.slug)}`}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="group flex items-center justify-between"
-                    >
-                      <span className="!text-[12px] !font-bold !uppercase !tracking-widest text-brand-ink group-hover:text-brand-ink transition-all duration-300">
-                        {cat.translations?.[lang]?.name || cat.name}
-                      </span>
-                      <ChevronRight className="w-5 h-5 text-brand-muted opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </Link>
-                  ))}
+                  <div className="space-y-2">
+                    {categoryTrail.length > 1 ? (
+                      <button
+                        type="button"
+                        onClick={goBackCategoryLevel}
+                        className="flex w-full items-center gap-2 pb-2 text-left text-[11px] font-bold uppercase tracking-widest text-slate-500 transition-colors hover:text-slate-900"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                        {categoryTrail[categoryTrail.length - 2]?.label || labels.allProducts}
+                      </button>
+                    ) : null}
+
+                    {currentCategories.map((category) => {
+                      const childCategories = categoryChildrenMap.get(category.id || null) || [];
+                      const hasChildren = childCategories.length > 0;
+                      const categoryHref = `/${lang}/products?category=${encodeURIComponent(category.slug)}`;
+
+                      return (
+                        <div key={category.id} className="rounded-md border border-slate-100 bg-white">
+                          <div className="flex items-stretch">
+                            <Link
+                              href={categoryHref}
+                              onClick={() => setMobileMenuOpen(false)}
+                              className="flex min-w-0 flex-1 items-center px-4 py-3"
+                            >
+                              <span className="!text-[12px] !font-bold !uppercase !tracking-widest text-brand-ink transition-all duration-300">
+                                {getCategoryLabel(category)}
+                              </span>
+                            </Link>
+
+                            {hasChildren ? (
+                              <button
+                                type="button"
+                                onClick={() => openCategoryLevel(category)}
+                                className="group flex shrink-0 items-center justify-center px-3 text-slate-500 transition-colors hover:text-slate-900"
+                                aria-label={`Open subcategories for ${getCategoryLabel(category)}`}
+                              >
+                                <span className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-slate-50 transition-all group-hover:border-slate-300 group-hover:bg-slate-100">
+                                  <ChevronRight className="h-4 w-4" />
+                                </span>
+                              </button>
+                            ) : (
+                              <span className="flex shrink-0 items-center justify-center px-3 text-slate-300">
+                                <span className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-100 bg-slate-50/70">
+                                  <ChevronRight className="h-4 w-4" />
+                                </span>
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                   
                   {categories.length > 0 && (
                     <div className="w-8 h-px bg-gray-200 my-2" />
@@ -183,7 +269,9 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                       <span className="!text-[12px] !font-bold !uppercase !tracking-widest text-brand-ink group-hover:text-brand-ink transition-all duration-300">
                         {link.label[lang] || link.label['en']}
                       </span>
-                      <ChevronRight className="w-5 h-5 text-brand-muted opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <span className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-500 transition-all group-hover:border-slate-300 group-hover:text-slate-700">
+                        <ChevronRight className="w-4 h-4" />
+                      </span>
                     </Link>
                   ))}
                 </nav>

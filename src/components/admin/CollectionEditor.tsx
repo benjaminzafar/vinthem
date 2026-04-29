@@ -16,7 +16,7 @@ import { saveCategoryAction } from '@/app/actions/categories';
 import { MediaPickerModal } from './MediaPickerModal';
 import Image from 'next/image';
 import { logger } from '@/lib/logger';
-import { toMediaProxyUrl } from '@/lib/media';
+import { extractMediaKey, toMediaProxyUrl } from '@/lib/media';
 import { isValidUrl } from '@/lib/utils';
 import { getAIErrorMessage } from '@/lib/ai-errors';
 
@@ -42,6 +42,9 @@ interface CollectionTranslationResult {
 type CollectionEditorTab = 'hierarchy' | 'translations' | 'engagement';
 
 function mapCollectionToForm(collection?: Category | null): Category {
+  const imageUrl = collection?.imageUrl ? extractMediaKey(collection.imageUrl) || collection.imageUrl : '';
+  const iconUrl = collection?.iconUrl ? extractMediaKey(collection.iconUrl) || collection.iconUrl : '';
+
   return {
     id: collection?.id,
     name: collection?.name || '',
@@ -50,10 +53,14 @@ function mapCollectionToForm(collection?: Category | null): Category {
     isFeatured: collection?.isFeatured ?? false,
     showInHero: collection?.showInHero ?? false,
     parentId: collection?.parentId || '',
-    imageUrl: collection?.imageUrl || '',
-    iconUrl: collection?.iconUrl || '',
+    imageUrl,
+    iconUrl,
     translations: collection?.translations || {},
   };
+}
+
+function normalizeEditorMediaValue(value: string) {
+  return extractMediaKey(value) || value.trim();
 }
 
 export function CollectionEditor({ initialCollection, categories: initialCategories = [], settings }: CollectionEditorProps) {
@@ -245,7 +252,7 @@ export function CollectionEditor({ initialCollection, categories: initialCategor
       if (!res.ok) throw new Error('Upload failed');
       const { url } = await res.json();
       
-      setFormData(prev => ({ ...prev, imageUrl: url }));
+      setFormData(prev => ({ ...prev, imageUrl: normalizeEditorMediaValue(url) }));
       toast.success('Banner uploaded', { id: toastId });
     } catch (error: unknown) {
       const err = error as Error;
@@ -681,7 +688,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
         isOpen={isMediaPickerOpen}
         onClose={() => setIsMediaPickerOpen(false)}
         onSelect={(url) => { 
-          setFormData({ ...formData, imageUrl: url }); 
+          setFormData({ ...formData, imageUrl: normalizeEditorMediaValue(url) }); 
           setIsMediaPickerOpen(false); 
         }}
       />
