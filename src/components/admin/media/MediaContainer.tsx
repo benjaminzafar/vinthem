@@ -55,7 +55,14 @@ async function buildAuthHeaders() {
 
   try {
     const supabase = createSupabaseClient();
-    const { data } = await supabase.auth.getSession();
+    const sessionResult = await Promise.race([
+      supabase.auth.getSession(),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 1200)),
+    ]);
+
+    const data = sessionResult && typeof sessionResult === 'object' && 'data' in sessionResult
+      ? sessionResult.data
+      : null;
     const token = data.session?.access_token;
 
     if (token) {
