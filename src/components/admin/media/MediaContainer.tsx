@@ -17,6 +17,7 @@ import { Breadcrumbs } from './Breadcrumbs';
 import { FolderList } from './FolderList';
 import { AssetGrid } from './AssetGrid';
 import { AdminLoadingState } from '@/components/admin/AdminLoadingState';
+import { createClient as createSupabaseClient } from '@/utils/supabase/client';
 
 interface Asset {
   key: string;
@@ -49,6 +50,24 @@ async function parseApiPayload(response: Response): Promise<Record<string, unkno
   };
 }
 
+async function buildAuthHeaders() {
+  const headers = new Headers();
+
+  try {
+    const supabase = createSupabaseClient();
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
+
+    if (token) {
+      headers.set('Authorization', `Bearer ${token}`);
+    }
+  } catch {
+    // Cookie auth can still carry the request if session introspection fails.
+  }
+
+  return headers;
+}
+
 export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps) {
   const [folders, setFolders] = useState<string[]>([]);
   const [assets, setAssets] = useState<Asset[]>([]);
@@ -75,7 +94,12 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
     const url = `/api/admin/media?prefix=${encodeURIComponent(prefix)}&t=${Date.now()}${token ? `&token=${encodeURIComponent(token)}` : ''}`;
     
     try {
-      const res = await fetch(url, { cache: 'no-store' });
+      const headers = await buildAuthHeaders();
+      const res = await fetch(url, {
+        cache: 'no-store',
+        credentials: 'include',
+        headers,
+      });
       const data = await parseApiPayload(res);
       
       if (!res.ok || typeof data.error === 'string') {
@@ -153,10 +177,13 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
     formData.append('path', uploadPath);
 
     try {
+      const headers = await buildAuthHeaders();
       const res = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
-        cache: 'no-store'
+        cache: 'no-store',
+        credentials: 'include',
+        headers,
       });
       const data = await parseApiPayload(res);
       if (!res.ok || typeof data.error === 'string') {
@@ -186,11 +213,11 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
         params.set('url', url);
       }
 
+      const headers = await buildAuthHeaders();
+
       const res = await fetch(`/api/admin/media?${params.toString()}`, {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         credentials: 'include',
         cache: 'no-store'
       });

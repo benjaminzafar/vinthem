@@ -86,6 +86,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  let resolvedKey: string | null = null;
   try {
     await requireAdminMediaAccess(req);
     const { searchParams } = new URL(req.url);
@@ -110,6 +111,7 @@ export async function DELETE(req: NextRequest) {
         : null;
 
     if (!key) return NextResponse.json({ error: 'Missing key' }, { status: 400 });
+    resolvedKey = key;
 
     const s3Client = await getS3Client();
     if (key.endsWith('/')) {
@@ -137,6 +139,16 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to delete media asset';
+    logger.error('[Media API Delete Error]:', {
+      key: resolvedKey,
+      message,
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+
+    if (message === 'NoSuchKey' || message.includes('not found')) {
+      return NextResponse.json({ success: true, alreadyMissing: true });
+    }
+
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

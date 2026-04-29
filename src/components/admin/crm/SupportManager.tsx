@@ -9,6 +9,7 @@ import { isValidUrl } from '@/lib/utils';
 import { toast } from 'sonner';
 import type { SupportTicket } from './types';
 import { useCustomConfirm } from '@/components/ConfirmationContext';
+import { createClient as createSupabaseClient } from '@/utils/supabase/client';
 
 interface SupportManagerProps {
   tickets: SupportTicket[];
@@ -17,10 +18,23 @@ interface SupportManagerProps {
 
 export function SupportManager({ tickets, loading }: SupportManagerProps) {
   const customConfirm = useCustomConfirm();
+  const supabase = createSupabaseClient();
   const [expandedTicketId, setExpandedTicketId] = useState<string | null>(null);
   const [draftReplies, setDraftReplies] = useState<Record<string, string>>({});
   const [replyImages, setReplyImages] = useState<Record<string, string>>({});
   const [isUpdating, setIsUpdating] = useState(false);
+
+  const parseApiPayload = async (response: Response) => {
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      return await response.json() as Record<string, unknown>;
+    }
+
+    const rawText = await response.text();
+    return {
+      error: rawText || `Request failed with status ${response.status}`,
+    };
+  };
 
   const getStatusStyle = (status: string) => {
     switch (status) {
@@ -238,16 +252,27 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
                                           setIsUpdating(true);
                                           const tId = toast.loading('Uploading clinical evidence...');
                                           try {
+                                            const { data: sessionData } = await supabase.auth.getSession();
                                             const fd = new FormData();
                                             fd.append('file', file);
                                             fd.append('path', `support/admin/replies/${Date.now()}_${file.name}`);
-                                            const res = await fetch('/api/upload', { method: 'POST', body: fd });
-                                            if (!res.ok) throw new Error('Upload fail');
-                                            const { url } = await res.json();
-                                            setReplyImages(prev => ({ ...prev, [ticket.id]: url }));
+                                            const res = await fetch('/api/upload', {
+                                              method: 'POST',
+                                              body: fd,
+                                              credentials: 'include',
+                                              headers: sessionData.session?.access_token
+                                                ? { Authorization: `Bearer ${sessionData.session.access_token}` }
+                                                : undefined,
+                                            });
+                                            const payload = await parseApiPayload(res);
+                                            if (!res.ok || typeof payload.error === 'string' || typeof payload.url !== 'string') {
+                                              throw new Error(typeof payload.error === 'string' ? payload.error : 'Upload failed');
+                                            }
+                                            setReplyImages(prev => ({ ...prev, [ticket.id]: payload.url as string }));
                                             toast.success('Asset synced', { id: tId });
-                                          } catch (err) {
-                                            toast.error('Upload failed', { id: tId });
+                                          } catch (error: unknown) {
+                                            const message = error instanceof Error ? error.message : 'Upload failed';
+                                            toast.error(message, { id: tId });
                                           } finally {
                                             setIsUpdating(false);
                                           }

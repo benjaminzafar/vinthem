@@ -166,6 +166,18 @@ export function ProfileClient({
 
   const supabase = createClient();
 
+  const parseApiPayload = async (response: Response) => {
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      return await response.json() as Record<string, unknown>;
+    }
+
+    const rawText = await response.text();
+    return {
+      error: rawText || `Request failed with status ${response.status}`,
+    };
+  };
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     setUser(null);
@@ -208,6 +220,7 @@ export function ProfileClient({
     setIsUploadingSupportImage(true);
     const toastId = toast.loading('Uploading evidence asset...');
     try {
+      const { data: sessionData } = await supabase.auth.getSession();
       const formDataUpload = new FormData();
       formDataUpload.append('file', file);
       formDataUpload.append('path', `support/${user?.id}/${Date.now()}_${file.name}`);
@@ -215,14 +228,22 @@ export function ProfileClient({
       const res = await fetch('/api/upload', {
         method: 'POST',
         body: formDataUpload,
+        credentials: 'include',
+        headers: sessionData.session?.access_token
+          ? { Authorization: `Bearer ${sessionData.session.access_token}` }
+          : undefined,
       });
 
-      if (!res.ok) throw new Error('Upload failed');
-      const data = await res.json();
+      const data = await parseApiPayload(res);
+      if (!res.ok || typeof data.error === 'string' || typeof data.url !== 'string') {
+        throw new Error(typeof data.error === 'string' ? data.error : 'Upload failed');
+      }
+
       setSupportImageUrl(data.url);
       toast.success('Asset attached to request', { id: toastId });
-    } catch (err: any) {
-      toast.error('Asset upload failed. Please try again.', { id: toastId });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Asset upload failed. Please try again.';
+      toast.error(message, { id: toastId });
     } finally {
       setIsUploadingSupportImage(false);
     }
