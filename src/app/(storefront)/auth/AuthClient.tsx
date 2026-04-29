@@ -1,10 +1,10 @@
 "use client";
-import React, { useState } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import React, { useMemo, useState } from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { useAuthStore } from '@/store/useAuthStore';
 import { toast } from 'sonner';
-import { Mail, Lock, User, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import type { StorefrontSettings } from '@/store/useSettingsStore';
 import Link from 'next/link';
 import { checkEmailExistsAction, recordSignupConsentAction, syncCurrentUserProfileAction } from '@/app/actions/auth';
@@ -12,6 +12,7 @@ import { getClientLocale } from '@/lib/locale';
 import { useStorefrontSettings } from '@/hooks/useStorefrontSettings';
 import Image from 'next/image';
 import { OTPVerification } from '@/components/auth/OTPVerification';
+import { extractLanguageFromPathname, localizeHref } from '@/lib/i18n-routing';
 
 interface AuthClientProps {
   initialSettings: Partial<StorefrontSettings>;
@@ -31,25 +32,46 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
   const [otpType, setOtpType] = useState<'signup' | 'magiclink' | 'recovery'>('signup');
   
   const searchParams = useSearchParams();
-  const { setUser, setIsAdmin } = useAuthStore();
   const settings = useStorefrontSettings(initialSettings);
   const pathname = usePathname();
   const lang = getClientLocale(pathname);
   const redirectTarget = searchParams.get('redirect') || searchParams.get('next') || '/';
+  const supabase = useMemo(() => createClient(), []);
+
+  const resolvePostAuthRedirect = (target: string) => {
+    if (!target) {
+      return localizeHref(lang, '/');
+    }
+
+    if (/^https?:\/\//i.test(target)) {
+      return target;
+    }
+
+    const normalizedTarget = target.startsWith('/') ? target : `/${target}`;
+    const targetLocale = extractLanguageFromPathname(normalizedTarget);
+
+    if (targetLocale) {
+      return normalizedTarget;
+    }
+
+    return localizeHref(lang, normalizedTarget);
+  };
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     if (loading) return;
     setLoading(true);
-    
-    const { getSupabaseConfigAction } = await import('@/app/actions/config');
-    const config = await getSupabaseConfigAction();
-    const supabase = createClient(config.url, config.anonKey);
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+
+        if (!data.session) {
+          throw new Error('Login did not create a valid session. Please try again.');
+        }
+
+        await supabase.auth.getUser();
       } else {
         if (!acceptedTerms || !acceptedPrivacy) {
           throw new Error('Please accept the Terms and Privacy Policy.');
@@ -85,7 +107,7 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
 
       // Success Redirect
       toast.success(isLogin ? settings.loginSuccessText?.[lang] : settings.accountCreatedSuccessText?.[lang]);
-      window.location.href = redirectTarget.startsWith('/') ? `/${lang}${redirectTarget === '/' ? '' : redirectTarget}` : redirectTarget;
+      window.location.assign(resolvePostAuthRedirect(redirectTarget));
       
     } catch (error: any) {
       if (error.message?.toLowerCase().includes('email not confirmed')) {
@@ -106,10 +128,6 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
     e.preventDefault();
     if (loading) return;
     setLoading(true);
-    
-    const { getSupabaseConfigAction } = await import('@/app/actions/config');
-    const config = await getSupabaseConfigAction();
-    const supabase = createClient(config.url, config.anonKey);
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email);
@@ -131,12 +149,6 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
     }
     
     try {
-      // Get the correct config from server right before sign-in
-      const { getSupabaseConfigAction } = await import('@/app/actions/config');
-      const config = await getSupabaseConfigAction();
-      
-      const supabase = createClient(config.url, config.anonKey);
-
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: { 
@@ -158,7 +170,11 @@ export function AuthClient({ initialSettings }: AuthClientProps) {
             type={otpType}
             lang={lang}
             onSuccess={() => {
-              window.location.href = otpType === 'recovery' ? `/${lang}/auth/reset-password` : `/${lang}${redirectTarget}`;
+              window.location.assign(
+                otpType === 'recovery'
+                  ? localizeHref(lang, '/auth/reset-password')
+                  : resolvePostAuthRedirect(redirectTarget)
+              );
             }}
             labels={{
               title: settings.otpTitle?.[lang],
