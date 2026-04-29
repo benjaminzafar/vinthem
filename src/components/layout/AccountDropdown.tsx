@@ -78,11 +78,13 @@ export function AccountDropdown({ user, isAdmin, labels }: AccountDropdownProps)
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 0 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 0 }}
-            className="absolute right-0 top-[calc(100%+1px)] mt-0 w-60 bg-white shadow-2xl shadow-slate-900/10 rounded border border-slate-100 z-[100] py-2 overflow-hidden"
+            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+            transition={{ type: "spring", bounce: 0, duration: 0.3 }}
+            className="absolute right-0 top-[calc(100%+4px)] w-60 bg-white shadow-2xl shadow-slate-900/10 rounded-2xl border border-slate-100 z-[100] py-2 overflow-hidden"
           >
+
             <div className="px-6 py-3 border-b border-gray-50 mb-2">
               <p className="text-sm font-medium text-brand-ink truncate">{user.user_metadata?.full_name || 'User'}</p>
               <p className="text-xs text-gray-500 truncate mt-0.5">{user.email}</p>

@@ -187,8 +187,9 @@ export function LanguageSwitcher({ availableLanguages, variant = 'dropdown', dir
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: direction === 'up' ? 10 : -10, scale: 0.95 }}
             transition={{ type: "spring", bounce: 0, duration: 0.3 }}
-            className={`absolute ${align === 'right' ? 'right-0' : 'left-0'} ${direction === 'up' ? 'bottom-[calc(100%+12px)]' : 'top-[calc(100%+12px)]'} mt-0 w-48 bg-white/95 backdrop-blur-xl shadow-[0_20px_40px_-15px_rgba(0,0,0,0.15)] ring-1 ring-black/[0.05] z-[100] py-2 px-1.5 overflow-hidden rounded-2xl`}
+            className={`absolute ${align === 'right' ? 'right-0' : 'left-0'} ${direction === 'up' ? 'bottom-[calc(100%+8px)]' : 'top-[calc(100%+4px)]'} w-48 bg-white/95 backdrop-blur-xl shadow-[0_20px_40px_-15px_rgba(0,0,0,0.15)] ring-1 ring-black/[0.05] z-[100] py-2 px-1.5 overflow-hidden rounded-2xl`}
           >
+
             {availableLanguages.map((lng) => (
               <button
                 key={lng}

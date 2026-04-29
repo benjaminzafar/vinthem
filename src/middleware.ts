@@ -160,9 +160,28 @@ function getRequestKey(request: NextRequest) {
   return `${method}:${request.nextUrl.pathname}:${ip}:${userAgent}`;
 }
 
+/**
+ * Helper to create a redirect response while preserving cookies from the session update
+ */
+function createRedirect(url: string | URL, supabaseResponse: NextResponse) {
+  const response = NextResponse.redirect(url);
+  // Carry over headers (especially Set-Cookie) from the session response
+  supabaseResponse.headers.forEach((value, key) => {
+    if (key.toLowerCase() === 'set-cookie') {
+      response.headers.append(key, value);
+    } else {
+      response.headers.set(key, value);
+    }
+  });
+  return response;
+}
+
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const authorizationHeader = request.headers.get('authorization');
+
+  // 1. Update session first - this is critical for all subsequent logic
+  const { supabaseResponse, user, role } = await updateSession(request);
 
   const userAgent = request.headers.get('user-agent');
   const geoCountry = request.headers.get('cf-ipcountry');
@@ -176,11 +195,12 @@ export async function middleware(request: NextRequest) {
   const pathnameLocale = extractLanguageFromPathname(pathname);
   const normalizedPathname = pathnameLocale ? stripLanguageFromPathname(pathname) : pathname;
 
+  // 2. Handle Locale Routing
   if (!shouldBypassLocaleRouting(pathname)) {
     if (!pathnameLocale && !isBotRequest) {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = normalizeLocalizedPath(pathname, detectedLocale);
-      const redirectResponse = NextResponse.redirect(redirectUrl);
+      const redirectResponse = createRedirect(redirectUrl, supabaseResponse);
       redirectResponse.cookies.set('NEXT_LOCALE', detectedLocale, {
         path: '/',
         maxAge: LOCALE_COOKIE_MAX_AGE_SECONDS,
@@ -190,8 +210,7 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  const { supabaseResponse, user, role } = await updateSession(request);
-
+  // 3. Apply standard headers and security
   let nonce = '';
   try {
     nonce = crypto.randomUUID().replace(/-/g, '');
@@ -206,6 +225,7 @@ export async function middleware(request: NextRequest) {
   applyCorsHeaders(request, supabaseResponse);
   applySecurityHeaders(request, supabaseResponse, nonce);
 
+  // 4. Rate Limiting
   const rateLimitRule = getRateLimitRule(normalizedPathname);
   const rateLimitResult = await checkRateLimit(getRequestKey(request), rateLimitRule);
   supabaseResponse.headers.set('X-RateLimit-Limit', String(rateLimitRule.limit));
@@ -216,13 +236,15 @@ export async function middleware(request: NextRequest) {
     return new NextResponse('Too Many Requests', { status: 429, headers: supabaseResponse.headers });
   }
 
+  // 5. Protected Routes Check
   const adminPath = normalizedPathname.startsWith('/admin') || normalizedPathname.startsWith('/api/admin');
   const isBearerProtectedAdminApi = normalizedPathname.startsWith('/api/admin') && Boolean(authorizationHeader);
+  
   if (adminPath && !isBearerProtectedAdminApi && (!user || role !== 'admin')) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = pathnameLocale ? `/${pathnameLocale}/auth` : '/auth';
     redirectUrl.searchParams.set('redirect', pathname);
-    return NextResponse.redirect(redirectUrl, { headers: supabaseResponse.headers });
+    return createRedirect(redirectUrl, supabaseResponse);
   }
 
   return supabaseResponse;
@@ -233,3 +255,4 @@ export const config = {
 };
 
 export default middleware;
+

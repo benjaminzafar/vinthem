@@ -5,15 +5,17 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
     
-    // 1. Sign out on the server (clears cookies)
+    // 1. Sign out on the server
+    // This will trigger the setAll in the server client, clearing cookies via cookieStore.set
     await supabase.auth.signOut();
 
-    // 2. Clear server-side cache
-    const origin = new URL(request.url).origin;
-    
+    // 2. Return a success response
+    // The cookies cleared by signOut should be included in the response headers 
+    // because createClient uses the Next.js cookies() API.
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('[Logout API Error]:', error);
     return NextResponse.json({ success: false, error: 'Failed to sign out' }, { status: 500 });
   }
 }
+
