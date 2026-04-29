@@ -13,6 +13,7 @@ import { useStorefrontSettings } from '@/hooks/useStorefrontSettings';
 import Image from 'next/image';
 import { OTPVerification } from '@/components/auth/OTPVerification';
 import { extractLanguageFromPathname, localizeHref } from '@/lib/i18n-routing';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 interface AuthClientProps {
   initialSettings: Partial<StorefrontSettings>;
@@ -41,11 +42,14 @@ export function AuthClient({ initialSettings, supabaseConfig }: AuthClientProps)
   const lang = getClientLocale(pathname);
   const redirectTarget = searchParams.get('redirect') || searchParams.get('next') || '/';
   const [authClientConfig, setAuthClientConfig] = useState(supabaseConfig);
-  const supabase = useMemo(
-    () => createClient(authClientConfig.url, authClientConfig.anonKey),
-    [authClientConfig.anonKey, authClientConfig.url]
-  );
   const isSupabaseConfigReady = Boolean(authClientConfig.url && authClientConfig.anonKey);
+  const supabase = useMemo<SupabaseClient | null>(() => {
+    if (!isSupabaseConfigReady) {
+      return null;
+    }
+
+    return createClient(authClientConfig.url, authClientConfig.anonKey);
+  }, [authClientConfig.anonKey, authClientConfig.url, isSupabaseConfigReady]);
 
   useEffect(() => {
     if (supabaseConfig.url && supabaseConfig.anonKey) {
@@ -136,6 +140,10 @@ export function AuthClient({ initialSettings, supabaseConfig }: AuthClientProps)
       toast.error('Authentication is still loading. Please wait a moment and try again.');
       return;
     }
+    if (!supabase) {
+      toast.error('Authentication client is not ready yet. Please try again.');
+      return;
+    }
     setLoading(true);
 
     try {
@@ -207,6 +215,10 @@ export function AuthClient({ initialSettings, supabaseConfig }: AuthClientProps)
       toast.error('Authentication is still loading. Please wait a moment and try again.');
       return;
     }
+    if (!supabase) {
+      toast.error('Authentication client is not ready yet. Please try again.');
+      return;
+    }
     setLoading(true);
 
     try {
@@ -225,6 +237,10 @@ export function AuthClient({ initialSettings, supabaseConfig }: AuthClientProps)
   const handleGoogleLogin = async () => {
     if (!isSupabaseConfigReady) {
       toast.error('Authentication is still loading. Please wait a moment and try again.');
+      return;
+    }
+    if (!supabase) {
+      toast.error('Authentication client is not ready yet. Please try again.');
       return;
     }
 

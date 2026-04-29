@@ -227,33 +227,31 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                           const categoryHref = `/${lang}/products?category=${encodeURIComponent(category.slug)}`;
 
                           return (
-                            <div key={category.id} className="rounded-md border border-slate-100 bg-white">
-                              <div className="flex items-stretch">
-                                <Link
-                                  href={categoryHref}
-                                  onClick={() => setMobileMenuOpen(false)}
-                                  className="flex min-w-0 flex-1 items-center px-4 py-3"
-                                >
-                                  <span className="!text-[12px] !font-bold !uppercase !tracking-widest text-brand-ink transition-all duration-300">
-                                    {getCategoryLabel(category)}
-                                  </span>
-                                </Link>
+                            <div key={category.id} className="group flex items-center justify-between">
+                              <Link
+                                href={categoryHref}
+                                onClick={() => setMobileMenuOpen(false)}
+                                className="flex min-w-0 flex-1 items-center py-1"
+                              >
+                                <span className="!text-[12px] !font-bold !uppercase !tracking-widest text-brand-ink transition-all duration-300">
+                                  {getCategoryLabel(category)}
+                                </span>
+                              </Link>
 
-                                {hasChildren ? (
-                                  <button
-                                    type="button"
-                                    onClick={() => openCategoryLevel(category)}
-                                    className="group flex shrink-0 items-center justify-center px-3 text-slate-500 transition-colors hover:text-slate-900"
-                                    aria-label={`Open subcategories for ${getCategoryLabel(category)}`}
-                                  >
-                                    <ChevronRight className="h-4 w-4" />
-                                  </button>
-                                ) : (
-                                  <span className="flex shrink-0 items-center justify-center px-3 text-slate-300">
-                                    <ChevronRight className="h-4 w-4" />
-                                  </span>
-                                )}
-                              </div>
+                              {hasChildren ? (
+                                <button
+                                  type="button"
+                                  onClick={() => openCategoryLevel(category)}
+                                  className="group flex shrink-0 items-center justify-center py-1 text-slate-400 transition-colors hover:text-slate-700"
+                                  aria-label={`Open subcategories for ${getCategoryLabel(category)}`}
+                                >
+                                  <ChevronRight className="h-4 w-4" />
+                                </button>
+                              ) : (
+                                <span className="flex shrink-0 items-center justify-center py-1 text-slate-300">
+                                  <ChevronRight className="h-4 w-4" />
+                                </span>
+                              )}
                             </div>
                           );
                         })}

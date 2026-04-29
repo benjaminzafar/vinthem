@@ -11,6 +11,7 @@ import { CartDrawer } from "@/components/layout/CartDrawer";
 import { getServerLocale } from "@/lib/server-locale";
 import { Toaster } from "sonner";
 import Script from "next/script";
+import { getBrowserSupabaseConfig } from "@/lib/supabase-browser-config";
 
 function sanitizeClarityId(value: string | undefined): string | null {
   if (!value) {
@@ -76,6 +77,7 @@ export default async function RootLayout({
   const settings = await getSettings();
   const integrations = await getIntegrations();
   const lang = await getServerLocale();
+  const supabaseConfig = getBrowserSupabaseConfig();
 
   const siteUrl = getEnv('SITE_URL') || 'https://www.vinthem.com';
   const clarityId = sanitizeClarityId(integrations.CLARITY_ID);
@@ -132,8 +134,8 @@ export default async function RootLayout({
           strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `
-              window.__supabase_url = ${JSON.stringify(getEnv('SUPABASE_URL') || '')};
-              window.__supabase_key = ${JSON.stringify(getEnv('SUPABASE_PUBLISHABLE_KEY') || '')};
+              window.__supabase_url = ${JSON.stringify(supabaseConfig.url)};
+              window.__supabase_key = ${JSON.stringify(supabaseConfig.anonKey)};
             `,
           }}
         />
@@ -148,10 +150,7 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col font-sans" suppressHydrationWarning>
         <StoreHydrator 
           settings={settings} 
-          supabaseConfig={{
-            url: getEnv('SUPABASE_URL') || '',
-            anonKey: getEnv('SUPABASE_PUBLISHABLE_KEY') || ''
-          }}
+          supabaseConfig={supabaseConfig}
         />
         <CookieBannerMount copy={cookieBannerCopy} />
         <AuthProvider>

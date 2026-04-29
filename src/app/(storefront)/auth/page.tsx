@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 import { AuthClient } from './AuthClient';
 import { getSettings } from '@/lib/data';
 import type { StorefrontSettings } from '@/store/useSettingsStore';
-import { getEnv } from '@/lib/env';
+import { getBrowserSupabaseConfig } from '@/lib/supabase-browser-config';
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const { lang } = await params;
@@ -32,13 +32,11 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
 
 export default async function AuthPage() {
   const settings = (await getSettings()) as Partial<StorefrontSettings>;
+  const supabaseConfig = getBrowserSupabaseConfig();
   return (
     <AuthClient
       initialSettings={settings}
-      supabaseConfig={{
-        url: getEnv('SUPABASE_URL') || '',
-        anonKey: getEnv('SUPABASE_PUBLISHABLE_KEY') || '',
-      }}
+      supabaseConfig={supabaseConfig}
     />
   );
 }
