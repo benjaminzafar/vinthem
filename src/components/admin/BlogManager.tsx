@@ -3,13 +3,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Download, Edit, Plus, Search, Sparkles, Trash2, User } from 'lucide-react';
+import { Edit, Plus, Search, Sparkles, Trash2, User } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { deleteBlogPostsAction } from '@/app/actions/blog-posts';
 import { useCustomConfirm } from '@/components/ConfirmationContext';
 import { useDebounce } from '@/hooks/useDebounce';
-import { downloadXLSX } from '@/utils/export';
 import { BlogPost } from '@/types';
 import { isValidUrl } from '@/lib/utils';
 
@@ -123,13 +122,6 @@ export function BlogManager({ initialPosts = [] }: BlogManagerProps) {
                 Delete Selected ({selectedPosts.length})
               </button>
             )}
-            <button
-              onClick={() => downloadXLSX(filteredPosts, 'journal_entries')}
-              className="text-[11px] font-bold uppercase tracking-widest text-slate-500 hover:text-slate-900"
-            >
-              <Download className="mr-1 inline h-3.5 w-3.5" />
-              Export
-            </button>
           </div>
         </div>
 

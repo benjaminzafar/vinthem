@@ -1,3 +1,5 @@
+const MEDIA_PUBLIC_ORIGIN = 'https://cdn.vinthem.com';
+
 export function extractMediaKey(source: string | null | undefined): string | null {
   if (!source) {
     return null;
@@ -36,6 +38,11 @@ export function extractMediaKey(source: string | null | undefined): string | nul
       }
       return decodeURIComponent(pathname);
     }
+
+    // Fallback for relative paths that are likely storage keys
+    if (parsed.hostname === 'localhost' && pathname && !pathname.startsWith('api/')) {
+       return decodeURIComponent(pathname);
+    }
   } catch {
     return null;
   }
@@ -43,13 +50,9 @@ export function extractMediaKey(source: string | null | undefined): string | nul
   return null;
 }
 
-export function toMediaProxyUrl(source: string | null | undefined): string {
+export function toMediaPublicUrl(source: string | null | undefined): string {
   if (!source) {
     return '';
-  }
-
-  if (source.startsWith('/api/media?key=')) {
-    return source;
   }
 
   const key = extractMediaKey(source);
@@ -57,5 +60,13 @@ export function toMediaProxyUrl(source: string | null | undefined): string {
     return source;
   }
 
-  return `/api/media?key=${encodeURIComponent(key)}`;
+  return `${MEDIA_PUBLIC_ORIGIN}/${encodeURI(key)}`;
+}
+
+export function toMediaProxyUrl(source: string | null | undefined): string {
+  if (!source) {
+    return '';
+  }
+
+  return toMediaPublicUrl(source);
 }

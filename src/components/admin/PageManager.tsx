@@ -2,14 +2,13 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Download, Edit, FileCode, Plus, RefreshCw, Search, Trash2 } from 'lucide-react';
+import { Edit, FileCode, Plus, Search, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { deletePagesAction, seedPagesAction } from '@/app/actions/pages';
+import { deletePagesAction } from '@/app/actions/pages';
 import { useCustomConfirm } from '@/components/ConfirmationContext';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useSettingsStore } from '@/store/useSettingsStore';
-import { downloadXLSX } from '@/utils/export';
 import { StaticPage } from '@/types';
 
 type PageManagerProps = {
@@ -78,20 +77,6 @@ export function PageManager({ initialPages = [] }: PageManagerProps) {
     router.refresh();
   };
 
-  const handleSeedDefaults = async () => {
-    const toastId = toast.loading('Seeding default pages...');
-    const result = await seedPagesAction();
-
-    if (!result.success) {
-      toast.error(result.message, { id: toastId });
-      return;
-    }
-
-    toast.success(result.message, { id: toastId });
-    setSelectedPages([]);
-    router.refresh();
-  };
-
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
@@ -136,20 +121,6 @@ export function PageManager({ initialPages = [] }: PageManagerProps) {
                 Delete Selected ({selectedPages.length})
               </button>
             )}
-            <button
-              onClick={() => void handleSeedDefaults()}
-              className="text-[11px] font-bold uppercase tracking-widest text-slate-500 hover:text-slate-900"
-            >
-              <RefreshCw className="mr-1 inline h-3.5 w-3.5" />
-              Seed Defaults
-            </button>
-            <button
-              onClick={() => downloadXLSX(filteredPages, 'pages')}
-              className="text-[11px] font-bold uppercase tracking-widest text-slate-500 hover:text-slate-900"
-            >
-              <Download className="mr-1 inline h-3.5 w-3.5" />
-              Export
-            </button>
           </div>
         </div>
 

@@ -74,12 +74,12 @@ export function AdminHeader({
           </div>
         )}
 
-        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap flex-shrink-0 sm:ml-auto xl:ml-0">
+        <div className="flex items-center justify-end gap-2 flex-wrap sm:flex-nowrap flex-shrink-0 w-full sm:w-auto sm:ml-auto xl:ml-0">
           {primaryAction && (
             <button 
               onClick={primaryAction.onClick}
               disabled={primaryAction.disabled}
-              className="flex-1 sm:flex-none flex items-center justify-center bg-slate-900 text-white hover:bg-slate-800 border border-transparent px-4 sm:px-6 h-10 text-sm font-medium rounded-md transition-colors whitespace-nowrap disabled:bg-slate-300 disabled:cursor-not-allowed"
+              className="flex-1 sm:flex-none min-w-[140px] flex items-center justify-center bg-slate-900 text-white hover:bg-slate-800 border border-transparent px-4 sm:px-6 h-10 text-sm font-medium rounded-md transition-colors whitespace-nowrap disabled:bg-slate-300 disabled:cursor-not-allowed"
             >
               <primaryAction.icon className="w-4 h-4 sm:mr-2" />
               <span className="hidden sm:inline">{primaryAction.label}</span>
@@ -88,7 +88,7 @@ export function AdminHeader({
           )}
 
           {secondaryActions.length > 0 && (
-            <div className="relative" ref={dropdownRef}>
+            <div className="relative ml-auto sm:ml-0" ref={dropdownRef}>
               <button 
                 onClick={() => setIsActionsOpen(!isActionsOpen)}
                 className="flex items-center justify-center bg-white text-slate-900 border border-slate-300 h-10 w-10 rounded-md hover:bg-slate-50 transition-colors"
@@ -103,10 +103,10 @@ export function AdminHeader({
                     initial={{ opacity: 0, scale: 0.95, y: 10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                    className="absolute right-0 mt-2 w-52 bg-white rounded-md border border-slate-300 z-20 py-1 overflow-hidden shadow-lg shadow-slate-900/5"
+                    className="absolute right-0 mt-2 w-[min(18rem,calc(100vw-2rem))] sm:w-52 bg-white rounded-md border border-slate-300 z-20 py-1 overflow-hidden shadow-lg shadow-slate-900/5"
                   >
                     {statsLabel && (
-                      <div className="px-4 py-2 text-[11px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-100 bg-slate-50/50">
+                      <div className="hidden sm:block px-4 py-2 text-[11px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-100 bg-slate-50/50">
                         {statsLabel}
                       </div>
                     )}
