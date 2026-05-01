@@ -12,7 +12,11 @@ export async function POST(req: NextRequest) {
     };
 
     const result = await startCheckout(items, shippingDetails, locale);
-    return NextResponse.json(result);
+    return NextResponse.json(result, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+      },
+    });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to create order.';
     logger.error('Order creation error:', error);

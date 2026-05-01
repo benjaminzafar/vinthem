@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { Trash2, Copy, Check, ImageIcon, RefreshCcw } from 'lucide-react';
 import { toMediaProxyUrl } from '@/lib/media';
 
@@ -107,11 +108,12 @@ export function AssetGrid({
             >
               <div className={`aspect-square bg-slate-50 rounded overflow-hidden border transition-all ${selectionMode ? 'border-slate-300 hover:border-slate-900' : 'border-slate-300 hover:border-slate-900'} flex items-center justify-center relative`}>
                 {!isBroken ? (
-                  <img 
+                  <Image
                     src={mediaUrl} 
                     alt={obj.key}
+                    fill
+                    sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 16vw"
                     className={`absolute inset-0 w-full h-full object-cover transition-transform group-hover:scale-105 ${deletingKey === obj.key ? 'opacity-20 grayscale' : ''}`}
-                    loading="lazy"
                     onError={() => {
                       setBrokenKeys((previous) => {
                         const next = new Set(previous);

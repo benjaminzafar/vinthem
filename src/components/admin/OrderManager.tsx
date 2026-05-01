@@ -166,7 +166,7 @@ export function OrderManager({
         }}
         secondaryActions={[
           ...(onSeedClick ? [{ label: 'Seed Test Data', icon: Database, onClick: onSeedClick }] : []),
-          { label: 'Export XLSX', icon: Download, onClick: () => downloadXLSX(orders, 'orders') }
+          { label: 'Export XLSX', icon: Download, onClick: () => { void downloadXLSX(orders, 'orders'); } }
         ]}
         statsLabel={`${orders.length} orders${refreshing ? ' • syncing' : ''}`}
       />
