@@ -1,30 +1,30 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-serif: "New York", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
 
-  /* Apple HIG-inspired Dynamic Type scale for the web UI */
+  /* Meta-inspired type scale */
   --text-xs: 12px;
-  --text-xs--line-height: 16px;
-  --text-sm: 15px;
-  --text-sm--line-height: 20px;
-  --text-base: 17px;
-  --text-base--line-height: 22px;
-  --text-lg: 20px;
-  --text-lg--line-height: 25px;
-  --text-xl: 22px;
-  --text-xl--line-height: 28px;
-  --text-2xl: 28px;
-  --text-2xl--line-height: 34px;
-  --text-3xl: 34px;
-  --text-3xl--line-height: 41px;
+  --text-xs--line-height: 1.4;
+  --text-sm: 14px;
+  --text-sm--line-height: 1.5;
+  --text-base: 16px;
+  --text-base--line-height: 1.5;
+  --text-lg: 18px;
+  --text-lg--line-height: 1.4;
+  --text-xl: 20px;
+  --text-xl--line-height: 1.3;
+  --text-2xl: 24px;
+  --text-2xl--line-height: 1.2;
+  --text-3xl: 32px;
+  --text-3xl--line-height: 1.2;
   --text-4xl: 40px;
-  --text-4xl--line-height: 48px;
+  --text-4xl--line-height: 1.1;
   --text-5xl: 48px;
-  --text-5xl--line-height: 56px;
-  --text-6xl: 56px;
-  --text-6xl--line-height: 64px;
+  --text-5xl--line-height: 1.1;
+  --text-6xl: 60px;
+  --text-6xl--line-height: 1.1;
   
   /* Customizable Theme Variables */
   --color-brand-bg: var(--theme-bg, #ffffff);
@@ -37,9 +37,9 @@
 }
 
 :root {
-  --font-ui: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-ui: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 
-  /* Apple Standard Theme (Light) */
+  /* Professional Light Theme */
   --theme-bg: #ffffff;
   --theme-surface: #f5f5f7;
   --theme-ink: #1d1d1f;
@@ -83,10 +83,10 @@
 
 body {
   font-family: var(--font-ui);
-  font-size: var(--apple-body-size); 
-  line-height: var(--apple-body-line);
+  font-size: 16px;
+  line-height: 1.5;
   font-weight: 400;
-  letter-spacing: 0;
+  letter-spacing: -0.011em;
   background-color: var(--color-brand-bg);
   color: var(--color-brand-ink);
   -webkit-font-smoothing: antialiased;
@@ -97,7 +97,8 @@ body {
 
 .admin-surface {
   font-size: 14px;
-  line-height: 20px;
+  line-height: 1.5;
+  letter-spacing: -0.006em;
 }
 
 .admin-surface .custom-scrollbar {
@@ -168,12 +169,12 @@ img {
   image-rendering: auto;
 }
 
-h1 { @apply text-[34px] md:text-[40px] font-semibold leading-[1.205] tracking-normal; }
-h2 { @apply text-[28px] md:text-[34px] font-semibold leading-[1.215] tracking-normal; }
-h3 { @apply text-[22px] md:text-[28px] font-semibold leading-[1.27] tracking-normal; }
-h4 { @apply text-[20px] md:text-[22px] font-semibold leading-[1.25] tracking-normal; }
-h5 { @apply text-[17px] font-semibold leading-[1.295] tracking-normal; }
-h6 { @apply text-[12px] font-semibold uppercase leading-[1.333] tracking-normal text-zinc-500; }
+h1 { @apply text-4xl md:text-5xl font-bold leading-tight tracking-tight; }
+h2 { @apply text-3xl md:text-4xl font-bold leading-tight tracking-tight; }
+h3 { @apply text-2xl md:text-3xl font-bold leading-snug tracking-tight; }
+h4 { @apply text-xl md:text-2xl font-semibold leading-snug tracking-tight; }
+h5 { @apply text-lg md:text-xl font-semibold leading-relaxed; }
+h6 { @apply text-base font-semibold uppercase tracking-widest text-zinc-500; }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-ui);
@@ -216,11 +217,11 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-primary {
-  @apply bg-brand-accent text-brand-accent-fg px-6 py-3 rounded text-sm font-medium hover:opacity-90 transition-all duration-300 active:scale-95 flex items-center justify-center;
+  @apply bg-brand-accent text-brand-accent-fg px-6 py-3 rounded-full text-sm font-semibold min-h-[48px] hover:opacity-90 transition-all duration-300 active:scale-95 flex items-center justify-center;
 }
 
 .btn-secondary {
-  @apply bg-brand-surface text-brand-ink border border-brand-border px-6 py-3 rounded text-sm font-medium hover:bg-brand-border transition-all duration-300 active:scale-95 flex items-center justify-center;
+  @apply bg-brand-surface text-brand-ink border border-brand-border px-6 py-3 rounded-full text-sm font-semibold min-h-[48px] hover:bg-brand-border transition-all duration-300 active:scale-95 flex items-center justify-center;
 }
 
 .input-minimal {

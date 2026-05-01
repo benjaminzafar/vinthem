@@ -312,8 +312,10 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                         </Link>
                         <button
                           type="button"
-                          onPointerDown={(e) => e.stopPropagation()}
-                          onClick={handleLogout}
+                          onPointerDown={(e) => {
+                            e.stopPropagation();
+                            void handleLogout(e);
+                          }}
                           className="p-2.5 text-red-400 hover:text-red-600 transition-colors rounded-full hover:bg-red-50"
                           aria-label={labels.logout}
                         >

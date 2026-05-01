@@ -56,8 +56,8 @@ function SidebarContent({
         </h1>
       </div>
       
-      <div className="flex-1 overflow-y-auto py-5 px-3 space-y-1.5 custom-scrollbar">
-        <div className="px-3 mb-3 text-[10px] font-semibold text-slate-500 uppercase tracking-[0.18em]">Menu</div>
+      <div className="flex-1 overflow-y-auto py-5 px-3 space-y-1 custom-scrollbar">
+        <div className="px-3 mb-2 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Menu</div>
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (
@@ -65,20 +65,20 @@ function SidebarContent({
               key={item.id}
               href={item.href}
               onClick={onNavItemClick}
-              className={`w-full flex items-center gap-3 rounded-md px-3 py-2.5 transition-all ${
+              className={`w-full flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
                 isActive
-                  ? 'bg-slate-900 text-white shadow-sm'
+                  ? 'bg-slate-900 text-white shadow-md'
                   : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
               }`}
             >
               <item.icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-500'}`} />
-              <span className="text-[13px] font-medium tracking-normal">{item.label}</span>
+              <span className="text-[13px] font-semibold tracking-tight">{item.label}</span>
             </Link>
           );
         })}
       </div>
       
-      <div className="p-4 border-t border-slate-300 bg-white">
+      <div className="p-6 border-t border-slate-200 bg-white">
         <div className="flex items-center mb-4 px-1">
           <div className="w-10 h-10 rounded-md bg-slate-900 flex items-center justify-center text-white font-semibold text-[13px] mr-3 shrink-0">
             {activeUserEmail?.[0].toUpperCase() || 'A'}

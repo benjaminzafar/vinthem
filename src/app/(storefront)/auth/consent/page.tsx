@@ -12,7 +12,7 @@ export default async function ConsentPage({ params }: { params: Promise<{ lang: 
         <div className="absolute inset-0 z-0">
           <Image 
             src={settings.authBackgroundImage} 
-            alt="Background" 
+            alt="Storefront Background"
             fill
             className="object-cover opacity-100"
             priority
