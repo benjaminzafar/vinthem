@@ -29,7 +29,7 @@ export function LocalizedSettingInput({
   isTranslating,
   description
 }: LocalizedSettingInputProps) {
-  const baseInputClasses = "w-full bg-white border border-zinc-200 px-3 py-2 text-[13px] font-medium text-zinc-900 transition-all focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900 placeholder:text-zinc-500 rounded-sm";
+  const baseInputClasses = "w-full bg-white border border-zinc-200 px-3 py-2 text-[13px] font-medium text-zinc-900 transition-all focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900 placeholder:text-zinc-500 rounded-none";
 
   return (
     <div className="space-y-2 group">
@@ -49,7 +49,7 @@ export function LocalizedSettingInput({
               type="button"
               onClick={(e) => { e.stopPropagation(); onAIAutoComplete(); }}
               disabled={isGenerating || isTranslating}
-              className="flex items-center gap-1.5 px-2 py-1 text-[9px] font-black uppercase tracking-tighter text-indigo-600 bg-indigo-50 border border-indigo-100 rounded hover:bg-indigo-100 transition-all disabled:opacity-50"
+              className="flex items-center gap-1.5 px-2 py-1 text-[9px] font-black uppercase tracking-tighter text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-none hover:bg-indigo-100 transition-all disabled:opacity-50"
               title="AI Magic Fill"
             >
               {isGenerating ? <Loader2 className="w-2.5 h-2.5 animate-spin" /> : <Wand2 className="w-2.5 h-2.5" />}
@@ -61,7 +61,7 @@ export function LocalizedSettingInput({
               type="button"
               onClick={(e) => { e.stopPropagation(); onAITranslate(); }}
               disabled={isGenerating || isTranslating || !value['en']}
-              className="flex items-center gap-1.5 px-2 py-1 text-[9px] font-black uppercase tracking-tighter text-zinc-600 bg-white border border-zinc-200 rounded hover:bg-zinc-50 transition-all disabled:opacity-50"
+              className="flex items-center gap-1.5 px-2 py-1 text-[9px] font-black uppercase tracking-tighter text-zinc-600 bg-white border border-zinc-200 rounded-none hover:bg-zinc-50 transition-all disabled:opacity-50"
               title="Translate English to All"
             >
               {isTranslating ? <Loader2 className="w-2.5 h-2.5 animate-spin" /> : <Languages className="w-2.5 h-2.5" />}
@@ -74,7 +74,7 @@ export function LocalizedSettingInput({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {languages.map(lang => (
           <div key={lang} className="relative flex items-center">
-            <div className="absolute left-2.5 z-10 px-1 bg-zinc-50 border border-zinc-200 rounded text-[9px] font-black text-zinc-500 uppercase tabular-nums">
+            <div className="absolute left-2.5 z-10 px-1 bg-zinc-50 border border-zinc-200 rounded-none text-[9px] font-black text-zinc-500 uppercase tabular-nums">
               {lang}
             </div>
             {type === 'textarea' ? (

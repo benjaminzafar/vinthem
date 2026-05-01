@@ -71,7 +71,7 @@ export default async function BlogPostDetail({ params }: { params: Promise<{ id:
         </div>
 
         {post.imageUrl && (
-          <div className="aspect-[21/9] rounded-2xl overflow-hidden mb-12 bg-gray-100 shadow-sm border border-gray-100 relative">
+          <div className="aspect-[21/9] rounded-none overflow-hidden mb-12 bg-gray-100 shadow-none border border-gray-100 relative">
             <Image 
               src={post.imageUrl} 
               alt={post.title[lang] || post.title['en']} 

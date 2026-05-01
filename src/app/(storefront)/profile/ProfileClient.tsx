@@ -603,7 +603,7 @@ export function ProfileClient({
                                </div>
                                <div>
                                   <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">Progress</p>
-                                  <span className={`inline-flex px-2 py-0.5 text-[11px] font-bold uppercase tracking-widest border rounded ${
+                                  <span className={`inline-flex px-2 py-0.5 text-[11px] font-bold uppercase tracking-widest border rounded-none ${
                                     order.status === 'Delivered' ? 'bg-emerald-50 text-emerald-700 border-emerald-300' :
                                     order.status === 'Shipped' ? 'bg-blue-50 text-blue-700 border-blue-300' :
                                     'bg-amber-50 text-amber-700 border-amber-300'
@@ -751,7 +751,7 @@ export function ProfileClient({
                                   </div>
                                   <p className="mt-2 text-sm leading-6 text-slate-700">{message.text || '-'}</p>
                                   {message.imageUrl && isValidUrl(message.imageUrl) && (
-                                    <div className="mt-4 relative aspect-video w-full max-w-sm rounded overflow-hidden border border-slate-200 shadow-sm">
+                                    <div className="mt-4 relative aspect-video w-full max-w-sm rounded-none overflow-hidden border border-slate-200 shadow-none">
                                       <Image src={message.imageUrl} alt="Support inquiry attachment" fill className="object-cover" />
                                     </div>
                                   )}
@@ -1018,7 +1018,7 @@ export function ProfileClient({
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 12 }}
-              className="relative z-[106] w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-slate-300 bg-white shadow-2xl"
+              className="relative z-[106] w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-slate-300 bg-white shadow-none rounded-none"
             >
               <div className="flex items-center justify-between border-b border-slate-300 bg-slate-50 px-6 py-5 md:px-8">
                 <div>
@@ -1115,7 +1115,7 @@ export function ProfileClient({
               initial={{ scale: 1, opacity: 0, y: 10 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 1, opacity: 0, y: 10 }}
-              className="bg-white w-full max-w-4xl border border-slate-300 overflow-hidden shadow-2xl pointer-events-auto flex flex-col max-h-[90vh]"
+              className="bg-white w-full max-w-4xl border border-slate-300 overflow-hidden shadow-none rounded-none pointer-events-auto flex flex-col max-h-[90vh]"
             >
               {/* Modal Technical Header */}
               <div className="px-12 py-12 border-b-2 border-slate-300 flex flex-col md:flex-row md:items-center justify-between gap-8 bg-slate-50">
@@ -1174,7 +1174,7 @@ export function ProfileClient({
                            <div className="flex-1 space-y-8 overflow-y-auto mb-10 scrollbar-hide">
                               <div className="flex items-start gap-4">
                                 <div className="w-8 h-8 bg-slate-900 flex items-center justify-center text-[11px] text-white shrink-0 font-bold">M</div>
-                                <div className="bg-white border border-slate-300 p-6 shadow-sm">
+                                <div className="bg-white border border-slate-300 p-6 shadow-none">
                                   <p className="text-[11px] font-bold text-slate-500 leading-relaxed uppercase tracking-widest">
                                     Member identity verified. An agent will be assigned to this session. Please summarize your technical or logistic requirement below.
                                   </p>
@@ -1216,7 +1216,7 @@ export function ProfileClient({
                                       <Image src={toMediaProxyUrl(supportImageUrl)} alt="Support attachment" fill className="object-cover" />
                                       <button 
                                         onClick={() => setSupportImageUrl('')}
-                                        className="absolute -top-2 -right-2 w-6 h-6 bg-white border border-slate-300 rounded flex items-center justify-center shadow-sm hover:border-slate-900"
+                                        className="absolute -top-2 -right-2 w-6 h-6 bg-white border border-slate-300 rounded-none flex items-center justify-center shadow-none hover:border-slate-900"
                                       >
                                         <X className="w-3 h-3" />
                                       </button>

@@ -33,12 +33,12 @@ interface CRMAnalyticsProps {
 
 function EmptyPanel({ message, error }: { message: string, error?: string }) {
   return (
-    <div className="flex h-full flex-col items-center justify-center rounded border border-dashed border-slate-200 bg-slate-50/70 p-6 text-center">
+    <div className="flex h-full flex-col items-center justify-center rounded-none border border-dashed border-slate-200 bg-slate-50/70 p-6 text-center">
       <p className="max-w-xs text-xs font-semibold uppercase tracking-widest text-slate-500">
         {message}
       </p>
       {error && (
-        <p className="mt-2 max-w-sm text-[10px] font-bold text-rose-500 bg-rose-50 px-2 py-1 rounded">
+        <p className="mt-2 max-w-sm text-[10px] font-bold text-rose-500 bg-rose-50 px-2 py-1 rounded-none">
           {error}
         </p>
       )}
@@ -108,8 +108,8 @@ export function CRMAnalytics({ tickets, customers, refunds, orders }: CRMAnalyti
         <div>
           <div className="flex items-center gap-3">
             <h2 className="text-2xl font-bold tracking-tight text-slate-900">Intelligence Dashboard</h2>
-            <div className="flex items-center gap-1.5 rounded-full border border-indigo-100 bg-indigo-50 px-2 py-0.5">
-              <div className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse" />
+            <div className="flex items-center gap-1.5 rounded-none border border-indigo-100 bg-indigo-50 px-2 py-0.5">
+              <div className="h-1.5 w-1.5 rounded-none bg-indigo-500 animate-pulse" />
               <span className="text-[9px] font-black uppercase tracking-widest text-indigo-700">
                 Optimized Mode
               </span>
@@ -119,15 +119,15 @@ export function CRMAnalytics({ tickets, customers, refunds, orders }: CRMAnalyti
         </div>
 
         <div className="flex flex-col items-end gap-2">
-          <div className="flex items-center gap-2 rounded border border-slate-100 bg-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-800 shadow-sm transition-all">
-            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+          <div className="flex items-center gap-2 rounded-none border border-slate-100 bg-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-800 shadow-none transition-all">
+            <div className="h-1.5 w-1.5 rounded-none bg-emerald-500" />
             Service Stream Active
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-        <div className="rounded border border-slate-300 bg-white p-6 sm:p-8">
+        <div className="rounded-none border border-slate-300 bg-white p-6 sm:p-8">
           <div className="mb-6 flex items-center justify-between">
             <div>
               <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-slate-900">
@@ -160,7 +160,7 @@ export function CRMAnalytics({ tickets, customers, refunds, orders }: CRMAnalyti
                     content={({ active, payload }) => {
                       if (active && payload && payload.length > 0) {
                         return (
-                          <div className="rounded border border-slate-200 bg-white px-3 py-2 shadow-lg scale-90">
+                          <div className="rounded-none border border-slate-200 bg-white px-3 py-2 shadow-none scale-90">
                             <p className="text-[10px] font-bold text-slate-900 uppercase tracking-widest">{payload[0].payload.name}</p>
                             <p className="text-xs font-black text-slate-900">{payload[0].value} <span className="text-[9px] font-medium text-slate-500 uppercase tracking-tighter">Tickets</span></p>
                           </div>
@@ -184,7 +184,7 @@ export function CRMAnalytics({ tickets, customers, refunds, orders }: CRMAnalyti
           <div className="mt-6 flex items-center justify-center gap-6 border-t border-slate-100 pt-6">
             {ticketDistribution.map((t) => (
               <div key={t.name} className="flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full" style={{ backgroundColor: t.color }} />
+                <div className="h-2 w-2 rounded-none" style={{ backgroundColor: t.color }} />
                 <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{t.name}</span>
                 <span className="text-[10px] font-black text-slate-900">{t.value}</span>
               </div>
@@ -192,7 +192,7 @@ export function CRMAnalytics({ tickets, customers, refunds, orders }: CRMAnalyti
           </div>
         </div>
 
-        <div className="rounded border border-slate-300 bg-white p-6 sm:p-8">
+        <div className="rounded-none border border-slate-300 bg-white p-6 sm:p-8">
           <div className="mb-6 flex items-center justify-between">
             <div>
               <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-slate-900">
@@ -225,7 +225,7 @@ export function CRMAnalytics({ tickets, customers, refunds, orders }: CRMAnalyti
                     content={({ active, payload }) => {
                       if (active && payload && payload.length > 0) {
                         return (
-                          <div className="rounded border border-slate-200 bg-white px-3 py-2 shadow-lg scale-90">
+                          <div className="rounded-none border border-slate-200 bg-white px-3 py-2 shadow-none scale-90">
                             <p className="text-[10px] font-bold text-slate-900 uppercase tracking-widest">{payload[0].payload.name}</p>
                             <p className="text-xs font-black text-slate-900">{payload[0].value} <span className="text-[9px] font-medium text-slate-500 uppercase tracking-tighter">Units</span></p>
                           </div>
@@ -249,7 +249,7 @@ export function CRMAnalytics({ tickets, customers, refunds, orders }: CRMAnalyti
           <div className="mt-6 grid grid-cols-2 gap-4 border-t border-slate-100 pt-6">
             {refundDistribution.map((r) => (
               <div key={r.name} className="flex items-center gap-3">
-                <div className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: r.color }} />
+                <div className="h-1.5 w-1.5 rounded-none" style={{ backgroundColor: r.color }} />
                 <div className="flex flex-1 items-center justify-between">
                   <span className="text-[9px] font-bold uppercase tracking-widest text-slate-500">{r.name}</span>
                   <span className="text-[10px] font-black text-slate-900">{r.value}</span>
@@ -262,15 +262,15 @@ export function CRMAnalytics({ tickets, customers, refunds, orders }: CRMAnalyti
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
-          <div key={stat.name} className="rounded border border-slate-300 bg-white p-6 transition-all hover:bg-slate-50">
+          <div key={stat.name} className="rounded-none border border-slate-300 bg-white p-6 transition-all hover:bg-slate-50">
             <div className="mb-4 flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-slate-900">
+              <div className="flex h-8 w-8 items-center justify-center rounded-none border border-slate-300 bg-white text-slate-900">
                 <stat.icon className="h-4 w-4" />
               </div>
               <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-500">{stat.name}</h3>
             </div>
             <p className="text-2xl font-bold tracking-tight text-slate-900">{stat.value}</p>
-            <div className={`mt-2 inline-flex items-center rounded border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+            <div className={`mt-2 inline-flex items-center rounded-none border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
               stat.changeType === 'positive'
                 ? 'border-emerald-100 bg-emerald-50 text-emerald-700'
                 : 'border-rose-100 bg-rose-50 text-rose-700'

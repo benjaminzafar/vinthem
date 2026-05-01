@@ -357,7 +357,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
         statsLabel="Collection editor"
       />
 
-        <div className="bg-white border border-slate-200 rounded-[4px] p-5 sm:p-6">
+        <div className="bg-white border border-slate-200 rounded-none-[4px] p-5 sm:p-6">
           <div className="flex items-center gap-2 mb-4">
             <Sparkles className="w-4 h-4 text-indigo-600" />
             <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-900">AI Collection Assistant</h3>
@@ -374,12 +374,12 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                   void handleAIChatAutoFill();
                 }
               }}
-              className="w-full sm:flex-1 h-11 bg-white border border-slate-200 rounded-[4px] px-4 text-sm font-medium focus:outline-none focus:border-indigo-500 transition-all"
+              className="w-full sm:flex-1 h-11 bg-white border border-slate-200 rounded-none-[4px] px-4 text-sm font-medium focus:outline-none focus:border-indigo-500 transition-all"
             />
             <button 
               onClick={() => void handleAIChatAutoFill()}
               disabled={generating || !aiChatInput.trim()}
-              className="h-11 px-5 bg-indigo-600 text-white rounded-[4px] text-[12px] font-medium hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shrink-0"
+              className="h-11 px-5 bg-indigo-600 text-white rounded-none-[4px] text-[12px] font-medium hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shrink-0"
             >
               {generating ? 'Processing...' : 'Auto-Draft'}
               {!generating && <Wand2 className="w-4 h-4" />}
@@ -392,7 +392,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
           <div className="space-y-6">
             
             {/* General Info Section */}
-            <section className="bg-white border border-slate-200 rounded-[4px]">
+            <section className="bg-white border border-slate-200 rounded-none-[4px]">
               <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
                 <Layout className="w-4 h-4 text-slate-500" />
                 <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Collection Details</h3>
@@ -406,7 +406,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                       value={formData.name}
                       onChange={(e) => setFormData({...formData, name: e.target.value})}
                       placeholder="e.g. Sommarkollektion 2024"
-                      className="w-full h-12 bg-white border border-slate-200 rounded-[4px] px-4 text-sm font-medium focus:outline-none focus:border-slate-900 transition-all"
+                      className="w-full h-12 bg-white border border-slate-200 rounded-none-[4px] px-4 text-sm font-medium focus:outline-none focus:border-slate-900 transition-all"
                     />
                   </div>
                   <div className="space-y-3">
@@ -416,7 +416,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                       value={formData.slug}
                       onChange={(e) => setFormData({...formData, slug: e.target.value})}
                       placeholder="e.g. sommarkollektion-2024"
-                      className="w-full h-12 bg-white border border-slate-200 rounded-[4px] px-4 text-sm font-medium focus:outline-none focus:border-slate-900 transition-all font-mono"
+                      className="w-full h-12 bg-white border border-slate-200 rounded-none-[4px] px-4 text-sm font-medium focus:outline-none focus:border-slate-900 transition-all font-mono"
                     />
                   </div>
                 </div>
@@ -427,7 +427,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                       value={formData.parentId}
                       onChange={(e) => setFormData({...formData, parentId: e.target.value})}
                       disabled={loading || categories.length === 0}
-                      className="w-full h-12 bg-white border border-slate-200 rounded-[4px] px-4 pr-10 text-sm font-medium appearance-none outline-none focus:border-slate-900 disabled:opacity-50"
+                      className="w-full h-12 bg-white border border-slate-200 rounded-none-[4px] px-4 pr-10 text-sm font-medium appearance-none outline-none focus:border-slate-900 disabled:opacity-50"
                     >
                       <option value="">{categories.length === 0 ? 'Loading collections...' : 'No Parent (Main Navigation Root)'}</option>
                       {categories.filter(c => c.id !== formData.id && !descendantIds.has(c.id || '')).map(c => (
@@ -447,14 +447,14 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                     onChange={(e) => setFormData({...formData, description: e.target.value})}
                     rows={8}
                     placeholder="Describe the essence of this collection in Swedish..."
-                    className="w-full bg-white border border-slate-200 rounded-[4px] p-5 text-sm font-medium leading-relaxed focus:outline-none focus:border-slate-900 transition-all resize-none"
+                    className="w-full bg-white border border-slate-200 rounded-none-[4px] p-5 text-sm font-medium leading-relaxed focus:outline-none focus:border-slate-900 transition-all resize-none"
                   />
                 </div>
               </div>
             </section>
 
             {/* Hierarchy & Localisation Section */}
-            <section className="bg-white border border-slate-200 rounded-[4px]">
+            <section className="bg-white border border-slate-200 rounded-none-[4px]">
               <div className="flex flex-wrap border-b border-slate-200 bg-slate-50">
                 {[
                   { id: 'hierarchy', label: 'Organization' },
@@ -486,14 +486,14 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                             <button 
                               key={c.id}
                               onClick={() => router.push(`/admin/collections/${c.id}`)}
-                              className="p-3 bg-slate-50 border border-slate-200 rounded-md flex items-center justify-between hover:border-slate-900 transition-all text-left"
+                              className="p-3 bg-slate-50 border border-slate-200 rounded-none flex items-center justify-between hover:border-slate-900 transition-all text-left"
                             >
                               <span className="text-xs font-bold text-slate-700">{c.name}</span>
                               <ChevronRight className="w-3 h-3 text-slate-400" />
                             </button>
                           ))
                         ) : (
-                          <div className="col-span-full py-6 text-center border-2 border-dashed border-slate-100 rounded">
+                          <div className="col-span-full py-6 text-center border-2 border-dashed border-slate-100 rounded-none">
                             <p className="text-[11px] font-medium text-slate-400">This collection has no sub-items</p>
                           </div>
                         )}
@@ -505,12 +505,12 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                 {activeTab === 'translations' && (
                   <div className="space-y-8 animate-in fade-in duration-300">
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                      <div className="flex flex-wrap gap-2 rounded bg-slate-50 p-1 w-fit">
+                      <div className="flex flex-wrap gap-2 rounded-none bg-slate-50 p-1 w-fit">
                        {languages.map(lang => (
                          <button 
                            key={lang}
                            onClick={() => setSelectedLang(lang)}
-                           className={`min-w-[52px] rounded-[2px] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] transition-all ${selectedLang === lang ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-white hover:text-slate-700'}`}
+                           className={`min-w-[52px] rounded-none-[2px] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] transition-all ${selectedLang === lang ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-white hover:text-slate-700'}`}
                          >
                            {lang}
                          </button>
@@ -519,7 +519,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                       <button
                         onClick={handleAITranslateCollection}
                         disabled={generating || !formData.name?.trim()}
-                        className="flex h-10 items-center justify-center gap-1.5 px-4 text-[12px] font-medium bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-all disabled:opacity-50 w-full lg:w-auto"
+                        className="flex h-10 items-center justify-center gap-1.5 px-4 text-[12px] font-medium bg-indigo-600 text-white rounded-none hover:bg-indigo-700 transition-all disabled:opacity-50 w-full lg:w-auto"
                       >
                         {generating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Languages className="w-3 h-3" />}
                         AI Translate All
@@ -541,7 +541,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                               } 
                             }
                           })}
-                          className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm focus:outline-none focus:border-slate-900 transition-all"
+                          className="w-full h-11 border border-slate-200 rounded-none-[4px] px-4 text-sm focus:outline-none focus:border-slate-900 transition-all"
                         />
                       </div>
                       <div className="space-y-3">
@@ -559,7 +559,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                               } 
                             }
                           })}
-                          className="w-full border border-slate-200 rounded-[4px] p-4 text-sm resize-none focus:outline-none focus:border-slate-900 transition-all"
+                          className="w-full border border-slate-200 rounded-none-[4px] p-4 text-sm resize-none focus:outline-none focus:border-slate-900 transition-all"
                         />
                       </div>
                     </div>
@@ -570,14 +570,14 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                   <div className="grid grid-cols-1 gap-4 animate-in fade-in duration-300">
                     <button 
                       onClick={() => setFormData({...formData, isFeatured: !formData.isFeatured})}
-                      className={`h-12 px-5 border rounded-[4px] flex items-center justify-between transition-all ${formData.isFeatured ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-900'}`}
+                      className={`h-12 px-5 border rounded-none-[4px] flex items-center justify-between transition-all ${formData.isFeatured ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-900'}`}
                     >
                       <span className="text-[11px] font-semibold uppercase tracking-[0.16em]">Featured on Homepage</span>
                       <Star className={`w-4 h-4 ${formData.isFeatured ? 'fill-current' : ''}`} />
                     </button>
                     <button 
                       onClick={() => setFormData({...formData, showInHero: !formData.showInHero})}
-                      className={`h-12 px-5 border rounded-[4px] flex items-center justify-between transition-all ${formData.showInHero ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-900'}`}
+                      className={`h-12 px-5 border rounded-none-[4px] flex items-center justify-between transition-all ${formData.showInHero ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-900'}`}
                     >
                       <span className="text-[11px] font-semibold uppercase tracking-[0.16em]">Display in Hero Section</span>
                       <Layout className="w-4 h-4" />
@@ -592,19 +592,19 @@ Collection Description (Swedish): "${formData.description || ''}"`;
           <div className="space-y-6">
             
             {/* Banner Section */}
-            <section className="bg-white border border-slate-200 rounded-[4px] overflow-hidden">
+            <section className="bg-white border border-slate-200 rounded-none-[4px] overflow-hidden">
               <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
                 <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Collection Banner</h3>
                 <button 
                   onClick={handleAIAutoCompleteCollection}
                   disabled={generating || !bannerPreviewUrl}
-                  className="px-3 h-8 bg-indigo-50 text-indigo-700 rounded-md text-[11px] font-medium hover:bg-indigo-600 hover:text-white transition-all disabled:opacity-50"
+                  className="px-3 h-8 bg-indigo-50 text-indigo-700 rounded-none text-[11px] font-medium hover:bg-indigo-600 hover:text-white transition-all disabled:opacity-50"
                 >
                   Analyze Image
                 </button>
               </div>
               <div className="p-6">
-                  <label className="group relative mb-4 aspect-[4/3] min-h-[220px] cursor-pointer overflow-hidden rounded-[4px] border-2 border-dashed border-slate-200 bg-slate-50 transition-all hover:border-slate-900 flex items-center justify-center">
+                  <label className="group relative mb-4 aspect-[4/3] min-h-[220px] cursor-pointer overflow-hidden rounded-none-[4px] border-2 border-dashed border-slate-200 bg-slate-50 transition-all hover:border-slate-900 flex items-center justify-center">
                     {isValidUrl(bannerPreviewUrl) && !bannerLoadFailed ? (
                       <Image 
                         src={bannerPreviewUrl} 
@@ -636,11 +636,11 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                       placeholder="Paste banner URL or storage key..."
                       value={formData.imageUrl}
                       onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
-                      className="flex-1 h-10 border border-slate-200 rounded-[4px] px-3 text-[12px] focus:outline-none focus:border-slate-900 transition-all"
+                      className="flex-1 h-10 border border-slate-200 rounded-none-[4px] px-3 text-[12px] focus:outline-none focus:border-slate-900 transition-all"
                     />
                     <button 
                       onClick={() => setIsMediaPickerOpen(true)}
-                      className="h-10 px-4 bg-slate-50 border border-slate-200 rounded-md text-[12px] font-medium hover:border-slate-900 transition-all"
+                      className="h-10 px-4 bg-slate-50 border border-slate-200 rounded-none text-[12px] font-medium hover:border-slate-900 transition-all"
                     >
                       Library
                     </button>
@@ -648,7 +648,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
               </div>
             </section>
 
-            <section className="bg-white border border-slate-200 rounded-[4px] overflow-hidden">
+            <section className="bg-white border border-slate-200 rounded-none-[4px] overflow-hidden">
               <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
                 <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-900">Optimization</h3>
               </div>
@@ -662,7 +662,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                     type="checkbox"
                     checked={formData.isFeatured}
                     onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
-                    className="w-4 h-4 rounded-sm border-slate-300 transition-all"
+                    className="w-4 h-4 rounded-none border-slate-300 transition-all"
                   />
                 </div>
                 <div className="flex items-center justify-between gap-4">
@@ -674,7 +674,7 @@ Collection Description (Swedish): "${formData.description || ''}"`;
                     type="checkbox"
                     checked={Boolean(formData.showInHero)}
                     onChange={(e) => setFormData({ ...formData, showInHero: e.target.checked })}
-                    className="w-4 h-4 rounded-sm border-slate-300 transition-all"
+                    className="w-4 h-4 rounded-none border-slate-300 transition-all"
                   />
                 </div>
               </div>

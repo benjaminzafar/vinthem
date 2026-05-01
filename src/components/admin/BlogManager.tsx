@@ -94,12 +94,12 @@ export function BlogManager({ initialPosts = [] }: BlogManagerProps) {
               placeholder="Search journal entries..."
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
-              className="h-11 w-full md:w-64 rounded-[4px] border border-slate-200 bg-white pl-10 pr-4 text-xs font-medium text-slate-900 transition-all focus:border-slate-900 focus:outline-none"
+              className="h-11 w-full md:w-64 rounded-none-[4px] border border-slate-200 bg-white pl-10 pr-4 text-xs font-medium text-slate-900 transition-all focus:border-slate-900 focus:outline-none"
             />
           </div>
           <button
             onClick={() => router.push('/admin/blogs/new')}
-            className="flex h-11 items-center justify-center gap-2 rounded-[4px] bg-slate-900 px-6 sm:px-8 text-[11px] font-bold uppercase tracking-widest text-white transition-all hover:bg-slate-800"
+            className="flex h-11 items-center justify-center gap-2 rounded-none-[4px] bg-slate-900 px-6 sm:px-8 text-[11px] font-bold uppercase tracking-widest text-white transition-all hover:bg-slate-800"
           >
             <Plus className="h-4 w-4" />
             New Entry
@@ -107,7 +107,7 @@ export function BlogManager({ initialPosts = [] }: BlogManagerProps) {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-[4px] border border-slate-200 bg-white">
+      <div className="overflow-hidden rounded-none-[4px] border border-slate-200 bg-white">
         <div className="flex min-h-14 flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 bg-slate-50/50 px-4 sm:px-6 py-3 sm:py-0 gap-2">
           <div className="flex items-center gap-3">
             <Sparkles className="h-4 w-4 text-slate-500" />
@@ -134,7 +134,7 @@ export function BlogManager({ initialPosts = [] }: BlogManagerProps) {
                     type="checkbox"
                     checked={filteredPosts.length > 0 && selectedPosts.length === filteredPosts.length}
                     onChange={toggleAllPosts}
-                    className="h-4 w-4 rounded-sm border-slate-300"
+                    className="h-4 w-4 rounded-none border-slate-300"
                   />
                 </th>
                 <th className="px-6 py-4">Story</th>
@@ -171,12 +171,12 @@ export function BlogManager({ initialPosts = [] }: BlogManagerProps) {
                             togglePostSelection(post.id);
                           }
                         }}
-                        className="h-4 w-4 rounded-sm border-slate-300"
+                        className="h-4 w-4 rounded-none border-slate-300"
                       />
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-4">
-                        <div className="relative h-12 w-16 overflow-hidden rounded-[4px] border border-slate-200 bg-slate-50">
+                        <div className="relative h-12 w-16 overflow-hidden rounded-none-[4px] border border-slate-200 bg-slate-50">
                           {isValidUrl(post.imageUrl) ? (
                             <Image src={post.imageUrl} alt="" fill sizes="128px" className="object-cover" />
                           ) : null}
@@ -188,7 +188,7 @@ export function BlogManager({ initialPosts = [] }: BlogManagerProps) {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="inline-flex items-center gap-2 rounded-[4px] border border-slate-100 bg-white px-2.5 py-1 text-[11px] font-bold uppercase tracking-widest text-slate-500">
+                      <div className="inline-flex items-center gap-2 rounded-none-[4px] border border-slate-100 bg-white px-2.5 py-1 text-[11px] font-bold uppercase tracking-widest text-slate-500">
                         <User className="h-3 w-3" />
                         {post.author}
                       </div>

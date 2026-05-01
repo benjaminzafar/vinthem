@@ -66,9 +66,9 @@ export function ConsentForm({ lang }: { lang: string }) {
   };
 
   return (
-    <div className="bg-white p-10 border border-slate-200 rounded !shadow-none max-w-md w-full">
+    <div className="bg-white p-10 border border-slate-200 rounded-none !shadow-none max-w-md w-full">
       <div className="mb-8 text-center">
-        <div className="mx-auto w-12 h-12 bg-zinc-50 flex items-center justify-center rounded mb-4">
+        <div className="mx-auto w-12 h-12 bg-zinc-50 flex items-center justify-center rounded-none mb-4">
           <ShieldCheck className="w-6 h-6 text-zinc-900" />
         </div>
         <h2 className="text-[12px] font-bold tracking-widest text-zinc-900 uppercase">
@@ -80,13 +80,13 @@ export function ConsentForm({ lang }: { lang: string }) {
       </div>
 
       <form className="space-y-6" onSubmit={handleSubmit}>
-        <div className="space-y-4 bg-zinc-50/50 p-6 border border-zinc-100 rounded">
+        <div className="space-y-4 bg-zinc-50/50 p-6 border border-zinc-100 rounded-none">
           <label className="flex items-start gap-4 text-xs text-zinc-900 cursor-pointer uppercase font-black tracking-tight group">
             <input 
               type="checkbox" 
               checked={acceptedTerms} 
               onChange={(e) => setAcceptedTerms(e.target.checked)} 
-              className="mt-0.5 rounded-sm h-4 w-4 border-zinc-200 text-zinc-900 focus:ring-zinc-900" 
+              className="mt-0.5 rounded-none h-4 w-4 border-zinc-200 text-zinc-900 focus:ring-zinc-900"
               required 
             />
             <span className="leading-tight">
@@ -99,7 +99,7 @@ export function ConsentForm({ lang }: { lang: string }) {
               type="checkbox" 
               checked={acceptedPrivacy} 
               onChange={(e) => setAcceptedPrivacy(e.target.checked)} 
-              className="mt-0.5 rounded-sm h-4 w-4 border-zinc-200 text-zinc-900 focus:ring-zinc-900" 
+              className="mt-0.5 rounded-none h-4 w-4 border-zinc-200 text-zinc-900 focus:ring-zinc-900"
               required 
             />
             <span className="leading-tight">
@@ -112,7 +112,7 @@ export function ConsentForm({ lang }: { lang: string }) {
               type="checkbox" 
               checked={marketingOptIn} 
               onChange={(e) => setMarketingOptIn(e.target.checked)} 
-              className="mt-0.5 rounded-sm h-4 w-4 border-zinc-200 text-zinc-900 focus:ring-zinc-900" 
+              className="mt-0.5 rounded-none h-4 w-4 border-zinc-200 text-zinc-900 focus:ring-zinc-900"
             />
             <span className="leading-tight">
               Email me about launches, editorial stories, and offers. Unsubscribe at any time.
@@ -123,7 +123,7 @@ export function ConsentForm({ lang }: { lang: string }) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-4 bg-zinc-900 text-white text-sm font-black uppercase tracking-[0.25em] transition-all hover:bg-black disabled:opacity-50 rounded"
+          className="w-full py-4 bg-zinc-900 text-white text-sm font-black uppercase tracking-[0.25em] transition-all hover:bg-black disabled:opacity-50 rounded-none"
         >
           {loading ? (
             <div className="flex items-center justify-center gap-2">

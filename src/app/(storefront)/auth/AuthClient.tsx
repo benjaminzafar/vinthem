@@ -352,7 +352,7 @@ export function AuthClient({ initialSettings, supabaseConfig }: AuthClientProps)
       )}
 
       <div className="relative z-10 w-full max-w-md">
-        <div className="bg-white p-6 sm:p-10 border border-slate-200 rounded-2xl shadow-2xl shadow-slate-900/10">
+        <div className="bg-white p-6 sm:p-10 border border-slate-200 rounded-none shadow-none">
           <div className="mb-8 sm:mb-10 text-center">
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 uppercase">
               {isForgotPassword ? 'Reset' : (isLogin ? settings.signInTitle?.[lang] : settings.signUpTitle?.[lang])}
@@ -364,7 +364,7 @@ export function AuthClient({ initialSettings, supabaseConfig }: AuthClientProps)
               <input
                 type="text"
                 required
-                className="w-full px-4 py-4 bg-zinc-50 border border-zinc-200 text-zinc-900 focus:outline-none focus:border-zinc-900 rounded text-sm transition-all"
+                className="w-full px-4 py-4 bg-zinc-50 border border-zinc-200 text-zinc-900 focus:outline-none focus:border-zinc-900 rounded-none text-sm transition-all"
                 placeholder={settings.fullNameLabelText?.[lang]}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -374,7 +374,7 @@ export function AuthClient({ initialSettings, supabaseConfig }: AuthClientProps)
             <input
               type="email"
               required
-              className="w-full px-4 py-4 bg-zinc-50 border border-zinc-200 text-zinc-900 focus:outline-none focus:border-zinc-900 rounded text-sm transition-all"
+              className="w-full px-4 py-4 bg-zinc-50 border border-zinc-200 text-zinc-900 focus:outline-none focus:border-zinc-900 rounded-none text-sm transition-all"
               placeholder={settings.emailLabel?.[lang]}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -384,7 +384,7 @@ export function AuthClient({ initialSettings, supabaseConfig }: AuthClientProps)
               <input
                 type="password"
                 required
-                className="w-full px-4 py-4 bg-zinc-50 border border-zinc-200 text-zinc-900 focus:outline-none focus:border-zinc-900 rounded text-sm transition-all"
+                className="w-full px-4 py-4 bg-zinc-50 border border-zinc-200 text-zinc-900 focus:outline-none focus:border-zinc-900 rounded-none text-sm transition-all"
                 placeholder={settings.passwordLabel?.[lang]}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -402,7 +402,7 @@ export function AuthClient({ initialSettings, supabaseConfig }: AuthClientProps)
             <button
               type="submit"
               disabled={loading || !isSupabaseConfigReady}
-              className="w-full min-h-[48px] bg-zinc-900 text-white text-[14px] font-semibold uppercase tracking-wider transition-all hover:bg-black disabled:opacity-50 rounded-lg flex items-center justify-center border-none shadow-none"
+              className="w-full min-h-[48px] bg-zinc-900 text-white text-[14px] font-semibold uppercase tracking-wider transition-all hover:bg-black disabled:opacity-50 rounded-none flex items-center justify-center border-none shadow-none"
             >
               {loading ? (
                 <div className="flex items-center justify-center gap-2">
@@ -415,21 +415,21 @@ export function AuthClient({ initialSettings, supabaseConfig }: AuthClientProps)
             </button>
 
             {!isLogin && !isForgotPassword && (
-              <div className="mt-8 space-y-3 bg-zinc-50/50 p-4 border border-slate-200 rounded">
+              <div className="mt-8 space-y-3 bg-zinc-50/50 p-4 border border-slate-200 rounded-none">
                 <label className="flex items-start gap-4 text-[11px] text-zinc-900 cursor-pointer uppercase font-black tracking-tight leading-tight group">
-                  <input type="checkbox" checked={acceptedTerms} onChange={(e) => setAcceptedTerms(e.target.checked)} className="mt-1 rounded-sm h-4 w-4 border-slate-300 text-zinc-900 focus:ring-zinc-900" required />
+                  <input type="checkbox" checked={acceptedTerms} onChange={(e) => setAcceptedTerms(e.target.checked)} className="mt-1 rounded-none h-4 w-4 border-slate-300 text-zinc-900 focus:ring-zinc-900" required />
                   <span>
                     Accept <Link href={`/${lang}/terms-of-service`} target="_blank" className="underline hover:text-zinc-600 transition-colors">Terms of Service</Link>
                   </span>
                 </label>
                 <label className="flex items-start gap-4 text-[11px] text-zinc-900 cursor-pointer uppercase font-black tracking-tight leading-tight group">
-                  <input type="checkbox" checked={acceptedPrivacy} onChange={(e) => setAcceptedPrivacy(e.target.checked)} className="mt-1 rounded-sm h-4 w-4 border-slate-300 text-zinc-900 focus:ring-zinc-900" required />
+                  <input type="checkbox" checked={acceptedPrivacy} onChange={(e) => setAcceptedPrivacy(e.target.checked)} className="mt-1 rounded-none h-4 w-4 border-slate-300 text-zinc-900 focus:ring-zinc-900" required />
                   <span>
                     Accept <Link href={`/${lang}/privacy-policy`} target="_blank" className="underline hover:text-zinc-600 transition-colors">Privacy Policy</Link>
                   </span>
                 </label>
                 <label className="flex items-start gap-4 text-[11px] text-zinc-900 cursor-pointer uppercase font-black tracking-tight leading-tight group">
-                  <input type="checkbox" checked={marketingOptIn} onChange={(e) => setMarketingOptIn(e.target.checked)} className="mt-1 rounded-sm h-4 w-4 border-slate-300 text-zinc-900 focus:ring-zinc-900" />
+                  <input type="checkbox" checked={marketingOptIn} onChange={(e) => setMarketingOptIn(e.target.checked)} className="mt-1 rounded-none h-4 w-4 border-slate-300 text-zinc-900 focus:ring-zinc-900" />
                   <span className="opacity-80 font-bold">{settings.signUpMarketingConsentText?.[lang] || 'Subscribe to Newsletter'}</span>
                 </label>
               </div>
@@ -448,7 +448,7 @@ export function AuthClient({ initialSettings, supabaseConfig }: AuthClientProps)
                 type="button"
                 onClick={handleGoogleLogin}
                 disabled={!settings.googleAuthEnabled || !isSupabaseConfigReady}
-                className="w-full group flex items-center justify-center gap-3 min-h-[48px] border border-slate-200 rounded-lg text-[14px] font-semibold uppercase tracking-wider text-zinc-950 bg-white hover:bg-zinc-50 transition-all active:scale-[0.98] disabled:opacity-30 disabled:grayscale shadow-none"
+                className="w-full group flex items-center justify-center gap-3 min-h-[48px] border border-slate-200 rounded-none text-[14px] font-semibold uppercase tracking-wider text-zinc-950 bg-white hover:bg-zinc-50 transition-all active:scale-[0.98] disabled:opacity-30 disabled:grayscale shadow-none"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>

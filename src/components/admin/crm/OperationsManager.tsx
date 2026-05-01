@@ -75,13 +75,13 @@ export function OperationsManager({ type, data, loading }: OperationsManagerProp
             <tr key={refund.id} className="hover:bg-slate-50 transition-colors">
               <td className="px-6 py-4 font-bold text-slate-900 text-sm">#{refund.orderId?.slice(0, 8) || refund.id.slice(0, 8)}</td>
               <td className="px-6 py-4 text-center">
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-tight bg-slate-100 text-slate-500 border border-slate-200">
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded-none text-[9px] font-bold uppercase tracking-tight bg-slate-100 text-slate-500 border border-slate-200">
                   {refund.locale || 'EN'}
                 </span>
               </td>
               <td className="px-6 py-4 text-xs font-medium text-slate-500">{refund.createdAt ? new Date(refund.createdAt).toLocaleDateString() : 'N/A'}</td>
               <td className="px-6 py-4">
-                <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest border ${
+                <span className={`px-2 py-0.5 rounded-none text-[10px] font-bold uppercase tracking-widest border ${
                   refund.status === 'Approved' || refund.status === 'Refunded'
                     ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
                     : refund.status === 'Rejected'
@@ -96,14 +96,14 @@ export function OperationsManager({ type, data, loading }: OperationsManagerProp
                   <button
                     onClick={() => handleRefundStatus(refund.id, refund.status === 'Approved' ? 'Refunded' : 'Approved')}
                     disabled={isUpdating === refund.id}
-                    className="p-2 border border-slate-300 rounded hover:bg-slate-50 transition-all text-slate-500 hover:text-slate-900 disabled:opacity-50"
+                    className="p-2 border border-slate-300 rounded-none hover:bg-slate-50 transition-all text-slate-500 hover:text-slate-900 disabled:opacity-50"
                   >
                     <CheckCircle2 className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => handleRefundStatus(refund.id, 'Rejected')}
                     disabled={isUpdating === refund.id}
-                    className="p-2 border border-slate-300 rounded hover:bg-slate-50 transition-all text-slate-500 hover:text-slate-900 disabled:opacity-50"
+                    className="p-2 border border-slate-300 rounded-none hover:bg-slate-50 transition-all text-slate-500 hover:text-slate-900 disabled:opacity-50"
                   >
                     <XCircle className="w-4 h-4" />
                   </button>
@@ -121,7 +121,7 @@ export function OperationsManager({ type, data, loading }: OperationsManagerProp
       <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
         <User className="w-4 h-4" /> Active Subscribers & Contacts
       </h4>
-      <div className="border border-slate-300 rounded bg-slate-50/30 overflow-hidden">
+      <div className="border border-slate-300 rounded-none bg-slate-50/30 overflow-hidden">
         <table className="w-full text-left">
           <thead className="bg-white border-b border-slate-200">
             <tr className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
@@ -146,7 +146,7 @@ export function OperationsManager({ type, data, loading }: OperationsManagerProp
                   </p>
                 </td>
                 <td className="px-6 py-4">
-                  <span className={`inline-flex rounded-full px-2 py-1 text-[9px] font-bold uppercase tracking-widest ${
+                  <span className={`inline-flex rounded-none px-2 py-1 text-[9px] font-bold uppercase tracking-widest ${
                     sub.status === 'unsubscribed'
                       ? 'bg-rose-50 text-rose-700'
                       : sub.status === 'registered'
@@ -174,7 +174,7 @@ export function OperationsManager({ type, data, loading }: OperationsManagerProp
   const renderReviews = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {reviews.map((review) => (
-        <div key={review.id} className="bg-white border border-slate-300 p-6 sm:p-8 rounded hover:bg-slate-50 transition-all">
+        <div key={review.id} className="bg-white border border-slate-300 p-6 sm:p-8 rounded-none hover:bg-slate-50 transition-all">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
               {[...Array(5)].map((_, i) => (
@@ -187,7 +187,7 @@ export function OperationsManager({ type, data, loading }: OperationsManagerProp
           <p className="text-sm font-medium text-slate-900 leading-relaxed mb-6">{review.comment}</p>
           
           <div className="flex items-center gap-3 pt-6 border-t border-slate-100">
-            <div className="w-8 h-8 rounded bg-slate-100 border border-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-500">
+            <div className="w-8 h-8 rounded-none bg-slate-100 border border-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-500">
               {review.userName?.charAt(0).toUpperCase()}
             </div>
             <div>
@@ -197,7 +197,7 @@ export function OperationsManager({ type, data, loading }: OperationsManagerProp
           </div>
 
           {review.adminReply && (
-            <div className="mt-6 bg-slate-50 p-4 rounded border border-slate-200">
+            <div className="mt-6 bg-slate-50 p-4 rounded-none border border-slate-200">
               <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 flex items-center gap-2">
                 <Package className="w-3.5 h-3.5" /> Official Response
               </p>

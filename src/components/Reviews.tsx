@@ -124,7 +124,7 @@ export default function Reviews({ productId, initialSettings, lang }: ReviewsPro
       
       {currentUser ? (
         hasPurchased === true ? (
-          <form onSubmit={handleSubmit} className="mb-12 bg-zinc-50/50 p-6 sm:p-8 rounded border border-zinc-100">
+          <form onSubmit={handleSubmit} className="mb-12 bg-zinc-50/50 p-6 sm:p-8 rounded-none border border-zinc-100">
             <div className="flex items-center gap-2 mb-6">
               <CheckCircle2 className="w-4 h-4 text-emerald-500" />
               <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-600">Verified Purchase</span>
@@ -142,7 +142,7 @@ export default function Reviews({ productId, initialSettings, lang }: ReviewsPro
             <textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              className="w-full p-5 bg-white border border-zinc-200 rounded mb-6 focus:ring-2 focus:ring-brand-ink/5 focus:border-brand-ink transition-all text-sm font-medium placeholder:text-zinc-300"
+              className="w-full p-5 bg-white border border-zinc-200 rounded-none mb-6 focus:ring-2 focus:ring-brand-ink/5 focus:border-brand-ink transition-all text-sm font-medium placeholder:text-zinc-300"
               placeholder={settings.shareThoughtsPlaceholder?.[lang] || "Share your thoughts..."}
               rows={4}
               required
@@ -150,13 +150,13 @@ export default function Reviews({ productId, initialSettings, lang }: ReviewsPro
             <button
               type="submit"
               disabled={submitting}
-              className="bg-slate-950 text-white px-10 py-4 rounded text-[12px] font-bold uppercase tracking-[0.2em] hover:bg-slate-800 transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+              className="bg-slate-950 text-white px-10 py-4 rounded-none text-[12px] font-bold uppercase tracking-[0.2em] hover:bg-slate-800 transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submitting ? 'Submitting...' : (settings.submitReviewButtonText?.[lang] || 'Submit Review')}
             </button>
           </form>
         ) : hasPurchased === false ? (
-          <div className="mb-12 p-8 rounded border border-dashed border-slate-200 bg-slate-50/30 text-center">
+          <div className="mb-12 p-8 rounded-none border border-dashed border-slate-200 bg-slate-50/30 text-center">
             <AlertCircle className="w-8 h-8 text-slate-300 mx-auto mb-4" />
             <h3 className="text-[12px] font-bold text-slate-900 uppercase tracking-[0.2em] mb-2">Verified Reviews Only</h3>
             <p className="text-[14px] text-slate-500 font-medium max-w-xs mx-auto leading-relaxed">
@@ -165,11 +165,11 @@ export default function Reviews({ productId, initialSettings, lang }: ReviewsPro
           </div>
         ) : (
           <div className="mb-12 h-32 flex items-center justify-center">
-            <div className="w-6 h-6 border-2 border-zinc-200 border-t-zinc-900 rounded animate-spin" />
+            <div className="w-6 h-6 border-2 border-zinc-200 border-t-zinc-900 rounded-none animate-spin" />
           </div>
         )
       ) : (
-        <div className="mb-12 p-8 rounded border border-dashed border-slate-200 bg-slate-50/30 text-center">
+        <div className="mb-12 p-8 rounded-none border border-dashed border-slate-200 bg-slate-50/30 text-center">
           <p className="text-[12px] text-slate-500 font-bold uppercase tracking-wider mb-4">Please log in to leave a review.</p>
           <button 
             onClick={() => window.location.href = '/auth'}
@@ -202,7 +202,7 @@ export default function Reviews({ productId, initialSettings, lang }: ReviewsPro
               <p className="text-gray-600 leading-relaxed text-sm font-light">{review.comment}</p>
               
               {review.adminReply && (
-                <div className="mt-4 ml-6 p-4 bg-slate-50 rounded border border-slate-100">
+                <div className="mt-4 ml-6 p-4 bg-slate-50 rounded-none border border-slate-100">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-900">Admin Response</span>
                     <span className="text-[11px] text-slate-500 font-bold uppercase tracking-widest">{review.adminReplyAt ? new Date(review.adminReplyAt).toLocaleDateString() : ''}</span>

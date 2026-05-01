@@ -143,7 +143,7 @@ export function IntegrationsContainer({
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center p-20 bg-white rounded-md border border-zinc-100">
+      <div className="flex flex-col items-center justify-center p-20 bg-white rounded-none border border-zinc-100">
         <Loader2 className="w-10 h-10 animate-spin text-zinc-300 mb-4" />
         <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest">Waking Up Infrastructure...</span>
       </div>
@@ -164,7 +164,7 @@ export function IntegrationsContainer({
           <button
             key={cat.id}
             onClick={() => setActiveCategory(cat.id)}
-            className={`flex items-center gap-2 px-4 py-2 text-[13px] font-bold transition-all whitespace-nowrap rounded-md ${activeCategory === cat.id ? `${cat.bg} ${cat.color} ring-1 ring-inset ring-current/10` : 'text-zinc-500 hover:bg-zinc-100'}`}
+            className={`flex items-center gap-2 px-4 py-2 text-[13px] font-bold transition-all whitespace-nowrap rounded-none ${activeCategory === cat.id ? `${cat.bg} ${cat.color} ring-1 ring-inset ring-current/10` : 'text-zinc-500 hover:bg-zinc-100'}`}
           >
             <cat.icon className="w-4 h-4" />
             {cat.name}
@@ -443,8 +443,8 @@ export function IntegrationsContainer({
       </div>
 
       {/* Trust Message - Flat Style */}
-      <div className="flex items-center gap-3 p-4 bg-zinc-50 border border-zinc-100 rounded-md mt-6">
-         <div className="p-2 bg-white border border-zinc-100 rounded-md">
+      <div className="flex items-center gap-3 p-4 bg-zinc-50 border border-zinc-100 rounded-none mt-6">
+         <div className="p-2 bg-white border border-zinc-100 rounded-none">
             <ShieldCheck className="w-5 h-5 text-emerald-600" />
          </div>
          <div className="flex-1">
@@ -496,7 +496,7 @@ function LanguageInput({ label, name, value, onChange }: {
         value={value || ''}
         onChange={(e) => onChange(name, e.target.value)}
         placeholder="ID"
-        className="flex-1 bg-zinc-50 border border-zinc-100 rounded px-2 py-1 text-[11px] font-mono focus:outline-none focus:border-rose-300 transition-all font-bold"
+        className="flex-1 bg-zinc-50 border border-zinc-100 rounded-none px-2 py-1 text-[11px] font-mono focus:outline-none focus:border-rose-300 transition-all font-bold"
       />
     </div>
   );

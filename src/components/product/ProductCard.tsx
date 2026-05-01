@@ -36,13 +36,13 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
     <div className="group flex flex-col h-full bg-white" style={{ contain: 'layout style' }}>
       <Link 
         href={href} 
-        className="block relative w-full mb-5 overflow-hidden border border-slate-100 rounded bg-slate-100"
+        className="block relative w-full mb-5 overflow-hidden border border-slate-100 rounded-none bg-slate-100"
         style={{ paddingBottom: '125%' }} // Stable 4:5 aspect ratio
         aria-label={`View details for ${title}`}
       >
         {product.isFeatured && (
           <div className="absolute top-4 left-4 z-20">
-            <span className="bg-white/90 backdrop-blur-sm border border-slate-100 text-brand-ink text-[12px] font-semibold px-4 py-1.5 rounded">
+            <span className="bg-white/90 backdrop-blur-sm border border-slate-100 text-brand-ink text-[12px] font-semibold px-4 py-1.5 rounded-none">
               {settings.featuredBadgeText?.[lang] || 'Featured'}
             </span>
           </div>
@@ -86,13 +86,13 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
                 addItem(product);
                 setCartOpen(true);
                 toast.success(`${title} added to cart!`, {
-                  className: 'rounded bg-slate-900 text-white !text-[12px] !font-bold !uppercase !tracking-widest border-none px-6 py-3',
+                  className: 'rounded-none bg-slate-900 text-white !text-[12px] !font-bold !uppercase !tracking-widest border-none px-6 py-3',
                   duration: 2000,
                   icon: <Check className="w-5 h-5" />
                 });
               }}
               aria-label={`Quick add ${title} to cart`}
-              className="w-full h-11 bg-white text-brand-ink border border-slate-100 px-6 !text-[12px] !font-black !uppercase !tracking-widest transition-all duration-300 hover:bg-slate-900 hover:text-white flex items-center justify-center gap-2 rounded"
+              className="w-full h-11 bg-white text-brand-ink border border-slate-100 px-6 !text-[12px] !font-black !uppercase !tracking-widest transition-all duration-300 hover:bg-slate-900 hover:text-white flex items-center justify-center gap-2 rounded-none"
             >
               <ShoppingBag className="w-4 h-4" />
               {settings.quickAddText?.[lang] || 'Quick add'}

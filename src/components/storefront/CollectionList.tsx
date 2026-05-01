@@ -24,7 +24,7 @@ export function CollectionList({ categories, lang, labels }: CollectionListProps
         </div>
 
         {categories.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 border border-slate-100 rounded">
+          <div className="flex flex-col items-center justify-center py-20 border border-slate-100 rounded-none">
             <ShoppingBag className="w-10 h-10 text-slate-200 mb-4" />
             <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">
               {labels.noCollectionsFound}
@@ -43,7 +43,7 @@ export function CollectionList({ categories, lang, labels }: CollectionListProps
                   aria-label={`Browse ${displayName} collection`}
                 >
                   {/* Stable Media Stage - No shadows or heavy filters */}
-                  <div className="relative aspect-[3/4] overflow-hidden rounded bg-slate-50 border border-slate-100 mb-4 transform-gpu">
+                  <div className="relative aspect-[3/4] overflow-hidden rounded-none bg-slate-50 border border-slate-100 mb-4 transform-gpu">
                     {imageSrc ? (
                       <Image
                         src={imageSrc}
@@ -62,7 +62,7 @@ export function CollectionList({ categories, lang, labels }: CollectionListProps
                     )}
                     
                     {/* Simplified Action Indicator - Solid BG, no blur */}
-                    <div className="absolute bottom-4 right-4 bg-slate-900 w-10 h-10 rounded flex items-center justify-center opacity-100 md:opacity-0 group-hover:opacity-100 transition-all duration-300 z-20">
+                    <div className="absolute bottom-4 right-4 bg-slate-900 w-10 h-10 rounded-none flex items-center justify-center opacity-100 md:opacity-0 group-hover:opacity-100 transition-all duration-300 z-20">
                       <ArrowRight className="w-4 h-4 text-white" />
                     </div>
                   </div>

@@ -69,7 +69,7 @@ export function AdminHeader({
               onChange={(e) => search.onChange(e.target.value)}
               onFocus={() => setIsSearchFocused(true)}
               onBlur={() => setIsSearchFocused(false)}
-              className="pl-11 pr-4 h-11 border-slate-200 focus:ring-2 focus:ring-slate-900/5 focus:border-slate-900 w-full bg-slate-50/50 text-slate-900 border text-[14px] font-semibold rounded-xl transition-all"
+              className="pl-11 pr-4 h-11 border-slate-200 focus:ring-2 focus:ring-slate-900/5 focus:border-slate-900 w-full bg-slate-50/50 text-slate-900 border text-[14px] font-semibold rounded-none transition-all"
             />
           </div>
         )}
@@ -79,7 +79,7 @@ export function AdminHeader({
             <button 
               onClick={primaryAction.onClick}
               disabled={primaryAction.disabled}
-              className="flex-1 sm:flex-none flex items-center justify-center bg-slate-900 text-white hover:bg-slate-800 px-6 h-11 text-sm font-bold rounded-xl transition-all active:scale-95 disabled:bg-slate-200 disabled:cursor-not-allowed shadow-sm"
+              className="flex-1 sm:flex-none flex items-center justify-center bg-slate-900 text-white hover:bg-slate-800 px-6 h-11 text-sm font-bold rounded-none transition-all active:scale-95 disabled:bg-slate-200 disabled:cursor-not-allowed shadow-none"
             >
               <primaryAction.icon className="w-4 h-4 mr-2" />
               <span>{primaryAction.label}</span>
@@ -90,7 +90,7 @@ export function AdminHeader({
             <div className="relative ml-auto sm:ml-0" ref={dropdownRef}>
               <button 
                 onClick={() => setIsActionsOpen(!isActionsOpen)}
-                className="flex items-center justify-center bg-white text-slate-900 border border-slate-300 h-10 w-10 rounded-md hover:bg-slate-50 transition-colors"
+                className="flex items-center justify-center bg-white text-slate-900 border border-slate-300 h-10 w-10 rounded-none hover:bg-slate-50 transition-colors"
                 title="More Actions"
               >
                 <MoreVertical className="w-5 h-5" />
@@ -102,7 +102,7 @@ export function AdminHeader({
                     initial={{ opacity: 0, scale: 0.95, y: 10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                    className="absolute right-0 mt-2 w-[min(18rem,calc(100vw-2rem))] sm:w-52 bg-white rounded-md border border-slate-300 z-20 py-1 overflow-hidden shadow-lg shadow-slate-900/5"
+                    className="absolute right-0 mt-2 w-[min(18rem,calc(100vw-2rem))] sm:w-52 bg-white rounded-none border border-slate-300 z-20 py-1 overflow-hidden shadow-none shadow-none/5"
                   >
                     {statsLabel && (
                       <div className="hidden sm:block px-4 py-2 text-[11px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-100 bg-slate-50/50">

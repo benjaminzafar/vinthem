@@ -54,7 +54,7 @@ export function NewsletterSection({ settings, lang }: NewsletterSectionProps) {
               type="email" 
               name="email"
               placeholder="Enter your email address" 
-              className="w-full bg-white border border-slate-200 rounded-full px-6 py-4 text-slate-900 placeholder:text-slate-500 focus:outline-none focus:border-slate-400 transition-all text-sm font-sans pr-32"
+              className="w-full bg-white border border-slate-200 rounded-none px-6 py-4 text-slate-900 placeholder:text-slate-500 focus:outline-none focus:border-slate-400 transition-all text-sm font-sans pr-32"
               required
               disabled={isPending}
               aria-label="Email address for newsletter"
@@ -62,7 +62,7 @@ export function NewsletterSection({ settings, lang }: NewsletterSectionProps) {
             <button 
               type="submit" 
               disabled={isPending}
-              className="absolute right-2 top-2 bottom-2 bg-slate-950 text-white px-6 rounded-full text-[12px] font-bold uppercase tracking-[0.2em] hover:bg-slate-800 transition-colors flex items-center justify-center disabled:opacity-50"
+              className="absolute right-2 top-2 bottom-2 bg-slate-950 text-white px-6 rounded-none text-[12px] font-bold uppercase tracking-[0.2em] hover:bg-slate-800 transition-colors flex items-center justify-center disabled:opacity-50"
             >
               {isPending ? '...' : (settings.newsletterButtonText?.[lang])}
             </button>
@@ -74,7 +74,7 @@ export function NewsletterSection({ settings, lang }: NewsletterSectionProps) {
               name="marketingConsent"
               required
               disabled={isPending}
-              className="mt-1 h-4 w-4 rounded border-brand-ink/20 text-brand-ink focus:ring-brand-ink"
+              className="mt-1 h-4 w-4 rounded-none border-brand-ink/20 text-brand-ink focus:ring-brand-ink"
             />
             <span>
               I want marketing emails about product drops and offers. I can{' '}
@@ -99,7 +99,7 @@ export function NewsletterSection({ settings, lang }: NewsletterSectionProps) {
 
           {feedback && (
             <div
-              className={`rounded border px-4 py-3 text-sm ${
+              className={`rounded-none border px-4 py-3 text-sm ${
                 feedback.type === 'success'
                   ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
                   : 'border-rose-200 bg-rose-50 text-rose-700'

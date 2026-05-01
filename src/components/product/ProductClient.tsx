@@ -275,7 +275,7 @@ export function ProductClient({
 
           <aside className="relative pt-0 lg:pt-0">
             {(product.isSale || comparePrice) ? (
-              <span className="absolute right-0 top-0 hidden h-14 w-14 items-center justify-center rounded-full bg-[#ef3b2d] text-[10px] font-semibold uppercase tracking-[0.16em] text-white sm:flex">
+              <span className="absolute right-0 top-0 hidden h-14 w-14 items-center justify-center rounded-none bg-[#ef3b2d] text-[10px] font-semibold uppercase tracking-[0.16em] text-white sm:flex">
                 {settings.featuredBadgeText?.[lang] || 'Sale'}
               </span>
             ) : null}
@@ -451,7 +451,7 @@ export function ProductClient({
                   <button
                     type="button"
                     onClick={() => handleSocialShare('whatsapp')}
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-950 transition-colors hover:border-slate-950 hover:bg-slate-950 hover:text-white"
+                    className="flex h-10 w-10 items-center justify-center rounded-none border border-slate-200 bg-white text-slate-950 transition-colors hover:border-slate-950 hover:bg-slate-950 hover:text-white"
                     aria-label="Share on WhatsApp"
                   >
                     <FaWhatsapp className="h-5 w-5" />
@@ -459,7 +459,7 @@ export function ProductClient({
                   <button
                     type="button"
                     onClick={() => handleSocialShare('telegram')}
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-950 transition-colors hover:border-slate-950 hover:bg-slate-950 hover:text-white"
+                    className="flex h-10 w-10 items-center justify-center rounded-none border border-slate-200 bg-white text-slate-950 transition-colors hover:border-slate-950 hover:bg-slate-950 hover:text-white"
                     aria-label="Share on Telegram"
                   >
                     <FaTelegramPlane className="h-5 w-5" />
@@ -467,7 +467,7 @@ export function ProductClient({
                   <button
                     type="button"
                     onClick={() => handleSocialShare('threads')}
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-950 transition-colors hover:border-slate-950 hover:bg-slate-950 hover:text-white"
+                    className="flex h-10 w-10 items-center justify-center rounded-none border border-slate-200 bg-white text-slate-950 transition-colors hover:border-slate-950 hover:bg-slate-950 hover:text-white"
                     aria-label="Share on Threads"
                   >
                     <SiThreads className="h-5 w-5" />
@@ -475,7 +475,7 @@ export function ProductClient({
                   <button
                     type="button"
                     onClick={() => handleSocialShare('facebook')}
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-950 transition-colors hover:border-slate-950 hover:bg-slate-950 hover:text-white"
+                    className="flex h-10 w-10 items-center justify-center rounded-none border border-slate-200 bg-white text-slate-950 transition-colors hover:border-slate-950 hover:bg-slate-950 hover:text-white"
                     aria-label="Share on Facebook"
                   >
                     <FaFacebookF className="h-4 w-4" />
@@ -483,7 +483,7 @@ export function ProductClient({
                   <button
                     type="button"
                     onClick={handleCopyLink}
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-950 transition-colors hover:border-slate-950 hover:bg-slate-950 hover:text-white"
+                    className="flex h-10 w-10 items-center justify-center rounded-none border border-slate-200 bg-white text-slate-950 transition-colors hover:border-slate-950 hover:bg-slate-950 hover:text-white"
                     aria-label="Copy product link"
                   >
                     {isCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}

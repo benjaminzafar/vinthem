@@ -52,8 +52,8 @@ export default async function ReturnPolicyPage({ params }: ReturnPolicyPageProps
             </div>
 
             {/* Swedish/EU Legal Badge */}
-            <div className="mt-12 p-8 bg-zinc-50 border border-zinc-100 rounded-2xl flex items-start gap-6">
-              <div className="p-3 bg-white border border-zinc-100 rounded-xl shadow-sm">
+            <div className="mt-12 p-8 bg-zinc-50 border border-zinc-100 rounded-none flex items-start gap-6">
+              <div className="p-3 bg-white border border-zinc-100 rounded-none shadow-none">
                 <ShieldCheck className="w-6 h-6 text-emerald-600" />
               </div>
               <div className="text-left">
@@ -69,20 +69,20 @@ export default async function ReturnPolicyPage({ params }: ReturnPolicyPageProps
 
           {/* Sidebar / Quick Info */}
           <div className="lg:col-span-4 space-y-8">
-            <div className="p-6 border border-zinc-100 rounded-2xl space-y-6">
+            <div className="p-6 border border-zinc-100 rounded-none space-y-6">
               <div className="flex items-center gap-3">
                 <Truck className="w-5 h-5 text-rose-500" />
                 <h4 className="text-xs font-bold text-zinc-900 uppercase tracking-widest">Courier Info</h4>
               </div>
               <div className="space-y-4">
-                <div className="bg-zinc-50 p-4 rounded-xl">
+                <div className="bg-zinc-50 p-4 rounded-none">
                   <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block mb-1">Return Cost</span>
                   <p className="text-sm font-bold text-zinc-900 italic">Customer Self-Paid</p>
                 </div>
               </div>
             </div>
 
-            <div className="p-6 border border-zinc-100 rounded-2xl space-y-6">
+            <div className="p-6 border border-zinc-100 rounded-none space-y-6">
               <div className="flex items-center gap-3">
                 <Clock className="w-5 h-5 text-rose-500" />
                 <h4 className="text-xs font-bold text-zinc-900 uppercase tracking-widest">Processing Time</h4>
@@ -92,7 +92,7 @@ export default async function ReturnPolicyPage({ params }: ReturnPolicyPageProps
               </p>
             </div>
             
-            <div className="p-6 bg-rose-50 border border-rose-100 rounded-2xl">
+            <div className="p-6 bg-rose-50 border border-rose-100 rounded-none">
               <div className="flex items-center gap-3 mb-4">
                 <AlertCircle className="w-5 h-5 text-rose-600" />
                 <h4 className="text-xs font-bold text-rose-900 uppercase tracking-widest text-wrap">Important</h4>

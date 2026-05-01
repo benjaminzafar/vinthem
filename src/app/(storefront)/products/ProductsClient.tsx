@@ -119,7 +119,7 @@ export default function ProductsClient({
           <main className="min-w-0 flex-1">
             {products.length === 0 ? (
               <div className="border border-slate-200 bg-white px-6 py-20 text-center">
-                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded border border-slate-200 bg-slate-50">
+                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-none border border-slate-200 bg-slate-50">
                   <Search className="h-8 w-8 text-slate-300" />
                 </div>
                 <h3 className="mt-8 !text-[12px] !font-bold !uppercase !tracking-widest text-slate-900">

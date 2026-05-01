@@ -65,14 +65,14 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
   return (
     <div className="relative w-full text-slate-900" ref={containerRef}>
       <div
-        className="w-full h-11 px-4 bg-white border border-slate-200 rounded-[4px] cursor-pointer flex items-center justify-between hover:border-slate-400 transition-all"
+        className="w-full h-11 px-4 bg-white border border-slate-200 rounded-none-[4px] cursor-pointer flex items-center justify-between hover:border-slate-400 transition-all"
         onClick={() => setIsOpen(!isOpen)}
       >
         <span className="text-sm font-medium truncate">{getSelectedLabels() || placeholder}</span>
         <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform duration-200 ${isOpen ? 'rotate-180 text-slate-900' : ''}`} />
       </div>
       {isOpen && (
-        <div className="absolute z-[100] w-full mt-1 bg-white border border-slate-200 rounded-[4px] animate-in fade-in zoom-in-95 duration-100">
+        <div className="absolute z-[100] w-full mt-1 bg-white border border-slate-200 rounded-none-[4px] animate-in fade-in zoom-in-95 duration-100">
           <div className="p-2 border-b border-slate-100 flex items-center bg-slate-50">
             <Search className="w-4 h-4 text-slate-500 mr-2" />
             <input

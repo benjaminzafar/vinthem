@@ -184,7 +184,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
       <>
         {parts.map((part, i) => 
           part.toLowerCase() === query.toLowerCase() ? (
-            <mark key={i} className="bg-slate-100 text-slate-900 px-0.5 font-medium rounded-sm inline-block">{part}</mark>
+            <mark key={i} className="bg-slate-100 text-slate-900 px-0.5 font-medium rounded-none inline-block">{part}</mark>
           ) : (
             part
           )
@@ -197,7 +197,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
     <div className="relative">
       <button 
         onClick={handleToggle}
-        className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded"
+        className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-none"
         aria-label="Search"
       >
         <Search className="w-5 h-5" strokeWidth={1.5} />
@@ -220,7 +220,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.98, y: 10 }}
                 transition={{ type: 'spring', damping: 25, stiffness: 300, mass: 0.5 }}
-                className="w-full max-w-[850px] bg-white border-0 lg:border border-slate-200 pointer-events-auto lg:shadow-[0_0_80px_rgba(0,0,0,0.1)] flex flex-col h-full lg:h-auto lg:max-h-[70vh] overflow-hidden rounded"
+                className="w-full max-w-[850px] bg-white border-0 lg:border border-slate-200 pointer-events-auto lg:shadow-none-[0_0_80px_rgba(0,0,0,0.1)] flex flex-col h-full lg:h-auto lg:max-h-[70vh] overflow-hidden rounded-none"
               >
                 <div className="flex items-center gap-6 px-10 border-b border-slate-100 bg-white sticky top-0 z-20 shrink-0 h-16">
                   <Search className="w-5 h-5 text-slate-600" strokeWidth={1.5} />
@@ -241,7 +241,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                     <button 
                       onClick={() => setIsOverlayOpen(false)}
                       aria-label="Close search overlay"
-                      className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded"
+                      className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-none"
                     >
                       <X className="w-5 h-5" strokeWidth={1.5} />
                     </button>
@@ -265,7 +265,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                           {isMobileFilterOpen ? 'Hide Filters' : 'Filter & Sort'}
                         </span>
                         {activeFilterCount > 0 && (
-                          <span className="w-5 h-5 rounded-full bg-slate-900 text-white text-[10px] flex items-center justify-center font-bold">
+                          <span className="w-5 h-5 rounded-none bg-slate-900 text-white text-[10px] flex items-center justify-center font-bold">
                             {activeFilterCount}
                           </span>
                         )}
@@ -322,7 +322,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                                   }`}>
                                     {val}
                                   </span>
-                                  {isActive && <div className="w-1.5 h-1.5 bg-slate-900 rounded-full" />}
+                                  {isActive && <div className="w-1.5 h-1.5 bg-slate-900 rounded-none" />}
                                 </button>
                               );
                             })}
@@ -334,7 +334,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                         {(activeFilterCount > 0 || sortBy !== null) && (
                           <button 
                             onClick={clearFilters}
-                            className="w-full h-12 border border-slate-900 text-slate-900 text-[11px] font-black uppercase tracking-[0.2em] hover:bg-slate-900 hover:text-white transition-all rounded-[4px]"
+                            className="w-full h-12 border border-slate-900 text-slate-900 text-[11px] font-black uppercase tracking-[0.2em] hover:bg-slate-900 hover:text-white transition-all rounded-none-[4px]"
                           >
                             Reset All
                           </button>
@@ -354,7 +354,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                           exit={{ opacity: 0 }}
                           className="h-full flex flex-col items-center justify-center p-10 text-center"
                         >
-                          <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-6">
+                          <div className="w-16 h-16 bg-slate-50 rounded-none flex items-center justify-center mb-6">
                             <Search className="w-6 h-6 text-slate-300" />
                           </div>
                           <h3 className="text-[12px] font-bold uppercase tracking-[0.2em] text-slate-900 mb-2">Search Catalog</h3>
@@ -379,7 +379,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                                     key={cat.id}
                                     href={`/${lang}/products?category=${encodeURIComponent(cat.slug)}`}
                                     onClick={() => setIsOverlayOpen(false)}
-                                    className="px-4 py-3 border border-slate-100 hover:border-slate-900 transition-all flex items-center gap-3 bg-slate-50 hover:bg-white group rounded"
+                                    className="px-4 py-3 border border-slate-100 hover:border-slate-900 transition-all flex items-center gap-3 bg-slate-50 hover:bg-white group rounded-none"
                                   >
                                     <span className="text-[13px] font-bold uppercase tracking-widest text-slate-900">
                                       <Highlight text={cat.translations?.[lang]?.name || cat.name} query={searchQuery} />
@@ -414,7 +414,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                                     <Link 
                                       href={`/${lang}/product/${product.id}`} 
                                       onClick={() => setIsOverlayOpen(false)}
-                                      className="block relative aspect-[4/5] overflow-hidden bg-slate-50 border border-slate-100 mb-3 rounded"
+                                      className="block relative aspect-[4/5] overflow-hidden bg-slate-50 border border-slate-100 mb-3 rounded-none"
                                     >
                                       <Image
                                         src={getOptimizedImageUrl(product.imageUrl, 400, 500)}

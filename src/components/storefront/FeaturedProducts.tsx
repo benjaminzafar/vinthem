@@ -29,7 +29,7 @@ export function FeaturedProducts({ products, lang, labels }: FeaturedProductsPro
             
             return (
               <Link key={product.id} href={`/${lang}/product/${product.id}`} className="group block">
-                <div className="relative aspect-[3/4] overflow-hidden rounded bg-slate-50 border border-slate-100 mb-4 transform-gpu">
+                <div className="relative aspect-[3/4] overflow-hidden rounded-none bg-slate-50 border border-slate-100 mb-4 transform-gpu">
                   {product.imageUrl ? (
                     <Image 
                       src={getOptimizedImageUrl(product.imageUrl, 500, 75)} 
@@ -46,7 +46,7 @@ export function FeaturedProducts({ products, lang, labels }: FeaturedProductsPro
                     </div>
                   )}
                   
-                  <div className="absolute bottom-4 right-4 bg-slate-900 w-10 h-10 rounded flex items-center justify-center opacity-100 md:opacity-0 group-hover:opacity-100 transition-all duration-300 z-20">
+                  <div className="absolute bottom-4 right-4 bg-slate-900 w-10 h-10 rounded-none flex items-center justify-center opacity-100 md:opacity-0 group-hover:opacity-100 transition-all duration-300 z-20">
                     <ArrowRight className="w-4 h-4 text-white" />
                   </div>
                 </div>

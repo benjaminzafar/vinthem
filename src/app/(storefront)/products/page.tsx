@@ -108,7 +108,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   return (
     <React.Suspense fallback={
       <div className="min-h-screen flex items-center justify-center bg-[#fcfcfc]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-ink"></div>
+        <div className="animate-spin rounded-none h-12 w-12 border-b-2 border-brand-ink"></div>
       </div>
     }>
       <ProductsClient 

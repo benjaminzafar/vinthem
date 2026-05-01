@@ -65,9 +65,9 @@ function SidebarContent({
               key={item.id}
               href={item.href}
               onClick={onNavItemClick}
-              className={`w-full flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
+              className={`w-full flex items-center gap-3 rounded-none px-3 py-2 transition-all ${
                 isActive
-                  ? 'bg-slate-900 text-white shadow-md'
+                  ? 'bg-slate-900 text-white shadow-none'
                   : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
               }`}
             >
@@ -80,7 +80,7 @@ function SidebarContent({
       
       <div className="p-6 border-t border-slate-200 bg-white">
         <div className="flex items-center mb-4 px-1">
-          <div className="w-10 h-10 rounded-md bg-slate-900 flex items-center justify-center text-white font-semibold text-[13px] mr-3 shrink-0">
+          <div className="w-10 h-10 rounded-none bg-slate-900 flex items-center justify-center text-white font-semibold text-[13px] mr-3 shrink-0">
             {activeUserEmail?.[0].toUpperCase() || 'A'}
           </div>
           <div className="text-left flex-1 min-w-0">
@@ -90,7 +90,7 @@ function SidebarContent({
         </div>
         <button
           onClick={onSignOut}
-          className="w-full flex items-center justify-center space-x-2 px-4 h-10 rounded-md border border-slate-300 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all text-[12px] font-medium"
+          className="w-full flex items-center justify-center space-x-2 px-4 h-10 rounded-none border border-slate-300 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all text-[12px] font-medium"
         >
           <LogOut className="w-4 h-4" />
           <span>Sign Out</span>

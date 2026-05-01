@@ -31,20 +31,20 @@ export function IntegrationCard({
   return (
     <motion.div 
       layout
-      className="bg-white border-none shadow-none rounded-md overflow-hidden flex flex-col hover:bg-zinc-50/10 transition-all"
+      className="bg-white border-none shadow-none rounded-none overflow-hidden flex flex-col hover:bg-zinc-50/10 transition-all"
     >
       <div 
         className="px-6 py-4 cursor-pointer flex items-center justify-between bg-zinc-50/10"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded border border-zinc-200 bg-white flex items-center justify-center p-1.5 transition-shadow">
+          <div className="w-10 h-10 rounded-none border border-zinc-200 bg-white flex items-center justify-center p-1.5 transition-all-none">
             {logo}
           </div>
           <div>
             <h3 className="text-sm font-bold text-zinc-900 leading-none tracking-tight">{title}</h3>
             <div className="mt-1.5 flex items-center gap-1.5">
-               <div className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-emerald-500' : 'bg-zinc-300'}`} />
+               <div className={`w-1.5 h-1.5 rounded-none ${isConnected ? 'bg-emerald-500' : 'bg-zinc-300'}`} />
                <span className={`text-[10px] font-bold uppercase tracking-wider ${isConnected ? 'text-emerald-600' : 'text-zinc-500'}`}>
                 {isConnected ? 'Active & Encrypted' : 'Requires Setup'}
                </span>
@@ -56,13 +56,13 @@ export function IntegrationCard({
           {tutorial && (
             <button 
               onClick={(e) => { e.stopPropagation(); setShowTutorial(!showTutorial); }}
-              className={`p-1.5 rounded-md transition-colors ${showTutorial ? 'bg-zinc-100 text-brand-ink' : 'text-zinc-500 hover:text-zinc-600 hover:bg-zinc-100'}`}
+              className={`p-1.5 rounded-none transition-colors ${showTutorial ? 'bg-zinc-100 text-brand-ink' : 'text-zinc-500 hover:text-zinc-600 hover:bg-zinc-100'}`}
               title="View Documentation"
             >
               <HelpCircle className="w-4 h-4" />
             </button>
           )}
-          <div className="w-8 h-8 rounded-md flex items-center justify-center hover:bg-zinc-100 transition-colors">
+          <div className="w-8 h-8 rounded-none flex items-center justify-center hover:bg-zinc-100 transition-colors">
             {isExpanded ? <ChevronUp className="w-4 h-4 text-zinc-500" /> : <ChevronDown className="w-4 h-4 text-zinc-500" />}
           </div>
         </div>
@@ -88,7 +88,7 @@ export function IntegrationCard({
                <button
                 onClick={(e) => { e.stopPropagation(); onSave(); }}
                 disabled={isSaving}
-                className="flex items-center gap-2 px-6 py-2 bg-zinc-900 text-white rounded-md hover:bg-zinc-800 transition-all font-bold text-[13px] tracking-tight disabled:opacity-50"
+                className="flex items-center gap-2 px-6 py-2 bg-zinc-900 text-white rounded-none hover:bg-zinc-800 transition-all font-bold text-[13px] tracking-tight disabled:opacity-50"
               >
                 {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                 {isSaving ? 'Syncing...' : 'Update Settings'}
