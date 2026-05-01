@@ -37,16 +37,16 @@ export function CRMDetailView({ customer, orders, tickets, refunds, reviews, onB
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white p-8 sm:p-10 border border-slate-300 rounded shadow-none">
+          <div className="bg-white p-8 sm:p-10 border border-slate-300 rounded-none shadow-none">
             <div className="flex items-center space-x-6 mb-10">
-              <div className="w-16 h-16 bg-slate-900 text-white rounded flex items-center justify-center text-xl font-bold">
+              <div className="w-16 h-16 bg-slate-900 text-white rounded-none flex items-center justify-center text-xl font-bold">
                 {customer.email?.charAt(0).toUpperCase()}
               </div>
               <div>
                 <h2 className="text-xl font-bold text-slate-900 truncate max-w-[180px]" title={customer.email ?? undefined}>
                   {customer.name || customer.email?.split('@')[0]}
                 </h2>
-                <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest mt-2 border ${
+                <span className={`inline-block px-2 py-0.5 rounded-none text-[10px] font-bold uppercase tracking-widest mt-2 border ${
                   customer.role === 'admin' ? 'bg-slate-900 text-white border-slate-900' : 'bg-slate-50 text-slate-500 border-slate-200'
                 }`}>
                   {customer.role || 'client'}
@@ -85,7 +85,7 @@ export function CRMDetailView({ customer, orders, tickets, refunds, reviews, onB
             </div>
           </div>
 
-          <div className="bg-slate-900 p-8 sm:p-10 rounded text-white overflow-hidden relative">
+          <div className="bg-slate-900 p-8 sm:p-10 rounded-none text-white overflow-hidden relative">
             <div className="relative z-10">
               <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-6">Aggregate Revenue</h3>
               <div className="text-3xl font-bold tracking-tight mb-2">{formatPrice(totalSpent, 'en', undefined, primaryCurrency)}</div>
@@ -112,7 +112,7 @@ export function CRMDetailView({ customer, orders, tickets, refunds, reviews, onB
         </div>
 
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white rounded border border-slate-300 overflow-hidden shadow-none">
+          <div className="bg-white rounded-none border border-slate-300 overflow-hidden shadow-none">
             <div className="p-6 sm:p-8 border-b border-slate-300 bg-slate-50/30 flex items-center gap-3">
               <ShoppingBag className="w-5 h-5 text-slate-500" />
               <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Transaction Hub</h3>
@@ -143,7 +143,7 @@ export function CRMDetailView({ customer, orders, tickets, refunds, reviews, onB
                         </td>
                         <td className="px-8 py-5 text-xs font-medium text-slate-500">{order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A'}</td>
                         <td className="px-8 py-5">
-                          <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest border ${
+                          <span className={`px-2 py-0.5 rounded-none text-[9px] font-bold uppercase tracking-widest border ${
                             order.status === 'Delivered' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-slate-50 text-slate-500 border-slate-200'
                           }`}>
                             {order.status || 'Processing'}
@@ -158,9 +158,9 @@ export function CRMDetailView({ customer, orders, tickets, refunds, reviews, onB
                               <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Manifest Breakdown</h4>
                               <div className="space-y-3">
                                 {order.items?.map((item, index) => (
-                                  <div key={index} className="flex items-center justify-between p-4 bg-white border border-slate-200 rounded">
+                                  <div key={index} className="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-none">
                                     <div className="flex items-center space-x-4">
-                                      <div className="w-10 h-10 bg-slate-50 border border-slate-200 rounded flex items-center justify-center overflow-hidden shrink-0">
+                                      <div className="w-10 h-10 bg-slate-50 border border-slate-200 rounded-none flex items-center justify-center overflow-hidden shrink-0">
                                         {item.image ? (
                                           <div className="relative h-full w-full">
                                             <Image src={item.image} alt="" fill className="object-cover grayscale" sizes="40px" />
@@ -196,7 +196,7 @@ export function CRMDetailView({ customer, orders, tickets, refunds, reviews, onB
               {tickets.length === 0 ? (
                 <p className="text-sm text-slate-500">No support activity recorded yet.</p>
               ) : tickets.slice(0, 4).map((ticket) => (
-                <div key={ticket.id} className="border border-slate-200 rounded p-4">
+                <div key={ticket.id} className="border border-slate-200 rounded-none p-4">
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-sm font-bold text-slate-900">{ticket.subject}</p>
                     <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{ticket.status}</span>
@@ -213,7 +213,7 @@ export function CRMDetailView({ customer, orders, tickets, refunds, reviews, onB
               ) : (
                 <>
                   {refunds.slice(0, 2).map((refund) => (
-                    <div key={refund.id} className="border border-slate-200 rounded p-4">
+                    <div key={refund.id} className="border border-slate-200 rounded-none p-4">
                       <div className="flex items-center justify-between gap-3">
                         <p className="text-sm font-bold text-slate-900">Refund #{refund.orderId?.slice(0, 8) || refund.id.slice(0, 8)}</p>
                         <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{refund.status}</span>
@@ -222,7 +222,7 @@ export function CRMDetailView({ customer, orders, tickets, refunds, reviews, onB
                     </div>
                   ))}
                   {reviews.slice(0, 2).map((review) => (
-                    <div key={review.id} className="border border-slate-200 rounded p-4">
+                    <div key={review.id} className="border border-slate-200 rounded-none p-4">
                       <div className="flex items-center justify-between gap-3">
                         <p className="text-sm font-bold text-slate-900">{review.userName || 'Anonymous'}</p>
                         <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{review.rating || 0}/5</span>

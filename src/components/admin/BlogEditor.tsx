@@ -230,9 +230,9 @@ Content: "${formData.content.en}"`;
         statsLabel={displayDate}
       />
 
-        <div className="flex flex-col items-start gap-5 rounded-[4px] border border-indigo-100 bg-indigo-50/30 p-5 sm:p-6 lg:flex-row lg:items-center">
+        <div className="flex flex-col items-start gap-5 rounded-none-[4px] border border-indigo-100 bg-indigo-50/30 p-5 sm:p-6 lg:flex-row lg:items-center">
           <div className="shrink-0">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full border border-indigo-100 bg-white">
+            <div className="flex h-10 w-10 items-center justify-center rounded-none border border-indigo-100 bg-white">
               <Sparkles className="h-5 w-5 animate-pulse text-indigo-600" />
             </div>
           </div>
@@ -245,7 +245,7 @@ Content: "${formData.content.en}"`;
               type="button"
               onClick={handleAIAutoComplete}
               disabled={generating}
-              className="flex h-11 items-center justify-center gap-2 rounded-[4px] border border-indigo-100 bg-white px-5 text-[12px] font-medium text-indigo-700 transition-all hover:bg-indigo-50 w-full sm:w-auto"
+              className="flex h-11 items-center justify-center gap-2 rounded-none-[4px] border border-indigo-100 bg-white px-5 text-[12px] font-medium text-indigo-700 transition-all hover:bg-indigo-50 w-full sm:w-auto"
             >
               <Wand2 className="h-4 w-4" />
               Auto-Draft
@@ -254,7 +254,7 @@ Content: "${formData.content.en}"`;
               type="button"
               onClick={handleAITranslate}
               disabled={generating}
-              className="flex h-11 items-center justify-center gap-2 rounded-[4px] bg-indigo-600 px-5 text-[12px] font-medium text-white transition-all hover:bg-indigo-700 w-full sm:w-auto"
+              className="flex h-11 items-center justify-center gap-2 rounded-none-[4px] bg-indigo-600 px-5 text-[12px] font-medium text-white transition-all hover:bg-indigo-700 w-full sm:w-auto"
             >
               <Languages className="h-4 w-4" />
               Translate
@@ -264,7 +264,7 @@ Content: "${formData.content.en}"`;
 
         <div className="grid grid-cols-1 gap-6 sm:gap-8 xl:grid-cols-[minmax(0,1fr)_340px]">
           <div className="space-y-6">
-            <section className="rounded-[4px] border border-slate-200 bg-white">
+            <section className="rounded-none-[4px] border border-slate-200 bg-white">
               <div className="flex items-center gap-2 border-b border-slate-100 bg-slate-50 px-6 py-4">
                 <Sparkles className="h-4 w-4 text-slate-500" />
                 <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-900">Article Details</h3>
@@ -278,7 +278,7 @@ Content: "${formData.content.en}"`;
                       type="text"
                       value={formData.author}
                       onChange={(event) => setFormData((current) => ({ ...current, author: event.target.value }))}
-                      className="h-12 w-full rounded-[4px] border border-slate-200 pl-11 pr-4 text-sm font-medium focus:border-slate-900 focus:outline-none"
+                      className="h-12 w-full rounded-none-[4px] border border-slate-200 pl-11 pr-4 text-sm font-medium focus:border-slate-900 focus:outline-none"
                     />
                   </div>
                 </div>
@@ -288,7 +288,7 @@ Content: "${formData.content.en}"`;
                     <button
                       key={language}
                       onClick={() => setSelectedLang(language)}
-                      className={`min-w-[52px] rounded-md px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] transition-all ${
+                      className={`min-w-[52px] rounded-none px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] transition-all ${
                         selectedLang === language ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'
                       }`}
                     >
@@ -308,7 +308,7 @@ Content: "${formData.content.en}"`;
                         title: { ...current.title, [selectedLang]: event.target.value },
                       }))
                     }
-                    className="h-12 w-full rounded-[4px] border border-slate-200 px-4 text-sm font-medium focus:border-slate-900 focus:outline-none"
+                    className="h-12 w-full rounded-none-[4px] border border-slate-200 px-4 text-sm font-medium focus:border-slate-900 focus:outline-none"
                   />
                 </div>
 
@@ -323,7 +323,7 @@ Content: "${formData.content.en}"`;
                         excerpt: { ...current.excerpt, [selectedLang]: event.target.value },
                       }))
                     }
-                    className="w-full rounded-[4px] border border-slate-200 p-4 text-sm leading-relaxed focus:border-slate-900 focus:outline-none"
+                    className="w-full rounded-none-[4px] border border-slate-200 p-4 text-sm leading-relaxed focus:border-slate-900 focus:outline-none"
                   />
                 </div>
 
@@ -338,7 +338,7 @@ Content: "${formData.content.en}"`;
                         content: { ...current.content, [selectedLang]: event.target.value },
                       }))
                     }
-                    className="w-full rounded-[4px] border border-slate-200 p-4 font-mono text-sm leading-relaxed focus:border-slate-900 focus:outline-none"
+                    className="w-full rounded-none-[4px] border border-slate-200 p-4 font-mono text-sm leading-relaxed focus:border-slate-900 focus:outline-none"
                   />
                 </div>
               </div>
@@ -346,12 +346,12 @@ Content: "${formData.content.en}"`;
           </div>
 
           <div className="space-y-6">
-            <section className="overflow-hidden rounded-[4px] border border-slate-200 bg-white">
+            <section className="overflow-hidden rounded-none-[4px] border border-slate-200 bg-white">
               <div className="border-b border-slate-100 bg-slate-50 px-6 py-4">
                 <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-900">Hero Image</h3>
               </div>
               <div className="p-6">
-                <div className="group relative mb-4 aspect-[4/3] cursor-pointer overflow-hidden rounded-[4px] border-2 border-dashed border-slate-200 bg-slate-50 transition-all hover:border-slate-900">
+                <div className="group relative mb-4 aspect-[4/3] cursor-pointer overflow-hidden rounded-none-[4px] border-2 border-dashed border-slate-200 bg-slate-50 transition-all hover:border-slate-900">
                   {isValidUrl(formData.imageUrl) ? (
                     <Image src={toMediaProxyUrl(formData.imageUrl)} alt="" fill sizes="(max-width: 768px) 100vw, 600px" className="object-cover" />
                   ) : (
@@ -372,12 +372,12 @@ Content: "${formData.content.en}"`;
                     value={formData.imageUrl}
                     onChange={(event) => setFormData((current) => ({ ...current, imageUrl: event.target.value }))}
                     placeholder="Paste image URL..."
-                    className="h-10 flex-1 rounded-[4px] border border-slate-200 px-3 text-[12px] focus:border-slate-900 focus:outline-none"
+                    className="h-10 flex-1 rounded-none-[4px] border border-slate-200 px-3 text-[12px] focus:border-slate-900 focus:outline-none"
                   />
                   <button
                     type="button"
                     onClick={() => setIsMediaPickerOpen(true)}
-                    className="h-10 rounded-md border border-slate-200 bg-slate-50 px-4 text-[12px] font-medium"
+                    className="h-10 rounded-none border border-slate-200 bg-slate-50 px-4 text-[12px] font-medium"
                   >
                     Library
                   </button>

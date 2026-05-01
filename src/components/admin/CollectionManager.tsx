@@ -185,12 +185,12 @@ export function CollectionManager({
               placeholder="Search collections..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-4 h-10 bg-white border border-slate-300 rounded text-[13px] focus:outline-none focus:border-slate-900 transition-all w-full md:w-64 text-slate-900"
+              className="pl-10 pr-4 h-10 bg-white border border-slate-300 rounded-none text-[13px] focus:outline-none focus:border-slate-900 transition-all w-full md:w-64 text-slate-900"
             />
           </div>
           <button 
             onClick={() => router.push('/admin/collections/new')}
-            className="h-10 px-4 sm:px-8 bg-slate-900 text-white rounded text-sm font-bold hover:bg-slate-800 transition-all flex items-center gap-2 active:scale-[0.98]"
+            className="h-10 px-4 sm:px-8 bg-slate-900 text-white rounded-none text-sm font-bold hover:bg-slate-800 transition-all flex items-center gap-2 active:scale-[0.98]"
           >
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">Add Collection</span>
@@ -199,7 +199,7 @@ export function CollectionManager({
         </div>
       </div>
 
-      <div className="bg-white border border-slate-300 rounded overflow-hidden shadow-none">
+      <div className="bg-white border border-slate-300 rounded-none overflow-hidden shadow-none">
         <div className="px-4 sm:px-6 border-b border-slate-300 bg-white flex items-center justify-between h-14">
           <div className="flex items-center gap-3">
              <Layers className="w-4 h-4 text-slate-500" />
@@ -224,7 +224,7 @@ export function CollectionManager({
                 <th className="admin-table-cell px-4 sm:px-6 py-4 w-12 text-center">
                    <div 
                      onClick={toggleAll}
-                     className={`w-4 h-4 border rounded-sm mx-auto cursor-pointer transition-all flex items-center justify-center ${
+                     className={`w-4 h-4 border rounded-none mx-auto cursor-pointer transition-all flex items-center justify-center ${
                        selectedCollections.length > 0 && selectedCollections.length === categories.filter(c => !c.parentId).length
                          ? 'bg-slate-900 border-slate-900' 
                          : 'border-slate-300 hover:border-slate-400 bg-white'
@@ -255,7 +255,7 @@ export function CollectionManager({
                   }`}
                 >
                   <td className="admin-table-cell px-4 sm:px-6 py-4" onClick={(e) => toggleSelect(parent.id!, e)}>
-                    <div className={`w-4 h-4 border rounded-sm mx-auto transition-all flex items-center justify-center ${
+                    <div className={`w-4 h-4 border rounded-none mx-auto transition-all flex items-center justify-center ${
                       selectedCollections.includes(parent.id!)
                         ? 'bg-slate-900 border-slate-900' 
                         : 'border-slate-300 group-hover:border-slate-900 bg-white'
@@ -265,7 +265,7 @@ export function CollectionManager({
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-4" style={{ marginLeft: `${level * 24}px` }}>
-                      <div className="w-12 h-12 bg-slate-50 border border-slate-200 rounded flex items-center justify-center overflow-hidden shrink-0 group-hover:border-slate-900 transition-all relative">
+                      <div className="w-12 h-12 bg-slate-50 border border-slate-200 rounded-none flex items-center justify-center overflow-hidden shrink-0 group-hover:border-slate-900 transition-all relative">
                         {previewSrc ? <Image src={previewSrc} alt={parent.name} fill sizes="48px" className="object-cover" /> : <Package className="w-5 h-5 text-slate-300" />}
                       </div>
                       <div className="min-w-0">
@@ -277,7 +277,7 @@ export function CollectionManager({
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell">
-                     <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${
+                     <span className={`inline-flex px-2.5 py-1 rounded-none text-[10px] font-bold uppercase tracking-widest border ${
                         level === 0 
                           ? 'bg-slate-100 text-slate-700 border-slate-200' 
                           : 'bg-zinc-50 text-zinc-600 border-zinc-100'
@@ -296,13 +296,13 @@ export function CollectionManager({
                              e.stopPropagation();
                              router.push(`/admin/collections/${parent.id}`);
                           }}
-                          className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded transition-all"
+                          className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-none transition-all"
                         >
                            <Edit className="w-4 h-4" />
                         </button>
                         <button 
                           onClick={(e) => deleteSingle(parent.id!, e)}
-                          className="p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded transition-all"
+                          className="p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-none transition-all"
                         >
                            <Trash2 className="w-4 h-4" />
                         </button>
@@ -330,10 +330,10 @@ export function CollectionManager({
             initial={{ opacity: 0, y: 50, x: '-50%' }}
             animate={{ opacity: 1, y: 0, x: '-50%' }}
             exit={{ opacity: 0, y: 50, x: '-50%' }}
-            className="fixed bottom-8 left-1/2 z-50 px-6 py-3 bg-slate-900 text-white rounded-full shadow-2xl flex items-center gap-6 border border-white/10 backdrop-blur-md"
+            className="fixed bottom-8 left-1/2 z-50 px-6 py-3 bg-slate-900 text-white rounded-none shadow-none flex items-center gap-6 border border-white/10 backdrop-blur-md"
           >
             <div className="flex items-center gap-3 pr-6 border-r border-white/20">
-              <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-[11px] font-bold uppercase tracking-tighter shadow-inner">
+              <div className="w-6 h-6 rounded-none bg-slate-700 flex items-center justify-center text-[11px] font-bold uppercase tracking-tighter shadow-none">
                 {selectedCollections.length}
               </div>
               <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Selected</span>
@@ -342,7 +342,7 @@ export function CollectionManager({
             <div className="flex items-center gap-2">
               <button
                 onClick={deleteSelected}
-                className="flex items-center gap-2 px-4 py-1.5 rounded-full hover:bg-rose-500/10 text-rose-400 transition-all group"
+                className="flex items-center gap-2 px-4 py-1.5 rounded-none hover:bg-rose-500/10 text-rose-400 transition-all group"
               >
                 <Trash2 className="w-4 h-4 group-hover:animate-shake" />
                 <span className="text-[11px] font-bold uppercase tracking-widest">Delete All</span>
@@ -350,7 +350,7 @@ export function CollectionManager({
 
               <button
                 onClick={() => setSelectedCollections([])}
-                className="flex items-center gap-2 px-4 py-1.5 rounded-full hover:bg-white/10 text-slate-500 transition-all"
+                className="flex items-center gap-2 px-4 py-1.5 rounded-none hover:bg-white/10 text-slate-500 transition-all"
               >
                 <X className="w-4 h-4" />
                 <span className="text-[11px] font-bold uppercase tracking-widest">Clear</span>

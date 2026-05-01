@@ -4,6 +4,7 @@ import { createAdminClient, createClient } from '@/utils/supabase/server';
 
 import { revalidatePath } from 'next/cache';
 import { requireAdminUser } from '@/lib/admin';
+import { logger } from '@/lib/logger';
 
 export type ProductVariantInput = {
   options: Record<string, string>;
@@ -131,7 +132,7 @@ export async function saveProductAction(input: SaveProductInput) {
     }
   } catch (error: unknown) {
     const err = error as Error;
-    console.error('Error in saveProductAction:', err);
+    logger.error('Error in saveProductAction:', err);
     return { 
       success: false, 
       error: err?.message || 'Failed to save product.' 

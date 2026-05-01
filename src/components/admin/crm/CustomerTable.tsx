@@ -37,12 +37,12 @@ export function CustomerTable({
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search customer database..."
-            className="h-11 w-full rounded border border-slate-300 bg-white pl-10 pr-4 text-sm text-slate-900 transition-all placeholder:text-slate-500 focus:border-slate-900 focus:outline-none"
+            className="h-11 w-full rounded-none border border-slate-300 bg-white pl-10 pr-4 text-sm text-slate-900 transition-all placeholder:text-slate-500 focus:border-slate-900 focus:outline-none"
           />
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded border border-slate-300">
+      <div className="overflow-x-auto rounded-none border border-slate-300">
         <table className="w-full text-left">
           <thead>
             <tr className="border-b border-slate-300 text-[11px] font-bold uppercase tracking-widest text-slate-500">
@@ -72,7 +72,7 @@ export function CustomerTable({
                 <tr key={customer.id} className="group transition-colors hover:bg-slate-50">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-4">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded border border-slate-200 bg-slate-100 text-[10px] font-bold text-slate-900">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-none border border-slate-200 bg-slate-100 text-[10px] font-bold text-slate-900">
                         {customer.email?.charAt(0).toUpperCase() || '?'}
                       </div>
                       <div className="min-w-0">
@@ -82,36 +82,36 @@ export function CustomerTable({
                     </div>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-tight bg-slate-100 text-slate-500 border border-slate-200">
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-none text-[9px] font-bold uppercase tracking-tight bg-slate-100 text-slate-500 border border-slate-200">
                       {customer.preferred_lang || 'EN'}
                     </span>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-wrap gap-2">
-                      <span className="inline-flex items-center gap-1 rounded border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                      <span className="inline-flex items-center gap-1 rounded-none border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">
                         <ShoppingBag className="h-3 w-3" /> {customer.orderCount} Orders
                       </span>
-                      <span className="inline-flex items-center rounded border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                      <span className="inline-flex items-center rounded-none border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">
                         {formatPrice(customer.totalSpent, 'en')}
                       </span>
                     </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-wrap gap-2">
-                      <span className="inline-flex items-center gap-1 rounded border border-slate-200 bg-white px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                      <span className="inline-flex items-center gap-1 rounded-none border border-slate-200 bg-white px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">
                         <LifeBuoy className="h-3 w-3" /> {customer.ticketCount}
                       </span>
-                      <span className="inline-flex items-center gap-1 rounded border border-slate-200 bg-white px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                      <span className="inline-flex items-center gap-1 rounded-none border border-slate-200 bg-white px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">
                         <RotateCcw className="h-3 w-3" /> {customer.refundCount}
                       </span>
-                      <span className="inline-flex items-center gap-1 rounded border border-slate-200 bg-white px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                      <span className="inline-flex items-center gap-1 rounded-none border border-slate-200 bg-white px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">
                         <ShieldCheck className="h-3 w-3" /> {customer.lastActiveAt ? new Date(customer.lastActiveAt).toLocaleDateString() : 'No activity'}
                       </span>
                     </div>
                   </td>
                   <td className="px-6 py-4">
                     <span
-                      className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest border ${
+                      className={`rounded-none px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest border ${
                         customer.role === 'admin'
                           ? 'border-slate-900 bg-slate-900 text-white'
                           : 'border-slate-300 bg-white text-slate-500'

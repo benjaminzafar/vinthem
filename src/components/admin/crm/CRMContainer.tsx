@@ -382,7 +382,7 @@ export function CRMContainer({ initialData }: { initialData?: CRMData }) {
       />
 
       {/* 2. Management Hub (Unified border-bottom tabs) */}
-      <div className="bg-white border border-slate-300 rounded overflow-hidden">
+      <div className="bg-white border border-slate-300 rounded-none overflow-hidden">
         <div className="px-6 border-b border-slate-300 bg-white flex items-center justify-between h-14 overflow-x-auto no-scrollbar">
           <div className="flex gap-8 h-full">
             {[

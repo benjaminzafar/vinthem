@@ -254,13 +254,13 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
         </div>
         {!selectionMode && (
           <div className="flex items-center gap-3">
-            <div className="h-10 px-4 bg-white border border-slate-300 rounded text-[13px] font-medium text-slate-600 flex items-center gap-2">
+            <div className="h-10 px-4 bg-white border border-slate-300 rounded-none text-[13px] font-medium text-slate-600 flex items-center gap-2">
                <span className="text-[11px] font-bold text-slate-500 tracking-widest">Storage</span>
                <span className="text-slate-900 font-bold">{assets.length} Items</span>
             </div>
             <button 
               onClick={() => fetchMedia()}
-              className="h-10 px-4 border border-slate-300 rounded text-[13px] font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all flex items-center gap-2"
+              className="h-10 px-4 border border-slate-300 rounded-none text-[13px] font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all flex items-center gap-2"
               disabled={loading}
             >
               <RefreshCcw className="w-4 h-4" />
@@ -279,11 +279,11 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
               placeholder="Search assets..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-11 bg-slate-50 border border-slate-300 rounded pl-12 pr-6 text-[13px] focus:outline-none focus:border-slate-900 transition-all font-bold tracking-tight placeholder:text-slate-500"
+              className="w-full h-11 bg-slate-50 border border-slate-300 rounded-none pl-12 pr-6 text-[13px] focus:outline-none focus:border-slate-900 transition-all font-bold tracking-tight placeholder:text-slate-500"
             />
          </div>
 
-         <label className={`flex items-center justify-center gap-2 h-11 px-8 bg-slate-900 text-white rounded text-[11px] font-bold tracking-widest hover:bg-slate-800 transition-all cursor-pointer ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
+         <label className={`flex items-center justify-center gap-2 h-11 px-8 bg-slate-900 text-white rounded-none text-[11px] font-bold tracking-widest hover:bg-slate-800 transition-all cursor-pointer ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
             <FilePlus className="w-4 h-4" />
             <span>{uploading ? 'Processing...' : 'Upload Asset'}</span>
             <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} disabled={uploading} />
@@ -292,8 +292,8 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
 
       {/* 3. Warning Banner if Public URL is missing */}
       {stats.publicUrlMissing && (
-        <div className="bg-amber-50 border border-amber-200 rounded p-6 flex items-start gap-4">
-           <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center shrink-0">
+        <div className="bg-amber-50 border border-amber-200 rounded-none p-6 flex items-start gap-4">
+           <div className="w-12 h-12 bg-amber-100 rounded-none flex items-center justify-center shrink-0">
               <AlertCircle className="w-6 h-6 text-amber-600" />
            </div>
            <div className="space-y-1">
@@ -314,7 +314,7 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
       )}
 
       {/* 4. Main Card Area - Unified with Overview Cards */}
-      <div className="bg-white border border-slate-300 rounded p-6 sm:p-8 min-h-[600px]">
+      <div className="bg-white border border-slate-300 rounded-none p-6 sm:p-8 min-h-[600px]">
          <Breadcrumbs currentPath={currentPath} onNavigate={handleNavigate} />
          
          <div className="mt-8">
@@ -366,9 +366,9 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
       {/* Final Confirmation Modal */}
       {confirmDelete && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-          <div className="bg-white rounded border border-slate-300 shadow-2xl max-w-sm w-full p-8">
+          <div className="bg-white rounded-none border border-slate-300 shadow-none max-w-sm w-full p-8">
             <div className="flex flex-col items-center text-center space-y-6">
-              <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center">
+              <div className="w-16 h-16 bg-rose-50 rounded-none flex items-center justify-center">
                 <Trash2 className="w-8 h-8 text-rose-600" />
               </div>
               <div>
@@ -380,13 +380,13 @@ export function MediaContainer({ onSelect, selectionMode }: MediaContainerProps)
               <div className="flex w-full gap-3 pt-2">
                 <button 
                   onClick={() => setConfirmDelete(null)}
-                  className="flex-1 h-12 bg-white border border-slate-300 rounded text-[11px] font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-50 transition-all"
+                  className="flex-1 h-12 bg-white border border-slate-300 rounded-none text-[11px] font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-50 transition-all"
                 >
                   Cancel
                 </button>
                 <button 
                   onClick={handleDelete}
-                  className="flex-1 h-12 bg-rose-600 rounded text-[11px] font-bold uppercase tracking-widest text-white hover:bg-rose-700 transition-all"
+                  className="flex-1 h-12 bg-rose-600 rounded-none text-[11px] font-bold uppercase tracking-widest text-white hover:bg-rose-700 transition-all"
                 >
                   Delete
                 </button>

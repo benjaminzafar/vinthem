@@ -160,12 +160,12 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
                     </td>
                     <td className="px-6 py-4 text-sm font-medium text-slate-500">{ticket.subject}</td>
                     <td className="px-6 py-4 text-center">
-                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-bold uppercase tracking-tight bg-slate-100 text-slate-500 border border-slate-200">
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded-none text-[11px] font-bold uppercase tracking-tight bg-slate-100 text-slate-500 border border-slate-200">
                         {ticket.locale || 'EN'}
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-widest border ${getStatusStyle(ticket.status)}`}>
+                      <span className={`px-2 py-0.5 rounded-none text-[11px] font-bold uppercase tracking-widest border ${getStatusStyle(ticket.status)}`}>
                         {ticket.status}
                       </span>
                     </td>
@@ -177,7 +177,7 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
                       <td colSpan={4} className="px-10 py-8 border-b border-slate-300">
                         <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                           <div className="lg:col-span-2 space-y-6">
-                            <div className="bg-white p-6 border border-slate-300 rounded">
+                            <div className="bg-white p-6 border border-slate-300 rounded-none">
                               <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
                                 <Clock className="w-3.5 h-3.5" /> Initial Inquiry
                               </h4>
@@ -193,18 +193,18 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
                               <div className="space-y-3 max-h-[300px] overflow-y-auto pr-4 custom-scrollbar">
                                 {ticket.messages?.map((msg, idx) => (
                                   <div key={idx} className={`flex ${msg.sender === 'admin' ? 'justify-end' : 'justify-start'}`}>
-                                    <div className={`max-w-[85%] p-4 rounded text-sm ${
+                                    <div className={`max-w-[85%] p-4 rounded-none text-sm ${
                                       msg.sender === 'admin' 
                                         ? msg.text.startsWith('[SYSTEM]') 
-                                          ? 'bg-slate-50 border border-slate-200 text-slate-500 rounded-tr-none'
-                                          : 'bg-slate-900 text-white rounded-tr-none' 
-                                        : 'bg-white border border-slate-300 text-slate-900 rounded-tl-none'
+                                          ? 'bg-slate-50 border border-slate-200 text-slate-500 rounded-none'
+                                          : 'bg-slate-900 text-white rounded-none'
+                                        : 'bg-white border border-slate-300 text-slate-900 rounded-none'
                                     }`}>
                                       <p className={`${msg.sender === 'admin' ? '' : 'font-medium'} ${msg.text.startsWith('[SYSTEM]') ? 'italic text-[11px]' : ''}`}>
                                         {msg.text.startsWith('[SYSTEM]') ? msg.text.replace('[SYSTEM]', '🤖') : msg.text}
                                       </p>
                                       {msg.imageUrl && isValidUrl(msg.imageUrl) && (
-                                        <div className="mt-3 relative aspect-video w-full rounded overflow-hidden border border-slate-200">
+                                        <div className="mt-3 relative aspect-video w-full rounded-none overflow-hidden border border-slate-200">
                                           <Image src={toMediaProxyUrl(msg.imageUrl)} alt="Attachment" fill className="object-cover" />
                                         </div>
                                       )}
@@ -215,7 +215,7 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
                                   </div>
                                 ))}
                                 {(!ticket.messages || ticket.messages.length === 0) && (
-                                  <div className="flex items-center gap-3 text-slate-500 bg-white p-4 rounded border border-slate-300 border-dashed">
+                                  <div className="flex items-center gap-3 text-slate-500 bg-white p-4 rounded-none border border-slate-300 border-dashed">
                                     <AlertCircle className="w-4 h-4" />
                                     <p className="text-[11px] font-bold uppercase tracking-widest">Awaiting interaction</p>
                                   </div>
@@ -227,18 +227,18 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
                                   value={draftReplies[ticket.id] ?? ''}
                                   onChange={(e) => setDraftReplies((current) => ({ ...current, [ticket.id]: e.target.value }))}
                                   placeholder="Type your official response..."
-                                  className="w-full bg-white border border-slate-300 rounded p-4 text-sm font-medium min-h-[100px] focus:outline-none focus:border-slate-900 transition-all"
+                                  className="w-full bg-white border border-slate-300 rounded-none p-4 text-sm font-medium min-h-[100px] focus:outline-none focus:border-slate-900 transition-all"
                                 />
                                 <div className="absolute bottom-4 right-4 flex items-center gap-2">
                                   {replyImages[ticket.id] ? (
                                     <div className="relative w-10 h-10 border border-slate-300 bg-white">
                                       <Image src={toMediaProxyUrl(replyImages[ticket.id])} alt="Reply preview" fill className="object-cover" />
-                                      <button onClick={() => setReplyImages(prev => ({ ...prev, [ticket.id]: '' }))} className="absolute -top-1.5 -right-1.5 bg-white border border-slate-300 rounded-full p-0.5 text-slate-500">
+                                      <button onClick={() => setReplyImages(prev => ({ ...prev, [ticket.id]: '' }))} className="absolute -top-1.5 -right-1.5 bg-white border border-slate-300 rounded-none p-0.5 text-slate-500">
                                         <ChevronDown className="w-2.5 h-2.5 rotate-45" />
                                       </button>
                                     </div>
                                   ) : (
-                                    <label className="p-2 text-slate-500 hover:text-slate-900 cursor-pointer transition-colors bg-white border border-slate-200 rounded">
+                                    <label className="p-2 text-slate-500 hover:text-slate-900 cursor-pointer transition-colors bg-white border border-slate-200 rounded-none">
                                       <ImageIcon className="w-4 h-4" />
                                       <input 
                                         type="file" 
@@ -277,7 +277,7 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
                                   <button 
                                     onClick={() => handleReplyTicket(ticket.id)}
                                     disabled={isUpdating || !(draftReplies[ticket.id] ?? '').trim()}
-                                    className="bg-slate-900 text-white px-5 py-2 rounded text-[11px] font-bold uppercase tracking-widest hover:bg-slate-800 disabled:opacity-50 transition-all"
+                                    className="bg-slate-900 text-white px-5 py-2 rounded-none text-[11px] font-bold uppercase tracking-widest hover:bg-slate-800 disabled:opacity-50 transition-all"
                                   >
                                     {isUpdating ? 'Syncing...' : 'Send Response'}
                                   </button>
@@ -286,7 +286,7 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
                             </div>
                           </div>
 
-                          <div className="bg-white p-6 border border-slate-300 rounded space-y-6">
+                          <div className="bg-white p-6 border border-slate-300 rounded-none space-y-6">
                             <div>
                               <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-4">Support Controls</h4>
                               <div className="flex flex-col gap-2">
@@ -295,7 +295,7 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
                                     key={s}
                                     onClick={() => handleStatusChange(ticket.id, s as SupportTicket['status'])}
                                     disabled={isUpdating}
-                                    className={`py-2 px-3 rounded text-[11px] font-bold uppercase tracking-widest border transition-all ${
+                                    className={`py-2 px-3 rounded-none text-[11px] font-bold uppercase tracking-widest border transition-all ${
                                       ticket.status === s ? 'bg-slate-900 text-white border-slate-900' : 'bg-zinc-50 text-slate-500 border-slate-200'
                                     } disabled:opacity-50`}
                                   >
@@ -352,14 +352,14 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
                                           }
                                         }}
                                         disabled={isUpdating}
-                                        className={`py-2.5 px-3 rounded text-[11px] font-bold uppercase tracking-widest border transition-all ${
+                                        className={`py-2.5 px-3 rounded-none text-[11px] font-bold uppercase tracking-widest border transition-all ${
                                           ticket.status === action.id 
                                             ? 'bg-indigo-600 text-white border-indigo-600' 
                                             : 'bg-white text-indigo-600 border-indigo-100 hover:border-indigo-300'
                                         } disabled:opacity-50 text-left flex justify-between items-center group`}
                                       >
                                         <span>{action.label}</span>
-                                        <span className="text-[11px] opacity-40 group-hover:opacity-100 transition-opacity bg-indigo-50 text-indigo-500 px-1 rounded ml-1">sync:{langSuffix}</span>
+                                        <span className="text-[11px] opacity-40 group-hover:opacity-100 transition-opacity bg-indigo-50 text-indigo-500 px-1 rounded-none ml-1">sync:{langSuffix}</span>
                                       </button>
                                     );
                                   })}
@@ -371,7 +371,7 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
                                 <button
                                   onClick={() => handleDeleteTicket(ticket.id)}
                                   disabled={isUpdating}
-                                  className="w-full py-2 px-3 rounded text-[11px] font-bold uppercase tracking-widest border border-rose-100 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white transition-all flex items-center justify-center gap-2 group disabled:opacity-50"
+                                  className="w-full py-2 px-3 rounded-none text-[11px] font-bold uppercase tracking-widest border border-rose-100 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white transition-all flex items-center justify-center gap-2 group disabled:opacity-50"
                                 >
                                   <Trash2 className="w-3 h-3 transition-transform group-hover:scale-110" />
                                   Archive & Delete
@@ -381,7 +381,7 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
                             {ticket.imageUrl && (
                               <div>
                                 <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Attachment</h4>
-                                <a href={ticket.imageUrl} target="_blank" rel="noopener noreferrer" className="block rounded border border-slate-300 overflow-hidden">
+                                <a href={ticket.imageUrl} target="_blank" rel="noopener noreferrer" className="block rounded-none border border-slate-300 overflow-hidden">
                                   <div className="relative aspect-[4/3] w-full">
                                     <Image src={toMediaProxyUrl(ticket.imageUrl)} alt="" fill className="object-cover grayscale hover:grayscale-0 transition-all" sizes="(max-width: 1024px) 100vw, 320px" />
                                   </div>

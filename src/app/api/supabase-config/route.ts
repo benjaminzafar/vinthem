@@ -6,9 +6,12 @@ export async function GET() {
 
   if (!url || !anonKey) {
     return NextResponse.json(
-      { error: 'Supabase browser configuration is missing.' },
       {
-        status: 500,
+        success: false,
+        error: 'Supabase browser configuration is missing.'
+      },
+      {
+        status: 200,
         headers: {
           'Cache-Control': 'no-store, no-cache, must-revalidate',
         },
@@ -17,7 +20,11 @@ export async function GET() {
   }
 
   return NextResponse.json(
-    { url, anonKey },
+    {
+      success: true,
+      url,
+      anonKey
+    },
     {
       headers: {
         'Cache-Control': 'no-store, no-cache, must-revalidate',

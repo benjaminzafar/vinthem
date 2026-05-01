@@ -61,7 +61,7 @@ export function InfiniteScrollSentinel({
       className={`flex min-h-0 w-full items-center justify-center ${className}`}
     >
       {isLoading && (
-        <div className="flex items-center gap-2 rounded-full border border-slate-200/70 bg-white/80 px-3 py-1.5 shadow-[0_10px_30px_rgba(15,23,42,0.04)] backdrop-blur-sm">
+        <div className="flex items-center gap-2 rounded-none border border-slate-200/70 bg-white/80 px-3 py-1.5 shadow-none-[0_10px_30px_rgba(15,23,42,0.04)] backdrop-blur-sm">
           <RefreshCcw className="h-3.5 w-3.5 animate-spin text-slate-400" />
           <p className="text-[10px] font-medium tracking-[0.12em] text-slate-500 uppercase">
             {loadingMessage}

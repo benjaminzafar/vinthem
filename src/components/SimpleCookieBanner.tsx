@@ -36,7 +36,7 @@ export function SimpleCookieBanner({ copy }: { copy: CookieBannerCopy }) {
   };
 
   return (
-    <div className="fixed inset-x-4 bottom-4 z-40 mx-auto max-w-3xl rounded border border-stone-200 bg-white px-5 py-4 shadow-[0_18px_60px_rgba(15,23,42,0.12)]">
+    <div className="fixed inset-x-4 bottom-4 z-40 mx-auto max-w-3xl rounded-none border border-stone-200 bg-white px-5 py-4 shadow-none-[0_18px_60px_rgba(15,23,42,0.12)]">
       <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-stone-500">
         {copy.eyebrow}
       </p>
@@ -55,14 +55,14 @@ export function SimpleCookieBanner({ copy }: { copy: CookieBannerCopy }) {
         <button
           type="button"
           onClick={acceptAll}
-          className="rounded bg-stone-900 px-5 py-3 text-sm font-semibold text-white"
+          className="rounded-none bg-stone-900 px-5 py-3 text-sm font-semibold text-white"
         >
           {copy.acceptAllLabel}
         </button>
         <button
           type="button"
           onClick={essentialOnly}
-          className="rounded border border-stone-300 px-5 py-3 text-sm font-semibold text-stone-900"
+          className="rounded-none border border-stone-300 px-5 py-3 text-sm font-semibold text-stone-900"
         >
           {copy.essentialOnlyLabel}
         </button>

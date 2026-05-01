@@ -188,7 +188,7 @@ export async function renderPolicyPage(slug: string) {
           <span className="font-medium text-slate-900">{title}</span>
         </nav>
 
-        <section className="border border-slate-300 bg-white shadow-sm transition-all hover:shadow-md">
+        <section className="border border-slate-300 bg-white shadow-none transition-all hover:shadow-none">
           <div className="border-b border-slate-300 px-6 py-8 md:px-10 md:py-10">
             <div className="flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center border border-slate-300 bg-slate-50 text-slate-900">
@@ -225,7 +225,7 @@ export async function renderPolicyPage(slug: string) {
               prose-p:text-[16px] prose-p:leading-8 prose-p:text-slate-600 prose-p:mb-6
               prose-li:text-[16px] prose-li:leading-8 prose-li:text-slate-600
               prose-strong:text-slate-900 prose-a:font-semibold prose-a:text-slate-900
-              prose-img:rounded-sm">
+              prose-img:rounded-none">
               <div className="whitespace-pre-wrap">
                 <ReactMarkdown>{content}</ReactMarkdown>
               </div>

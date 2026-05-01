@@ -475,7 +475,7 @@ export function Overview({ initialStats, onProductClick, onSeedClick }: Overview
             <button
               key={index}
               onClick={action.onClick}
-              className="flex h-10 items-center gap-2 rounded border border-slate-300 px-4 text-sm font-medium text-slate-600 transition-all hover:bg-slate-50 hover:text-slate-900"
+              className="flex h-10 items-center gap-2 rounded-none border border-slate-300 px-4 text-sm font-medium text-slate-600 transition-all hover:bg-slate-50 hover:text-slate-900"
             >
               <action.icon className="h-4 w-4" />
               {action.label}
@@ -484,7 +484,7 @@ export function Overview({ initialStats, onProductClick, onSeedClick }: Overview
         </div>
       </div>
 
-      <div className="rounded border border-slate-300 bg-white p-6 sm:p-8">
+      <div className="rounded-none border border-slate-300 bg-white p-6 sm:p-8">
         <div className="mb-8 flex flex-col justify-between gap-6 lg:flex-row lg:items-center">
           <div>
             <h3 className="text-[14px] font-bold tracking-tight text-slate-900">Revenue & Growth</h3>
@@ -494,7 +494,7 @@ export function Overview({ initialStats, onProductClick, onSeedClick }: Overview
             <select
               value={timeRange}
               onChange={(event) => setTimeRange(event.target.value)}
-              className="rounded border border-slate-300 bg-slate-50 px-3 py-2 text-xs font-bold uppercase tracking-widest focus:border-slate-900 focus:outline-none"
+              className="rounded-none border border-slate-300 bg-slate-50 px-3 py-2 text-xs font-bold uppercase tracking-widest focus:border-slate-900 focus:outline-none"
             >
               <option value="1week">Last 7 Days</option>
               <option value="1month">Last Month</option>
@@ -505,7 +505,7 @@ export function Overview({ initialStats, onProductClick, onSeedClick }: Overview
             <select
               value={metric}
               onChange={(event) => setMetric(event.target.value)}
-              className="rounded border border-slate-300 bg-slate-50 px-3 py-2 text-xs font-bold uppercase tracking-widest focus:border-slate-900 focus:outline-none"
+              className="rounded-none border border-slate-300 bg-slate-50 px-3 py-2 text-xs font-bold uppercase tracking-widest focus:border-slate-900 focus:outline-none"
             >
               <option value="revenue">Revenue (SEK)</option>
               <option value="orders">Order Volume</option>
@@ -543,7 +543,7 @@ export function Overview({ initialStats, onProductClick, onSeedClick }: Overview
                   }
 
                   return (
-                    <div className="min-w-[160px] rounded border border-slate-300 bg-white p-4 shadow-xl">
+                    <div className="min-w-[160px] rounded-none border border-slate-300 bg-white p-4 shadow-none">
                       <p className="mb-2 text-[11px] font-bold uppercase tracking-widest text-slate-500">{label}</p>
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-medium uppercase tracking-wider text-slate-500">{metric}</span>
@@ -571,16 +571,16 @@ export function Overview({ initialStats, onProductClick, onSeedClick }: Overview
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         {stats.map((stat, index) => (
-          <div key={index} className="rounded border border-slate-300 bg-white p-6 transition-all hover:bg-slate-50">
+          <div key={index} className="rounded-none border border-slate-300 bg-white p-6 transition-all hover:bg-slate-50">
             <div className="mb-4 flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-slate-900">
+              <div className="flex h-8 w-8 items-center justify-center rounded-none border border-slate-300 bg-white text-slate-900">
                 <stat.icon className="h-4 w-4" />
               </div>
               <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-500">{stat.name}</h3>
             </div>
             <p className="text-[20px] font-bold tracking-tight text-slate-900">{stat.value}</p>
             <div
-              className={`mt-2 inline-flex items-center rounded border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+              className={`mt-2 inline-flex items-center rounded-none border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
                 stat.changeType === 'positive'
                   ? 'border-emerald-100 bg-emerald-50 text-emerald-700'
                   : 'border-rose-100 bg-rose-50 text-rose-700'
@@ -593,17 +593,17 @@ export function Overview({ initialStats, onProductClick, onSeedClick }: Overview
       </div>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-        <div className="rounded border border-slate-300 bg-white p-6 sm:p-8">
+        <div className="rounded-none border border-slate-300 bg-white p-6 sm:p-8">
           <div className="mb-8 flex items-center justify-between gap-4">
             <div>
               <h3 className="text-lg font-bold tracking-tight text-slate-900">Inventory Health</h3>
               <p className="mt-1 text-xs text-slate-500">Stock levels and replenishment alerts</p>
             </div>
             <div className="flex gap-2">
-              <div className="rounded border border-rose-100 bg-rose-50 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-rose-700">
+              <div className="rounded-none border border-rose-100 bg-rose-50 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-rose-700">
                 {inventoryAnalyst.outOfStockCount} Out
               </div>
-              <div className="rounded border border-amber-100 bg-amber-50 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-amber-700">
+              <div className="rounded-none border border-amber-100 bg-amber-50 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-amber-700">
                 {inventoryAnalyst.lowStockCount} Low
               </div>
             </div>
@@ -622,21 +622,21 @@ export function Overview({ initialStats, onProductClick, onSeedClick }: Overview
 
                     router.push(`/admin/products?id=${product.id}`);
                   }}
-                  className="group flex w-full items-center justify-between rounded border border-slate-200 bg-slate-50 p-4 transition-all hover:border-slate-300"
+                  className="group flex w-full items-center justify-between rounded-none border border-slate-200 bg-slate-50 p-4 transition-all hover:border-slate-300"
                 >
                   <div className="flex min-w-0 items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded border border-slate-300 bg-white text-slate-500 transition-colors group-hover:text-slate-900">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-none border border-slate-300 bg-white text-slate-500 transition-colors group-hover:text-slate-900">
                       <Package className="h-5 w-5" />
                     </div>
                     <span className="truncate text-sm font-bold text-slate-900">{product.title}</span>
                   </div>
-                  <span className="ml-2 shrink-0 rounded border border-rose-100 bg-rose-50 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-rose-700">
+                  <span className="ml-2 shrink-0 rounded-none border border-rose-100 bg-rose-50 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-rose-700">
                     {(Number(product.stock) || 0).toString()} Units
                   </span>
                 </button>
               ))
             ) : (
-              <div className="rounded border border-slate-300 bg-slate-50 py-12 text-center">
+              <div className="rounded-none border border-slate-300 bg-slate-50 py-12 text-center">
                 <p className="text-sm font-bold uppercase tracking-widest text-slate-500">Inventory Fully Stocked</p>
               </div>
             )}
@@ -644,7 +644,7 @@ export function Overview({ initialStats, onProductClick, onSeedClick }: Overview
             {inventoryAnalyst.hasMoreLowStock && (
               <button
                 onClick={() => setVisibleInventoryCount((previous) => previous + 10)}
-                className="w-full rounded border border-slate-300 py-4 text-[11px] font-bold uppercase tracking-widest text-slate-500 transition-all hover:border-slate-900 hover:text-slate-900"
+                className="w-full rounded-none border border-slate-300 py-4 text-[11px] font-bold uppercase tracking-widest text-slate-500 transition-all hover:border-slate-900 hover:text-slate-900"
               >
                 Load More
               </button>
@@ -652,7 +652,7 @@ export function Overview({ initialStats, onProductClick, onSeedClick }: Overview
           </div>
         </div>
 
-        <div className="rounded border border-slate-300 bg-white p-6 sm:p-8">
+        <div className="rounded-none border border-slate-300 bg-white p-6 sm:p-8">
           <div className="mb-8">
             <h3 className="text-lg font-bold tracking-tight text-slate-900">Top Performers</h3>
             <p className="mt-1 text-xs text-slate-500">Best selling products by revenue</p>
@@ -691,7 +691,7 @@ export function Overview({ initialStats, onProductClick, onSeedClick }: Overview
             <div className="mt-6">
               <button
                 onClick={() => setVisibleTopPerformersCount((previous) => previous + 10)}
-                className="w-full rounded border border-slate-300 py-4 text-[11px] font-bold uppercase tracking-widest text-slate-500 transition-all hover:border-slate-900 hover:text-slate-900"
+                className="w-full rounded-none border border-slate-300 py-4 text-[11px] font-bold uppercase tracking-widest text-slate-500 transition-all hover:border-slate-900 hover:text-slate-900"
               >
                 Load More
               </button>

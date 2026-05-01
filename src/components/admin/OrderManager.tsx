@@ -171,12 +171,12 @@ export function OrderManager({
         statsLabel={`${orders.length} orders${refreshing ? ' • syncing' : ''}`}
       />
 
-      <div className="bg-slate-50 border border-slate-300 rounded-md p-4 text-sm text-slate-700 flex items-start sm:items-center gap-3">
+      <div className="bg-slate-50 border border-slate-300 rounded-none p-4 text-sm text-slate-700 flex items-start sm:items-center gap-3">
         <RefreshCcw className="w-5 h-5 text-slate-500 shrink-0" />
         <p>Automated label printing requires configuration. Please go to Shipping Settings to enable your preferred service.</p>
       </div>
 
-      <div className="bg-white border border-slate-300 rounded overflow-hidden shadow-none">
+      <div className="bg-white border border-slate-300 rounded-none overflow-hidden shadow-none">
         {loading && orders.length === 0 ? (
           <div className="p-6">
             <AdminLoadingState
@@ -226,7 +226,7 @@ export function OrderManager({
                     <td className="admin-table-cell px-4 sm:px-6 py-4 text-[13px] text-slate-900 font-medium truncate max-w-[200px] hidden sm:table-cell">{order.customerEmail || 'Guest'}</td>
                     <td className="admin-table-cell px-4 sm:px-6 py-4 font-bold text-slate-900 whitespace-nowrap text-[13px]">{order.total?.toLocaleString()} SEK</td>
                     <td className="admin-table-cell px-4 sm:px-6 py-4">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded text-[11px] font-bold uppercase tracking-widest border ${
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-none text-[11px] font-bold uppercase tracking-widest border ${
                         order.status === 'Delivered' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 
                         order.status === 'Shipped' ? 'bg-blue-50 text-blue-700 border-blue-100' :
                         'bg-amber-50 text-amber-700 border-amber-100'
@@ -244,7 +244,7 @@ export function OrderManager({
                             {order.items?.map((item, index: number) => (
                               <div key={index} className="flex items-center justify-between py-2">
                                 <div className="flex items-center space-x-4">
-                                  <div className="w-12 h-12 bg-white border border-slate-200 rounded flex items-center justify-center overflow-hidden shrink-0 relative">
+                                  <div className="w-12 h-12 bg-white border border-slate-200 rounded-none flex items-center justify-center overflow-hidden shrink-0 relative">
                                     {item.image ? <Image src={item.image} alt="" fill sizes="48px" className="object-cover" /> : <Package className="w-5 h-5 text-slate-300" />}
                                   </div>
                                   <div>
@@ -267,7 +267,7 @@ export function OrderManager({
                                   value={order.status || 'Pending'}
                                   onChange={(e) => handleUpdateOrder(order.id, { status: e.target.value })}
                                   disabled={updatingOrderId === order.id}
-                                  className="flex-1 bg-white border border-slate-300 text-slate-900 text-sm rounded h-10 px-3 focus:outline-none focus:border-slate-900"
+                                  className="flex-1 bg-white border border-slate-300 text-slate-900 text-sm rounded-none h-10 px-3 focus:outline-none focus:border-slate-900"
                                 >
                                   <option value="Pending">Pending</option>
                                   <option value="Processing">Processing</option>
@@ -281,7 +281,7 @@ export function OrderManager({
                             
                             <div>
                               <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-4">Fulfillment</h4>
-                              <div className="rounded border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500">
+                              <div className="rounded-none border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500">
                                 Delivery tracking fields are hidden until the live order schema includes carrier storage.
                               </div>
                             </div>

@@ -350,7 +350,7 @@ export function ProductManager({
         statsLabel={`${products.length} products${refreshing ? ' • syncing' : ''}`}
       />
 
-      <div className="bg-white border border-slate-300 rounded overflow-hidden shadow-none">
+      <div className="bg-white border border-slate-300 rounded-none overflow-hidden shadow-none">
         <div className="px-4 sm:px-6 border-b border-slate-300 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-3 sm:h-14 sm:py-0">
           <div className="flex gap-5 sm:gap-8 h-full flex-wrap">
             {['all', 'active', 'drafts'].map((tab) => (
@@ -394,7 +394,7 @@ export function ProductManager({
                 <th className="admin-table-cell px-4 sm:px-6 py-4 w-12 text-center">
                   <div 
                     onClick={toggleAll}
-                    className={`w-4 h-4 border rounded-sm mx-auto cursor-pointer transition-all flex items-center justify-center ${
+                    className={`w-4 h-4 border rounded-none mx-auto cursor-pointer transition-all flex items-center justify-center ${
                       selectedIds.size === products.length && products.length > 0
                         ? 'bg-slate-900 border-slate-900' 
                         : 'border-slate-300 hover:border-slate-400 bg-white'
@@ -431,7 +431,7 @@ export function ProductManager({
                       toggleSelect(product.id);
                     }}
                   >
-                    <div className={`w-4 h-4 border rounded-sm mx-auto transition-all flex items-center justify-center ${
+                    <div className={`w-4 h-4 border rounded-none mx-auto transition-all flex items-center justify-center ${
                       selectedIds.has(product.id)
                         ? 'bg-slate-900 border-slate-900' 
                         : 'border-slate-300 group-hover:border-slate-900 bg-white'
@@ -441,7 +441,7 @@ export function ProductManager({
                   </td>
                   <td className="admin-table-cell px-4 sm:px-6 py-4">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-slate-50 border border-slate-200 rounded flex items-center justify-center overflow-hidden shrink-0">
+                      <div className="w-12 h-12 bg-slate-50 border border-slate-200 rounded-none flex items-center justify-center overflow-hidden shrink-0">
                         {isValidUrl(product.imageUrl) ? (
                           <Image src={product.imageUrl} alt="" width={48} height={48} className="w-full h-full object-cover" />
                         ) : (
@@ -464,13 +464,13 @@ export function ProductManager({
                     {product.stock} <span className="text-[10px] uppercase opacity-60 ml-1">Units</span>
                   </td>
                   <td className="admin-table-cell px-4 sm:px-6 py-4">
-                    <div className={`inline-flex items-center gap-2 px-2.5 py-1 rounded text-[11px] font-bold uppercase tracking-widest border ${
+                    <div className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-none text-[11px] font-bold uppercase tracking-widest border ${
                       product.status === 'draft' ? 'bg-zinc-100 text-zinc-600 border-zinc-200' :
                       product.stock > 10 ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 
                       product.stock > 0 ? 'bg-amber-50 text-amber-700 border-amber-100' : 
                       'bg-rose-50 text-rose-700 border-rose-100'
                     }`}>
-                      <div className={`w-1 h-1 rounded-full ${
+                      <div className={`w-1 h-1 rounded-none ${
                         product.status === 'draft' ? 'bg-zinc-400' : product.stock > 10 ? 'bg-emerald-500' : product.stock > 0 ? 'bg-amber-500' : 'bg-rose-500'
                       }`} />
                       {product.status === 'draft' ? 'Draft' : product.stock > 10 ? 'Active' : product.stock > 0 ? 'Low Stock' : 'Out of Stock'}
@@ -479,7 +479,7 @@ export function ProductManager({
                   <td className="admin-table-cell px-4 sm:px-6 py-4 text-right">
                     <button 
                       onClick={(e) => handleDelete(product.id, e)} 
-                      className="p-2 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded transition-all"
+                      className="p-2 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-none transition-all"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -503,9 +503,9 @@ export function ProductManager({
       {/* Bulk Actions Bar */}
       {selectedIds.size > 0 && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-8 duration-300">
-          <div className="bg-slate-900 text-white rounded-full px-6 py-3 shadow-2xl flex items-center gap-6 border border-white/10 backdrop-blur-md">
+          <div className="bg-slate-900 text-white rounded-none px-6 py-3 shadow-none flex items-center gap-6 border border-white/10 backdrop-blur-md">
             <div className="flex items-center gap-3 pr-6 border-r border-white/20">
-              <div className="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center text-[11px] font-bold uppercase">
+              <div className="w-6 h-6 rounded-none bg-indigo-500 flex items-center justify-center text-[11px] font-bold uppercase">
                 {selectedIds.size}
               </div>
               <span className="text-[11px] font-bold uppercase tracking-widest text-slate-300">Selected</span>
@@ -515,7 +515,7 @@ export function ProductManager({
               <button
                 onClick={handleBulkDelete}
                 disabled={bulkProcessing}
-                className="flex items-center gap-2 px-4 py-1.5 rounded-full hover:bg-rose-500/10 text-rose-400 transition-all group"
+                className="flex items-center gap-2 px-4 py-1.5 rounded-none hover:bg-rose-500/10 text-rose-400 transition-all group"
               >
                 <Trash2 className="w-4 h-4" />
                 <span className="text-[11px] font-bold uppercase tracking-widest">Delete</span>
@@ -523,7 +523,7 @@ export function ProductManager({
 
               <button
                 onClick={() => setSelectedIds(new Set())}
-                className="flex items-center gap-2 px-4 py-1.5 rounded-full hover:bg-white/10 text-slate-500 transition-all"
+                className="flex items-center gap-2 px-4 py-1.5 rounded-none hover:bg-white/10 text-slate-500 transition-all"
               >
                 <X className="w-4 h-4" />
                 <span className="text-[11px] font-bold uppercase tracking-widest">Clear</span>

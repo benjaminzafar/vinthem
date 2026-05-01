@@ -382,14 +382,14 @@ export function NotificationCenter() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={handleOpen}
-        className="relative flex h-[42px] w-[42px] items-center justify-center rounded-md border border-zinc-200 bg-white transition-colors hover:bg-zinc-50"
+        className="relative flex h-[42px] w-[42px] items-center justify-center rounded-none border border-zinc-200 bg-white transition-colors hover:bg-zinc-50"
         aria-label="Notifications"
       >
         <Bell className="h-5 w-5 text-zinc-600" />
         {unreadCount > 0 && (
           <>
-            <span className="absolute top-1.5 right-1.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-rose-500" />
-            <span className="absolute -top-1 -right-1 min-w-[18px] rounded-full bg-slate-900 px-1.5 py-0.5 text-[11px] font-bold text-white">
+            <span className="absolute top-1.5 right-1.5 h-2.5 w-2.5 rounded-none border-2 border-white bg-rose-500" />
+            <span className="absolute -top-1 -right-1 min-w-[18px] rounded-none bg-slate-900 px-1.5 py-0.5 text-[11px] font-bold text-white">
               {Math.min(unreadCount, 9)}
             </span>
           </>
@@ -403,7 +403,7 @@ export function NotificationCenter() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -10 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="absolute right-[-0.75rem] sm:right-0 mt-4 z-[100] w-[calc(100vw-2rem)] sm:w-[420px] overflow-hidden rounded-2xl border border-white/40 bg-white/90 backdrop-blur-xl shadow-[0_24px_48px_-12px_rgba(0,0,0,0.12)]"
+            className="absolute right-[-0.75rem] sm:right-0 mt-4 z-[100] w-[calc(100vw-2rem)] sm:w-[420px] overflow-hidden rounded-none border border-white/40 bg-white/90 backdrop-blur-xl shadow-none-[0_24px_48px_-12px_rgba(0,0,0,0.12)]"
           >
             <div className="border-b border-slate-100 bg-white/50 px-6 py-5">
               <div className="flex items-center justify-between">
@@ -413,7 +413,7 @@ export function NotificationCenter() {
                 </div>
                 <button 
                   onClick={() => setIsOpen(false)} 
-                  className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-all hover:bg-slate-200 hover:text-slate-900"
+                  className="flex h-8 w-8 items-center justify-center rounded-none bg-slate-100 text-slate-500 transition-all hover:bg-slate-200 hover:text-slate-900"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -423,7 +423,7 @@ export function NotificationCenter() {
                 <button
                   type="button"
                   onClick={markAllAsRead}
-                  className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-white transition-all hover:bg-slate-800 hover:shadow-lg active:scale-95"
+                  className="inline-flex items-center gap-2 rounded-none bg-slate-900 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-white transition-all hover:bg-slate-800 hover:shadow-none active:scale-95"
                 >
                   <CheckCheck className="h-3.5 w-3.5" />
                   Mark all as read
@@ -431,7 +431,7 @@ export function NotificationCenter() {
                 <button
                   type="button"
                   onClick={clearOldData}
-                  className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-slate-600 transition-all hover:bg-slate-50 active:scale-95"
+                  className="inline-flex items-center gap-2 rounded-none border border-slate-200 bg-white px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-slate-600 transition-all hover:bg-slate-50 active:scale-95"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                   Clean logs
@@ -457,7 +457,7 @@ export function NotificationCenter() {
                         }}
                         className={`flex w-full gap-5 px-6 py-5 text-left transition-all duration-300 ${!isRead ? 'bg-slate-900/[0.02] border-l-2 border-slate-900' : 'bg-transparent hover:bg-slate-50'}`}
                       >
-                        <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border ${style.border} ${style.bg} transition-transform group-hover:scale-110`}>
+                        <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-none border ${style.border} ${style.bg} transition-transform group-hover:scale-110`}>
                           <NotificationIcon className={`h-5 w-5 ${style.accent}`} />
                         </div>
                         <div className="min-w-0 flex-1">
@@ -470,7 +470,7 @@ export function NotificationCenter() {
                               <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
                                 {formatDistanceToNow(notification.timestamp, { addSuffix: true })}
                               </p>
-                              {!isRead && <div className="mt-3 ml-auto h-1.5 w-1.5 rounded-full bg-slate-900 animate-pulse" />}
+                              {!isRead && <div className="mt-3 ml-auto h-1.5 w-1.5 rounded-none bg-slate-900 animate-pulse" />}
                             </div>
                           </div>
                         </div>
@@ -498,7 +498,7 @@ export function NotificationCenter() {
                   router.push('/admin/customers');
                   setIsOpen(false);
                 }}
-                className="group flex w-full items-center justify-between rounded-xl bg-slate-50 p-4 transition-all hover:bg-slate-900 hover:text-white"
+                className="group flex w-full items-center justify-between rounded-none bg-slate-50 p-4 transition-all hover:bg-slate-900 hover:text-white"
               >
                 <span className="text-[11px] font-bold uppercase tracking-widest">Explore CRM activity</span>
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />

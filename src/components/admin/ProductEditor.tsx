@@ -401,7 +401,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
         <div className="space-y-6">
           
           {/* AI Drafting Section */}
-          <div className="bg-white border border-slate-200 rounded-[4px] p-5 sm:p-6">
+          <div className="bg-white border border-slate-200 rounded-none-[4px] p-5 sm:p-6">
              <div className="flex items-center gap-2 mb-4">
                 <Sparkles className="w-4 h-4 text-indigo-600" />
                 <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-900">AI Product Assistant</h3>
@@ -412,12 +412,12 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                   value={aiChatInput}
                   onChange={(e) => setAiChatInput(e.target.value)}
                   placeholder="Describe your product or paste raw supplier text here..."
-                  className="w-full sm:flex-1 h-11 border border-slate-200 rounded-[4px] px-4 text-sm focus:outline-none focus:border-indigo-500"
+                  className="w-full sm:flex-1 h-11 border border-slate-200 rounded-none-[4px] px-4 text-sm focus:outline-none focus:border-indigo-500"
                 />
                 <button 
                   onClick={handleAIChatAutoFill}
                   disabled={generating || !aiChatInput.trim()}
-                  className="h-11 px-5 bg-indigo-600 text-white rounded-[4px] text-[12px] font-medium hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shrink-0"
+                  className="h-11 px-5 bg-indigo-600 text-white rounded-none-[4px] text-[12px] font-medium hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shrink-0"
                 >
                   {generating ? 'Processing...' : 'Auto-Draft'}
                   {!generating && <Wand2 className="w-4 h-4" />}
@@ -426,7 +426,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
           </div>
 
           {/* General Information */}
-          <section className="bg-white border border-slate-200 rounded-[4px]">
+          <section className="bg-white border border-slate-200 rounded-none-[4px]">
             <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
               <Layout className="w-4 h-4 text-slate-500" />
               <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-900">General Information</h3>
@@ -438,7 +438,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                   type="text" 
                   value={formData.title}
                   onChange={(e) => setFormData({...formData, title: e.target.value})}
-                  className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm focus:border-slate-900 transition-all font-medium"
+                  className="w-full h-11 border border-slate-200 rounded-none-[4px] px-4 text-sm focus:border-slate-900 transition-all font-medium"
                 />
               </div>
               <div className="space-y-2">
@@ -447,7 +447,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                   rows={8}
                   value={formData.description}
                   onChange={(e) => setFormData({...formData, description: e.target.value})}
-                  className="w-full p-4 border border-slate-200 rounded-[4px] text-sm focus:border-slate-900 transition-all resize-none leading-relaxed"
+                  className="w-full p-4 border border-slate-200 rounded-none-[4px] text-sm focus:border-slate-900 transition-all resize-none leading-relaxed"
                 />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -466,7 +466,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                       value={formData.tags?.join(', ')}
                       onChange={(e) => setFormData({...formData, tags: e.target.value.split(',').map(t => t.trim()).filter(Boolean)})}
                       placeholder="Minimal, Wood, Premium"
-                      className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm"
+                      className="w-full h-11 border border-slate-200 rounded-none-[4px] px-4 text-sm"
                     />
                  </div>
               </div>
@@ -474,7 +474,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
           </section>
 
           {/* Pricing & Inventory */}
-          <section className="bg-white border border-slate-200 rounded-[4px]">
+          <section className="bg-white border border-slate-200 rounded-none-[4px]">
             <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
               <Package className="w-4 h-4 text-slate-500" />
               <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-900">{getLabel(settings.inventoryTitleText, "Pricing & Inventory")}</h3>
@@ -486,7 +486,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                      type="number"
                      value={formData.price || ''}
                      onChange={(e) => setFormData({...formData, price: parseFloat(e.target.value) || 0})}
-                     className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm font-medium"
+                     className="w-full h-11 border border-slate-200 rounded-none-[4px] px-4 text-sm font-medium"
                    />
                 </div>
                 <div className="space-y-2">
@@ -495,7 +495,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                      type="number"
                      value={formData.discountPrice || ''}
                      onChange={(e) => setFormData({...formData, discountPrice: parseFloat(e.target.value) || 0, isSale: parseFloat(e.target.value) > 0})}
-                     className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm font-medium text-rose-600"
+                     className="w-full h-11 border border-slate-200 rounded-none-[4px] px-4 text-sm font-medium text-rose-600"
                    />
                 </div>
                 <div className="space-y-2">
@@ -504,7 +504,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                      type="text"
                      value={formData.sku || ''}
                      onChange={(e) => setFormData({...formData, sku: e.target.value})}
-                     className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm"
+                     className="w-full h-11 border border-slate-200 rounded-none-[4px] px-4 text-sm"
                    />
                 </div>
                 <div className="space-y-2">
@@ -513,7 +513,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                      type="number"
                      value={formData.stock || 0}
                      onChange={(e) => setFormData({...formData, stock: parseInt(e.target.value) || 0})}
-                     className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm font-medium"
+                     className="w-full h-11 border border-slate-200 rounded-none-[4px] px-4 text-sm font-medium"
                    />
                 </div>
                 <div className="space-y-2">
@@ -522,7 +522,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                      type="number"
                      value={formData.weight || 0}
                      onChange={(e) => setFormData({...formData, weight: parseFloat(e.target.value) || 0})}
-                     className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm"
+                     className="w-full h-11 border border-slate-200 rounded-none-[4px] px-4 text-sm"
                    />
                 </div>
                 <div className="space-y-2">
@@ -530,7 +530,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                    <select 
                      value={formData.shippingClass || ''}
                      onChange={(e) => setFormData({...formData, shippingClass: e.target.value})}
-                     className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm"
+                     className="w-full h-11 border border-slate-200 rounded-none-[4px] px-4 text-sm"
                    >
                      <option value="">Standard Shipping</option>
                      <option value="heavy">Heavy Items</option>
@@ -541,7 +541,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
               </div>
             </section>
 
-          <section className="bg-white border border-slate-200 rounded-[4px]">
+          <section className="bg-white border border-slate-200 rounded-none-[4px]">
             <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
               <Truck className="w-4 h-4 text-slate-500" />
               <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-900">Tax Configuration</h3>
@@ -552,7 +552,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                 <select
                   value={formData.stripeTaxCode || ''}
                   onChange={(e) => setFormData({ ...formData, stripeTaxCode: e.target.value })}
-                  className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm"
+                  className="w-full h-11 border border-slate-200 rounded-none-[4px] px-4 text-sm"
                 >
                   {STRIPE_TAX_CODE_OPTIONS.map((option) => (
                     <option key={option.value || 'auto'} value={option.value}>
@@ -571,7 +571,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
           </section>
   
           {/* Variants Management */}
-          <section className="bg-white border border-slate-200 rounded-[4px] overflow-hidden shadow-sm">
+          <section className="bg-white border border-slate-200 rounded-none-[4px] overflow-hidden shadow-none">
              <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                    <Tag className="w-4 h-4 text-slate-500" />
@@ -584,7 +584,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
           </section>
 
           {/* Multilingual Content */}
-          <section className="bg-white border border-slate-200 rounded-[4px] overflow-hidden shadow-sm">
+          <section className="bg-white border border-slate-200 rounded-none-[4px] overflow-hidden shadow-none">
              <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
                <div className="flex items-center gap-2">
                  <Globe className="w-4 h-4 text-slate-500" />
@@ -593,19 +593,19 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                <button
                  onClick={handleAITranslateProduct}
                  disabled={generating || !formData.title?.trim()}
-                 className="flex items-center gap-1.5 px-4 h-9 text-[12px] font-medium bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-all disabled:opacity-50"
+                 className="flex items-center gap-1.5 px-4 h-9 text-[12px] font-medium bg-indigo-600 text-white rounded-none hover:bg-indigo-700 transition-all disabled:opacity-50"
                >
                  {generating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Languages className="w-3 h-3" />}
                  AI Translate All
                </button>
              </div>
             <div className="p-6 space-y-6">
-               <div className="flex gap-2 p-1 bg-slate-50 rounded w-fit">
+               <div className="flex gap-2 p-1 bg-slate-50 rounded-none w-fit">
                   {languages.map(lang => (
                     <button 
                       key={lang}
                       onClick={() => setSelectedLang(lang)}
-                    className={`px-5 py-1.5 rounded-[2px] text-[11px] font-semibold uppercase tracking-[0.16em] transition-all ${selectedLang === lang ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-slate-100'}`}
+                    className={`px-5 py-1.5 rounded-none-[2px] text-[11px] font-semibold uppercase tracking-[0.16em] transition-all ${selectedLang === lang ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-slate-100'}`}
                     >
                       {lang}
                     </button>
@@ -627,7 +627,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                           }
                         }
                       })}
-                      className="w-full h-11 border border-slate-200 rounded-[4px] px-4 text-sm"
+                      className="w-full h-11 border border-slate-200 rounded-none-[4px] px-4 text-sm"
                     />
                   </div>
                   <div className="space-y-2">
@@ -645,7 +645,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                           }
                         }
                       })}
-                      className="w-full p-4 border border-slate-200 rounded-[4px] text-sm resize-none"
+                      className="w-full p-4 border border-slate-200 rounded-none-[4px] text-sm resize-none"
                     />
                   </div>
 
@@ -654,7 +654,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                        <label className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Translated Attributes ({selectedLang})</label>
                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           {formData.translations[selectedLang].options!.map((option, optIdx) => (
-                            <div key={`${selectedLang}-opt-${optIdx}`} className="space-y-2 p-3 bg-slate-50 rounded border border-slate-100">
+                            <div key={`${selectedLang}-opt-${optIdx}`} className="space-y-2 p-3 bg-slate-50 rounded-none border border-slate-100">
                                <input 
                                  type="text"
                                  value={option.name}
@@ -701,7 +701,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                                           }
                                         });
                                       }}
-                                      className="text-[10px] px-2 py-1 bg-white border border-slate-200 rounded min-w-[60px]"
+                                      className="text-[10px] px-2 py-1 bg-white border border-slate-200 rounded-none min-w-[60px]"
                                     />
                                   ))}
                                </div>
@@ -719,12 +719,12 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
         <div className="space-y-6">
            
            {/* Main Media Visual */}
-           <section className="bg-white border border-slate-200 rounded-[4px] overflow-hidden">
+           <section className="bg-white border border-slate-200 rounded-none-[4px] overflow-hidden">
               <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
                 <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-900">Main Product Image</h3>
               </div>
               <div className="p-6 pt-2">
-                <label className="relative aspect-square bg-slate-50 border-2 border-dashed border-slate-200 rounded-[4px] flex items-center justify-center overflow-hidden hover:border-slate-900 transition-all cursor-pointer group mb-4">
+                <label className="relative aspect-square bg-slate-50 border-2 border-dashed border-slate-200 rounded-none-[4px] flex items-center justify-center overflow-hidden hover:border-slate-900 transition-all cursor-pointer group mb-4">
 
                    {isValidUrl(formData.imageUrl) ? (
                      <div className="relative w-full h-full">
@@ -769,14 +769,14 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                      placeholder="Or paste image URL..."
                      value={formData.imageUrl}
                      onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
-                     className="flex-1 h-10 border border-slate-200 rounded-[4px] px-3 text-[12px]"
+                     className="flex-1 h-10 border border-slate-200 rounded-none-[4px] px-3 text-[12px]"
                    />
                    <button 
                      onClick={() => {
                         setMediaPickerTarget('main');
                         setIsMediaPickerOpen(true);
                      }}
-                     className="h-10 px-4 bg-slate-50 border border-slate-200 rounded-md text-[12px] font-medium hover:border-slate-900 transition-all"
+                     className="h-10 px-4 bg-slate-50 border border-slate-200 rounded-none text-[12px] font-medium hover:border-slate-900 transition-all"
                    >
                      Library
                    </button>
@@ -785,7 +785,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
            </section>
 
            {/* Organization & Visibility */}
-           <section className="bg-white border border-slate-200 rounded-[4px] overflow-hidden">
+           <section className="bg-white border border-slate-200 rounded-none-[4px] overflow-hidden">
              <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
                <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-900">Optimization</h3>
              </div>
@@ -799,7 +799,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                     type="checkbox" 
                     checked={formData.isFeatured}
                     onChange={(e) => setFormData({...formData, isFeatured: e.target.checked})}
-                    className="w-4 h-4 rounded-sm border-slate-300 transition-all"
+                    className="w-4 h-4 rounded-none border-slate-300 transition-all"
                    />
                 </div>
                 <div className="flex items-center justify-between">
@@ -811,21 +811,21 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                     type="checkbox" 
                     checked={formData.isNewArrival}
                     onChange={(e) => setFormData({...formData, isNewArrival: e.target.checked})}
-                    className="w-4 h-4 rounded-sm border-slate-300 transition-all"
+                    className="w-4 h-4 rounded-none border-slate-300 transition-all"
                    />
                 </div>
              </div>
            </section>
 
            {/* Gallery Summary */}
-           <section className="bg-white border border-slate-200 rounded-[4px] overflow-hidden">
+           <section className="bg-white border border-slate-200 rounded-none-[4px] overflow-hidden">
               <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
                 <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-900">Product Gallery</h3>
               </div>
               <div className="p-6">
                 <div className="grid grid-cols-4 gap-2 mb-4">
                    {formData.additionalImages?.map((url, idx) => (
-                     <div key={idx} className="relative aspect-square bg-slate-50 border border-slate-100 rounded-md overflow-hidden group/img">
+                     <div key={idx} className="relative aspect-square bg-slate-50 border border-slate-100 rounded-none overflow-hidden group/img">
                         <Image 
                           src={toMediaProxyUrl(url)} 
                           alt={`Gallery asset ${idx + 2}`} 
@@ -855,14 +855,14 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                               additionalImages: prev.additionalImages?.filter((_, i) => i !== idx) 
                             }));
                           }}
-                          className="absolute top-1 right-1 bg-white/90 backdrop-blur-sm border border-slate-200 text-rose-600 rounded-full p-1 opacity-0 group-hover/img:opacity-100 hover:bg-rose-600 hover:text-white transition-all shadow-sm z-20"
+                          className="absolute top-1 right-1 bg-white/90 backdrop-blur-sm border border-slate-200 text-rose-600 rounded-none p-1 opacity-0 group-hover/img:opacity-100 hover:bg-rose-600 hover:text-white transition-all shadow-none z-20"
                           title="Remove Image"
                         >
                           <X className="w-3 h-3" />
                         </button>
                       </div>
                     ))}
-                   <label className="aspect-square border-2 border-dashed border-slate-200 rounded flex items-center justify-center hover:border-slate-400 transition-all cursor-pointer group">
+                   <label className="aspect-square border-2 border-dashed border-slate-200 rounded-none flex items-center justify-center hover:border-slate-400 transition-all cursor-pointer group">
                       <Plus className="w-4 h-4 text-slate-500 group-hover:text-slate-900" />
                       <input type="file" className="hidden" multiple accept="image/*" onChange={async (e) => {
                         const files = Array.from(e.target.files || []);
@@ -904,7 +904,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
                         setMediaPickerTarget('gallery');
                         setIsMediaPickerOpen(true);
                       }}
-                      className="aspect-square border-2 border-dashed border-slate-200 rounded flex flex-col items-center justify-center hover:border-slate-400 transition-all bg-slate-50 group"
+                      className="aspect-square border-2 border-dashed border-slate-200 rounded-none flex flex-col items-center justify-center hover:border-slate-400 transition-all bg-slate-50 group"
                    >
                       <ImageIcon className="w-4 h-4 text-slate-500 group-hover:text-slate-900" />
                       <span className="text-[8px] font-black uppercase tracking-widest text-slate-500 mt-1">Lib</span>

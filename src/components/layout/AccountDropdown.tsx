@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { User, Settings, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { logger } from '@/lib/logger';
 import { createClient } from '@/utils/supabase/client';
 import { UserAvatar } from '../ui/UserAvatar';
 import { getClientLocale } from '@/lib/locale';
@@ -48,7 +49,7 @@ export function AccountDropdown({ user, isAdmin, locale, labels }: AccountDropdo
         redirectTo: localizeHref(getClientLocale(window.location.pathname) || locale, '/'),
       });
     } catch (error) {
-      console.error('Logout error:', error);
+      logger.error('Logout error:', error);
       window.location.assign(localizeHref(getClientLocale(window.location.pathname) || locale, '/'));
     }
   };
@@ -57,7 +58,7 @@ export function AccountDropdown({ user, isAdmin, locale, labels }: AccountDropdo
     <div className="relative h-full flex items-center" ref={dropdownRef}>
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center p-1 rounded hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100"
+        className="flex items-center p-1 rounded-none hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100"
         aria-label="Toggle user menu"
       >
         <UserAvatar 
@@ -74,7 +75,7 @@ export function AccountDropdown({ user, isAdmin, locale, labels }: AccountDropdo
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ type: "spring", bounce: 0, duration: 0.3 }}
-            className="absolute right-0 top-[calc(100%+4px)] w-60 bg-white shadow-2xl shadow-slate-900/10 rounded-2xl border border-slate-100 z-[100] py-2 overflow-hidden"
+            className="absolute right-0 top-[calc(100%+4px)] w-60 bg-white shadow-none rounded-none border border-slate-200 z-[100] py-2 overflow-hidden"
           >
 
             <div className="px-6 py-3 border-b border-gray-50 mb-2">

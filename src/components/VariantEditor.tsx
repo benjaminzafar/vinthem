@@ -120,7 +120,7 @@ export function VariantEditor({ formData, setFormData }: VariantEditorProps) {
 
       <div className="space-y-3">
         {options.map((option, index) => (
-          <div key={index} className="p-3 bg-zinc-50 rounded-[6px] border border-zinc-200 relative">
+          <div key={index} className="p-3 bg-zinc-50 rounded-none-[6px] border border-zinc-200 relative">
             <button
               type="button"
               onClick={() => handleRemoveOption(index)}
@@ -136,7 +136,7 @@ export function VariantEditor({ formData, setFormData }: VariantEditorProps) {
                   value={option.name}
                   onChange={(e) => handleOptionNameChange(index, e.target.value)}
                   placeholder="e.g., Size, Color"
-                  className="w-full h-10 px-3 border border-gray-200/60 rounded-[4px] text-sm focus:ring-2 focus:ring-zinc-900"
+                  className="w-full h-10 px-3 border border-gray-200/60 rounded-none-[4px] text-sm focus:ring-2 focus:ring-zinc-900"
                 />
               </div>
               <div className="md:col-span-2">
@@ -146,7 +146,7 @@ export function VariantEditor({ formData, setFormData }: VariantEditorProps) {
                   value={option.values.join(', ')}
                   onChange={(e) => handleOptionValuesChange(index, e.target.value)}
                   placeholder="e.g., Red, Blue, Green"
-                  className="w-full h-10 px-3 border border-gray-200/60 rounded-[4px] text-sm focus:ring-2 focus:ring-zinc-900"
+                  className="w-full h-10 px-3 border border-gray-200/60 rounded-none-[4px] text-sm focus:ring-2 focus:ring-zinc-900"
                 />
                 <p className="text-[10px] text-zinc-500 mt-1">Separate values with commas. Variants are generated automatically.</p>
               </div>
@@ -168,7 +168,7 @@ export function VariantEditor({ formData, setFormData }: VariantEditorProps) {
       {variants.length > 0 ? (
         <div className="mt-5 space-y-5">
           {colorOption && colorOption.values.length > 0 && (
-            <div className="bg-zinc-50 p-4 rounded-[6px] border border-zinc-200">
+            <div className="bg-zinc-50 p-4 rounded-none-[6px] border border-zinc-200">
               <h4 className="text-sm font-bold text-zinc-900 mb-2">Color Images</h4>
               <p className="text-xs text-zinc-500 mb-4">Upload an image for each color. This image will automatically be applied to all variants of this color, and will be used on the product page.</p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -178,7 +178,7 @@ export function VariantEditor({ formData, setFormData }: VariantEditorProps) {
 
                   return (
                     <div key={colorVal} className="flex flex-col items-center gap-2">
-                      <div className="relative w-full aspect-square rounded-md border border-gray-200/60 overflow-hidden flex items-center justify-center group bg-white">
+                      <div className="relative w-full aspect-square rounded-none border border-gray-200/60 overflow-hidden flex items-center justify-center group bg-white">
                         {imageUrl ? (
                           <Image 
                             src={toMediaProxyUrl(imageUrl)} 
@@ -192,7 +192,7 @@ export function VariantEditor({ formData, setFormData }: VariantEditorProps) {
                         )}
                         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center gap-2 cursor-default transition-all duration-200 scale-95 group-hover:scale-100">
                           <div className="flex gap-2">
-                            <label className="p-2 bg-white rounded-full text-zinc-900 hover:bg-emerald-50 hover:text-emerald-600 transition-colors cursor-pointer" title="Upload New">
+                            <label className="p-2 bg-white rounded-none text-zinc-900 hover:bg-emerald-50 hover:text-emerald-600 transition-colors cursor-pointer" title="Upload New">
                               <Upload className="w-4 h-4" />
                               <input
                                 type="file"
@@ -228,7 +228,7 @@ export function VariantEditor({ formData, setFormData }: VariantEditorProps) {
                             <button
                               type="button"
                               onClick={() => setPickingForColor(colorVal)}
-                              className="p-2 bg-white rounded-full text-zinc-900 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                              className="p-2 bg-white rounded-none text-zinc-900 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
                               title="Select from Library"
                             >
                               <ImageIcon className="w-4 h-4" />
@@ -237,7 +237,7 @@ export function VariantEditor({ formData, setFormData }: VariantEditorProps) {
                               <button
                                 type="button"
                                 onClick={() => handleRemoveColorImage(colorVal)}
-                                className="p-2 bg-white rounded-full text-rose-500 hover:bg-rose-50 transition-colors"
+                                className="p-2 bg-white rounded-none text-rose-500 hover:bg-rose-50 transition-colors"
                                 title="Remove Image"
                               >
                                 <X className="w-4 h-4" />
@@ -275,7 +275,7 @@ export function VariantEditor({ formData, setFormData }: VariantEditorProps) {
                   {variants.map((variant, index) => (
                     <tr key={variant.id} className="hover:bg-zinc-50">
                       <td className="py-3 px-4">
-                        <div className="relative w-12 h-12 rounded-lg border border-gray-200/60 overflow-hidden flex items-center justify-center group bg-white">
+                        <div className="relative w-12 h-12 rounded-none border border-gray-200/60 overflow-hidden flex items-center justify-center group bg-white">
                           {variant.imageUrl || (variant as any).image_url ? (
                             <Image 
                               src={toMediaProxyUrl(variant.imageUrl || (variant as any).image_url)} 
@@ -288,7 +288,7 @@ export function VariantEditor({ formData, setFormData }: VariantEditorProps) {
                             <div className="text-[8px] font-black text-zinc-500 uppercase text-center leading-tight">...</div>
                           )}
                           <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-1.5 transition-all">
-                            <label className="p-1 px-1.5 bg-white/90 rounded text-zinc-900 hover:bg-white cursor-pointer" title="Upload">
+                            <label className="p-1 px-1.5 bg-white/90 rounded-none text-zinc-900 hover:bg-white cursor-pointer" title="Upload">
                               <Upload className="w-2.5 h-2.5" />
                               <input
                                 type="file"
@@ -324,7 +324,7 @@ export function VariantEditor({ formData, setFormData }: VariantEditorProps) {
                             <button
                               type="button"
                               onClick={() => setPickingForVariantIndex(index)}
-                              className="p-1 px-1.5 bg-white/90 rounded text-zinc-900 hover:bg-white"
+                              className="p-1 px-1.5 bg-white/90 rounded-none text-zinc-900 hover:bg-white"
                               title="Library"
                             >
                               <ImageIcon className="w-2.5 h-2.5" />
@@ -333,7 +333,7 @@ export function VariantEditor({ formData, setFormData }: VariantEditorProps) {
                               <button
                                 type="button"
                                 onClick={() => handleVariantChange(index, 'imageUrl', '')}
-                                className="p-1 px-1.5 bg-white/90 rounded text-rose-500 hover:bg-rose-50"
+                                className="p-1 px-1.5 bg-white/90 rounded-none text-rose-500 hover:bg-rose-50"
                                 title="Remove"
                               >
                                 <X className="w-2.5 h-2.5" />
@@ -352,7 +352,7 @@ export function VariantEditor({ formData, setFormData }: VariantEditorProps) {
                           type="number"
                           value={variant.price || ''}
                           onChange={(e) => handleVariantChange(index, 'price', Number(e.target.value) || 0)}
-                          className="w-24 px-3 py-1.5 border border-gray-200/60 rounded-lg text-sm"
+                          className="w-24 px-3 py-1.5 border border-gray-200/60 rounded-none text-sm"
                         />
                       </td>
                       <td className="py-3 px-4">
@@ -360,7 +360,7 @@ export function VariantEditor({ formData, setFormData }: VariantEditorProps) {
                           type="number"
                           value={variant.stock || 0}
                           onChange={(e) => handleVariantChange(index, 'stock', Number(e.target.value) || 0)}
-                          className="w-24 px-3 py-1.5 border border-gray-200/60 rounded-lg text-sm"
+                          className="w-24 px-3 py-1.5 border border-gray-200/60 rounded-none text-sm"
                         />
                       </td>
                       <td className="py-3 px-4">
@@ -368,7 +368,7 @@ export function VariantEditor({ formData, setFormData }: VariantEditorProps) {
                           type="text"
                           value={variant.sku || ''}
                           onChange={(e) => handleVariantChange(index, 'sku', e.target.value)}
-                          className="w-32 px-3 py-1.5 border border-gray-200/60 rounded-lg text-sm"
+                          className="w-32 px-3 py-1.5 border border-gray-200/60 rounded-none text-sm"
                         />
                       </td>
                     </tr>
@@ -379,7 +379,7 @@ export function VariantEditor({ formData, setFormData }: VariantEditorProps) {
           </div>
         </div>
       ) : (
-        <div className="mt-5 p-5 border border-dashed border-zinc-300 rounded-[6px] bg-zinc-50 text-center">
+        <div className="mt-5 p-5 border border-dashed border-zinc-300 rounded-none-[6px] bg-zinc-50 text-center">
           <p className="text-sm font-bold text-zinc-600 mb-1">No variants generated yet</p>
           <p className="text-xs text-zinc-500">Type comma-separated values above to generate variants manually, or use the top AI Designer to fill options and variants in one pass.</p>
         </div>

@@ -93,12 +93,12 @@ export function PageManager({ initialPages = [] }: PageManagerProps) {
               placeholder="Search pages..."
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
-              className="h-11 w-full md:w-64 rounded-[4px] border border-slate-200 bg-white pl-10 pr-4 text-xs font-medium text-slate-900 transition-all focus:border-slate-900 focus:outline-none"
+              className="h-11 w-full md:w-64 rounded-none-[4px] border border-slate-200 bg-white pl-10 pr-4 text-xs font-medium text-slate-900 transition-all focus:border-slate-900 focus:outline-none"
             />
           </div>
           <button
             onClick={() => router.push('/admin/pages/new')}
-            className="flex h-11 items-center justify-center gap-2 rounded-[4px] bg-slate-900 px-6 sm:px-8 text-[11px] font-bold uppercase tracking-widest text-white transition-all hover:bg-slate-800"
+            className="flex h-11 items-center justify-center gap-2 rounded-none-[4px] bg-slate-900 px-6 sm:px-8 text-[11px] font-bold uppercase tracking-widest text-white transition-all hover:bg-slate-800"
           >
             <Plus className="h-4 w-4" />
             Add Page
@@ -106,7 +106,7 @@ export function PageManager({ initialPages = [] }: PageManagerProps) {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-[4px] border border-slate-200 bg-white">
+      <div className="overflow-hidden rounded-none-[4px] border border-slate-200 bg-white">
         <div className="flex min-h-14 flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 bg-slate-50/50 px-4 sm:px-6 py-3 sm:py-0 gap-2">
           <div className="flex items-center gap-3">
             <FileCode className="h-4 w-4 text-slate-500" />
@@ -133,7 +133,7 @@ export function PageManager({ initialPages = [] }: PageManagerProps) {
                     type="checkbox"
                     checked={filteredPages.length > 0 && selectedPages.length === filteredPages.length}
                     onChange={toggleAllPages}
-                    className="h-4 w-4 rounded-sm border-slate-300"
+                    className="h-4 w-4 rounded-none border-slate-300"
                   />
                 </th>
                 <th className="px-6 py-4">Page</th>
@@ -146,7 +146,7 @@ export function PageManager({ initialPages = [] }: PageManagerProps) {
               {filteredPages.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-20 text-center">
-                    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-[4px] border border-slate-100 bg-slate-50">
+                    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-none-[4px] border border-slate-100 bg-slate-50">
                       <FileCode className="h-6 w-6 text-slate-300" />
                     </div>
                     <p className="text-sm font-bold uppercase tracking-widest text-slate-900">
@@ -178,12 +178,12 @@ export function PageManager({ initialPages = [] }: PageManagerProps) {
                             togglePageSelection(page.id);
                           }
                         }}
-                        className="h-4 w-4 rounded-sm border-slate-300"
+                        className="h-4 w-4 rounded-none border-slate-300"
                       />
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-4">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-[4px] border border-slate-200 bg-slate-50">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-none-[4px] border border-slate-200 bg-slate-50">
                           <FileCode className="h-4 w-4 text-slate-500" />
                         </div>
                         <div className="min-w-0">
@@ -193,7 +193,7 @@ export function PageManager({ initialPages = [] }: PageManagerProps) {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="inline-flex rounded-[4px] border border-slate-100 bg-white px-2.5 py-1 font-mono text-[10px] font-bold text-slate-500">
+                      <div className="inline-flex rounded-none-[4px] border border-slate-100 bg-white px-2.5 py-1 font-mono text-[10px] font-bold text-slate-500">
                         /p/{page.slug}
                       </div>
                     </td>

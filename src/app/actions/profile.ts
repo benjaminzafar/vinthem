@@ -160,7 +160,7 @@ export async function saveAddressAction(input: AddressInput): Promise<ProfileAct
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to save address.';
-    console.error('[Action Error] saveAddressAction:', { error, input, message });
+    logger.error('[Action Error] saveAddressAction:', { error, input, message });
     return { success: false, message, error: message };
   }
 }
@@ -209,7 +209,7 @@ export async function deleteAddressAction(addressId: string): Promise<ProfileAct
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to delete address.';
-    console.error('[Action Error] deleteAddressAction:', { error, addressId, message });
+    logger.error('[Action Error] deleteAddressAction:', { error, addressId, message });
     return { success: false, message, error: message };
   }
 }
@@ -252,7 +252,7 @@ export async function setDefaultAddressAction(addressId: string): Promise<Profil
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to update default address.';
-    console.error('[Action Error] setDefaultAddressAction:', { error, addressId, message });
+    logger.error('[Action Error] setDefaultAddressAction:', { error, addressId, message });
     return { success: false, message, error: message };
   }
 }

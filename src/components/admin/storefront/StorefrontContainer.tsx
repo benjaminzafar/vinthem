@@ -438,7 +438,7 @@ Text to translate: "${sourceText}"`;
           <button
             key={cat.id}
             onClick={() => setActiveCategory(cat.id)}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-black transition-all whitespace-nowrap rounded-md uppercase tracking-widest ${activeCategory === cat.id ? `${cat.bg} text-zinc-900 border border-zinc-200/50` : 'text-zinc-500 hover:bg-zinc-100'}`}
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-black transition-all whitespace-nowrap rounded-none uppercase tracking-widest ${activeCategory === cat.id ? `${cat.bg} text-zinc-900 border border-zinc-200/50` : 'text-zinc-500 hover:bg-zinc-100'}`}
           >
             <cat.icon className="w-3.5 h-3.5" />
             {cat.name}
@@ -453,7 +453,7 @@ Text to translate: "${sourceText}"`;
               <div className="grid grid-cols-1 gap-4">
                 <SettingCard id="Identity" title="Brand Identity" icon={Sparkles} defaultExpanded>
                   <div className="flex flex-col md:flex-row gap-8">
-                    <div className="w-32 h-32 rounded border border-zinc-100 bg-zinc-50 flex items-center justify-center overflow-hidden relative group cursor-pointer hover:bg-zinc-100/50 transition-colors">
+                    <div className="w-32 h-32 rounded-none border border-zinc-100 bg-zinc-50 flex items-center justify-center overflow-hidden relative group cursor-pointer hover:bg-zinc-100/50 transition-colors">
                       {isValidUrl(settings.logoImage) ? (
                         <Image src={toMediaProxyUrl(settings.logoImage)} alt="Logo" fill sizes="128px" className="object-contain p-2" />
                       ) : (
@@ -548,7 +548,7 @@ Text to translate: "${sourceText}"`;
                         Social Share Asset (OG Image)
                       </label>
                       <div className="flex items-start gap-4">
-                        <div className="relative w-40 aspect-video bg-zinc-50 border border-zinc-200 rounded overflow-hidden flex-shrink-0 group">
+                        <div className="relative w-40 aspect-video bg-zinc-50 border border-zinc-200 rounded-none overflow-hidden flex-shrink-0 group">
                            {settings.seoImage ? (
                              <Image src={settings.seoImage} alt="Social Share Preview" fill className="object-cover" />
                            ) : (
@@ -557,7 +557,7 @@ Text to translate: "${sourceText}"`;
                              </div>
                            )}
                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                              <label className="cursor-pointer p-2 bg-white rounded-full text-zinc-900 shadow-xl scale-75 group-hover:scale-100 transition-transform">
+                              <label className="cursor-pointer p-2 bg-white rounded-none text-zinc-900 shadow-none scale-75 group-hover:scale-100 transition-transform">
                                 <Plus className="w-4 h-4" />
                                 <input type="file" className="hidden" onChange={(e) => handleImageUpload(e, 'seoImage')} accept="image/*" />
                               </label>
@@ -568,7 +568,7 @@ Text to translate: "${sourceText}"`;
                              type="text" 
                              value={settings.seoImage} 
                              onChange={e => handleUpdate('seoImage', e.target.value)}
-                             className="w-full h-11 px-4 bg-zinc-50 border border-zinc-200 text-sm font-bold focus:ring-1 focus:ring-zinc-900 focus:outline-none rounded-sm"
+                             className="w-full h-11 px-4 bg-zinc-50 border border-zinc-200 text-sm font-bold focus:ring-1 focus:ring-zinc-900 focus:outline-none rounded-none"
                              placeholder="Asset URL (https://...)" 
                            />
                            <p className="text-xs text-zinc-500 font-medium italic leading-relaxed">
@@ -597,7 +597,7 @@ Text to translate: "${sourceText}"`;
                 <SettingCard id="Navbar" title="Primary Navigation" icon={Layout}>
                   <div className="space-y-6">
                     {settings.navbarLinks?.map((link, idx) => (
-                      <div key={idx} className="p-4 bg-zinc-50 border-none rounded-md relative group space-y-4">
+                      <div key={idx} className="p-4 bg-zinc-50 border-none rounded-none relative group space-y-4">
                         <button onClick={() => handleUpdate('navbarLinks', settings.navbarLinks.filter((_, i) => i !== idx))} className="absolute top-2 right-2 p-1.5 text-zinc-300 hover:text-rose-600 transition-colors">
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -629,7 +629,7 @@ Text to translate: "${sourceText}"`;
                         }} placeholder="/products, /about, etc." />
                       </div>
                     ))}
-                    <button onClick={() => handleUpdate('navbarLinks', [...settings.navbarLinks, { label: { en: 'New Link' }, href: '#' }])} className="w-full py-3 border border-dashed border-zinc-200 rounded-md text-sm font-black uppercase tracking-widest text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50 transition-all flex items-center justify-center gap-2">
+                    <button onClick={() => handleUpdate('navbarLinks', [...settings.navbarLinks, { label: { en: 'New Link' }, href: '#' }])} className="w-full py-3 border border-dashed border-zinc-200 rounded-none text-sm font-black uppercase tracking-widest text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50 transition-all flex items-center justify-center gap-2">
                        <Plus className="w-3.5 h-3.5" /> Add Navbar Junction
                     </button>
                   </div>
@@ -638,7 +638,7 @@ Text to translate: "${sourceText}"`;
                 <SettingCard id="Footer" title="Structural Footer" icon={AlignLeft}>
                    <div className="space-y-8">
                       {settings.footerSections?.map((section, sIdx) => (
-                        <div key={sIdx} className="p-6 bg-zinc-50 rounded-md space-y-6 relative group">
+                        <div key={sIdx} className="p-6 bg-zinc-50 rounded-none space-y-6 relative group">
                            <button onClick={() => handleUpdate('footerSections', settings.footerSections.filter((_, i) => i !== sIdx))} className="absolute top-4 right-4 text-zinc-300 hover:text-rose-600">
                              <Trash2 className="w-4 h-4" />
                            </button>
@@ -665,7 +665,7 @@ Text to translate: "${sourceText}"`;
                            />
                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               {section.links.map((link, lIdx) => (
-                                <div key={lIdx} className="p-4 bg-white border border-zinc-100 rounded-sm space-y-4 relative">
+                                <div key={lIdx} className="p-4 bg-white border border-zinc-100 rounded-none space-y-4 relative">
                                    <button onClick={() => {
                                       const newSections = [...settings.footerSections];
                                       newSections[sIdx].links = section.links.filter((_, i) => i !== lIdx);
@@ -696,20 +696,20 @@ Text to translate: "${sourceText}"`;
                                       const newSections = [...settings.footerSections];
                                       newSections[sIdx].links[lIdx].href = e.target.value;
                                       handleUpdate('footerSections', newSections);
-                                   }} className="w-full bg-white border border-zinc-200 px-3 py-1.5 text-[12px] font-medium rounded-sm" placeholder="URL" />
+                                   }} className="w-full bg-white border border-zinc-200 px-3 py-1.5 text-[12px] font-medium rounded-none" placeholder="URL" />
                                 </div>
                               ))}
                               <button onClick={() => {
                                  const newSections = [...settings.footerSections];
                                  newSections[sIdx].links.push({ label: { en: 'New Link' }, href: '#' });
                                  handleUpdate('footerSections', newSections);
-                              }} className="py-2 border border-dashed border-zinc-200 rounded-sm text-xs font-bold text-zinc-500 hover:text-zinc-900 flex items-center justify-center">
+                              }} className="py-2 border border-dashed border-zinc-200 rounded-none text-xs font-bold text-zinc-500 hover:text-zinc-900 flex items-center justify-center">
                                  <Plus className="w-3 h-3 mr-1" /> Add Link
                               </button>
                            </div>
                         </div>
                       ))}
-                      <button onClick={() => handleUpdate('footerSections', [...settings.footerSections, { title: { en: 'New Section' }, links: [] }])} className="w-full py-3 border border-dashed border-zinc-200 rounded-md text-sm font-black uppercase tracking-widest text-zinc-500 hover:text-zinc-900 transition-all flex items-center justify-center gap-2">
+                      <button onClick={() => handleUpdate('footerSections', [...settings.footerSections, { title: { en: 'New Section' }, links: [] }])} className="w-full py-3 border border-dashed border-zinc-200 rounded-none text-sm font-black uppercase tracking-widest text-zinc-500 hover:text-zinc-900 transition-all flex items-center justify-center gap-2">
                         <Plus className="w-3.5 h-3.5" /> Append Footer Column
                       </button>
                    </div>
@@ -845,7 +845,7 @@ Text to translate: "${sourceText}"`;
                    </div>
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                      <div className="space-y-4">
-                        <div className="aspect-[4/5] bg-zinc-50 border border-zinc-100 rounded-md relative group overflow-hidden">
+                        <div className="aspect-[4/5] bg-zinc-50 border border-zinc-100 rounded-none relative group overflow-hidden">
                            {isValidUrl(settings.futureImage1) ? (
                               <Image src={settings.futureImage1} alt="Future product preview 1" fill sizes="(max-width: 768px) 100vw, 400px" className="object-cover" />
                            ) : <ImageIcon className="w-8 h-8 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-zinc-200" />}
@@ -855,7 +855,7 @@ Text to translate: "${sourceText}"`;
                         <LocalizedSettingInput label="Availability Date" value={settings.futureProduct1Date} onChange={v => handleUpdate('futureProduct1Date', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('futureProduct1Date', 'Availability Date')} onAIAutoComplete={() => handleAIAutoComplete('futureProduct1Date', 'Availability Date')} isGenerating={generatingId === 'futureProduct1Date-fill'} isTranslating={generatingId === 'futureProduct1Date-translate'} />
                      </div>
                      <div className="space-y-4">
-                        <div className="aspect-[4/5] bg-zinc-50 border border-zinc-100 rounded-md relative group overflow-hidden">
+                        <div className="aspect-[4/5] bg-zinc-50 border border-zinc-100 rounded-none relative group overflow-hidden">
                            {isValidUrl(settings.futureImage2) ? (
                               <Image src={settings.futureImage2} alt="Future product preview 2" fill sizes="(max-width: 768px) 100vw, 400px" className="object-cover" />
                            ) : <ImageIcon className="w-8 h-8 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-zinc-200" />}
@@ -983,7 +983,7 @@ Text to translate: "${sourceText}"`;
 
                 <SettingCard id="PrivacyConsent" title="Privacy, Consent & Auth" icon={FileCode}>
                   <div className="space-y-8">
-                    <div className="rounded-md border border-zinc-200 bg-zinc-50 p-4">
+                    <div className="rounded-none border border-zinc-200 bg-zinc-50 p-4">
                       <label className="flex items-start justify-between gap-6">
                         <div className="space-y-1">
                           <p className="text-[11px] font-black uppercase tracking-widest text-zinc-500">Google OAuth Button</p>
@@ -995,7 +995,7 @@ Text to translate: "${sourceText}"`;
                           type="checkbox"
                           checked={settings.googleAuthEnabled}
                           onChange={(event) => handleUpdate('googleAuthEnabled', event.target.checked)}
-                          className="mt-1 h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900"
+                          className="mt-1 h-4 w-4 rounded-none border-zinc-300 text-zinc-900 focus:ring-zinc-900"
                         />
                       </label>
                     </div>
@@ -1158,7 +1158,7 @@ Text to translate: "${sourceText}"`;
                   <div className="space-y-6">
                     <p className="text-[12px] text-zinc-500 mb-4 font-medium italic">Change the background image for the login and sign-up pages. Use a high-resolution interior or lifestyle photo for best results.</p>
                     <div className="space-y-4">
-                        <div className="aspect-video bg-zinc-50 border border-zinc-100 rounded-md relative group overflow-hidden">
+                        <div className="aspect-video bg-zinc-50 border border-zinc-100 rounded-none relative group overflow-hidden">
                            {isValidUrl(settings.authBackgroundImage) ? (
                               <Image src={toMediaProxyUrl(settings.authBackgroundImage)} alt="Authentication background" fill className="object-cover" />
                            ) : <ImageIcon className="w-8 h-8 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-zinc-200" />}
@@ -1196,7 +1196,7 @@ Text to translate: "${sourceText}"`;
                      <div className="space-y-6">
                         <div className="flex flex-wrap gap-2">
                            {settings.languages.map(lang => (
-                             <div key={lang} className="flex items-center gap-2 px-3 py-1 bg-zinc-900 text-white rounded text-xs font-bold uppercase tracking-widest">
+                             <div key={lang} className="flex items-center gap-2 px-3 py-1 bg-zinc-900 text-white rounded-none text-xs font-bold uppercase tracking-widest">
                                {lang}
                                {lang !== 'en' && (
                                  <button onClick={() => handleUpdate('languages', settings.languages.filter(l => l !== lang))} className="text-zinc-500 hover:text-white transition-colors">&times;</button>
@@ -1208,7 +1208,7 @@ Text to translate: "${sourceText}"`;
                            <input 
                               type="text" 
                               placeholder="Add lang (e.g. fr, de)" 
-                              className="px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-sm text-sm font-medium focus:ring-1 focus:ring-zinc-900 focus:outline-none placeholder:text-zinc-300"
+                              className="px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-none text-sm font-medium focus:ring-1 focus:ring-zinc-900 focus:outline-none placeholder:text-zinc-300"
                               onKeyDown={(e) => {
                                  if (e.key === 'Enter') {
                                     const val = (e.target as HTMLInputElement).value.trim().toLowerCase();
@@ -1226,7 +1226,7 @@ Text to translate: "${sourceText}"`;
                   
                   <SettingCard id="Shipping" title="Global Shipping Regions" icon={Globe}>
                      <div className="space-y-6">
-                        <div className="rounded-md border border-zinc-200 bg-zinc-50 p-4 sm:p-5 space-y-3">
+                        <div className="rounded-none border border-zinc-200 bg-zinc-50 p-4 sm:p-5 space-y-3">
                            <label className="text-[11px] font-black uppercase tracking-widest text-zinc-900">Add shipping country</label>
                            <div className="flex flex-col sm:flex-row gap-3">
                               <input
@@ -1235,7 +1235,7 @@ Text to translate: "${sourceText}"`;
                                 value={shippingCountryDraft}
                                 onChange={(e) => setShippingCountryDraft(e.target.value)}
                                 placeholder="Type country name or ISO code, e.g. Sweden or SE"
-                                className="flex-1 h-11 px-4 bg-white border border-zinc-200 rounded-md text-sm font-medium focus:outline-none focus:border-zinc-900"
+                                className="flex-1 h-11 px-4 bg-white border border-zinc-200 rounded-none text-sm font-medium focus:outline-none focus:border-zinc-900"
                               />
                               <datalist id="shipping-country-suggestions">
                                 {shippingCountrySuggestions.map((suggestion) => (
@@ -1264,7 +1264,7 @@ Text to translate: "${sourceText}"`;
                                   handleUpdate('shippingCountries', [...existingCountries, nextCountry]);
                                   setShippingCountryDraft('');
                                 }}
-                                className="h-11 px-5 bg-zinc-900 text-white rounded-md text-[11px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-all flex items-center justify-center gap-2"
+                                className="h-11 px-5 bg-zinc-900 text-white rounded-none text-[11px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-all flex items-center justify-center gap-2"
                               >
                                 <Plus className="w-3.5 h-3.5" /> Add
                               </button>
@@ -1275,7 +1275,7 @@ Text to translate: "${sourceText}"`;
                         </div>
                         <div className="flex flex-col gap-4">
                            {settings.shippingCountries?.map((country, idx) => (
-                             <div key={idx} className="p-4 bg-zinc-50 border border-zinc-100 rounded-md relative group space-y-3">
+                             <div key={idx} className="p-4 bg-zinc-50 border border-zinc-100 rounded-none relative group space-y-3">
                                <button onClick={() => handleUpdate('shippingCountries', settings.shippingCountries.filter((_, i) => i !== idx))} className="absolute top-2 right-2 p-1.5 text-zinc-300 hover:text-rose-600 transition-colors">
                                  <Trash2 className="w-3.5 h-3.5" />
                                </button>
@@ -1291,7 +1291,7 @@ Text to translate: "${sourceText}"`;
                                </div>
                                <div className="flex flex-wrap gap-2">
                                  {settings.languages.map((lang) => (
-                                   <span key={`${country.code}-${lang}`} className="inline-flex items-center gap-2 rounded-md border border-zinc-200 bg-white px-3 py-2 text-[11px] font-bold uppercase tracking-widest text-zinc-600">
+                                   <span key={`${country.code}-${lang}`} className="inline-flex items-center gap-2 rounded-none border border-zinc-200 bg-white px-3 py-2 text-[11px] font-bold uppercase tracking-widest text-zinc-600">
                                      <span className="text-zinc-400">{lang}</span>
                                      <span className="text-zinc-900 normal-case tracking-normal font-medium">
                                        {country.name?.[lang] || country.name?.en || country.code}
@@ -1311,8 +1311,8 @@ Text to translate: "${sourceText}"`;
       </div>
 
       {/* Trust Message - Flat Design */}
-      <div className="flex items-center gap-3 p-4 bg-zinc-50 border-none rounded-md mt-4">
-         <div className="p-2 bg-white border border-zinc-100 rounded-md">
+      <div className="flex items-center gap-3 p-4 bg-zinc-50 border-none rounded-none mt-4">
+         <div className="p-2 bg-white border border-zinc-100 rounded-none">
             <Globe className="w-5 h-5 text-indigo-600" />
          </div>
          <div className="flex-1">

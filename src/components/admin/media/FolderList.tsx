@@ -18,12 +18,12 @@ export function FolderList({ folders, onNavigate, onDelete, selectionMode }: Fol
           key={folder}
           role="button"
           tabIndex={0}
-          className="group flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded hover:border-slate-900 transition-all text-left cursor-pointer"
+          className="group flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-none hover:border-slate-900 transition-all text-left cursor-pointer"
           onClick={() => onNavigate(folder)}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onNavigate(folder); }}
         >
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 bg-white border border-slate-300 rounded flex items-center justify-center text-slate-500 group-hover:text-slate-900 transition-colors shrink-0">
+            <div className="w-10 h-10 bg-white border border-slate-300 rounded-none flex items-center justify-center text-slate-500 group-hover:text-slate-900 transition-colors shrink-0">
               <Folder className="w-5 h-5" />
             </div>
             <div className="truncate">

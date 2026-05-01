@@ -74,7 +74,7 @@ export function AssetGrid({
     return (
       <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-6">
         {[...Array(12)].map((_, i) => (
-          <div key={i} className="bg-slate-50 border border-slate-200 aspect-square rounded relative overflow-hidden">
+          <div key={i} className="bg-slate-50 border border-slate-200 aspect-square rounded-none relative overflow-hidden">
             <div className="absolute inset-0 bg-[linear-gradient(110deg,rgba(248,250,252,0.45),rgba(241,245,249,0.9),rgba(248,250,252,0.45))] bg-[length:200%_100%] animate-[shimmer_2.2s_linear_infinite]" />
           </div>
         ))}
@@ -84,8 +84,8 @@ export function AssetGrid({
 
   if (assets.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed border-slate-200 rounded-lg text-center bg-slate-50/50">
-        <div className="w-12 h-12 bg-white border border-slate-300 rounded-full flex items-center justify-center text-slate-300 mb-4">
+      <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed border-slate-200 rounded-none text-center bg-slate-50/50">
+        <div className="w-12 h-12 bg-white border border-slate-300 rounded-none flex items-center justify-center text-slate-300 mb-4">
           <ImageIcon className="w-6 h-6" />
         </div>
         <p className="text-sm font-bold text-slate-900 tracking-tight">Empty Directory</p>
@@ -106,7 +106,7 @@ export function AssetGrid({
               className={`group relative cursor-pointer ${selectionMode ? 'active:scale-95' : ''}`}
               onClick={() => selectionMode && onSelect?.(mediaUrl)}
             >
-              <div className={`aspect-square bg-slate-50 rounded overflow-hidden border transition-all ${selectionMode ? 'border-slate-300 hover:border-slate-900' : 'border-slate-300 hover:border-slate-900'} flex items-center justify-center relative`}>
+              <div className={`aspect-square bg-slate-50 rounded-none overflow-hidden border transition-all ${selectionMode ? 'border-slate-300 hover:border-slate-900' : 'border-slate-300 hover:border-slate-900'} flex items-center justify-center relative`}>
                 {!isBroken ? (
                   <Image
                     src={mediaUrl} 
@@ -124,7 +124,7 @@ export function AssetGrid({
                   />
                 ) : (
                   <div className="absolute inset-0 z-[5] flex flex-col items-center justify-center gap-3 border-2 border-dashed border-slate-200 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.95),rgba(248,250,252,0.98))] p-4 text-center">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-400">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-none border border-slate-200 bg-white text-slate-400">
                       <ImageIcon className="h-5 w-5" />
                     </div>
                     <div className="space-y-1">
@@ -134,7 +134,7 @@ export function AssetGrid({
                     <div className="flex items-center gap-2">
                       <button
                         onClick={(event) => onCopyUrl(mediaUrl, obj.key, event)}
-                        className="inline-flex h-8 items-center justify-center gap-1 rounded border border-slate-200 bg-white px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-600 transition-all hover:border-slate-900 hover:text-slate-900"
+                        className="inline-flex h-8 items-center justify-center gap-1 rounded-none border border-slate-200 bg-white px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-600 transition-all hover:border-slate-900 hover:text-slate-900"
                       >
                         <Copy className="h-3.5 w-3.5" />
                         Copy
@@ -145,7 +145,7 @@ export function AssetGrid({
                             event.stopPropagation();
                             onDelete(obj);
                           }}
-                          className="inline-flex h-8 items-center justify-center gap-1 rounded bg-rose-600 px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-white transition-all hover:bg-rose-700"
+                          className="inline-flex h-8 items-center justify-center gap-1 rounded-none bg-rose-600 px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-white transition-all hover:bg-rose-700"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                           Delete
@@ -160,14 +160,14 @@ export function AssetGrid({
                   <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 z-10">
                      <button 
                        onClick={(e) => onCopyUrl(mediaUrl, obj.key, e)}
-                       className="w-10 h-10 bg-white rounded flex items-center justify-center text-slate-900 hover:bg-slate-900 hover:text-white transition-all"
+                       className="w-10 h-10 bg-white rounded-none flex items-center justify-center text-slate-900 hover:bg-slate-900 hover:text-white transition-all"
                        title="Copy Link"
                      >
                        {copyingKeys.has(obj.key) ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                      </button>
                      <button 
                        onClick={(e) => { e.stopPropagation(); onDelete(obj); }}
-                       className="w-10 h-10 bg-white rounded flex items-center justify-center text-rose-600 hover:bg-rose-600 hover:text-white transition-all"
+                       className="w-10 h-10 bg-white rounded-none flex items-center justify-center text-rose-600 hover:bg-rose-600 hover:text-white transition-all"
                        title="Delete"
                      >
                        <Trash2 className="w-4 h-4" />
@@ -177,7 +177,7 @@ export function AssetGrid({
 
                 {deletingKey === obj.key && (
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-white/80 z-20">
-                    <div className="h-10 w-10 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-700">
+                    <div className="h-10 w-10 rounded-none border border-slate-200 bg-white flex items-center justify-center text-slate-700">
                       <Trash2 className="w-4 h-4" />
                     </div>
                     <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-slate-500">
@@ -188,7 +188,7 @@ export function AssetGrid({
 
                 {selectionMode && (
                   <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all">
-                     <div className="bg-slate-900 text-white p-1.5 rounded">
+                     <div className="bg-slate-900 text-white p-1.5 rounded-none">
                        <Check className="w-4 h-4" />
                      </div>
                   </div>
@@ -215,7 +215,7 @@ export function AssetGrid({
         {loadingMore && (
           <>
             {[...Array(6)].map((_, i) => (
-              <div key={`loading-more-${i}`} className="bg-slate-50 border border-slate-200 aspect-square rounded relative overflow-hidden">
+              <div key={`loading-more-${i}`} className="bg-slate-50 border border-slate-200 aspect-square rounded-none relative overflow-hidden">
                 <div className="absolute inset-0 bg-[linear-gradient(110deg,rgba(248,250,252,0.45),rgba(241,245,249,0.9),rgba(248,250,252,0.45))] bg-[length:200%_100%] animate-[shimmer_2.2s_linear_infinite]" />
               </div>
             ))}
@@ -229,15 +229,15 @@ export function AssetGrid({
           className="h-10 flex items-center justify-center"
         >
           {loadingMore && (
-            <div className="w-full max-w-md rounded border border-slate-200 bg-white px-4 py-3">
+            <div className="w-full max-w-md rounded-none border border-slate-200 bg-white px-4 py-3">
               <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-full border border-slate-200 bg-slate-50 flex items-center justify-center">
+                <div className="h-8 w-8 rounded-none border border-slate-200 bg-slate-50 flex items-center justify-center">
                   <RefreshCcw className="w-3.5 h-3.5 text-slate-600" />
                 </div>
                 <div className="flex-1 space-y-2">
                   <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-slate-500">Asset stream</p>
-                  <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
-                    <div className="h-full w-1/3 rounded-full bg-slate-300 animate-[shimmer_1.8s_linear_infinite]" />
+                  <div className="h-1.5 overflow-hidden rounded-none bg-slate-100">
+                    <div className="h-full w-1/3 rounded-none bg-slate-300 animate-[shimmer_1.8s_linear_infinite]" />
                   </div>
                 </div>
               </div>

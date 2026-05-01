@@ -52,16 +52,16 @@ export function AdminHeader({
   }, []);
 
   return (
-    <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 sm:gap-5 mb-6 py-4 sm:py-6 border-b border-slate-300 last:border-0">
-      <div className="w-full xl:w-auto flex-shrink-0">
-        <h2 className="text-[18px] sm:text-[20px] font-semibold text-slate-900 tracking-tight">{title}</h2>
-        {description && <p className="text-[12px] sm:text-[13px] text-slate-500 mt-1.5 max-w-2xl">{description}</p>}
+    <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 mb-10 py-6 border-b border-slate-200">
+      <div className="flex-1 min-w-0">
+        <h2 className="text-2xl font-bold text-slate-900 tracking-tight">{title}</h2>
+        {description && <p className="text-sm text-slate-500 mt-2 max-w-2xl leading-relaxed">{description}</p>}
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 w-full xl:w-auto mt-1 sm:mt-0">
+      <div className="flex flex-col sm:flex-row items-center gap-4 w-full xl:w-auto">
         {search && (
-          <div className={`relative flex-1 min-w-0 sm:min-w-[260px] transition-all duration-300 ${isSearchFocused ? 'xl:w-80' : 'xl:w-72'}`}>
-            <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${isSearchFocused ? 'text-slate-900' : 'text-slate-500'}`} />
+          <div className={`relative flex-1 sm:flex-none transition-all duration-300 ${isSearchFocused ? 'w-full sm:w-80' : 'w-full sm:w-64'}`}>
+            <Search className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${isSearchFocused ? 'text-slate-900' : 'text-slate-400'}`} />
             <input 
               type="text"
               placeholder={search.placeholder || "System search..."}
@@ -69,21 +69,20 @@ export function AdminHeader({
               onChange={(e) => search.onChange(e.target.value)}
               onFocus={() => setIsSearchFocused(true)}
               onBlur={() => setIsSearchFocused(false)}
-              className="pl-10 pr-4 h-10 border-slate-300 focus:outline-none focus:border-slate-900 w-full bg-white text-slate-900 border text-sm font-medium rounded-md transition-colors"
+              className="pl-11 pr-4 h-11 border-slate-200 focus:ring-2 focus:ring-slate-900/5 focus:border-slate-900 w-full bg-slate-50/50 text-slate-900 border text-[14px] font-semibold rounded-none transition-all"
             />
           </div>
         )}
 
-        <div className="flex items-center justify-end gap-2 flex-wrap sm:flex-nowrap flex-shrink-0 w-full sm:w-auto sm:ml-auto xl:ml-0">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
           {primaryAction && (
             <button 
               onClick={primaryAction.onClick}
               disabled={primaryAction.disabled}
-              className="flex-1 sm:flex-none min-w-[140px] flex items-center justify-center bg-slate-900 text-white hover:bg-slate-800 border border-transparent px-4 sm:px-6 h-10 text-sm font-medium rounded-md transition-colors whitespace-nowrap disabled:bg-slate-300 disabled:cursor-not-allowed"
+              className="flex-1 sm:flex-none flex items-center justify-center bg-slate-900 text-white hover:bg-slate-800 px-6 h-11 text-sm font-bold rounded-none transition-all active:scale-95 disabled:bg-slate-200 disabled:cursor-not-allowed shadow-none"
             >
-              <primaryAction.icon className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">{primaryAction.label}</span>
-              <span className="sm:hidden">{primaryAction.label.split(' ')[0]}</span>
+              <primaryAction.icon className="w-4 h-4 mr-2" />
+              <span>{primaryAction.label}</span>
             </button>
           )}
 
@@ -91,7 +90,7 @@ export function AdminHeader({
             <div className="relative ml-auto sm:ml-0" ref={dropdownRef}>
               <button 
                 onClick={() => setIsActionsOpen(!isActionsOpen)}
-                className="flex items-center justify-center bg-white text-slate-900 border border-slate-300 h-10 w-10 rounded-md hover:bg-slate-50 transition-colors"
+                className="flex items-center justify-center bg-white text-slate-900 border border-slate-300 h-10 w-10 rounded-none hover:bg-slate-50 transition-colors"
                 title="More Actions"
               >
                 <MoreVertical className="w-5 h-5" />
@@ -103,7 +102,7 @@ export function AdminHeader({
                     initial={{ opacity: 0, scale: 0.95, y: 10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                    className="absolute right-0 mt-2 w-[min(18rem,calc(100vw-2rem))] sm:w-52 bg-white rounded-md border border-slate-300 z-20 py-1 overflow-hidden shadow-lg shadow-slate-900/5"
+                    className="absolute right-0 mt-2 w-[min(18rem,calc(100vw-2rem))] sm:w-52 bg-white rounded-none border border-slate-300 z-20 py-1 overflow-hidden shadow-none shadow-none/5"
                   >
                     {statsLabel && (
                       <div className="hidden sm:block px-4 py-2 text-[11px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-100 bg-slate-50/50">

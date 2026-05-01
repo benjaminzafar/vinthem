@@ -25,7 +25,7 @@ export function CredentialInput({
   const [showPassword, setShowPassword] = useState(false);
   const isPassword = type === 'password';
 
-  const baseClasses = "w-full bg-white border border-zinc-200 px-3 py-2 text-[13px] font-medium text-zinc-900 transition-all focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900 placeholder:text-zinc-500 rounded-sm";
+  const baseClasses = "w-full bg-white border border-zinc-200 px-3 py-2 text-[13px] font-medium text-zinc-900 transition-all focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900 placeholder:text-zinc-500 rounded-none";
 
   return (
     <div className="space-y-1.5 group">
@@ -55,7 +55,7 @@ export function CredentialInput({
         ) : type === 'toggle' ? (
           <button
             onClick={() => onChange(value === 'true' ? 'false' : 'true')}
-            className={`flex items-center gap-2 px-3 py-1.5 transition-all text-[11px] font-black uppercase tracking-widest border rounded ${
+            className={`flex items-center gap-2 px-3 py-1.5 transition-all text-[11px] font-black uppercase tracking-widest border rounded-none ${
               value === 'true' 
                 ? 'bg-emerald-50 border-emerald-200 text-emerald-700' 
                 : 'bg-zinc-50 border-zinc-200 text-zinc-500'

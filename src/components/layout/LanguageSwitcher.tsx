@@ -88,7 +88,7 @@ export function LanguageSwitcher({ availableLanguages, variant = 'dropdown', dir
               )}
               {currentLocale === lng && !isPending && (
                  <div className="absolute top-0 right-0 p-0.5">
-                    <div className="w-1 h-1 bg-white rounded" />
+                    <div className="w-1 h-1 bg-white rounded-none" />
                  </div>
               )}
             </button>
@@ -104,7 +104,7 @@ export function LanguageSwitcher({ availableLanguages, variant = 'dropdown', dir
         disabled={isPending}
         aria-label="Change language"
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center space-x-2 p-2 px-3.5 bg-slate-50/80 hover:bg-slate-100 text-brand-ink transition-all text-[11px] font-bold uppercase tracking-widest border border-slate-200/50 rounded-full ${isPending ? 'opacity-50' : ''}`}
+        className={`flex items-center space-x-2 p-2 px-3.5 bg-slate-50/80 hover:bg-slate-100 text-brand-ink transition-all text-[11px] font-bold uppercase tracking-widest border border-slate-200/50 rounded-none ${isPending ? 'opacity-50' : ''}`}
       >
         {isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin text-brand-muted" /> : (
           <>
@@ -137,7 +137,7 @@ export function LanguageSwitcher({ availableLanguages, variant = 'dropdown', dir
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: "spring", damping: 28, stiffness: 250 }}
-              className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl z-[1000] px-6 py-8 lg:hidden shadow-[0_-10px_40px_rgba(0,0,0,0.1)] border-t border-slate-100"
+              className="fixed bottom-0 left-0 right-0 bg-white rounded-none z-[1000] px-6 py-8 lg:hidden shadow-none-[0_-10px_40px_rgba(0,0,0,0.1)] border-t border-slate-100"
             >
               <div className="flex items-center justify-between mb-6 px-2">
                 <h3 className="text-[12px] font-bold uppercase tracking-widest text-brand-ink">
@@ -159,13 +159,13 @@ export function LanguageSwitcher({ availableLanguages, variant = 'dropdown', dir
                       disabled={isPending}
                       aria-label={`Switch to ${getLanguageName(lng)}`}
                       onClick={() => changeLanguage(lng)}
-                      className={`flex items-center justify-between w-full py-4 px-4 rounded-2xl transition-all ${currentLocale === lng ? "bg-slate-50/80" : "bg-transparent hover:bg-slate-50/50"}`}
+                      className={`flex items-center justify-between w-full py-4 px-4 rounded-none transition-all ${currentLocale === lng ? "bg-slate-50/80" : "bg-transparent hover:bg-slate-50/50"}`}
                     >
                       <div className="flex items-center gap-3">
                         <span className={`text-[12px] font-bold uppercase tracking-widest transition-colors ${currentLocale === lng ? 'text-brand-ink' : 'text-brand-muted hover:text-brand-ink'}`}>
                           {getLanguageName(lng)}
                         </span>
-                        <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border ${currentLocale === lng ? 'bg-white border-slate-200 text-brand-ink' : 'border-transparent text-slate-500'}`}>
+                        <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-none border ${currentLocale === lng ? 'bg-white border-slate-200 text-brand-ink' : 'border-transparent text-slate-500'}`}>
                           {lng}
                         </span>
                       </div>
@@ -187,7 +187,7 @@ export function LanguageSwitcher({ availableLanguages, variant = 'dropdown', dir
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: direction === 'up' ? 10 : -10, scale: 0.95 }}
             transition={{ type: "spring", bounce: 0, duration: 0.3 }}
-            className={`absolute ${align === 'right' ? 'right-0' : 'left-0'} ${direction === 'up' ? 'bottom-[calc(100%+8px)]' : 'top-[calc(100%+4px)]'} w-48 bg-white/95 backdrop-blur-xl shadow-[0_20px_40px_-15px_rgba(0,0,0,0.15)] ring-1 ring-black/[0.05] z-[100] py-2 px-1.5 overflow-hidden rounded-2xl`}
+            className={`absolute ${align === 'right' ? 'right-0' : 'left-0'} ${direction === 'up' ? 'bottom-[calc(100%+8px)]' : 'top-[calc(100%+4px)]'} w-48 bg-white/95 backdrop-blur-xl shadow-none-[0_20px_40px_-15px_rgba(0,0,0,0.15)] ring-1 ring-black/[0.05] z-[100] py-2 px-1.5 overflow-hidden rounded-none`}
           >
 
             {availableLanguages.map((lng) => (
@@ -196,13 +196,13 @@ export function LanguageSwitcher({ availableLanguages, variant = 'dropdown', dir
                 disabled={isPending}
                 aria-label={`Switch to ${getLanguageName(lng)}`}
                 onClick={() => changeLanguage(lng)}
-                className={`flex items-center justify-between w-full px-4 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all ${currentLocale === lng ? "text-brand-ink bg-slate-50" : "text-brand-muted hover:text-brand-ink hover:bg-slate-50/50"}`}
+                className={`flex items-center justify-between w-full px-4 py-2.5 rounded-none text-[11px] font-bold uppercase tracking-widest transition-all ${currentLocale === lng ? "text-brand-ink bg-slate-50" : "text-brand-muted hover:text-brand-ink hover:bg-slate-50/50"}`}
               >
                 <div className="flex items-center gap-2.5">
                   <span>{getLanguageName(lng)}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className={`text-[9px] px-1.5 py-0.5 rounded border ${currentLocale === lng ? 'border-slate-200 text-brand-ink bg-white' : 'border-transparent text-slate-300'}`}>
+                  <span className={`text-[9px] px-1.5 py-0.5 rounded-none border ${currentLocale === lng ? 'border-slate-200 text-brand-ink bg-white' : 'border-transparent text-slate-300'}`}>
                     {lng}
                   </span>
                   {isPending && targetLang === lng && <Loader2 className="w-3.5 h-3.5 animate-spin text-brand-muted" />}

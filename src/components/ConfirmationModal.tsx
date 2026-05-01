@@ -36,12 +36,12 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 
   return (
     <div className="fixed inset-0 min-h-screen w-full bg-zinc-900/40 backdrop-blur-sm flex items-center justify-center z-[999] p-4">
-      <div className="bg-white rounded-lg border border-zinc-200 shadow-2xl w-full max-w-sm flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div className="bg-white rounded-none border border-zinc-200 shadow-none w-full max-w-sm flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         <div className="flex justify-between items-center px-6 py-4 border-b border-zinc-100 bg-zinc-50/50">
           <h3 className="text-[15px] font-black text-zinc-900 uppercase tracking-widest leading-none">{title}</h3>
           <button 
             onClick={onClose} 
-            className="text-zinc-500 hover:text-zinc-900 transition-colors p-2 hover:bg-zinc-100 rounded-full"
+            className="text-zinc-500 hover:text-zinc-900 transition-colors p-2 hover:bg-zinc-100 rounded-none"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -56,14 +56,14 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             <button 
               type="button"
               onClick={onClose} 
-              className="flex-1 h-11 text-[11px] font-black uppercase tracking-widest bg-zinc-100 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900 rounded-[4px] transition-all"
+              className="flex-1 h-11 text-[11px] font-black uppercase tracking-widest bg-zinc-100 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900 rounded-none-[4px] transition-all"
             >
               Cancel
             </button>
             <button 
               type="button"
               onClick={() => { onConfirm(); onClose(); }} 
-              className={`flex-1 h-11 text-[11px] font-black uppercase tracking-widest rounded-[4px] transition-all ${getVariantClasses()}`}
+              className={`flex-1 h-11 text-[11px] font-black uppercase tracking-widest rounded-none-[4px] transition-all ${getVariantClasses()}`}
             >
               {confirmLabel}
             </button>

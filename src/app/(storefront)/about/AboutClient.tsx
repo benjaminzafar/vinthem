@@ -57,7 +57,7 @@ export default function AboutClient({ settings, lang }: AboutClientProps) {
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 my-16">
-            <div className="relative aspect-[4/5] rounded overflow-hidden shadow-xl border border-gray-100">
+            <div className="relative aspect-[4/5] rounded-none overflow-hidden shadow-none border border-gray-100">
                <Image 
                 src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?q=80&w=2832&auto=format&fit=crop" 
                 alt={settings.aboutSustainableMaterialsTitleText?.[lang] || 'Sustainable Materials'} 

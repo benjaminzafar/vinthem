@@ -173,7 +173,7 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="lg:hidden fixed top-0 right-0 h-[100dvh] w-full sm:w-[85vw] sm:max-w-sm bg-white border-l border-gray-100 z-[201] flex flex-col shadow-2xl will-change-transform"
+              className="lg:hidden fixed top-0 right-0 h-[100dvh] w-full sm:w-[85vw] sm:max-w-sm bg-white border-l border-gray-100 z-[201] flex flex-col shadow-none will-change-transform"
             >
               <div className="flex items-center justify-between h-16 px-6 border-b border-gray-100">
                 <span className="!text-[12px] !font-bold !uppercase !tracking-widest text-brand-ink">{labels.menu}</span>
@@ -296,7 +296,7 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                           <Link
                             href="/admin"
                             onClick={() => setMobileMenuOpen(false)}
-                            className="p-2.5 text-slate-500 hover:text-brand-ink transition-colors rounded-full hover:bg-slate-50"
+                            className="p-2.5 text-slate-500 hover:text-brand-ink transition-colors rounded-none hover:bg-slate-50"
                             aria-label={labels.adminDashboard}
                           >
                             <Settings className="w-5 h-5" strokeWidth={1.5} />
@@ -305,16 +305,18 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                         <Link
                           href={localizeHref(lang, '/profile')}
                           onClick={() => setMobileMenuOpen(false)}
-                          className="p-2.5 text-slate-500 hover:text-brand-ink transition-colors rounded-full hover:bg-slate-50"
+                          className="p-2.5 text-slate-500 hover:text-brand-ink transition-colors rounded-none hover:bg-slate-50"
                           aria-label={labels.account}
                         >
                           <User className="w-5 h-5" strokeWidth={1.5} />
                         </Link>
                         <button
                           type="button"
-                          onPointerDown={(e) => e.stopPropagation()}
-                          onClick={handleLogout}
-                          className="p-2.5 text-red-400 hover:text-red-600 transition-colors rounded-full hover:bg-red-50"
+                          onPointerDown={(e) => {
+                            e.stopPropagation();
+                            void handleLogout(e);
+                          }}
+                          className="p-2.5 text-red-400 hover:text-red-600 transition-colors rounded-none hover:bg-red-50"
                           aria-label={labels.logout}
                         >
                           <LogOut className="w-5 h-5" strokeWidth={1.5} />
@@ -324,7 +326,7 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                       <Link
                         href={localizeHref(lang, '/auth')}
                         onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center gap-2 p-2.5 text-brand-ink hover:text-brand-muted transition-colors rounded-full hover:bg-slate-50"
+                        className="flex items-center gap-2 p-2.5 text-brand-ink hover:text-brand-muted transition-colors rounded-none hover:bg-slate-50"
                       >
                         <User className="w-5 h-5" strokeWidth={1.5} />
                         <span className="text-[11px] font-bold uppercase tracking-widest">{labels.login}</span>

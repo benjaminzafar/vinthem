@@ -23,14 +23,14 @@ export async function getCRMDataAction(): Promise<{ success: boolean; data?: CRM
     const adminSupabase = createAdminClient();
     
     const [usersRes, authUsersRes, ticketsRes, refundsRes, ordersRes, reviewsRes, subsRes, campsRes] = await Promise.all([
-      adminSupabase.from('users').select('*').order('created_at', { ascending: false }),
+      adminSupabase.from('users').select('id, email, full_name, role, created_at, accepted_terms_at').order('created_at', { ascending: false }),
       adminSupabase.auth.admin.listUsers({ perPage: 1000 }), // Deep discovery from Auth layer
-      adminSupabase.from('support_tickets').select('*').order('created_at', { ascending: false }),
-      adminSupabase.from('refund_requests').select('*').order('created_at', { ascending: false }),
-      adminSupabase.from('orders').select('*').order('created_at', { ascending: false }),
-      adminSupabase.from('reviews').select('*').order('created_at', { ascending: false }),
-      adminSupabase.from('newsletter_subscribers').select('*').order('subscribed_at', { ascending: false }),
-      adminSupabase.from('newsletter_campaigns').select('*').order('sent_at', { ascending: false }),
+      adminSupabase.from('support_tickets').select('id, subject, message, status, created_at, user_id, customer_email, priority').order('created_at', { ascending: false }),
+      adminSupabase.from('refund_requests').select('id, order_id, reason, status, created_at, user_id').order('created_at', { ascending: false }),
+      adminSupabase.from('orders').select('id, order_id, total, status, created_at, customer_email, user_id, items').order('created_at', { ascending: false }),
+      adminSupabase.from('reviews').select('id, product_id, user_id, rating, comment, created_at').order('created_at', { ascending: false }),
+      adminSupabase.from('newsletter_subscribers').select('id, email, subscribed_at, source').order('subscribed_at', { ascending: false }),
+      adminSupabase.from('newsletter_campaigns').select('id, subject, sent_at, status, content, recipient_count').order('sent_at', { ascending: false }),
     ]);
 
     // 3. Intelligent Identity Merging
