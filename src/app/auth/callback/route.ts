@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient, createAdminClient } from '@/utils/supabase/server';
 import { ensureUserProfile } from '@/lib/admin';
+import { logger } from '@/lib/logger';
 
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
@@ -32,7 +33,7 @@ export async function GET(request: NextRequest) {
           return NextResponse.redirect(`${origin}/auth/consent?next=${next}`);
         }
       } catch (profileError) {
-        console.error('[Auth Callback] Profile sync skipped:', profileError);
+        logger.error('[Auth Callback] Profile sync skipped:', profileError);
       }
 
       return NextResponse.redirect(`${origin}${next}`);

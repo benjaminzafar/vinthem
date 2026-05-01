@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { getEnv } from '@/lib/env';
+import { logger } from '@/lib/logger';
 
 export async function createClient() {
   const url = getEnv('SUPABASE_URL');

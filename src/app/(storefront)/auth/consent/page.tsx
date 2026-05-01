@@ -2,9 +2,9 @@ import Image from 'next/image';
 import { getSettings } from '@/lib/data';
 import { ConsentForm } from '@/components/auth/ConsentForm';
 
-export default async function ConsentPage({ params }: { params: { lang: string } }) {
+export default async function ConsentPage({ params }: { params: Promise<{ lang: string }> }) {
   const settings = await getSettings();
-  const lang = params.lang || 'en';
+  const { lang = 'en' } = await params;
 
   return (
     <div className="relative min-h-screen flex items-center justify-center p-6 bg-white overflow-hidden">

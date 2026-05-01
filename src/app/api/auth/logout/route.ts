@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@/lib/logger';
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,7 +15,7 @@ export async function POST(request: NextRequest) {
     // because createClient uses the Next.js cookies() API.
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('[Logout API Error]:', error);
+    logger.error('[Logout API Error]:', error);
     return NextResponse.json({ success: false, error: 'Failed to sign out' }, { status: 500 });
   }
 }

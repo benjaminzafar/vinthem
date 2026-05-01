@@ -1,3 +1,5 @@
+import { logger } from "./logger";
+
 export function extractFirstJsonObject(input: string): string | null {
   const start = input.indexOf('{');
   if (start === -1) {
@@ -76,7 +78,7 @@ export function safeParseAiResponse<T = any>(input: string, fallback: T): T {
   try {
     return JSON.parse(jsonStr) as T;
   } catch (err) {
-    console.error('[JSON] Parsing failed for AI response:', err);
+    logger.error('[JSON] Parsing failed for AI response:', err);
     return fallback;
   }
 }

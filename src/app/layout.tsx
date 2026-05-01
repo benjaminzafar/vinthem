@@ -166,6 +166,5 @@ export default async function RootLayout({
         </AuthProvider>
       </body>
     </html>
-
   );
 }

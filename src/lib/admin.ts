@@ -1,5 +1,6 @@
 import type { User } from '@supabase/supabase-js';
 import { createAdminClient, createClient } from '@/utils/supabase/server';
+import { logger } from '@/lib/logger';
 
 type SessionClient = Awaited<ReturnType<typeof createClient>>;
 type AdminClient = ReturnType<typeof createAdminClient>;
@@ -169,6 +170,6 @@ export async function ensureUserProfile(user: User, name?: string | null, lang?:
         SOURCE: 'account_auth_system',
         LANG: lang ?? 'en'
       }))
-      .catch((error) => console.error('[Brevo Sync Error] ensureUserProfile:', error));
+      .catch((error) => logger.error('[Brevo Sync Error] ensureUserProfile:', error));
   }
 }

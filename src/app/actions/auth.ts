@@ -106,7 +106,7 @@ export async function recordSignupConsentAction({
       .eq('id', user.id);
 
     if (dbError) {
-      console.error('[recordSignupConsentAction] DB Error:', dbError);
+      logger.error('[recordSignupConsentAction] DB Error:', dbError);
       return { success: false, error: `Database error: ${dbError.message}`, message: 'Database failure' };
     }
 
@@ -117,13 +117,13 @@ export async function recordSignupConsentAction({
         source: 'account_signup',
         marketingConsent: true,
         userId: user.id,
-      }).catch(e => console.error('[Brevo Background Sync Error]:', e));
+      }).catch(e => logger.error('[Brevo Background Sync Error]:', e));
     }
 
     revalidatePath('/', 'layout');
     return { success: true, message: 'Signup consent preferences saved.' };
   } catch (err: any) {
-    console.error('[recordSignupConsentAction] General Error:', err);
+    logger.error('[recordSignupConsentAction] General Error:', err);
     return { success: false, error: err.message || 'Failed to save signup consent.', message: err.message || 'Unexpected error' };
   }
 }
