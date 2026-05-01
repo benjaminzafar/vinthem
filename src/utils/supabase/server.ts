@@ -10,7 +10,7 @@ export async function createClient() {
 
   if (!url || !key) {
     if (process.env.NODE_ENV === 'production') {
-      console.error('Supabase client failed: SUPABASE_URL or PUBLISHABLE_KEY is missing.');
+      logger.error('Supabase client failed: SUPABASE_URL or PUBLISHABLE_KEY is missing.');
     }
     return createServerClient('https://missing.supabase.co', 'missing', { 
       cookies: { getAll() { return [] }, setAll() {} } 

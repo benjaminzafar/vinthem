@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { User, Settings, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { logger } from '@/lib/logger';
 import { createClient } from '@/utils/supabase/client';
 import { UserAvatar } from '../ui/UserAvatar';
 import { getClientLocale } from '@/lib/locale';
@@ -48,7 +49,7 @@ export function AccountDropdown({ user, isAdmin, locale, labels }: AccountDropdo
         redirectTo: localizeHref(getClientLocale(window.location.pathname) || locale, '/'),
       });
     } catch (error) {
-      console.error('Logout error:', error);
+      logger.error('Logout error:', error);
       window.location.assign(localizeHref(getClientLocale(window.location.pathname) || locale, '/'));
     }
   };

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { logger } from '@/lib/logger';
 import { Search, X, ArrowRight, TrendingUp, Sparkles, Zap, Package, ShoppingBag, CheckCircle2, ChevronRight, SlidersHorizontal } from 'lucide-react';
 import { getOptimizedImageUrl } from '@/utils/image-utils';
 import { FaInstagram, FaFacebook, FaTwitter, FaTiktok } from 'react-icons/fa';
@@ -64,7 +65,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
         })));
       }
     } catch (error) {
-      console.error('Error fetching search data:', error);
+      logger.error('Error fetching search data:', error);
     }
   };
 
