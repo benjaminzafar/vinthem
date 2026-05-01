@@ -21,6 +21,10 @@ export async function GET() {
       truncated: probe.truncated,
       objectCountProbe: probe.objects.length,
       hasCursor: Boolean(probe.cursor),
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+      },
     });
   } catch (error: unknown) {
     return NextResponse.json({

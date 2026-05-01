@@ -344,7 +344,7 @@ export function ProductManager({
           {
             label: 'Export Catalog',
             icon: Download,
-            onClick: () => downloadXLSX(products, 'products'),
+            onClick: () => { void downloadXLSX(products, 'products'); },
           },
         ]}
         statsLabel={`${products.length} products${refreshing ? ' • syncing' : ''}`}

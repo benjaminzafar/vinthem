@@ -1,11 +1,25 @@
-import * as XLSX from 'xlsx';
 import Papa from 'papaparse';
 
-export const downloadXLSX = <T>(data: T[], fileName: string) => {
-  const worksheet = XLSX.utils.json_to_sheet(data);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
-  XLSX.writeFile(workbook, `${fileName}.xlsx`);
+export const downloadXLSX = async <T extends Record<string, any>>(data: T[], fileName: string) => {
+  const ExcelJS = (await import('exceljs')).default;
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet('Sheet1');
+
+  if (data.length > 0) {
+    const headers = Object.keys(data[0]);
+    worksheet.columns = headers.map(header => ({ header, key: header }));
+    worksheet.addRows(data);
+  }
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', `${fileName}.xlsx`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 };
 
 export const downloadCSV = <T>(data: T[], fileName: string) => {

@@ -14,14 +14,14 @@ import {
   ShoppingCart,
   TrendingDown,
 } from 'lucide-react';
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
+import dynamic from 'next/dynamic';
+
+const AreaChart = dynamic(() => import('recharts').then((mod) => mod.AreaChart), { ssr: false });
+const Area = dynamic(() => import('recharts').then((mod) => mod.Area), { ssr: false });
+const CartesianGrid = dynamic(() => import('recharts').then((mod) => mod.CartesianGrid), { ssr: false });
+const XAxis = dynamic(() => import('recharts').then((mod) => mod.XAxis), { ssr: false });
+const YAxis = dynamic(() => import('recharts').then((mod) => mod.YAxis), { ssr: false });
+const Tooltip = dynamic(() => import('recharts').then((mod) => mod.Tooltip), { ssr: false });
 import { Product } from '@/store/useCartStore';
 import { downloadXLSX } from '@/utils/export';
 import { StableChartContainer } from '@/components/admin/charts/StableChartContainer';
@@ -454,7 +454,7 @@ export function Overview({ initialStats, onProductClick, onSeedClick }: Overview
 
   const secondaryActions = [
     ...(onSeedClick ? [{ label: 'Seed Test Data', icon: Database, onClick: onSeedClick }] : []),
-    { label: 'Export Report', icon: Download, onClick: () => downloadXLSX(filteredOrders, 'store_report') },
+    { label: 'Export Report', icon: Download, onClick: () => void downloadXLSX(filteredOrders, 'store_report') },
   ];
 
   return (
