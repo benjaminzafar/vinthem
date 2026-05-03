@@ -152,7 +152,7 @@ export default async function Navigation() {
                 ) : (
                   <Link
                     href={localizeHref(lang, '/auth')}
-                    className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all rounded-full flex items-center justify-center"
+                    className="px-2 py-2 text-slate-600 hover:text-brand-ink transition-colors flex items-center justify-center"
                     aria-label={settings?.loginText?.[lang] || 'Login'}
                   >
                      <UserIcon className="w-5 h-5" strokeWidth={1.5} />
