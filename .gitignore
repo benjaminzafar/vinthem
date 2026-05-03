@@ -50,6 +50,13 @@ firebase-debug.log
 # Agent & Debug
 .agents/
 .gemini/
-scratch/
 .antigravity/
-.CHECK_MEMORY.md
+.claude/
+.trae/
+skills/
+scratch/
+*.bak
+*.tmp
+*.log
+.DS_Store
+Thumbs.db
