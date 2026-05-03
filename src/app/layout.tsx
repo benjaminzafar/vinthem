@@ -134,9 +134,8 @@ export default async function RootLayout({
             }}
           />
         )}
-        <Script
+        <script
           id="supabase-browser-config"
-          strategy="beforeInteractive"
           nonce={nonce}
           dangerouslySetInnerHTML={{
             __html: `
@@ -145,6 +144,7 @@ export default async function RootLayout({
             `,
           }}
         />
+
         <script
           type="application/ld+json"
           nonce={nonce}

@@ -24,32 +24,73 @@ export function ResetPasswordClient({ initialSettings }: ResetPasswordClientProp
 
   const [checking, setChecking] = useState(true);
 
+  const [showRetry, setShowRetry] = useState(false);
+
   // Security check on mount
   useEffect(() => {
     let retryCount = 0;
-    const MAX_RETRIES = 3;
+    const MAX_RETRIES = 5;
+    let mounted = true;
+
+    // Show retry button after 5 seconds if still loading
+    const timer = setTimeout(() => {
+      if (mounted) setShowRetry(true);
+    }, 5000);
 
     const checkSession = async () => {
-      const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
+      if (!mounted) return;
       
-      if (!session && retryCount < MAX_RETRIES) {
-        retryCount++;
-        // Wait 400ms before retrying
-        setTimeout(checkSession, 400);
-        return;
-      }
+      try {
+        const supabase = createClient();
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (session) {
+          setChecking(false);
+          clearTimeout(timer);
+          return;
+        }
 
-      if (!session) {
-        toast.error('Session expired. Redirecting to login...');
+        if (retryCount < MAX_RETRIES) {
+          retryCount++;
+          setTimeout(checkSession, 800);
+          return;
+        }
+
+        // Final failure
+        toast.error('Session check timed out. Redirecting to login...');
         window.location.href = `/${lang}/auth`;
-      } else {
-        setChecking(false);
+      } catch (err) {
+        if (retryCount < MAX_RETRIES) {
+          retryCount++;
+          setTimeout(checkSession, 800);
+        } else {
+          window.location.href = `/${lang}/auth`;
+        }
       }
     };
     
     checkSession();
+    return () => { 
+      mounted = false; 
+      clearTimeout(timer);
+    };
   }, [lang]);
+
+  if (checking) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white p-6">
+        <Loader2 className="w-8 h-8 animate-spin text-zinc-900 mb-4" />
+        {showRetry && (
+          <button 
+            onClick={() => window.location.reload()}
+            className="text-xs font-black uppercase tracking-widest text-zinc-500 hover:text-zinc-900 underline underline-offset-4"
+          >
+            Wait took too long? Tap to Refresh
+          </button>
+        )}
+      </div>
+    );
+  }
 
 
   const handleResetPassword = async (e: React.FormEvent) => {
