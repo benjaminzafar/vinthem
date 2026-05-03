@@ -107,6 +107,7 @@ export interface AdminOrder {
   tax_amount?: number;
   status: 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
   shipping_details?: ShippingDetails;
+  customer_details?: any; // JSON column with address
   created_at: string;
   createdAt?: string; // mapped for UI
   customerEmail?: string | null; // mapped for UI

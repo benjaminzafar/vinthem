@@ -1,7 +1,6 @@
+import { requireAdminUser } from '@/lib/admin';
 import { createAdminClient } from '@/utils/supabase/server';
 import { notFound } from 'next/navigation';
-import Image from 'next/image';
-import { Package } from 'lucide-react';
 
 interface LabelPageProps {
   params: Promise<{ id: string }>;
@@ -9,17 +8,29 @@ interface LabelPageProps {
 
 export default async function OrderLabelPage({ params }: LabelPageProps) {
   const { id } = await params;
+  
+  // Security: Check admin access
+  try {
+    await requireAdminUser();
+  } catch (error) {
+    notFound(); // Hide admin routes if not authenticated
+  }
+
   const supabase = createAdminClient();
 
   const { data: order, error } = await supabase
     .from('orders')
     .select('*')
     .eq('id', id)
-    .single();
+    .maybeSingle();
 
   if (error || !order) {
     notFound();
   }
+
+  // Use customer_details (the real column) or fallback to shipping_details (if legacy)
+  const shipping = order.customer_details || order.shipping_details || {};
+  const address = shipping.address || {};
 
   // Generate a mock barcode or use order ID
   const barcodeValue = order.order_id || order.id.slice(0, 12).toUpperCase();
@@ -44,11 +55,11 @@ export default async function OrderLabelPage({ params }: LabelPageProps) {
         <div className="mt-6 flex-1">
           <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">Deliver To:</p>
           <div className="text-lg font-black uppercase leading-tight">
-            <p>{order.shipping_details?.name || 'Customer'}</p>
-            <p>{order.shipping_details?.address?.line1}</p>
-            {order.shipping_details?.address?.line2 && <p>{order.shipping_details.address.line2}</p>}
-            <p>{order.shipping_details?.address?.postal_code} {order.shipping_details?.address?.city}</p>
-            <p>{order.shipping_details?.address?.country}</p>
+            <p>{shipping.name || 'Customer'}</p>
+            <p>{address.line1}</p>
+            {address.line2 && <p>{address.line2}</p>}
+            <p>{address.postal_code} {address.city}</p>
+            <p>{address.country}</p>
           </div>
           
           <div className="mt-8 pt-4 border-t-2 border-black border-dotted">

@@ -43,6 +43,18 @@ export async function POST(req: NextRequest) {
           .update({
             status: session.payment_status === 'paid' ? 'Processing' : 'Pending',
             customer_email: session.customer_details?.email ?? null,
+            customer_details: {
+              name: (session as any).shipping_details?.name || session.customer_details?.name || 'Customer',
+              email: session.customer_details?.email ?? null,
+              address: {
+                line1: (session as any).shipping_details?.address?.line1 ?? null,
+                line2: (session as any).shipping_details?.address?.line2 ?? null,
+                city: (session as any).shipping_details?.address?.city ?? null,
+                state: (session as any).shipping_details?.address?.state ?? null,
+                postal_code: (session as any).shipping_details?.address?.postal_code ?? null,
+                country: (session as any).shipping_details?.address?.country ?? null,
+              }
+            },
             payment_intent_id: typeof session.payment_intent === 'string' ? session.payment_intent : null,
             total: typeof session.amount_total === 'number' ? session.amount_total / 100 : null,
           })
