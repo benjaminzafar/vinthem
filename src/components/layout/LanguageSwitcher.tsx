@@ -104,7 +104,7 @@ export function LanguageSwitcher({ availableLanguages, variant = 'dropdown', dir
         disabled={isPending}
         aria-label="Change language"
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center space-x-2 p-2 px-3.5 bg-slate-50/80 hover:bg-slate-100 text-brand-ink transition-all text-[11px] font-bold uppercase tracking-widest border border-slate-200/50 rounded-none ${isPending ? 'opacity-50' : ''}`}
+        className={`flex items-center space-x-2 p-2 px-3.5 bg-slate-50/80 hover:bg-slate-100 text-brand-ink transition-all text-[11px] font-bold uppercase tracking-widest border border-slate-200/50 rounded-full ${isPending ? 'opacity-50' : ''}`}
       >
         {isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin text-brand-muted" /> : (
           <>

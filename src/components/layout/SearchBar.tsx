@@ -197,7 +197,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
     <div className="relative">
       <button 
         onClick={handleToggle}
-        className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-none"
+        className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-full"
         aria-label="Search"
       >
         <Search className="w-5 h-5" strokeWidth={1.5} />
