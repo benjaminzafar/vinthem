@@ -114,14 +114,14 @@ export default async function Footer({ settings }: FooterProps) {
           </div>
         </div>
         
-        <div className="pt-8 border-t border-gray-100 flex flex-wrap items-center justify-between gap-x-8 gap-y-4 text-[13px] text-zinc-500">
-          <div className="flex items-center gap-8">
+        <div className="pt-8 border-t border-gray-100 flex flex-col md:flex-row items-center justify-between gap-6 text-[13px] text-zinc-500">
+          <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-8 gap-y-2">
             <CookiePreferencesButton label={settings.cookiePreferencesButtonText?.[lang] || 'Cookie Preferences'} />
             <Link href={localizeHref(lang, '/unsubscribe')} className="hover:text-brand-ink transition-colors">
               {settings.unsubscribeLinkText?.[lang] || 'Unsubscribe'}
             </Link>
           </div>
-          <p>
+          <p className="text-center md:text-right order-first md:order-last">
             &copy; {new Date().getFullYear()} {settings.storeName?.[lang] || settings.storeName?.en}. {settings.footerCopyright?.[lang] || settings.footerCopyright?.en}
           </p>
         </div>
