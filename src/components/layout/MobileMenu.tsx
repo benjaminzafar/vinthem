@@ -153,9 +153,8 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isMobileMenuOpen, setMobileMenuOpen]);
 
-  const handleLogout = async (e: React.MouseEvent | React.PointerEvent) => {
+  const handleLogout = async (e: React.MouseEvent) => {
     e.preventDefault();
-    e.stopPropagation();
     
     try {
       await performClientLogout({
@@ -370,8 +369,7 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                         </Link>
                         <button
                           type="button"
-                          onPointerDown={(e) => {
-                            e.stopPropagation();
+                          onClick={(e) => {
                             void handleLogout(e);
                           }}
                           className="p-2.5 text-red-400 hover:text-red-600 transition-colors rounded-none hover:bg-red-50"
