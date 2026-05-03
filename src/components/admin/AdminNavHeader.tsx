@@ -16,7 +16,7 @@ export default function AdminNavHeader({ onToggle }: { onToggle: () => void }) {
         <div className="flex items-center">
           <button 
             onClick={onToggle}
-            className="p-2 -ml-2 mr-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all rounded-none lg:hidden"
+            className="p-2 -ml-2 mr-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all rounded-full lg:hidden"
             aria-label="Toggle Menu"
           >
             <Menu className="w-5 h-5" />
@@ -36,7 +36,7 @@ export default function AdminNavHeader({ onToggle }: { onToggle: () => void }) {
               <input 
                 type="text" 
                 placeholder="Search..." 
-                className="pl-10 pr-4 h-9 bg-slate-50 border border-slate-300 rounded-none text-[13px] focus:outline-none focus:border-slate-900 transition-all w-36 lg:w-64 placeholder:text-slate-500 text-slate-900"
+                className="pl-10 pr-4 h-9 bg-slate-50 border border-slate-300 rounded-full text-[13px] focus:outline-none focus:border-slate-900 transition-all w-36 lg:w-64 placeholder:text-slate-500 text-slate-900"
               />
             </div>
           )}

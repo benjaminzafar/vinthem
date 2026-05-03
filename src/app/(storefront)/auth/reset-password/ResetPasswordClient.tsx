@@ -143,7 +143,7 @@ export function ResetPasswordClient({ initialSettings }: ResetPasswordClientProp
         <div className="absolute inset-0 z-0">
           <Image 
             src={settings.authBackgroundImage} 
-            alt="Premium Scandinavian Design Restoration" 
+            alt="Vinthem Quality Essentials" 
             fill 
             className="object-cover opacity-100" 
             priority 

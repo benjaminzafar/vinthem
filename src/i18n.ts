@@ -5,7 +5,7 @@ import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from './lib/locales';
 const resources = {
   en: {
     translation: {
-      "welcome": "Welcome to Nordic Webshop",
+      "welcome": "Welcome to Vinthem",
       "shop": "Shop",
       "admin": "Admin Dashboard",
       "cart": "Cart",
@@ -15,13 +15,13 @@ const resources = {
       "generate_ai": "Generate with AI",
       "login": "Login",
       "logout": "Logout",
-      "nordic_only": "Delivery only available for Nordic countries.",
+      "nordic_only": "Delivery available to supported regions.",
       "language": "Language"
     }
   },
   sv: {
     translation: {
-      "welcome": "Välkommen till Nordic Webshop",
+      "welcome": "Välkommen till Vinthem",
       "shop": "Butik",
       "admin": "Adminpanel",
       "cart": "Kundvagn",
@@ -31,13 +31,13 @@ const resources = {
       "generate_ai": "Generera med AI",
       "login": "Logga in",
       "logout": "Logga ut",
-      "nordic_only": "Leverans endast tillgänglig för nordiska länder.",
+      "nordic_only": "Leverans tillgänglig till regioner som stöds.",
       "language": "Språk"
     }
   },
   fi: {
     translation: {
-      "welcome": "Tervetuloa Nordic Webshopiin",
+      "welcome": "Tervetuloa Vinthemiin",
       "shop": "Kauppa",
       "admin": "Hallintapaneeli",
       "cart": "Ostoskori",
@@ -47,13 +47,13 @@ const resources = {
       "generate_ai": "Luo tekoälyllä",
       "login": "Kirjaudu sisään",
       "logout": "Kirjaudu ulos",
-      "nordic_only": "Toimitus vain Pohjoismaihin.",
+      "nordic_only": "Toimitus saatavilla tuettuihin alueisiin.",
       "language": "Kieli"
     }
   },
   da: {
     translation: {
-      "welcome": "Velkommen til Nordic Webshop",
+      "welcome": "Velkommen til Vinthem",
       "shop": "Butik",
       "admin": "Admin Dashboard",
       "cart": "Indkøbskurv",
@@ -63,7 +63,7 @@ const resources = {
       "generate_ai": "Generer med AI",
       "login": "Log ind",
       "logout": "Log ud",
-      "nordic_only": "Levering kun tilgänglich for nordiske lande.",
+      "nordic_only": "Levering tilgængelig til understøttede regioner.",
       "language": "Sprog"
     }
   }

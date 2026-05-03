@@ -58,7 +58,7 @@ export function AccountDropdown({ user, isAdmin, locale, labels }: AccountDropdo
     <div className="relative h-full flex items-center" ref={dropdownRef}>
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center p-1 rounded-none hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100"
+        className="flex items-center p-1 rounded-full hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100"
         aria-label="Toggle user menu"
       >
         <UserAvatar 

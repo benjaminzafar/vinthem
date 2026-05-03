@@ -29,6 +29,7 @@ const CATEGORIES = [
   { id: 'branding', name: 'Identity & Brand', icon: Sparkles, color: 'text-zinc-900', bg: 'bg-zinc-50' },
   { id: 'navigation', name: 'Layout & Links', icon: Layout, color: 'text-zinc-900', bg: 'bg-zinc-50' },
   { id: 'homepage', name: 'Live Display', icon: ImageIcon, color: 'text-zinc-900', bg: 'bg-zinc-50' },
+  { id: 'company', name: 'Company & Content', icon: Users, color: 'text-zinc-900', bg: 'bg-zinc-50' },
   { id: 'labels', name: 'System Labels', icon: AlignLeft, color: 'text-zinc-900', bg: 'bg-zinc-50' },
   { id: 'multilang', name: 'Globalization', icon: Languages, color: 'text-zinc-900', bg: 'bg-zinc-50' },
 ];
@@ -297,7 +298,7 @@ Text to translate: "${sourceText}"`;
     setGeneratingId(actionId);
     const toastId = toast.loading(`Generating ${label}...`);
     try {
-      const prompt = `Generate a creative and professional ${label} for a premium minimalist e-commerce store named "${settings.storeName?.en || 'Nordic'}". Return ONLY the text content, no quotes or formatting.`;
+      const prompt = `Generate a creative and professional ${label} for a premium minimalist e-commerce store named "${settings.storeName?.en || 'Vinthem'}". Return ONLY the text content, no quotes or formatting.`;
       const model = genAI.getGenerativeModel({ promptProfile: 'storefront' });
       const aiResponse = await model.generateContent(prompt);
       const text = aiResponse.response.text()?.trim() || '';
@@ -581,8 +582,8 @@ Text to translate: "${sourceText}"`;
 
                 <SettingCard id="Social" title="Social Connectivity" icon={LinkIcon}>
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <CredentialInput label="Instagram Handle" value={settings.socialInstagram} onChange={v => handleUpdate('socialInstagram', v)} placeholder="@nordic" />
-                      <CredentialInput label="TikTok Profile" value={settings.socialTikTok} onChange={v => handleUpdate('socialTikTok', v)} placeholder="@nordic_shop" />
+                      <CredentialInput label="Instagram Handle" value={settings.socialInstagram} onChange={v => handleUpdate('socialInstagram', v)} placeholder="@vinthem" />
+                      <CredentialInput label="TikTok Profile" value={settings.socialTikTok} onChange={v => handleUpdate('socialTikTok', v)} placeholder="@vinthem_shop" />
                       <CredentialInput label="Facebook Page" value={settings.socialFacebook} onChange={v => handleUpdate('socialFacebook', v)} />
                       <CredentialInput label="Twitter / X" value={settings.socialTwitter} onChange={v => handleUpdate('socialTwitter', v)} />
                    </div>
@@ -929,6 +930,49 @@ Text to translate: "${sourceText}"`;
                       />
                     </div>
                    </div>
+                </SettingCard>
+              </div>
+            </motion.div>
+          )}
+
+          {activeCategory === 'company' && (
+            <motion.div key="company" initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }}>
+              <div className="grid grid-cols-1 gap-4">
+                <SettingCard id="AboutHero" title="About Us Page: Hero" icon={Sparkles}>
+                  <div className="space-y-6">
+                    <LocalizedSettingInput label="Hero Title" value={settings.aboutHeroTitleText} onChange={v => handleUpdate('aboutHeroTitleText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('aboutHeroTitleText', 'About Hero Title')} />
+                    <LocalizedSettingInput label="Hero Subtitle" value={settings.aboutHeroSubtitleText} onChange={v => handleUpdate('aboutHeroSubtitleText', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('aboutHeroSubtitleText', 'About Hero Subtitle')} />
+                  </div>
+                </SettingCard>
+
+                <SettingCard id="AboutPhilosophy" title="Brand Philosophy & History" icon={Users}>
+                  <div className="space-y-6">
+                    <LocalizedSettingInput label="Philosophy Title" value={settings.aboutPhilosophyTitleText} onChange={v => handleUpdate('aboutPhilosophyTitleText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('aboutPhilosophyTitleText', 'Philosophy Title')} />
+                    <LocalizedSettingInput label="Description Paragraph 1" value={settings.aboutPhilosophyDescription1Text} onChange={v => handleUpdate('aboutPhilosophyDescription1Text', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('aboutPhilosophyDescription1Text', 'Philosophy Description 1')} />
+                    <LocalizedSettingInput label="Description Paragraph 2" value={settings.aboutPhilosophyDescription2Text} onChange={v => handleUpdate('aboutPhilosophyDescription2Text', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('aboutPhilosophyDescription2Text', 'Philosophy Description 2')} />
+                  </div>
+                </SettingCard>
+
+                <SettingCard id="AboutOperations" title="Operations & Sustainability" icon={Package}>
+                  <div className="space-y-6">
+                    <LocalizedSettingInput label="Operations Title" value={settings.aboutSustainableMaterialsTitleText} onChange={v => handleUpdate('aboutSustainableMaterialsTitleText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('aboutSustainableMaterialsTitleText', 'Operations Title')} />
+                    <LocalizedSettingInput label="Operations Description" value={settings.aboutSustainableMaterialsDescriptionText} onChange={v => handleUpdate('aboutSustainableMaterialsDescriptionText', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('aboutSustainableMaterialsDescriptionText', 'Operations Description')} />
+                  </div>
+                </SettingCard>
+
+                <SettingCard id="AboutContact" title="Contact Information" icon={Mail}>
+                  <div className="space-y-6">
+                    <LocalizedSettingInput label="Contact Title" value={settings.aboutContactUsTitleText} onChange={v => handleUpdate('aboutContactUsTitleText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('aboutContactUsTitleText', 'Contact Title')} />
+                    <LocalizedSettingInput label="Contact Description" value={settings.aboutContactUsDescriptionText} onChange={v => handleUpdate('aboutContactUsDescriptionText', v)} languages={settings.languages} type="textarea" onAITranslate={() => handleAITranslate('aboutContactUsDescriptionText', 'Contact Description')} />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-zinc-100">
+                      <LocalizedSettingInput label="Email Label" value={settings.aboutEmailLabelText} onChange={v => handleUpdate('aboutEmailLabelText', v)} languages={settings.languages} />
+                      <LocalizedSettingInput label="Email Address" value={settings.aboutEmailValueText} onChange={v => handleUpdate('aboutEmailValueText', v)} languages={settings.languages} />
+                      <LocalizedSettingInput label="Phone Label" value={settings.aboutPhoneLabelText} onChange={v => handleUpdate('aboutPhoneLabelText', v)} languages={settings.languages} />
+                      <LocalizedSettingInput label="Phone Number" value={settings.aboutPhoneValueText} onChange={v => handleUpdate('aboutPhoneValueText', v)} languages={settings.languages} />
+                      <LocalizedSettingInput label="Address Label" value={settings.aboutAddressLabelText} onChange={v => handleUpdate('aboutAddressLabelText', v)} languages={settings.languages} />
+                      <LocalizedSettingInput label="Address Details" value={settings.aboutAddressValueText} onChange={v => handleUpdate('aboutAddressValueText', v)} languages={settings.languages} />
+                    </div>
+                  </div>
                 </SettingCard>
               </div>
             </motion.div>

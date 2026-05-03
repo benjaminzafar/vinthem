@@ -34,7 +34,7 @@ export function FutureSections({ lang, settings }: FutureSectionsProps) {
               <p className="text-white/90 font-medium text-sm tracking-widest uppercase mb-2">{settings.futureProduct1Date?.[lang]}</p>
               <h3 className="text-white text-[18px] sm:text-[24px] font-bold tracking-tight">{settings.futureProduct1Title?.[lang]}</h3>
             </div>
-            <div className="absolute bottom-8 right-8 bg-white/20 backdrop-blur-md border border-white/30 p-4 rounded-none transition-transform duration-500 group-hover:scale-110 hover:bg-white/30">
+            <div className="absolute bottom-8 right-8 bg-white/20 backdrop-blur-md border border-white/30 p-4 rounded-full transition-transform duration-500 group-hover:scale-110 hover:bg-white/30 flex items-center justify-center">
               <ArrowRight className="w-6 h-6 text-white" />
             </div>
           </Link>
@@ -53,7 +53,7 @@ export function FutureSections({ lang, settings }: FutureSectionsProps) {
               <p className="text-white/90 font-medium text-sm tracking-widest uppercase mb-2">{settings.futureProduct2Date?.[lang]}</p>
               <h3 className="text-white text-[18px] sm:text-[24px] font-bold tracking-tight">{settings.futureProduct2Title?.[lang]}</h3>
             </div>
-            <div className="absolute bottom-8 right-8 bg-white/20 backdrop-blur-md border border-white/30 p-4 rounded-none transition-transform duration-500 group-hover:scale-110 hover:bg-white/30">
+            <div className="absolute bottom-8 right-8 bg-white/20 backdrop-blur-md border border-white/30 p-4 rounded-full transition-transform duration-500 group-hover:scale-110 hover:bg-white/30 flex items-center justify-center">
               <ArrowRight className="w-6 h-6 text-white" />
             </div>
           </Link>

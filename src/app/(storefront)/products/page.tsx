@@ -5,6 +5,7 @@ import { Product } from '@/store/useCartStore';
 import { Category } from '@/types';
 import { getSettings } from '@/lib/data';
 import type { StorefrontSettings } from '@/store/useSettingsStore';
+import { Loader2 } from 'lucide-react';
 
 const PUBLIC_PRODUCT_STATUS_FILTER = 'status.eq.published,status.eq.active,status.is.null';
 
@@ -38,7 +39,7 @@ export async function generateMetadata({ searchParams }: ProductsPageProps) {
 
   return {
     title,
-    description: `Explore our ${category !== 'All' ? category.toLowerCase() : 'full'} collection of premium Scandinavian interior decor and furniture.`,
+    description: `Explore our ${category !== 'All' ? category.toLowerCase() : 'full'} collection of quality everyday essentials and useful products from Vinthem.`,
   };
 }
 
@@ -108,7 +109,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   return (
     <React.Suspense fallback={
       <div className="min-h-screen flex items-center justify-center bg-[#fcfcfc]">
-        <div className="animate-spin rounded-none h-12 w-12 border-b-2 border-brand-ink"></div>
+        <Loader2 className="animate-spin h-10 w-10 text-brand-ink" />
       </div>
     }>
       <ProductsClient 

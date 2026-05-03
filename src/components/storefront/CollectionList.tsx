@@ -62,7 +62,7 @@ export function CollectionList({ categories, lang, labels }: CollectionListProps
                     )}
                     
                     {/* Simplified Action Indicator - Solid BG, no blur */}
-                    <div className="absolute bottom-4 right-4 bg-slate-900 w-10 h-10 rounded-none flex items-center justify-center opacity-100 md:opacity-0 group-hover:opacity-100 transition-all duration-300 z-20">
+                    <div className="absolute bottom-4 right-4 bg-slate-900 w-10 h-10 rounded-full flex items-center justify-center opacity-100 md:opacity-0 group-hover:opacity-100 transition-all duration-300 z-20">
                       <ArrowRight className="w-4 h-4 text-white" />
                     </div>
                   </div>

@@ -2,6 +2,7 @@
 
 import React, { ReactNode, useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { Loader2 } from 'lucide-react';
 
 const CHART_HEIGHTS = {
   compact: 220,
@@ -101,7 +102,7 @@ export function StableChartContainer({
         </div>
       ) : (
         <div className="absolute inset-0 flex items-center justify-center bg-slate-50/50 animate-pulse rounded-none">
-           <div className="w-8 h-8 rounded-none border-2 border-slate-200 border-t-slate-900 animate-spin" />
+           <Loader2 className="w-8 h-8 text-slate-900 animate-spin" />
         </div>
       )}
     </div>

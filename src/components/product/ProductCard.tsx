@@ -47,6 +47,14 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
             </span>
           </div>
         )}
+
+        {product.stock <= 0 && (
+          <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/40 backdrop-blur-[2px]">
+            <span className="bg-slate-900 text-white text-[11px] font-black uppercase tracking-[0.2em] px-6 py-2.5 rounded-none shadow-xl">
+              {settings.outOfStockText?.[lang] || 'Out of Stock'}
+            </span>
+          </div>
+        )}
         
         <div className="absolute inset-0">
           {isVideo(product.imageUrl) ? (
@@ -57,7 +65,7 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
                 loop
                 muted
                 playsInline
-                className="w-full h-full object-cover"
+                className={`w-full h-full object-cover ${product.stock <= 0 ? 'grayscale opacity-60' : ''}`}
                 aria-label={`Video of ${title}`}
               />
             )
@@ -68,7 +76,7 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
                 alt={title}
                 fill
                 sizes="(max-width: 768px) 50vw, 33vw"
-                className={`object-cover transition-all duration-700 ease-out group-hover:scale-105 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+                className={`object-cover transition-all duration-700 ease-out group-hover:scale-105 ${isLoaded ? 'opacity-100' : 'opacity-0'} ${product.stock <= 0 ? 'grayscale opacity-60' : ''}`}
                 onLoad={() => setIsLoaded(true)}
                 priority={priority}
                 unoptimized={true}
@@ -77,28 +85,31 @@ export function ProductCard({ product, lang, settings, priority }: ProductCardPr
           )}
         </div>
         
-        <div className="absolute inset-0 z-20 opacity-0 group-hover:opacity-100 transition-all duration-300 md:block hidden">
-          <div className="absolute inset-0 bg-black/5" />
-          <div className="absolute bottom-5 left-5 right-5">
-            <button 
-              onClick={(e) => {
-                e.preventDefault();
-                addItem(product);
-                setCartOpen(true);
-                toast.success(`${title} added to cart!`, {
-                  className: 'rounded-none bg-slate-900 text-white !text-[12px] !font-bold !uppercase !tracking-widest border-none px-6 py-3',
-                  duration: 2000,
-                  icon: <Check className="w-5 h-5" />
-                });
-              }}
-              aria-label={`Quick add ${title} to cart`}
-              className="w-full h-11 bg-white text-brand-ink border border-slate-100 px-6 !text-[12px] !font-black !uppercase !tracking-widest transition-all duration-300 hover:bg-slate-900 hover:text-white flex items-center justify-center gap-2 rounded-none"
-            >
-              <ShoppingBag className="w-4 h-4" />
-              {settings.quickAddText?.[lang] || 'Quick add'}
-            </button>
+        {product.stock > 0 && (
+          <div className="absolute inset-0 z-20 opacity-0 group-hover:opacity-100 transition-all duration-300 md:block hidden">
+            <div className="absolute inset-0 bg-black/5" />
+            <div className="absolute bottom-5 left-5 right-5">
+              <button 
+                onClick={(e) => {
+                  e.preventDefault();
+                  addItem(product);
+                  setCartOpen(true);
+                  toast.success(`${title} added to cart!`, {
+                    className: 'rounded-full bg-slate-900 text-white !text-[12px] !font-bold !uppercase !tracking-widest border-none px-6 py-3',
+                    duration: 2000,
+                    icon: <Check className="w-5 h-5" />
+                  });
+                }}
+                aria-label={`Quick add ${title} to cart`}
+                className="w-full h-11 bg-white text-brand-ink border border-slate-100 px-6 !text-[12px] !font-black !uppercase !tracking-widest transition-all duration-300 hover:bg-slate-900 hover:text-white flex items-center justify-center gap-2 rounded-full shadow-none"
+              >
+                <ShoppingBag className="w-4 h-4" />
+                {settings.quickAddText?.[lang] || 'Quick add'}
+              </button>
+            </div>
           </div>
-        </div>
+        )}
+
       </Link>
       
       <div className="flex flex-col flex-1 px-1">

@@ -410,7 +410,7 @@ export function ProductClient({
               </div>
 
               <div className="mt-4 grid w-full grid-cols-[74px_minmax(0,1fr)] items-center gap-2 sm:max-w-[390px] sm:flex sm:gap-3">
-                <div className="flex h-12 w-full items-center border border-slate-200 bg-white sm:w-[72px]">
+                <div className="flex h-12 w-full items-center border border-slate-200 bg-white sm:w-[72px] overflow-hidden">
                   <span className="w-8 text-center text-[15px] font-semibold text-slate-950">{quantity}</span>
                   <div className="flex h-full flex-col border-l border-slate-200">
                     <button
@@ -436,7 +436,7 @@ export function ProductClient({
                   type="button"
                   onClick={handleAddToCart}
                   disabled={currentStock <= 0}
-                  className="flex h-12 min-w-0 items-center justify-center gap-2 bg-slate-950 px-5 text-[12px] font-semibold uppercase tracking-[0.12em] text-white transition-colors hover:bg-slate-800 disabled:bg-slate-200 disabled:text-slate-500 sm:flex-1 sm:px-6 sm:tracking-[0.14em]"
+                  className="flex h-12 min-w-0 items-center justify-center gap-2 bg-slate-950 px-5 text-[12px] font-semibold uppercase tracking-[0.12em] text-white transition-colors hover:bg-slate-800 disabled:bg-slate-200 disabled:text-slate-500 sm:flex-1 sm:px-6 sm:tracking-[0.14em] rounded-none shadow-none"
                 >
                   <ShoppingBag className="h-4 w-4" />
                   {currentStock > 0 ? (settings.addToCartButtonText?.[lang] || 'Add to cart') : (settings.outOfStockText?.[lang] || 'Out of stock')}
@@ -451,7 +451,7 @@ export function ProductClient({
                   <button
                     type="button"
                     onClick={() => handleSocialShare('whatsapp')}
-                    className="flex h-10 w-10 items-center justify-center rounded-none border border-slate-200 bg-white text-slate-950 transition-colors hover:border-slate-950 hover:bg-slate-950 hover:text-white"
+                    className="flex h-10 w-10 items-center justify-center border border-slate-200 bg-white text-slate-950 transition-colors hover:border-slate-950 hover:bg-slate-950 hover:text-white"
                     aria-label="Share on WhatsApp"
                   >
                     <FaWhatsapp className="h-5 w-5" />
@@ -459,7 +459,7 @@ export function ProductClient({
                   <button
                     type="button"
                     onClick={() => handleSocialShare('telegram')}
-                    className="flex h-10 w-10 items-center justify-center rounded-none border border-slate-200 bg-white text-slate-950 transition-colors hover:border-slate-950 hover:bg-slate-950 hover:text-white"
+                    className="flex h-10 w-10 items-center justify-center border border-slate-200 bg-white text-slate-950 transition-colors hover:border-slate-950 hover:bg-slate-950 hover:text-white"
                     aria-label="Share on Telegram"
                   >
                     <FaTelegramPlane className="h-5 w-5" />
@@ -467,7 +467,7 @@ export function ProductClient({
                   <button
                     type="button"
                     onClick={() => handleSocialShare('threads')}
-                    className="flex h-10 w-10 items-center justify-center rounded-none border border-slate-200 bg-white text-slate-950 transition-colors hover:border-slate-950 hover:bg-slate-950 hover:text-white"
+                    className="flex h-10 w-10 items-center justify-center border border-slate-200 bg-white text-slate-950 transition-colors hover:border-slate-950 hover:bg-slate-950 hover:text-white"
                     aria-label="Share on Threads"
                   >
                     <SiThreads className="h-5 w-5" />
@@ -475,7 +475,7 @@ export function ProductClient({
                   <button
                     type="button"
                     onClick={() => handleSocialShare('facebook')}
-                    className="flex h-10 w-10 items-center justify-center rounded-none border border-slate-200 bg-white text-slate-950 transition-colors hover:border-slate-950 hover:bg-slate-950 hover:text-white"
+                    className="flex h-10 w-10 items-center justify-center border border-slate-200 bg-white text-slate-950 transition-colors hover:border-slate-950 hover:bg-slate-950 hover:text-white"
                     aria-label="Share on Facebook"
                   >
                     <FaFacebookF className="h-4 w-4" />
@@ -483,7 +483,7 @@ export function ProductClient({
                   <button
                     type="button"
                     onClick={handleCopyLink}
-                    className="flex h-10 w-10 items-center justify-center rounded-none border border-slate-200 bg-white text-slate-950 transition-colors hover:border-slate-950 hover:bg-slate-950 hover:text-white"
+                    className="flex h-10 w-10 items-center justify-center border border-slate-200 bg-white text-slate-950 transition-colors hover:border-slate-950 hover:bg-slate-950 hover:text-white"
                     aria-label="Copy product link"
                   >
                     {isCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}

@@ -32,7 +32,7 @@ export const AI_PROMPT_DEFINITIONS: readonly AIPromptDefinition[] = [
     key: 'AI_PRODUCT_PROMPT',
     label: 'Product AI Prompt',
     description: 'Extra guidance for product drafting, translation, variants, and descriptions.',
-    placeholder: 'Example: Always emphasize materials, dimensions, Nordic tone, and SEO-ready product copy.',
+    placeholder: 'Example: Always emphasize materials, dimensions, brand tone, and SEO-ready product copy.',
     defaultValue:
       'When generating product content, prioritize clear product naming, materials, dimensions, finish, use-case, care notes, and practical value. Keep descriptions persuasive but precise. For variants, preserve option structure cleanly and never invent technical specs unless they are strongly implied by the source. For translation, keep catalog language natural, concise, and ecommerce-ready.',
   },

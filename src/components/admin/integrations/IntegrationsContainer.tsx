@@ -320,7 +320,7 @@ export function IntegrationsContainer({
                {id === 'Bring' && (
                  <IntegrationCard
                     id="Bring"
-                    title="Bring (Norway/Nordic)"
+                    title="Bring (Norway/Regional)"
                     logo={<Image src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Brings_logo.svg" alt="Bring" width={32} height={32} className="w-full h-full object-contain" />}
                     isConnected={config['BRING_API_KEY_CONNECTED'] === 'true'}
                     isSaving={savingId === 'Bring'}

@@ -279,7 +279,7 @@ export default function PaymentClient({ initialSettings }: PaymentClientProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="sticky top-32 rounded-none border border-slate-200 bg-white p-8"
+              className="sticky top-32 rounded-none border border-slate-200 bg-white p-8 shadow-sm"
             >
               <h3 className="mb-8 text-[12px] font-bold uppercase tracking-widest text-brand-ink">
                 {settings.orderSummaryText?.[lang] || 'Order Summary'}
@@ -360,10 +360,10 @@ export default function PaymentClient({ initialSettings }: PaymentClientProps) {
                 The tax-exclusive catalog price is recalculated for the destination country before redirect, so the amount shown here stays aligned with Stripe Checkout.
               </p>
 
-              <button type="submit" disabled={isSubmitting || isEstimating || items.length === 0} className="flex items-center justify-center w-full h-11 bg-zinc-900 hover:bg-black text-white text-[12px] font-bold uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed rounded-none shadow-none">
+              <button type="submit" disabled={isSubmitting || isEstimating || items.length === 0} className="flex items-center justify-center w-full h-11 bg-zinc-900 hover:bg-black text-white text-[12px] font-bold uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed rounded-none shadow-lg">
                 {isSubmitting ? (
                   <span className="flex items-center">
-                    <span className="mr-2 h-4 w-4 animate-spin rounded-none border-2 border-white/30 border-t-white" />
+                    <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                     {settings.processingText?.[lang] || 'Processing...'}
                   </span>
                 ) : (

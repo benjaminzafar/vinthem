@@ -65,7 +65,7 @@ function SidebarContent({
               key={item.id}
               href={item.href}
               onClick={onNavItemClick}
-              className={`w-full flex items-center gap-3 rounded-none px-3 py-2 transition-all ${
+              className={`w-full flex items-center gap-3 rounded-none px-4 py-2 transition-all ${
                 isActive
                   ? 'bg-slate-900 text-white shadow-none'
                   : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
@@ -80,7 +80,7 @@ function SidebarContent({
       
       <div className="p-6 border-t border-slate-200 bg-white">
         <div className="flex items-center mb-4 px-1">
-          <div className="w-10 h-10 rounded-none bg-slate-900 flex items-center justify-center text-white font-semibold text-[13px] mr-3 shrink-0">
+          <div className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-white font-semibold text-[13px] mr-3 shrink-0">
             {activeUserEmail?.[0].toUpperCase() || 'A'}
           </div>
           <div className="text-left flex-1 min-w-0">
@@ -142,7 +142,7 @@ export default function AdminSidebar({
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
-              className="fixed inset-y-0 left-0 w-72 max-w-[86vw] bg-white text-slate-600 z-[60] flex flex-col lg:hidden border-r border-slate-300"
+              className="fixed inset-y-0 left-0 w-72 max-w-[86vw] bg-white text-slate-600 z-[60] flex flex-col lg:hidden border-r border-slate-300 rounded-none overflow-hidden"
             >
               <SidebarContent 
                 pathname={pathname} 

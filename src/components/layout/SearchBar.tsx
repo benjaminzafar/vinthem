@@ -184,7 +184,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
       <>
         {parts.map((part, i) => 
           part.toLowerCase() === query.toLowerCase() ? (
-            <mark key={i} className="bg-slate-100 text-slate-900 px-0.5 font-medium rounded-none inline-block">{part}</mark>
+            <mark key={i} className="bg-slate-100 text-slate-900 px-1.5 font-medium rounded-full inline-block">{part}</mark>
           ) : (
             part
           )
@@ -241,7 +241,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                     <button 
                       onClick={() => setIsOverlayOpen(false)}
                       aria-label="Close search overlay"
-                      className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-none"
+                      className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-full"
                     >
                       <X className="w-5 h-5" strokeWidth={1.5} />
                     </button>
@@ -334,7 +334,7 @@ export function SearchBar({ placeholder, categories: initialCategories = [], lan
                         {(activeFilterCount > 0 || sortBy !== null) && (
                           <button 
                             onClick={clearFilters}
-                            className="w-full h-12 border border-slate-900 text-slate-900 text-[11px] font-black uppercase tracking-[0.2em] hover:bg-slate-900 hover:text-white transition-all rounded-none-[4px]"
+                            className="w-full h-12 border border-slate-900 text-slate-900 text-[11px] font-black uppercase tracking-[0.2em] hover:bg-slate-900 hover:text-white transition-all rounded-none"
                           >
                             Reset All
                           </button>

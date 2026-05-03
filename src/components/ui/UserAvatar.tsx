@@ -14,7 +14,7 @@ export function UserAvatar({ name, imageUrl, size = 28, className = "" }: UserAv
   if (imageUrl && imageUrl.trim() !== "") {
     return (
       <div 
-        className={`relative rounded-none overflow-hidden border border-slate-100 shrink-0 transform-gpu ${className}`}
+        className={`relative rounded-full overflow-hidden border border-slate-100 shrink-0 transform-gpu ${className}`}
         style={{ width: size, height: size, WebkitBackfaceVisibility: 'hidden' }}
       >
         <div className="absolute inset-0 w-full h-full transform-gpu" style={{ WebkitBackfaceVisibility: 'hidden', WebkitTransform: 'translate3d(0,0,0)' }}>
@@ -37,7 +37,7 @@ export function UserAvatar({ name, imageUrl, size = 28, className = "" }: UserAv
   return (
     <div 
       className={`
-        flex items-center justify-center rounded-none shrink-0
+        flex items-center justify-center rounded-full shrink-0
         bg-slate-900 text-white font-bold tracking-tighter
         border border-slate-800 shadow-none
         ${className}

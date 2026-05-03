@@ -43,7 +43,7 @@ export async function generateMetadata(): Promise<Metadata> {
     keywords: [
       "vinthem", "vinhem", "vind hem", "vindhem", "vind-hem", "vintam", "vintham", "vnthem", "vntem", "vintem", "winthem", "winhem", "findhem", "find hem", "venthem", "vanthem", "vinth-em", "vin-them", "vin-hem",
       "vinthem shop", "vinhem shop", "vind hem shop", "vindhem store", "vinthem official", "vinthem brand", "vinthem online",
-      "vinthem clothing", "vinthem sweden", "vinthem fashion", "vinthem stockholm", "vinthem scandinavia",
+      "vinthem clothing", "vinthem sweden", "vinthem fashion", "vinthem stockholm",
       "wintem", "wintham", "venhem", "vanhem", "vintheme", "vinheme", "vinthem-shop", "vinthem-store",
       "vintham store", "vintham shop", "vintam store", "vintam shop", "vintem shop", "vintem store",
       "vindhem shop", "vindhem store", "findhem shop", "findhem store", "vinthem.com", "vinhem.com",
@@ -98,12 +98,12 @@ export default async function RootLayout({
     ],
     "url": siteUrl,
     "logo": faviconUrl || `${siteUrl}/favicon.ico`,
-    "description": settings.seoDescription?.[lang] || "Premium Scandinavian minimalist fashion brand Vinthem.",
+    "description": settings.seoDescription?.[lang] || "Vinthem - Stockholm based quality everyday essentials with 20+ years of retail experience.",
     "address": {
       "@type": "PostalAddress",
       "addressCountry": "Sweden"
     },
-    "keywords": "vinthem, vinhem, scandinavian fashion, minimalist clothing, premium streetwear, luxury basics, stockholm style"
+    "keywords": "vinthem, vinhem, stockholm fashion, everyday essentials, useful products, quality goods, stockholm style"
   };
 
   const cookieBannerCopy = {
@@ -137,6 +137,7 @@ export default async function RootLayout({
         <script
           id="supabase-browser-config"
           nonce={nonce}
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{
             __html: `
               window.__supabase_url = ${JSON.stringify(supabaseConfig.url)};
@@ -148,6 +149,7 @@ export default async function RootLayout({
         <script
           type="application/ld+json"
           nonce={nonce}
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
 

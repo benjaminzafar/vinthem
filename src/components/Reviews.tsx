@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { checkPurchasedProductAction, submitProductReviewAction } from '@/app/actions/reviews';
 import { createClient } from '@/utils/supabase/client';
 import { Review } from '@/types';
-import { Star, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Star, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import type { StorefrontSettings } from '@/store/useSettingsStore';
@@ -165,7 +165,7 @@ export default function Reviews({ productId, initialSettings, lang }: ReviewsPro
           </div>
         ) : (
           <div className="mb-12 h-32 flex items-center justify-center">
-            <div className="w-6 h-6 border-2 border-zinc-200 border-t-zinc-900 rounded-none animate-spin" />
+            <Loader2 className="w-6 h-6 text-brand-ink animate-spin" />
           </div>
         )
       ) : (

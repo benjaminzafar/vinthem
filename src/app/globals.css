@@ -189,7 +189,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 ::-webkit-scrollbar-thumb {
   background: var(--color-brand-border);
-  border-radius: 0px;
+  border-radius: 100px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-brand-muted);
@@ -217,11 +217,11 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-primary {
-  @apply bg-brand-accent text-brand-accent-fg px-6 py-3 rounded-none text-sm font-semibold min-h-[48px] hover:opacity-90 transition-all duration-300 active:scale-95 flex items-center justify-center shadow-none;
+  @apply bg-brand-accent text-brand-accent-fg px-8 py-3 rounded-full text-sm font-semibold min-h-[48px] hover:opacity-90 transition-all duration-300 active:scale-95 flex items-center justify-center shadow-none;
 }
 
 .btn-secondary {
-  @apply bg-brand-surface text-brand-ink border border-brand-border px-6 py-3 rounded-none text-sm font-semibold min-h-[48px] hover:bg-brand-border transition-all duration-300 active:scale-95 flex items-center justify-center shadow-none;
+  @apply bg-brand-surface text-brand-ink border border-brand-border px-8 py-3 rounded-full text-sm font-semibold min-h-[48px] hover:bg-brand-border transition-all duration-300 active:scale-95 flex items-center justify-center shadow-none;
 }
 
 .input-minimal {
@@ -229,7 +229,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .card-minimal {
-  @apply bg-brand-bg border border-brand-border rounded-none overflow-hidden transition-all duration-300 shadow-none;
+  @apply bg-brand-bg border border-brand-border rounded-3xl overflow-hidden transition-all duration-300 shadow-none;
 }
 
 /* Typography guardrail: keep legacy arbitrary sizes inside Apple's readable range. */

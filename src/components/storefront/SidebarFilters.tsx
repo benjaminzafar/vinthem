@@ -70,7 +70,7 @@ export function SidebarFilters({
   return (
     <div 
       suppressHydrationWarning
-      className="flex flex-col bg-white border border-slate-200 shadow-none overflow-hidden min-h-[500px]"
+      className="flex flex-col bg-white border border-slate-200 shadow-none overflow-hidden min-h-[500px] rounded-none"
     >
       {/* Search Bar - Integrated Flat */}
       <div className="p-5 border-b border-slate-100">
@@ -80,7 +80,7 @@ export function SidebarFilters({
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder={settings.searchPlaceholder?.[lang] || 'Search...'}
-            className="w-full bg-slate-50 border border-slate-200 rounded-none py-3 px-11 text-[14px] font-normal outline-none transition-all placeholder:text-slate-500 focus:bg-white focus:border-slate-900"
+            className="w-full bg-slate-50 border border-slate-200 rounded-full py-3 px-11 text-[14px] font-normal outline-none transition-all placeholder:text-slate-500 focus:bg-white focus:border-slate-900"
           />
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-slate-900 transition-colors" strokeWidth={2} />
         </div>
@@ -108,7 +108,7 @@ export function SidebarFilters({
             {viewStack.length === 0 && (
               <button
                 onClick={() => updateParams({ category: 'All' })}
-                className={`w-full flex items-center justify-between py-3 px-4 transition-all border rounded-none ${activeCategory === 'All' ? 'bg-slate-100 border-slate-200 text-slate-900' : 'bg-white border-transparent hover:bg-slate-50 text-slate-600 hover:text-slate-900'}`}
+                className={`w-full flex items-center justify-between py-3 px-4 transition-all border rounded-full ${activeCategory === 'All' ? 'bg-slate-100 border-slate-200 text-slate-900' : 'bg-white border-transparent hover:bg-slate-50 text-slate-600 hover:text-slate-900'}`}
               >
                 <span className="text-xs font-medium uppercase tracking-widest">
                   {settings.allCategoriesText?.[lang] || 'All Products'}
@@ -169,7 +169,7 @@ function CategoryItem({ cat, isActive, hasChildren, goForward, updateParams, lan
         if (hasChildren && cat.id) goForward(cat.id);
         else updateParams({ category: cat.slug });
       }}
-      className={`w-full flex items-center justify-between py-3 px-4 transition-all border rounded-none group ${isActive ? 'bg-slate-100 border-slate-200 text-slate-900' : 'bg-white border-transparent hover:bg-slate-50 text-slate-600 hover:text-slate-900'}`}
+      className={`w-full flex items-center justify-between py-3 px-4 transition-all border rounded-full group ${isActive ? 'bg-slate-100 border-slate-200 text-slate-900' : 'bg-white border-transparent hover:bg-slate-50 text-slate-600 hover:text-slate-900'}`}
     >
       <div className="flex items-center space-x-3">
         <span className="text-[12px] font-semibold text-left truncate max-w-[140px] tracking-tight">{getCatName(cat)}</span>

@@ -99,7 +99,7 @@ export default function CartClient({ initialSettings }: CartClientProps) {
                         referrerPolicy="no-referrer" 
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-xs text-brand-muted uppercase tracking-widest">Nordic</div>
+                      <div className="w-full h-full flex items-center justify-center text-xs text-brand-muted uppercase tracking-widest">Vinthem</div>
                     )}
                   </div>
                   <div className="flex-1 flex flex-col justify-between py-1">
