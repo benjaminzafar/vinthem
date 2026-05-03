@@ -1,6 +1,7 @@
 import { requireAdminUser } from '@/lib/admin';
 import { createAdminClient } from '@/utils/supabase/server';
 import { notFound } from 'next/navigation';
+import { PrintLabelButton } from '@/components/admin/PrintLabelButton';
 
 interface LabelPageProps {
   params: Promise<{ id: string }>;
@@ -99,12 +100,7 @@ export default async function OrderLabelPage({ params }: LabelPageProps) {
 
         {/* Print Instruction (Hidden in Print) */}
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 print:hidden">
-          <button 
-            onClick={() => window.print()}
-            className="bg-black text-white px-8 py-4 text-xs font-bold uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl"
-          >
-            Confirm & Print Label
-          </button>
+          <PrintLabelButton />
         </div>
       </div>
 
