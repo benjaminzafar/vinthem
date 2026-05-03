@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ArrowRight, Lock, Truck } from 'lucide-react';
 import { motion } from 'motion/react';
@@ -221,7 +222,7 @@ export default function PaymentClient({ initialSettings }: PaymentClientProps) {
                   <input required type="text" name="city" value={shippingDetails.city} onChange={handleShippingChange} className="w-full rounded-none border border-slate-200 bg-slate-50 px-4 h-11 text-brand-ink focus:border-brand-ink focus:ring-1 focus:ring-brand-ink" />
                 </div>
 
-                <div className="col-span-1">
+                <div className="col-span-2 md:col-span-1">
                   <label className="mb-2 block text-[12px] font-semibold text-brand-muted">
                     {settings.postalCodeLabel?.[lang] || 'Postal code'}
                   </label>
@@ -373,6 +374,15 @@ export default function PaymentClient({ initialSettings }: PaymentClientProps) {
                   </>
                 )}
               </button>
+
+              <div className="mt-4">
+                <Link 
+                  href={`/${lang}/products`} 
+                  className="flex items-center justify-center w-full h-11 bg-white border border-slate-200 text-brand-ink text-[12px] font-bold uppercase tracking-widest transition-all hover:bg-slate-50 rounded-none"
+                >
+                  {settings.continueShoppingText?.[lang] || 'Continue Shopping'}
+                </Link>
+              </div>
             </motion.div>
           </div>
         </form>

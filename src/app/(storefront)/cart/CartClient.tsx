@@ -153,8 +153,11 @@ export default function CartClient({ initialSettings }: CartClientProps) {
                 <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
               </Link>
               
-              <div className="mt-6 text-center">
-                <Link href={`/${lang}/products`} className="text-sm text-brand-muted hover:text-brand-ink transition-colors underline underline-offset-4">
+              <div className="mt-4">
+                <Link 
+                  href={`/${lang}/products`} 
+                  className="flex items-center justify-center w-full h-11 bg-white border border-slate-200 text-brand-ink text-[12px] font-bold uppercase tracking-widest transition-all hover:bg-slate-50 rounded-none"
+                >
                   {settings.continueShoppingText?.[lang] || 'Continue Shopping'}
                 </Link>
               </div>
