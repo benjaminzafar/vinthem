@@ -1,17 +1,9 @@
 'use server';
-﻿import { logger } from '@/lib/logger';
-
+import { logger } from '@/lib/logger';
 import { revalidatePath } from 'next/cache';
 import { createAdminClient, createClient } from '@/utils/supabase/server';
 import { requireAdminUser } from '@/lib/admin';
 import { extractMediaKey } from '@/lib/media';
-
-/**
- * SECURITY NOTE:
- * We use a hybrid approach. createClient() is used for reads to respect RLS
- * where appropriate, but administrative writes use createAdminClient() to
- * bypass RLS blocks. requireAdminUser() ensures all actions are authorized.
- */
 
 type CategoryTranslation = {
   name: string;
@@ -156,13 +148,13 @@ export async function bulkImportCategoriesAction(categories: any[]): Promise<Cat
       success: true,
       message: `Successfully imported ${finalCategories.length} collections.`,
     };
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to import collections.';
+  } catch (error: any) {
+    const message = error.message || 'Failed to import collections.';
     logger.error('[Action Error] bulkImportCategoriesAction:', error);
     return {
       success: false,
       message,
-      error: message,
+      error: error.message || error.details || String(error),
     };
   }
 }
@@ -214,7 +206,6 @@ export async function saveCategoryAction(input: SaveCategoryInput): Promise<Cate
     const slug = await ensureUniqueSlug(baseSlug, input.id);
     const supabase = createAdminClient();
 
-
     const payload = {
       name: input.name.trim(),
       slug,
@@ -247,19 +238,12 @@ export async function saveCategoryAction(input: SaveCategoryInput): Promise<Cate
       success: true,
       message: input.id ? 'Collection updated successfully.' : 'Collection created successfully.',
     };
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.error('[saveCategoryAction] Critical Error:', error);
-    let errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    
-    // Check for common missing column error
-    if (errorMessage.includes('column') || errorMessage.includes('does not exist')) {
-      errorMessage = 'DATABASE ERROR: A required column is missing. Please check your schema.';
-    }
-
     return {
       success: false,
       message: 'Failed to save collection.',
-      error: errorMessage,
+      error: error.message || error.details || String(error),
     };
   }
 }
@@ -268,7 +252,6 @@ export async function deleteCategoryAction(input: DeleteCategoryInput): Promise<
   try {
     await requireAdmin();
     const supabase = createAdminClient();
-
 
     if (input.action === 'delete' && input.productIds.length > 0) {
       const { error } = await supabase.from('products').delete().in('id', input.productIds);
@@ -316,11 +299,12 @@ export async function deleteCategoryAction(input: DeleteCategoryInput): Promise<
       success: true,
       message: 'Collection deleted successfully.',
     };
-  } catch (error: unknown) {
+  } catch (error: any) {
+    logger.error('[deleteCategoryAction] Error:', error);
     return {
       success: false,
       message: 'Failed to delete collection.',
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error.message || error.details || String(error),
     };
   }
 }
@@ -338,17 +322,15 @@ export async function deleteCategoriesAction(input: DeleteCategoriesInput): Prom
     }
 
     const supabase = createAdminClient();
-
     const allIdsToDelete = await collectDescendantCategoryIds(supabase, categoryIds);
 
-    // 2. Unlink products (safety measure even with set null constraints)
-    // We set category_id to null for any products in these categories
+    // 1. Unlink products
     await supabase
       .from('products')
       .update({ category_id: null })
       .in('category_id', allIdsToDelete);
 
-    // 3. Perform the deletion
+    // 2. Perform the deletion
     const { error } = await supabase
       .from('categories')
       .delete()
@@ -368,15 +350,12 @@ export async function deleteCategoriesAction(input: DeleteCategoriesInput): Prom
         ? `Successfully removed ${allIdsToDelete.length} collections.` 
         : 'Collection removed successfully.',
     };
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.error('[deleteCategoriesAction] Error:', error);
     return {
       success: false,
       message: 'Failed to delete collections.',
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error.message || error.details || String(error),
     };
   }
 }
-
-
-
