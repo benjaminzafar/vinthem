@@ -463,6 +463,7 @@ export function ProfileClient({
   const activeOrders = orders.filter((order) => !['Delivered', 'Cancelled'].includes(order.status || '')).length;
 
   return (
+    <>
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 pt-0 pb-12 animate-in fade-in duration-300">
       <div className="mb-8 border border-slate-300 bg-white">
         <div className="grid gap-0 lg:grid-cols-[1.5fr_1fr]">
@@ -1000,10 +1001,11 @@ export function ProfileClient({
           </AnimatePresence>
         </div>
       </div>
+    </div>
 
       <AnimatePresence>
         {isAddressModalOpen && (
-          <div className="fixed inset-0 z-[105] flex items-center justify-center p-4 md:p-8">
+          <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 md:p-8">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -1102,7 +1104,7 @@ export function ProfileClient({
       {/* SUPPORT MODAL (Standardized Design) */}
       <AnimatePresence>
         {supportOrder && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none p-4 md:p-12 lg:p-24">
+          <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 md:p-12 lg:p-24">
             <motion.div 
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
@@ -1254,6 +1256,6 @@ export function ProfileClient({
           </div>
         )}
       </AnimatePresence>
-    </div>
+    </>
   );
 }
