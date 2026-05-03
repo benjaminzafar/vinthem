@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { getCRMDataAction } from '@/app/actions/crm';
+import { getCRMDataAction, syncAllToBrevoAction } from '@/app/actions/crm';
 import { useDebounce } from '@/hooks/useDebounce';
 import { CRMAnalytics } from './CRMAnalytics';
 import { CustomerTable } from './CustomerTable';
@@ -14,6 +14,7 @@ import {
   Users, MessageSquare, RefreshCcw, Target, 
   Megaphone
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { 
   CRMUser, 
   SupportTicket, 
@@ -27,6 +28,7 @@ import {
 import type { CRMCustomer, CRMOrder, RefundRecord, ReviewRecord, SupportTicket as SupportTicketUI } from './types';
 
 export function CRMContainer({ initialData }: { initialData?: CRMData }) {
+  const [isSyncingBrevo, setIsSyncingBrevo] = useState(false);
   const [supabase] = useState(() => createClient());
   const [activeTab, setActiveTab] = useState<'customers' | 'tickets' | 'refunds' | 'newsletter' | 'reviews'>('customers');
   
@@ -101,6 +103,23 @@ export function CRMContainer({ initialData }: { initialData?: CRMData }) {
     const channel = supabase.channel('crm_newsletter').on('postgres_changes', { event: '*', schema: 'public', table: 'newsletter_subscribers' }, syncCRMData).subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [supabase]);
+
+  const handleForceSync = async () => {
+    setIsSyncingBrevo(true);
+    const toastId = toast.loading('Synchronizing entire CRM to Brevo...');
+    try {
+      const result = await syncAllToBrevoAction();
+      if (result.success) {
+        toast.success(result.message, { id: toastId });
+      } else {
+        toast.error(result.message, { id: toastId });
+      }
+    } catch (err) {
+      toast.error('Unexpected error during synchronization', { id: toastId });
+    } finally {
+      setIsSyncingBrevo(false);
+    }
+  };
 
   const customerMap = useMemo(() => {
     return new Map(
@@ -406,6 +425,15 @@ export function CRMContainer({ initialData }: { initialData?: CRMData }) {
               </button>
             ))}
           </div>
+
+          <button
+            onClick={handleForceSync}
+            disabled={isSyncingBrevo}
+            className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-900 border border-slate-900 px-4 py-1.5 hover:bg-slate-900 hover:text-white transition-all disabled:opacity-50 whitespace-nowrap"
+          >
+            <RefreshCcw className={`w-3.5 h-3.5 ${isSyncingBrevo ? 'animate-spin' : ''}`} />
+            {isSyncingBrevo ? 'Syncing...' : 'Force Sync Brevo'}
+          </button>
         </div>
 
         <div className="p-6 sm:p-8">

@@ -176,6 +176,78 @@ export async function submitSupportRequestAction(input: SupportRequestInput): Pr
   }
 }
 
+export async function customerReplySupportTicketAction(input: {
+  ticketId: string;
+  replyText: string;
+  imageUrl?: string;
+}): Promise<SupportActionResult> {
+  try {
+    const supabase = await createClient();
+    const { data: authData } = await supabase.auth.getUser();
+    const user = authData?.user;
+
+    if (!user) {
+      throw new Error('Authentication required.');
+    }
+
+    const ticketId = sanitizeMessage(input.ticketId);
+    const replyText = sanitizeMessage(input.replyText);
+
+    if (!ticketId || !replyText) {
+      throw new Error('Ticket ID and message are required.');
+    }
+
+    // Verify ownership
+    const { data: ticket, error: fetchError } = await supabase
+      .from('support_tickets')
+      .select('messages, user_id')
+      .eq('id', ticketId)
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (fetchError || !ticket) {
+      throw new Error('Ticket not found or access denied.');
+    }
+
+    const existingMessages = normalizeSupportMessages(ticket.messages);
+    const nextMessages: SupportTicketMessage[] = [
+      ...existingMessages,
+      {
+        sender: 'customer',
+        text: replyText,
+        imageUrl: input.imageUrl ? sanitizeMessage(input.imageUrl) : undefined,
+        createdAt: new Date().toISOString(),
+      },
+    ];
+
+    const { error: updateError } = await supabase
+      .from('support_tickets')
+      .update({
+        messages: nextMessages,
+        status: 'open', // Re-open if it was resolved/pending
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', ticketId);
+
+    if (updateError) throw updateError;
+
+    revalidateSupportViews();
+
+    return {
+      success: true,
+      message: 'Reply sent successfully.',
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to send reply.';
+    logger.error('[Action Error] customerReplySupportTicketAction:', error);
+    return {
+      success: false,
+      message,
+      error: message,
+    };
+  }
+}
+
 export async function updateRefundStatusAction(input: UpdateRefundStatusInput): Promise<SupportActionResult> {
   try {
     const { supabase } = await requireAdminUser();

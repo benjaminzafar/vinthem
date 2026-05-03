@@ -9,7 +9,8 @@ import {
   RefreshCcw, 
   ChevronRight, 
   ChevronDown, 
-  Package
+  Package,
+  Printer
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { toast } from 'sonner';
@@ -277,6 +278,13 @@ export function OrderManager({
                                 </select>
                                 {updatingOrderId === order.id && <RefreshCcw className="w-5 h-5 animate-spin text-slate-500" />}
                               </div>
+                              <button 
+                                onClick={() => window.open(`/admin/orders/${order.id}/label`, '_blank')}
+                                className="mt-4 w-full border border-slate-900 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-slate-900 hover:bg-slate-900 hover:text-white transition-all flex items-center justify-center gap-2"
+                              >
+                                <Printer className="w-3.5 h-3.5" />
+                                Print Shipping Label
+                              </button>
                             </div>
                             
                             <div>

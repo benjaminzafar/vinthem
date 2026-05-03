@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useAuthStore } from '@/store/useAuthStore';
 import { 
@@ -26,14 +26,14 @@ import {
   Plus,
   CheckCircle2
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { createClient } from '@/utils/supabase/client';
 import { toast } from 'sonner';
 import { formatPrice } from '@/lib/currency';
 import { toMediaProxyUrl } from '@/lib/media';
 import { isValidUrl } from '@/lib/utils';
-import { submitSupportRequestAction } from '@/app/actions/support';
+import { submitSupportRequestAction, customerReplySupportTicketAction } from '@/app/actions/support';
 import { deleteAddressAction, saveAddressAction, setDefaultAddressAction } from '@/app/actions/profile';
 import type { StorefrontSettings } from '@/store/useSettingsStore';
 import { localizeHref } from '@/lib/i18n-routing';
@@ -139,7 +139,22 @@ export function ProfileClient({
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
   const [addressFeedback, setAddressFeedback] = useState<InlineFeedback | null>(null);
   const [supportFeedback, setSupportFeedback] = useState<InlineFeedback | null>(null);
+  const searchParams = useSearchParams();
   
+  useEffect(() => {
+    const checkoutStatus = searchParams.get('checkout');
+    const orderId = searchParams.get('order');
+    
+    if (checkoutStatus === 'success' && orderId) {
+      setExpandedOrderId(orderId);
+      toast.success('Payment successful! Your order is now being processed.', {
+        duration: 5000,
+        icon: <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+      });
+      // Clean up URL
+      router.replace(localizeHref(lang, '/profile'));
+    }
+  }, [searchParams, router, lang]);
   // Support UI State
   const [supportOrder, setSupportOrder] = useState<ProfileOrder | null>(null);
   const [supportType, setSupportType] = useState<SupportType>(null);
@@ -147,6 +162,9 @@ export function ProfileClient({
   const [supportImageUrl, setSupportImageUrl] = useState('');
   const [isSubmittingSupport, setIsSubmittingSupport] = useState(false);
   const [isUploadingSupportImage, setIsUploadingSupportImage] = useState(false);
+  const [activeTicketReply, setActiveTicketReply] = useState<string | null>(null);
+  const [ticketReplyText, setTicketReplyText] = useState('');
+  const [isSubmittingReply, setIsSubmittingReply] = useState(false);
 
   // Security UI State
   const [showPasswordForm, setShowPasswordForm] = useState(false);
@@ -316,6 +334,39 @@ export function ProfileClient({
       toast.error(message, { id: toastId });
     } finally {
       setIsSubmittingSupport(false);
+    }
+  };
+
+  const handleTicketReply = async (ticketId: string) => {
+    if (!ticketReplyText.trim()) return;
+    setIsSubmittingReply(true);
+    const toastId = toast.loading('Sending reply...');
+    try {
+      const result = await customerReplySupportTicketAction({
+        ticketId,
+        replyText: ticketReplyText
+      });
+
+      if (result.success) {
+        setTicketReplyText('');
+        setActiveTicketReply(null);
+        toast.success('Reply sent successfully', { id: toastId });
+        
+        // Refresh tickets
+        const supabaseClient = createClient();
+        const { data } = await supabaseClient
+          .from('support_tickets')
+          .select('*')
+          .eq('user_id', user?.id)
+          .order('created_at', { ascending: false });
+        if (data) setSupportTickets(data as any[]);
+      } else {
+        toast.error(result.message || 'Failed to send reply', { id: toastId });
+      }
+    } catch (err) {
+      toast.error('Unexpected error sending reply', { id: toastId });
+    } finally {
+      setIsSubmittingReply(false);
     }
   };
 
@@ -740,7 +791,7 @@ export function ProfileClient({
                           <div className="mt-6 border-t border-slate-200 pt-5">
                             <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Conversation</p>
                             <div className="mt-4 space-y-3">
-                              {ticket.messages.map((message, index) => (
+                              {(ticket.messages || []).map((message: any, index: number) => (
                                 <div key={`${ticket.id}-${index}`} className="border border-slate-200 bg-slate-50 px-4 py-3">
                                   <div className="flex items-center justify-between gap-4">
                                     <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
@@ -761,6 +812,44 @@ export function ProfileClient({
                             </div>
                           </div>
                         )}
+
+                        <div className="mt-4 border-t border-slate-100 pt-4">
+                          {activeTicketReply === ticket.id ? (
+                            <div className="space-y-4 border border-slate-900 p-4 animate-in fade-in slide-in-from-top-2">
+                              <textarea
+                                value={ticketReplyText}
+                                onChange={(e) => setTicketReplyText(e.target.value)}
+                                placeholder="Type your reply here..."
+                                className="w-full border-b border-slate-300 p-2 text-sm focus:border-slate-900 focus:outline-none min-h-[100px] resize-none"
+                              />
+                              <div className="flex items-center justify-end gap-3">
+                                <button
+                                  onClick={() => {
+                                    setActiveTicketReply(null);
+                                    setTicketReplyText('');
+                                  }}
+                                  className="text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:text-slate-900"
+                                >
+                                  Cancel
+                                </button>
+                                <button
+                                  onClick={() => handleTicketReply(ticket.id)}
+                                  disabled={isSubmittingReply || !ticketReplyText.trim()}
+                                  className="bg-slate-900 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-white hover:bg-slate-800 disabled:opacity-50"
+                                >
+                                  {isSubmittingReply ? 'Sending...' : 'Send Reply'}
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setActiveTicketReply(ticket.id)}
+                              className="text-[10px] font-bold uppercase tracking-widest text-slate-900 underline underline-offset-4 hover:text-slate-600"
+                            >
+                              Reply to conversation
+                            </button>
+                          )}
+                        </div>
                       </div>
                     ))}
 
