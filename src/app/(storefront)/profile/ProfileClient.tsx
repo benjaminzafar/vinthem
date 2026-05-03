@@ -464,7 +464,7 @@ export function ProfileClient({
 
   return (
     <>
-    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 pt-0 pb-12 animate-in fade-in duration-300">
+    <div className="relative z-0 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 pt-0 pb-12 animate-in fade-in duration-300">
       <div className="mb-8 border border-slate-300 bg-white">
         <div className="grid gap-0 lg:grid-cols-[1.5fr_1fr]">
           <div className="border-b border-slate-300 p-8 lg:border-b-0 lg:border-r lg:p-10">
@@ -1104,21 +1104,21 @@ export function ProfileClient({
       {/* SUPPORT MODAL (Standardized Design) */}
       <AnimatePresence>
         {supportOrder && (
-          <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 md:p-12 lg:p-24">
+          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 md:p-12 lg:p-24">
             <motion.div 
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-slate-900/60 backdrop-blur-md pointer-events-auto"
+              className="absolute inset-0 bg-slate-900/80 backdrop-blur-xl pointer-events-auto"
               onClick={() => { if(!isSubmittingSupport) setSupportOrder(null); }}
             />
             
             <motion.div
-              initial={{ scale: 1, opacity: 0, y: 10 }}
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 1, opacity: 0, y: 10 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white w-full max-w-4xl border border-slate-300 overflow-hidden shadow-2xl rounded-none pointer-events-auto flex flex-col max-h-[90vh]"
+              className="bg-white w-full max-w-4xl border-2 border-slate-900 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.3)] rounded-none pointer-events-auto flex flex-col max-h-[90vh] relative z-[1001]"
             >
               {/* Modal Technical Header */}
               <div className="px-12 py-12 border-b-2 border-slate-300 flex flex-col md:flex-row md:items-center justify-between gap-8 bg-slate-50">
