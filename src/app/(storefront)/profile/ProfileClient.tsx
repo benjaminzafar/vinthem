@@ -1109,7 +1109,7 @@ export function ProfileClient({
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm pointer-events-auto"
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-md pointer-events-auto"
               onClick={() => { if(!isSubmittingSupport) setSupportOrder(null); }}
             />
             
@@ -1117,7 +1117,8 @@ export function ProfileClient({
               initial={{ scale: 1, opacity: 0, y: 10 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 1, opacity: 0, y: 10 }}
-              className="bg-white w-full max-w-4xl border border-slate-300 overflow-hidden shadow-none rounded-none pointer-events-auto flex flex-col max-h-[90vh]"
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white w-full max-w-4xl border border-slate-300 overflow-hidden shadow-2xl rounded-none pointer-events-auto flex flex-col max-h-[90vh]"
             >
               {/* Modal Technical Header */}
               <div className="px-12 py-12 border-b-2 border-slate-300 flex flex-col md:flex-row md:items-center justify-between gap-8 bg-slate-50">
