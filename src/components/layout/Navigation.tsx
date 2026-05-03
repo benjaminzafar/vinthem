@@ -67,9 +67,31 @@ export default async function Navigation() {
       <ConsentGuardian />
       <h1 className="sr-only">{settings?.seoTitle?.[lang] || settings?.seoTitle?.en || 'Vinthem - Quality Everyday Essentials'}</h1>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16 items-center relative">
-          {/* Brand Logo */}
-          <div className="flex-1 flex items-center">
+        <div className="flex items-center justify-between h-16 relative">
+          
+          {/* 1. Mobile Menu Trigger (Left on Mobile, Hidden on Desktop) */}
+          <div className="flex-1 lg:hidden">
+            <MobileMenu
+              user={user}
+              isAdmin={isAdmin}
+              navbarLinks={settings?.navbarLinks || []}
+              lang={lang}
+              categories={categories}
+              availableLanguages={availableLanguages}
+              labels={{
+                menu: settings?.menuText?.[lang] || 'Menu',
+                language: settings?.languageLabel?.[lang] || 'Language',
+                account: settings?.accountLabel?.[lang] || 'Account',
+                adminDashboard: settings?.adminDashboardText?.[lang] || 'Admin Dashboard',
+                logout: settings?.logoutText?.[lang] || 'Logout',
+                login: settings?.loginText?.[lang] || 'Login',
+                allProducts: settings?.searchProductsResultsText?.[lang] || 'All Products'
+              }}
+            />
+          </div>
+
+          {/* 2. Brand Logo (Centered on Mobile, Left on Desktop) */}
+          <div className="flex lg:flex-none items-center justify-center lg:justify-start flex-1 lg:flex-initial">
             <Link href={localizeHref(lang, '/')} className="flex items-center space-x-3 group">
               {settings?.logoImage && settings.logoImage.length > 5 && settings.logoImage.startsWith('h') ? (
                 <div className="relative h-7 w-28">
@@ -90,24 +112,24 @@ export default async function Navigation() {
             </Link>
           </div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-8">
+          {/* 3. Desktop Navigation (Center on Desktop, Hidden on Mobile) */}
+          <div className="hidden lg:flex flex-1 justify-center items-center space-x-8 px-8">
             {(settings?.navbarLinks || []).map((link: { href: string; label: Record<string, string> }, index: number) => (
               <Link
                 key={index}
                 href={localizeHref(lang, link.href)}
-                className="text-[12px] font-bold uppercase text-zinc-600 hover:text-brand-ink transition-colors tracking-widest"
+                className="text-[12px] font-bold uppercase text-zinc-600 hover:text-brand-ink transition-colors tracking-widest whitespace-nowrap"
               >
                 {link.label[lang] || link.label['en']}
               </Link>
             ))}
           </div>
 
-          {/* Right Actions: Rebuilt from Scratch for Perfection */}
-          <div className="flex-1 flex justify-end h-full">
-            <div className="flex h-full space-x-0.5 sm:space-x-1">
+          {/* 4. Right Actions (Search, Language, Cart, Account) */}
+          <div className="flex-1 flex justify-end items-center h-full">
+            <div className="flex items-center h-full space-x-0.5 sm:space-x-1">
               
-              {/* 1. Search Action */}
+              {/* Search Action */}
               <div className="relative group flex items-center h-full">
                 <SearchBar
                   placeholder={settings?.searchPlaceholder?.[lang]}
@@ -125,18 +147,18 @@ export default async function Navigation() {
                 />
               </div>
 
-              {/* 2. Language Action */}
-              <div className="hidden md:flex h-full">
+              {/* Language Action (Desktop Only) */}
+              <div className="hidden md:flex h-full items-center">
                 <LanguageSwitcher availableLanguages={availableLanguages} />
               </div>
 
-              {/* 3. Cart Action */}
-              <div className="flex h-full">
+              {/* Cart Action */}
+              <div className="flex h-full items-center">
                 <CartToggle />
               </div>
 
-              {/* 4. Account/Login Action */}
-              <div className="hidden md:flex h-full">
+              {/* Account/Login Action (Desktop Only) */}
+              <div className="hidden md:flex h-full items-center">
                 {user ? (
                   <AccountDropdown
                     user={user}
@@ -160,26 +182,6 @@ export default async function Navigation() {
                 )}
               </div>
 
-              {/* 5. Mobile Menu Trigger */}
-              <div className="lg:hidden flex items-center h-full ml-2">
-                <MobileMenu
-                  user={user}
-                  isAdmin={isAdmin}
-                  navbarLinks={settings?.navbarLinks || []}
-                  lang={lang}
-                  categories={categories}
-                  availableLanguages={availableLanguages}
-                  labels={{
-                    menu: settings?.menuText?.[lang] || 'Menu',
-                    language: settings?.languageLabel?.[lang] || 'Language',
-                    account: settings?.accountLabel?.[lang] || 'Account',
-                    adminDashboard: settings?.adminDashboardText?.[lang] || 'Admin Dashboard',
-                    logout: settings?.logoutText?.[lang] || 'Logout',
-                    login: settings?.loginText?.[lang] || 'Login',
-                    allProducts: settings?.searchProductsResultsText?.[lang] || 'All Products'
-                  }}
-                />
-              </div>
             </div>
           </div>
         </div>
