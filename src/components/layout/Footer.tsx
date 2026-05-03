@@ -21,9 +21,11 @@ const FacebookIcon = ({ className, strokeWidth = 1.5 }: { className?: string; st
   </svg>
 );
 
-const TwitterIcon = ({ className, strokeWidth = 1.5 }: { className?: string; strokeWidth?: number }) => (
+const ThreadsIcon = ({ className, strokeWidth = 1.5 }: { className?: string; strokeWidth?: number }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" />
+    <path d="M12 12c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5z" />
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+    <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.65 0-3-1.35-3-3s1.35-3 3-3 3 1.35 3 3-1.35 3-3 3z" />
   </svg>
 );
 
@@ -43,7 +45,7 @@ export default async function Footer({ settings }: FooterProps) {
   const instagramUrl = normalizeSocialUrl(settings.socialInstagram, 'instagram');
   const tiktokUrl = normalizeSocialUrl(settings.socialTikTok, 'tiktok');
   const facebookUrl = normalizeSocialUrl(settings.socialFacebook, 'facebook');
-  const twitterUrl = normalizeSocialUrl(settings.socialTwitter, 'twitter');
+  const threadsUrl = normalizeSocialUrl(settings.socialThreads, 'threads');
 
   return (
     <footer className="bg-white border-t border-gray-200 pt-24 pb-12 mt-auto">
@@ -86,9 +88,9 @@ export default async function Footer({ settings }: FooterProps) {
                   <FacebookIcon className="w-5 h-5" strokeWidth={1.5} />
                 </a>
               )}
-              {twitterUrl && (
-                <a href={twitterUrl} target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-brand-ink transition-colors" aria-label="Visit our Twitter">
-                  <TwitterIcon className="w-5 h-5" strokeWidth={1.5} />
+              {threadsUrl && (
+                <a href={threadsUrl} target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-brand-ink transition-colors" aria-label="Visit our Threads">
+                  <ThreadsIcon className="w-5 h-5" strokeWidth={1.5} />
                 </a>
               )}
             </div>

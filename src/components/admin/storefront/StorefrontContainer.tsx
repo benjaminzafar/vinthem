@@ -585,7 +585,7 @@ Text to translate: "${sourceText}"`;
                       <CredentialInput label="Instagram Handle" value={settings.socialInstagram} onChange={v => handleUpdate('socialInstagram', v)} placeholder="@vinthem" />
                       <CredentialInput label="TikTok Profile" value={settings.socialTikTok} onChange={v => handleUpdate('socialTikTok', v)} placeholder="@vinthem_shop" />
                       <CredentialInput label="Facebook Page" value={settings.socialFacebook} onChange={v => handleUpdate('socialFacebook', v)} />
-                      <CredentialInput label="Twitter / X" value={settings.socialTwitter} onChange={v => handleUpdate('socialTwitter', v)} />
+                      <CredentialInput label="Threads Profile" value={settings.socialThreads} onChange={v => handleUpdate('socialThreads', v)} />
                    </div>
                 </SettingCard>
               </div>

@@ -22,7 +22,7 @@ export function isValidUrl(url: unknown): url is string {
 
 export function normalizeSocialUrl(
   value: string | null | undefined,
-  platform: 'instagram' | 'tiktok' | 'facebook' | 'twitter'
+  platform: 'instagram' | 'tiktok' | 'facebook' | 'threads'
 ): string | null {
   const trimmed = value?.trim();
   if (!trimmed || trimmed === '#') {
@@ -43,11 +43,11 @@ export function normalizeSocialUrl(
     return `https://www.tiktok.com/@${handle}`;
   }
 
-  if (platform === 'twitter') {
+  if (platform === 'threads') {
     if (trimmed.includes('.')) {
       return `https://${trimmed}`;
     }
-    return `https://x.com/${handle}`;
+    return `https://www.threads.net/@${handle}`;
   }
 
   if (platform === 'facebook') {

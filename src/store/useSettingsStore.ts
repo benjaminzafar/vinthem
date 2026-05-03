@@ -236,7 +236,7 @@ export interface StorefrontSettings {
   tiktokText: LocalizedString;
   googleText: LocalizedString;
   facebookText: LocalizedString;
-  twitterText: LocalizedString;
+  threadsText: LocalizedString;
   customerReviewsText: LocalizedString;
   leaveReviewText: LocalizedString;
   shareThoughtsPlaceholder: LocalizedString;
@@ -358,7 +358,7 @@ export interface StorefrontSettings {
   socialInstagram: string;
   socialTikTok: string;
   socialFacebook: string;
-  socialTwitter: string;
+  socialThreads: string;
   navbarLinks: MenuLink[];
   footerSections: FooterSection[];
   trackingTags: string;
@@ -613,7 +613,7 @@ export const defaultSettings: StorefrontSettings = {
   tiktokText: { en: 'TikTok', sv: 'TikTok', fi: 'TikTok', da: 'TikTok' },
   googleText: { en: 'Google', sv: 'Google', fi: 'Google', da: 'Google' },
   facebookText: { en: 'Facebook', sv: 'Facebook', fi: 'Facebook', da: 'Facebook' },
-  twitterText: { en: 'Twitter', sv: 'Twitter', fi: 'Twitter', da: 'Twitter' },
+  threadsText: { en: 'Threads', sv: 'Threads', fi: 'Threads', da: 'Threads' },
   customerReviewsText: { en: 'Customer Reviews', sv: 'Kundrecensioner', fi: 'Asiakasarvostelut', da: 'Kundeanmeldelser' },
   leaveReviewText: { en: 'Leave a Review', sv: 'Lämna en recension', fi: 'Jätä arvostelu', da: 'Skriv en anmeldelse' },
   shareThoughtsPlaceholder: { en: 'Share your thoughts...', sv: 'Dela dina tankar...', fi: 'Jaa ajatuksesi...', da: 'Del dine tanker...' },
@@ -735,7 +735,7 @@ export const defaultSettings: StorefrontSettings = {
   socialInstagram: '#',
   socialTikTok: '#',
   socialFacebook: '',
-  socialTwitter: '',
+  socialThreads: '',
   navbarLinks: [
     { label: { en: 'Shop', sv: 'Handla', fi: 'Kauppa', da: 'Shop' }, href: '/products' },
     { label: { en: 'Journal', sv: 'Journal', fi: 'Journali', da: 'Journal' }, href: '/blog' },
