@@ -1,5 +1,5 @@
 'use server';
-﻿import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger';
 import Stripe from 'stripe';
 
 import { encrypt } from '@/lib/encryption';
@@ -73,19 +73,16 @@ export async function getIntegrationsAction(): Promise<IntegrationActionResponse
 
 /**
  * Save Encrypted Integration Key
- * Diagnostics added for troubleshooting silent save failures.
  */
 export async function saveIntegrationAction(updates: Record<string, string>): Promise<IntegrationActionResponse> {
   try {
     const { supabase } = await requireAdminUser();
-
     const now = new Date().toISOString();
     
-    // 2. Process and Upsert
     for (const [key, value] of Object.entries(updates)) {
       if (typeof value === 'string' && value.trim() !== '' && value !== '********') {
-        const sanitizedValue = value.replace(/[<>]/g, '');
-        const normalizedValue = normalizePromptSettingValue(key, sanitizedValue);
+        // We do NOT sanitize <> characters here because AI prompts rely on them
+        const normalizedValue = normalizePromptSettingValue(key, value);
         const finalValue = isSensitiveIntegrationKey(key)
           ? await encrypt(normalizedValue)
           : normalizedValue;
@@ -127,11 +124,10 @@ export async function testStripeConnectionAction(apiKey: string): Promise<Integr
     }
 
     const stripe = new Stripe(apiKey, { 
-      apiVersion: '2023-10-16' as any, // Match project standard
+      apiVersion: '2023-10-16' as any,
       typescript: true 
     });
     
-    // Simple balance check to verify key validity
     await stripe.balance.retrieve();
     
     return { success: true, message: 'Secure connection to Stripe established successfully' };
@@ -150,7 +146,6 @@ export async function testBrevoApiAction(apiKey: string): Promise<IntegrationAct
     await requireAdminUser();
     
     if (!apiKey || apiKey === '********') {
-       // Try to get from existing config if masked
        const { supabase: adminClient } = await requireAdminUser();
        const { data: row } = await adminClient
          .from('integrations')

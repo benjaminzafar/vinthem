@@ -84,7 +84,11 @@ export function IntegrationsContainer({
       if (result.success) {
         toast.success(`${sectionId} settings synchronized and encrypted`);
         const maskedUpdates = keys.reduce((acc, key) => {
-           acc[key] = '********';
+           // Only mask truly sensitive keys like API keys, not instructions/prompts
+           const isPrompt = key.includes('PROMPT');
+           if (!isPrompt) {
+             acc[key] = '********';
+           }
            acc[`${key}_CONNECTED`] = 'true';
            return acc;
         }, {} as Record<string, string>);
