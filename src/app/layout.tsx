@@ -12,6 +12,8 @@ import { getServerLocale } from "@/lib/server-locale";
 import { Toaster } from "sonner";
 import Script from "next/script";
 import { getBrowserSupabaseConfig } from "@/lib/supabase-browser-config";
+import { headers } from "next/headers";
+
 
 function sanitizeClarityId(value: string | undefined): string | null {
   if (!value) {
@@ -82,6 +84,8 @@ export default async function RootLayout({
   const siteUrl = getEnv('SITE_URL') || 'https://www.vinthem.com';
   const clarityId = sanitizeClarityId(integrations.CLARITY_ID);
   const faviconUrl = getOptionalStringSetting(settings, 'faviconUrl');
+  const nonce = (await headers()).get('x-csp-nonce') || '';
+
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -118,6 +122,7 @@ export default async function RootLayout({
           <Script
             id="clarity-script"
             strategy="afterInteractive"
+            nonce={nonce}
             dangerouslySetInnerHTML={{
               __html: `
                 (function(c,l,a,r,i,t,y){
@@ -132,6 +137,7 @@ export default async function RootLayout({
         <Script
           id="supabase-browser-config"
           strategy="beforeInteractive"
+          nonce={nonce}
           dangerouslySetInnerHTML={{
             __html: `
               window.__supabase_url = ${JSON.stringify(supabaseConfig.url)};
@@ -141,8 +147,10 @@ export default async function RootLayout({
         />
         <script
           type="application/ld+json"
+          nonce={nonce}
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
+
         <link rel="dns-prefetch" href="https://xeatyjjiywcrkuvifyhm.supabase.co" />
         <link rel="preconnect" href="https://xeatyjjiywcrkuvifyhm.supabase.co" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="" />

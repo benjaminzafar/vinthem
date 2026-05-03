@@ -22,18 +22,35 @@ export function ResetPasswordClient({ initialSettings }: ResetPasswordClientProp
   const settings = useStorefrontSettings(initialSettings);
   const lang = getClientLocale(pathname);
 
+  const [checking, setChecking] = useState(true);
+
   // Security check on mount
   useEffect(() => {
+    let retryCount = 0;
+    const MAX_RETRIES = 3;
+
     const checkSession = async () => {
       const supabase = createClient();
       const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session && retryCount < MAX_RETRIES) {
+        retryCount++;
+        // Wait 400ms before retrying
+        setTimeout(checkSession, 400);
+        return;
+      }
+
       if (!session) {
         toast.error('Session expired. Redirecting to login...');
         window.location.href = `/${lang}/auth`;
+      } else {
+        setChecking(false);
       }
     };
+    
     checkSession();
   }, [lang]);
+
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,8 +87,17 @@ export function ResetPasswordClient({ initialSettings }: ResetPasswordClientProp
     } 
   };
 
+  if (checking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <Loader2 className="w-8 h-8 animate-spin text-zinc-900" />
+      </div>
+    );
+  }
+
   return (
     <div className="relative min-h-screen flex items-center justify-center p-6 sm:p-12 bg-white overflow-hidden">
+
       {settings.authBackgroundImage && settings.authBackgroundImage.length > 5 && settings.authBackgroundImage.startsWith('h') && (
         <div className="absolute inset-0 z-0">
           <Image 
