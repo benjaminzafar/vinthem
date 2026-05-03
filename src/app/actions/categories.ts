@@ -90,25 +90,62 @@ export async function bulkImportCategoriesAction(categories: any[]): Promise<Cat
     }
 
     // Clean and validate data before insertion
-    const cleanedCategories = categories.map((c: any) => ({
-      name: c.name?.trim() || 'Untitled Collection',
-      slug: c.slug?.trim() || (c.name ? c.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-') : `col-${Date.now()}`),
-      description: c.description?.trim() || null,
-      is_featured: c.is_featured === 'true' || c.isFeatured === true || false,
-      show_in_hero: c.show_in_hero === 'true' || c.showInHero === true || false,
-      parent_id: c.parent_id || c.parentId || null,
-      image_url: c.image_url || c.imageUrl || null,
-      icon_url: c.icon_url || c.iconUrl || null,
-      translations: c.translations ? (typeof c.translations === 'string' ? JSON.parse(c.translations) : c.translations) : {},
-    }));
+    const cleanedCategories = categories.map((c: any, index: number) => {
+      const name = c.name?.trim() || 'Untitled Collection';
+      let slug = c.slug?.trim();
+      if (!slug) {
+        slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        if (!slug) slug = `col-${Date.now()}-${index}`;
+      }
+
+      let translations = {};
+      if (c.translations) {
+        if (typeof c.translations === 'string' && c.translations.trim().startsWith('{')) {
+          try {
+            translations = JSON.parse(c.translations);
+          } catch (e) {
+            logger.warn(`[bulkImportCategoriesAction] Invalid translations JSON at row ${index}:`, c.translations);
+            translations = {};
+          }
+        } else if (typeof c.translations === 'object') {
+          translations = c.translations;
+        }
+      }
+
+      return {
+        name,
+        slug,
+        description: c.description?.trim() || null,
+        is_featured: String(c.is_featured).toLowerCase() === 'true' || c.isFeatured === true,
+        show_in_hero: String(c.show_in_hero).toLowerCase() === 'true' || c.showInHero === true,
+        parent_id: (c.parent_id || c.parentId)?.trim() || null,
+        image_url: (c.image_url || c.imageUrl)?.trim() || null,
+        icon_url: (c.icon_url || c.iconUrl)?.trim() || null,
+        translations,
+      };
+    });
+
+    // Check for duplicate slugs within the import set itself to avoid DB conflicts
+    const seenSlugs = new Set();
+    const finalCategories: any[] = [];
+    for (const cat of cleanedCategories) {
+      let candidate = cat.slug;
+      let counter = 1;
+      while (seenSlugs.has(candidate)) {
+        candidate = `${cat.slug}-${counter++}`;
+      }
+      seenSlugs.add(candidate);
+      finalCategories.push({ ...cat, slug: candidate });
+    }
 
     // Perform bulk upsert based on slug
     const { error } = await supabase
       .from('categories')
-      .upsert(cleanedCategories, { onConflict: 'slug' });
+      .upsert(finalCategories, { onConflict: 'slug' });
 
     if (error) {
-      throw error;
+      logger.error('[bulkImportCategoriesAction] Database Error:', error);
+      throw new Error(`Database error: ${error.message}`);
     }
 
     revalidatePath('/admin');
@@ -117,7 +154,7 @@ export async function bulkImportCategoriesAction(categories: any[]): Promise<Cat
 
     return {
       success: true,
-      message: `Successfully imported ${cleanedCategories.length} collections.`,
+      message: `Successfully imported ${finalCategories.length} collections.`,
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to import collections.';

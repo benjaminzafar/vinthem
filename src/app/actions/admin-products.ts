@@ -51,27 +51,45 @@ export async function bulkImportProductsAction(products: any[]): Promise<Product
     }
 
     // Clean and validate data before insertion
-    const cleanedProducts = products.map((p) => ({
-      title: p.title?.trim() || 'Untitled Product',
-      description: p.description?.trim() || null,
-      price: parseFloat(p.price) || 0,
-      stock: parseInt(p.stock) || 0,
-      sku: p.sku?.trim() || `SKU-${Date.now()}-${Math.random().toString(36).substring(7)}`,
-      category_id: p.category_id || p.categoryId || null,
-      image_url: p.image_url || p.imageUrl || null,
-      is_featured: p.is_featured === 'true' || p.isFeatured === true || false,
-      is_new: p.is_new === 'true' || p.isNew === true || false,
-      is_sale: p.is_sale === 'true' || p.isSale === true || false,
-      sale_price: p.sale_price ? parseFloat(p.sale_price) : null,
-    }));
+    const cleanedProducts = products.map((p, index) => {
+      const title = p.title?.trim() || 'Untitled Product';
+      const sku = p.sku?.trim() || `SKU-${Date.now()}-${index}-${Math.random().toString(36).substring(7)}`;
+      
+      return {
+        title,
+        sku,
+        description: p.description?.trim() || null,
+        price: parseFloat(String(p.price).replace(/[^0-9.]/g, '')) || 0,
+        stock: parseInt(String(p.stock).replace(/[^0-9]/g, '')) || 0,
+        category_id: (p.category_id || p.categoryId)?.trim() || null,
+        image_url: (p.image_url || p.imageUrl)?.trim() || null,
+        is_featured: String(p.is_featured).toLowerCase() === 'true' || p.isFeatured === true,
+        is_new: String(p.is_new).toLowerCase() === 'true' || p.isNew === true,
+        is_sale: String(p.is_sale).toLowerCase() === 'true' || p.isSale === true,
+        sale_price: p.sale_price ? parseFloat(String(p.sale_price).replace(/[^0-9.]/g, '')) : null,
+      };
+    });
+
+    // Check for duplicate SKUs within the import set itself
+    const seenSkus = new Set();
+    const finalProducts: any[] = [];
+    for (const prod of cleanedProducts) {
+      if (!seenSkus.has(prod.sku)) {
+        seenSkus.add(prod.sku);
+        finalProducts.push(prod);
+      } else {
+        logger.warn(`[bulkImportProductsAction] Skipping duplicate SKU in import set: ${prod.sku}`);
+      }
+    }
 
     // Perform bulk upsert based on SKU
     const { error } = await supabase
       .from('products')
-      .upsert(cleanedProducts, { onConflict: 'sku' });
+      .upsert(finalProducts, { onConflict: 'sku' });
 
     if (error) {
-      throw error;
+      logger.error('[bulkImportProductsAction] Database Error:', error);
+      throw new Error(`Database error: ${error.message}`);
     }
 
     revalidatePath('/admin/products');
@@ -79,7 +97,7 @@ export async function bulkImportProductsAction(products: any[]): Promise<Product
 
     return {
       success: true,
-      message: `Successfully imported ${cleanedProducts.length} products.`,
+      message: `Successfully imported ${finalProducts.length} products.`,
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to import products.';
