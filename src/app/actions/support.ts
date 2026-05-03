@@ -96,10 +96,8 @@ function revalidateSupportViews() {
 export async function submitSupportRequestAction(input: SupportRequestInput): Promise<SupportActionResult> {
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+    const { data: authData, error: userError } = await supabase.auth.getUser();
+    const user = authData?.user;
 
     if (userError) {
       throw userError;

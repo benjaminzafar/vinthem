@@ -24,7 +24,8 @@ const UserIcon = ({ className, strokeWidth = 1.5 }: { className?: string; stroke
 export default async function Navigation() {
   const supabase = await createClient();
   const settings = await getSettings();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: authData } = await supabase.auth.getUser();
+  const user = authData?.user;
   // Check if admin
   let isAdmin = false;
   if (user) {

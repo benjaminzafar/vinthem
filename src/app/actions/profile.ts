@@ -62,10 +62,8 @@ function sanitizeAddressInput(input: AddressInput): AddressInput {
 
 async function getAuthenticatedClient() {
   const sessionClient = await createClient();
-  const {
-    data: { user },
-    error,
-  } = await sessionClient.auth.getUser();
+  const { data: authData, error } = await sessionClient.auth.getUser();
+  const user = authData?.user;
 
   if (error) {
     throw error;

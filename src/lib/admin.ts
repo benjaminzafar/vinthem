@@ -53,10 +53,8 @@ async function getRoleWithAdminClient(
 
 export async function getSessionUserWithRole() {
   const supabase = await createClient();
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
+  const { data: authData, error } = await supabase.auth.getUser();
+  const user = authData?.user;
 
   if (error) {
     throw error;
@@ -102,10 +100,8 @@ export async function getBearerUserWithRole(authorizationHeader: string | null) 
 
   const token = authorizationHeader.slice('Bearer '.length).trim();
   const supabase = createAdminClient();
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser(token);
+  const { data: authData, error } = await supabase.auth.getUser(token);
+  const user = authData?.user;
 
   if (error || !user) {
     throw new Error('Unauthorized: Invalid token');

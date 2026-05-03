@@ -36,12 +36,10 @@ export async function updateSession(request: NextRequest) {
 
   // IMPORTANT: Do not remove getUser() as it refreshes the session
   try {
-    const {
-      data: { user },
-      error,
-    } = await supabase.auth.getUser();
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    const user = authData?.user;
 
-    if (error || !user) {
+    if (authError || !user) {
       return { supabaseResponse, user: null, role: null };
     }
 

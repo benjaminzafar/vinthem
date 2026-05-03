@@ -328,7 +328,8 @@ export function NotificationCenter() {
 
   useEffect(() => {
     const syncWithUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: authData } = await supabase.auth.getUser();
+      const user = authData?.user;
       if (user?.user_metadata?.cleared_notifications_at) {
         const dbCutoff = new Date(user.user_metadata.cleared_notifications_at);
         if (!clearedBefore || dbCutoff > clearedBefore) {

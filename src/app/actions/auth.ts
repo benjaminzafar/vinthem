@@ -15,10 +15,8 @@ type AuthActionResult = {
 export async function syncCurrentUserProfileAction(name?: string): Promise<AuthActionResult> {
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-      error,
-    } = await supabase.auth.getUser();
+    const { data: authData, error } = await supabase.auth.getUser();
+    const user = authData?.user;
 
     if (error) {
       throw error;
@@ -83,7 +81,8 @@ export async function recordSignupConsentAction({
     }
 
     const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    const user = authData?.user;
 
     if (authError || !user) {
       return { success: false, error: 'User session not found.', message: 'Not authenticated' };

@@ -52,10 +52,8 @@ async function hasUserPurchasedProduct(userId: string, productId: string) {
 export async function checkPurchasedProductAction(productId: string): Promise<{ purchased: boolean; error?: string }> {
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+    const { data: authData, error: userError } = await supabase.auth.getUser();
+    const user = authData?.user;
 
     if (userError) {
       throw userError;

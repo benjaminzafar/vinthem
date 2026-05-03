@@ -62,7 +62,8 @@ export default function Reviews({ productId, initialSettings, lang }: ReviewsPro
 
   useEffect(() => {
     const checkPurchase = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: authData } = await supabase.auth.getUser();
+      const user = authData?.user;
       if (!user) {
         setHasPurchased(false);
         return;
@@ -82,7 +83,8 @@ export default function Reviews({ productId, initialSettings, lang }: ReviewsPro
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: authData } = await supabase.auth.getUser();
+    const user = authData?.user;
     
     if (!user) {
       toast.error(settings.pleaseLoginToReviewText?.[lang] || 'Please log in to leave a review.');
@@ -113,8 +115,8 @@ export default function Reviews({ productId, initialSettings, lang }: ReviewsPro
 
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setCurrentUser(user);
+    supabase.auth.getUser().then(({ data }) => {
+      setCurrentUser(data?.user ?? null);
     });
   }, []);
 

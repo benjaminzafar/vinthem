@@ -32,7 +32,8 @@ export default async function ProfilePage() {
   const supabase = await createClient();
   const adminSupabase = createAdminClient();
   
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: authData } = await supabase.auth.getUser();
+  const user = authData?.user;
 
   if (!user) {
     redirect('/auth?redirect=/profile');

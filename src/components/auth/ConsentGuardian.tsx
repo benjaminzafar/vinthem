@@ -16,7 +16,8 @@ export function ConsentGuardian() {
       }
 
       // 2. Check current session
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: authData } = await supabase.auth.getUser();
+      const user = authData?.user;
       if (!user) return;
 
       // 3. Check profile for terms acceptance
