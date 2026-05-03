@@ -19,9 +19,25 @@ export async function deleteProductAction(productId: string): Promise<ProductAct
       throw new Error('Product ID is required.');
     }
 
+    // Fetch product to get media URLs for cleanup
+    const { data: product } = await supabase
+      .from('products')
+      .select('image_url, additional_images')
+      .eq('id', productId)
+      .single();
+
     const { error } = await supabase.from('products').delete().eq('id', productId);
     if (error) {
       throw error;
+    }
+
+    // Background cleanup of media files to avoid "unused data"
+    if (product) {
+      const { deleteMediaFromStorage, bulkDeleteMediaFromStorage } = await import('@/lib/storage-cleanup');
+      void deleteMediaFromStorage(product.image_url);
+      if (product.additional_images?.length) {
+        void bulkDeleteMediaFromStorage(product.additional_images);
+      }
     }
 
     revalidatePath('/', 'layout');

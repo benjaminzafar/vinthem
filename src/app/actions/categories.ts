@@ -282,9 +282,23 @@ export async function deleteCategoryAction(input: DeleteCategoryInput): Promise<
       }
     }
 
+    // Fetch media URLs for cleanup
+    const { data: catMedia } = await supabase
+      .from('categories')
+      .select('image_url, icon_url')
+      .eq('id', input.categoryId)
+      .single();
+
     const { error: categoryError } = await supabase.from('categories').delete().eq('id', input.categoryId);
     if (categoryError) {
       throw categoryError;
+    }
+
+    // Background cleanup of media files
+    if (catMedia) {
+      const { deleteMediaFromStorage } = await import('@/lib/storage-cleanup');
+      void deleteMediaFromStorage(catMedia.image_url);
+      void deleteMediaFromStorage(catMedia.icon_url);
     }
 
     revalidatePath('/', 'layout');
@@ -324,6 +338,12 @@ export async function deleteCategoriesAction(input: DeleteCategoriesInput): Prom
       .update({ category_id: null })
       .in('category_id', allIdsToDelete);
 
+    // Fetch all media URLs for bulk cleanup
+    const { data: allMedia } = await supabase
+      .from('categories')
+      .select('image_url, icon_url')
+      .in('id', allIdsToDelete);
+
     // 2. Perform the deletion
     const { error } = await supabase
       .from('categories')
@@ -332,6 +352,13 @@ export async function deleteCategoriesAction(input: DeleteCategoriesInput): Prom
 
     if (error) {
       throw error;
+    }
+
+    // Background bulk cleanup of media files
+    if (allMedia?.length) {
+      const { bulkDeleteMediaFromStorage } = await import('@/lib/storage-cleanup');
+      const urls = allMedia.flatMap(m => [m.image_url, m.icon_url]);
+      void bulkDeleteMediaFromStorage(urls);
     }
 
     revalidatePath('/', 'layout');
