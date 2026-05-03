@@ -80,8 +80,9 @@ export async function getStripeClient(): Promise<Stripe | null> {
 
   return new Stripe(secretKey, {
     apiVersion: '2026-03-25.dahlia',
-    timeout: 60000, // 60 seconds timeout for slower environments
+    httpClient: Stripe.createFetchHttpClient(), // Use fetch for better compatibility
+    timeout: 60000,
     maxNetworkRetries: 3,
-    telemetry: false, // Disable telemetry to reduce external requests
+    telemetry: false,
   });
 }

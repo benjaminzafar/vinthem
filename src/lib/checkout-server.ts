@@ -290,54 +290,63 @@ export async function startCheckout(
     };
   }
 
-  const session = await stripe.checkout.sessions.create({
-    mode: 'payment',
-    automatic_tax: { enabled: true },
-    billing_address_collection: 'required',
-    customer_creation: 'always',
-    customer_email: shippingDetails.email || undefined,
-    locale: resolveStripeCheckoutLocale(market.locale),
-    metadata: {
-      orderId: orderData.id,
-      userId: user?.id ?? '',
-    },
-    shipping_address_collection: {
-      allowed_countries: (await getSettings()).shippingCountries?.map(c => c.code.toUpperCase() as (typeof ALLOWED_SHIPPING_COUNTRIES)[number]) || [...ALLOWED_SHIPPING_COUNTRIES],
-    },
-    shipping_options: [
-      {
-        shipping_rate_data: {
-          type: 'fixed_amount',
-          display_name: 'PostNord',
-          fixed_amount: {
-            amount: Math.round(estimate.shipping * 100),
-            currency: BASE_CURRENCY,
+  let session;
+  try {
+    session = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      automatic_tax: { enabled: !!estimate.tax || true },
+      billing_address_collection: 'required',
+      customer_creation: 'always',
+      customer_email: shippingDetails.email || undefined,
+      locale: resolveStripeCheckoutLocale(market.locale),
+      metadata: {
+        orderId: orderData.id,
+        userId: user?.id ?? '',
+      },
+      shipping_address_collection: {
+        allowed_countries: (await getSettings()).shippingCountries?.map(c => c.code.toUpperCase() as (typeof ALLOWED_SHIPPING_COUNTRIES)[number]) || [...ALLOWED_SHIPPING_COUNTRIES],
+      },
+      shipping_options: [
+        {
+          shipping_rate_data: {
+            type: 'fixed_amount',
+            display_name: 'PostNord',
+            fixed_amount: {
+              amount: Math.round(estimate.shipping * 100),
+              currency: BASE_CURRENCY,
+            },
+            tax_behavior: 'exclusive',
+            tax_code: SHIPPING_TAX_CODE,
           },
+        },
+      ],
+      phone_number_collection: { enabled: true },
+      line_items: validatedItems.map((item) => ({
+        quantity: item.quantity,
+        price_data: {
+          currency: BASE_CURRENCY,
+          unit_amount: Math.round(item.unitPrice * 100),
           tax_behavior: 'exclusive',
-          tax_code: SHIPPING_TAX_CODE,
+          product_data: {
+            name: item.title,
+            tax_code: resolveProductTaxCode(
+              item.categoryId ? categoriesById.get(item.categoryId) : undefined,
+              item.shippingClass,
+              item.stripeTaxCode,
+            ),
+          },
         },
-      },
-    ],
-    phone_number_collection: { enabled: true },
-    line_items: validatedItems.map((item) => ({
-      quantity: item.quantity,
-      price_data: {
-        currency: BASE_CURRENCY,
-        unit_amount: Math.round(item.unitPrice * 100),
-        tax_behavior: 'exclusive',
-        product_data: {
-          name: item.title,
-          tax_code: resolveProductTaxCode(
-            item.categoryId ? categoriesById.get(item.categoryId) : undefined,
-            item.shippingClass,
-            item.stripeTaxCode,
-          ),
-        },
-      },
-    })),
-    success_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}${locale ? `/${locale}` : ''}/profile?checkout=success&order=${orderData.id}`,
-    cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}${locale ? `/${locale}` : ''}/payment?checkout=cancelled`,
-  });
+      })),
+      success_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}${locale ? `/${locale}` : ''}/profile?checkout=success&order=${orderData.id}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}${locale ? `/${locale}` : ''}/payment?checkout=cancelled`,
+    });
+  } catch (error) {
+    logger.error('Stripe session creation failed:', error);
+    if (error instanceof Error && error.message.includes('connection')) {
+      throw new Error('Stripe is currently unreachable. Please check your internet connection or Stripe API keys.');
+    }
+    throw error;
+  }
 
   return {
     success: true,
