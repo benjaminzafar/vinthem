@@ -135,24 +135,6 @@ export function SidebarFilters({
           </div>
         </div>
 
-        {/* Sorting Section */}
-        <div className="pt-8 border-t border-slate-100">
-          <div className="space-y-1">
-            {[
-              { id: 'newest', label: settings.sortNewestText?.[lang] || 'Newest Arrivals' },
-              { id: 'price-asc', label: settings.sortPriceAscText?.[lang] || 'Price: Low to High' },
-              { id: 'price-desc', label: settings.sortPriceDescText?.[lang] || 'Price: High to Low' }
-            ].map((option) => (
-              <button
-                key={option.id}
-                onClick={() => updateParams({ sort: option.id })}
-                className={`w-full text-left py-2 px-4 transition-all text-[12px] font-semibold tracking-tight ${sortBy === option.id ? 'text-brand-ink underline underline-offset-4' : 'text-brand-muted hover:text-brand-ink'}`}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   );
