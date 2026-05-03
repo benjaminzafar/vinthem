@@ -91,7 +91,7 @@ export default async function Navigation() {
           </div>
 
           {/* 2. Brand Logo (Centered on Mobile, Left on Desktop) */}
-          <div className="flex lg:flex-none items-center justify-center lg:justify-start flex-1 lg:flex-initial">
+          <div className="flex lg:flex-none items-center justify-center lg:justify-start flex-1 lg:flex-initial -ml-1 lg:ml-0">
             <Link href={localizeHref(lang, '/')} className="flex items-center space-x-3 group">
               {settings?.logoImage && settings.logoImage.length > 5 && settings.logoImage.startsWith('h') ? (
                 <div className="relative h-7 w-28">
