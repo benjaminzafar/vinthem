@@ -54,17 +54,19 @@ export default async function Footer({ settings }: FooterProps) {
           <div className="col-span-1 md:col-span-4 lg:col-span-5 pr-8 flex flex-col items-start">
             <Link href={localizeHref(lang, '/')} className="inline-block mb-8 group">
               {settings.logoImage ? (
-                <div className="relative h-6 w-24">
+                <div className="relative h-7 w-28">
                   <Image 
                     src={settings.logoImage} 
-                    alt={settings.storeName?.[lang] || 'Vinthem'} 
+                    alt={settings.storeName?.[lang] || settings.storeName?.en || 'Vinthem'} 
                     fill
                     className="object-contain transition-transform group-hover:scale-105" 
                     sizes="(max-width: 768px) 120px, 160px"
                   />
                 </div>
               ) : (
-                <span className="text-xl font-normal text-gray-900">{settings.storeName?.[lang]}</span>
+                <span className="text-xl font-normal text-gray-900">
+                  {settings.storeName?.[lang] || settings.storeName?.en || 'Vinthem'}
+                </span>
               )}
             </Link>
             <p className="text-zinc-700 !text-[14px] leading-relaxed max-w-sm mb-8">

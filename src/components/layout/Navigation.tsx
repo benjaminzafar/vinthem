@@ -72,7 +72,7 @@ export default async function Navigation() {
           <div className="flex-1 flex items-center">
             <Link href={localizeHref(lang, '/')} className="flex items-center space-x-3 group">
               {settings?.logoImage && settings.logoImage.length > 5 && settings.logoImage.startsWith('h') ? (
-                <div className="relative h-6 w-24">
+                <div className="relative h-7 w-28">
                   <Image
                     src={settings.logoImage}
                     alt={`${settings.seoTitle?.[lang] || settings.seoTitle?.en || settings.storeName?.[lang] || 'Vinthem'}`}
