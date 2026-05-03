@@ -6,6 +6,7 @@ import { ALLOWED_SHIPPING_COUNTRIES, resolveMarket, resolveStripeCheckoutLocale 
 import { getStripeClient } from '@/lib/stripe-server';
 import { createAdminClient, createClient } from '@/utils/supabase/server';
 import { getSettings } from '@/lib/data';
+import { logger } from '@/lib/logger';
 
 const BASE_CURRENCY = 'sek';
 const SHIPPING_TAX_CODE = 'txcd_92010001';
@@ -218,7 +219,16 @@ export async function estimateCheckout(
   const shipping = getShippingCost(shippingDetails.country);
   const market = resolveMarket(locale || shippingDetails.country);
   const stripe = await getStripeClient();
-  const taxCalculation = await createTaxEstimate(stripe, shippingDetails, validatedItems, categoriesById, shipping);
+  
+  let taxCalculation: Stripe.Tax.Calculation | null = null;
+  try {
+    if (stripe) {
+      taxCalculation = await createTaxEstimate(stripe, shippingDetails, validatedItems, categoriesById, shipping);
+    }
+  } catch (error) {
+    logger.error('Stripe Tax calculation failed. Proceeding with zero tax.', error);
+  }
+
   const tax = taxCalculation ? taxCalculation.amount_total / 100 - subtotal - shipping : 0;
   const total = subtotal + shipping + tax;
   const taxBreakdown = taxCalculation?.tax_breakdown?.map((entry) => ({

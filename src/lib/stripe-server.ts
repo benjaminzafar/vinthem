@@ -4,6 +4,7 @@ import Stripe from 'stripe';
 
 import { maybeDecryptStoredValue } from '@/lib/integrations';
 import { createAdminClient } from '@/utils/supabase/server';
+import { logger } from '@/lib/logger';
 
 type IntegrationRow = {
   key: string;
@@ -68,9 +69,19 @@ export async function getStripeSecretKey(): Promise<string> {
 export async function getStripeClient(): Promise<Stripe | null> {
   const secretKey = await getStripeSecretKey();
 
-  if (!secretKey) {
+  if (!secretKey || secretKey.trim() === '') {
+    logger.warn('Stripe initialization skipped: Missing secret key.');
     return null;
   }
 
-  return new Stripe(secretKey);
+  // Debug log to verify the key format without exposing the full secret
+  const maskedKey = `${secretKey.slice(0, 7)}...${secretKey.slice(-4)}`;
+  logger.info(`Initializing Stripe client with key: ${maskedKey} (Length: ${secretKey.length})`);
+
+  return new Stripe(secretKey, {
+    apiVersion: '2026-03-25.dahlia',
+    timeout: 60000, // 60 seconds timeout for slower environments
+    maxNetworkRetries: 3,
+    telemetry: false, // Disable telemetry to reduce external requests
+  });
 }
