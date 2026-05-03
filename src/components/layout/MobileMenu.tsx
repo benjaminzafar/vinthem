@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'motion/react';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
-import { Menu, X, ChevronRight, ChevronLeft, User, Settings, LogOut } from 'lucide-react';
+// Removed broken lucide imports
 import { useUIStore } from '@/store/useUIStore';
 import { StorefrontSettings, MenuLink } from '@/store/useSettingsStore';
 import { User as SupabaseUser } from '@supabase/supabase-js';
@@ -14,6 +14,52 @@ import { Portal } from './Portal';
 import { Category } from '@/types';
 import { localizeHref } from '@/lib/i18n-routing';
 import { performClientLogout } from '@/lib/client-auth';
+
+const MenuIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <line x1="4" x2="20" y1="12" y2="12" /><line x1="4" x2="20" y1="6" y2="6" /><line x1="4" x2="20" y1="18" y2="18" />
+  </svg>
+);
+
+const XIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+  </svg>
+);
+
+const ChevronRightIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="m9 18 6-6-6-6" />
+  </svg>
+);
+
+const ChevronLeftIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="m15 18-6-6 6-6" />
+  </svg>
+);
+
+const UserIcon = ({ className, strokeWidth = 1.5 }: { className?: string; strokeWidth?: number }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
+  </svg>
+);
+
+const SettingsIcon = ({ className, strokeWidth = 1.5 }: { className?: string; strokeWidth?: number }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+    <circle cx="12" cy="12" r="3" />
+  </svg>
+);
+
+const LogOutIcon = ({ className, strokeWidth = 1.5 }: { className?: string; strokeWidth?: number }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+    <polyline points="16 17 21 12 16 7" />
+    <line x1="21" x2="9" y1="12" y2="12" />
+  </svg>
+);
 
 interface MobileMenuProps {
   user: SupabaseUser | null;
@@ -154,7 +200,7 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
         }}
         aria-label="Open mobile menu"
       >
-        <Menu className="w-6 h-6" strokeWidth={1.5} />
+        <MenuIcon className="w-6 h-6" />
       </button>
 
       <AnimatePresence>
@@ -182,7 +228,7 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                   className="p-2 -mr-2 text-gray-500 hover:text-brand-ink transition-colors"
                   aria-label="Close menu"
                 >
-                  <X className="w-5 h-5" />
+                  <XIcon className="w-5 h-5" />
                 </button>
               </div>
 
@@ -197,7 +243,7 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                     <span className="!text-[12px] !font-bold !uppercase !tracking-widest text-brand-ink group-hover:text-brand-ink transition-all duration-300">
                       {labels.allProducts}
                     </span>
-                    <ChevronRight className="w-4 h-4 text-slate-400 transition-colors group-hover:text-slate-700" />
+                    <ChevronRightIcon className="w-4 h-4 text-slate-400 transition-colors group-hover:text-slate-700" />
                   </Link>
 
                   <div className="overflow-hidden">
@@ -216,7 +262,7 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                             onClick={goBackCategoryLevel}
                             className="flex w-full items-center gap-2 pb-2 text-left text-[11px] font-bold uppercase tracking-widest text-slate-500 transition-colors hover:text-slate-900"
                           >
-                            <ChevronLeft className="h-4 w-4" />
+                            <ChevronLeftIcon className="h-4 w-4" />
                             {categoryTrail[categoryTrail.length - 2]?.label || labels.allProducts}
                           </button>
                         ) : null}
@@ -245,11 +291,11 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                                   className="group flex shrink-0 items-center justify-center py-1 text-slate-400 transition-colors hover:text-slate-700"
                                   aria-label={`Open subcategories for ${getCategoryLabel(category)}`}
                                 >
-                                  <ChevronRight className="h-4 w-4" />
+                                  <ChevronRightIcon className="h-4 w-4" />
                                 </button>
                               ) : (
                                 <span className="flex shrink-0 items-center justify-center py-1 text-slate-300">
-                                  <ChevronRight className="h-4 w-4" />
+                                  <ChevronRightIcon className="h-4 w-4" />
                                 </span>
                               )}
                             </div>
@@ -276,7 +322,7 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                       <span className="!text-[12px] !font-bold !uppercase !tracking-widest text-brand-ink group-hover:text-brand-ink transition-all duration-300">
                         {link.label[lang] || link.label['en']}
                       </span>
-                      <ChevronRight className="w-4 h-4 text-slate-400 transition-colors group-hover:text-slate-700" />
+                      <ChevronRightIcon className="w-4 h-4 text-slate-400 transition-colors group-hover:text-slate-700" />
                     </Link>
                   ))}
                 </nav>
@@ -299,7 +345,7 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                             className="p-2.5 text-slate-500 hover:text-brand-ink transition-colors rounded-none hover:bg-slate-50"
                             aria-label={labels.adminDashboard}
                           >
-                            <Settings className="w-5 h-5" strokeWidth={1.5} />
+                            <SettingsIcon className="w-5 h-5" strokeWidth={1.5} />
                           </Link>
                         )}
                         <Link
@@ -308,7 +354,7 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                           className="p-2.5 text-slate-500 hover:text-brand-ink transition-colors rounded-none hover:bg-slate-50"
                           aria-label={labels.account}
                         >
-                          <User className="w-5 h-5" strokeWidth={1.5} />
+                          <UserIcon className="w-5 h-5" strokeWidth={1.5} />
                         </Link>
                         <button
                           type="button"
@@ -319,7 +365,7 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                           className="p-2.5 text-red-400 hover:text-red-600 transition-colors rounded-none hover:bg-red-50"
                           aria-label={labels.logout}
                         >
-                          <LogOut className="w-5 h-5" strokeWidth={1.5} />
+                          <LogOutIcon className="w-5 h-5" strokeWidth={1.5} />
                         </button>
                       </>
                     ) : (
@@ -328,7 +374,7 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                         onClick={() => setMobileMenuOpen(false)}
                         className="flex items-center gap-2 p-2.5 text-brand-ink hover:text-brand-muted transition-colors rounded-none hover:bg-slate-50"
                       >
-                        <User className="w-5 h-5" strokeWidth={1.5} />
+                        <UserIcon className="w-5 h-5" strokeWidth={1.5} />
                         <span className="text-[11px] font-bold uppercase tracking-widest">{labels.login}</span>
                       </Link>
                     )}

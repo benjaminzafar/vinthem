@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { createClient } from '@/utils/supabase/server';
 import { getSettings } from '@/lib/data';
 import Image from 'next/image';
-import { ShoppingBag, User } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { SearchBar } from './SearchBar';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { AccountDropdown } from './AccountDropdown';
@@ -13,6 +13,13 @@ import { CartToggle } from './CartToggle';
 import { cookies } from 'next/headers';
 import { localizeHref } from '@/lib/i18n-routing';
 import { ConsentGuardian } from '../auth/ConsentGuardian';
+
+const UserIcon = ({ className, strokeWidth = 1.5 }: { className?: string; strokeWidth?: number }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
+  </svg>
+);
 
 export default async function Navigation() {
   const supabase = await createClient();
@@ -148,7 +155,7 @@ export default async function Navigation() {
                     className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all rounded-full flex items-center justify-center"
                     aria-label={settings?.loginText?.[lang] || 'Login'}
                   >
-                    <User className="w-5 h-5" strokeWidth={1.5} />
+                     <UserIcon className="w-5 h-5" strokeWidth={1.5} />
                   </Link>
                 )}
               </div>
