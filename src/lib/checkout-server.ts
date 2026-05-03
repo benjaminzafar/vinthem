@@ -6,6 +6,7 @@ import { ALLOWED_SHIPPING_COUNTRIES, resolveMarket, resolveStripeCheckoutLocale 
 import { getStripeClient } from '@/lib/stripe-server';
 import { createAdminClient, createClient } from '@/utils/supabase/server';
 import { getSettings } from '@/lib/data';
+import { headers } from 'next/headers';
 import { logger } from '@/lib/logger';
 
 const BASE_CURRENCY = 'sek';
@@ -292,6 +293,11 @@ export async function startCheckout(
 
   let session;
   try {
+    const headList = await headers();
+    const origin = headList.get('origin') || headList.get('host') 
+      ? `${headList.get('x-forwarded-proto') || 'https'}://${headList.get('host')}`
+      : process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+
     session = await stripe.checkout.sessions.create({
       mode: 'payment',
       automatic_tax: { enabled: !!estimate.tax || true },
@@ -337,8 +343,8 @@ export async function startCheckout(
           },
         },
       })),
-      success_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}${locale ? `/${locale}` : ''}/profile?checkout=success&order=${orderData.id}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}${locale ? `/${locale}` : ''}/payment?checkout=cancelled`,
+      success_url: `${origin}${locale ? `/${locale}` : ''}/profile?checkout=success&order=${orderData.id}`,
+      cancel_url: `${origin}${locale ? `/${locale}` : ''}/payment?checkout=cancelled`,
     });
   } catch (error) {
     logger.error('Stripe session creation failed:', error);
