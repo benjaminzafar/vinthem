@@ -11,8 +11,8 @@ export default function AdminNavHeader({ onToggle }: { onToggle: () => void }) {
   const isIntegrationsPage = pathname.includes('/integrations');
 
   return (
-    <header className="bg-white border-b border-slate-300 sticky top-0 z-30 flex-shrink-0">
-      <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 h-16 gap-3">
+    <header className="bg-white sticky top-0 z-30 flex-shrink-0">
+      <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 h-16 border-b border-slate-300 gap-3">
         <div className="flex items-center">
           <button 
             onClick={onToggle}
