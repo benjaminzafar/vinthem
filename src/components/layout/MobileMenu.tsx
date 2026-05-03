@@ -235,16 +235,18 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
               <div className="flex-1 overflow-y-auto px-6 py-8 custom-scrollbar">
                 <nav className="flex flex-col space-y-6">
                   {/* Collections */}
-                  <Link
-                    href={localizeHref(lang, `/products`)}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="group flex items-center justify-between"
-                  >
-                    <span className="!text-[12px] !font-bold !uppercase !tracking-widest text-brand-ink group-hover:text-brand-ink transition-all duration-300">
-                      {labels.allProducts}
-                    </span>
-                    <ChevronRightIcon className="w-5 h-5 text-slate-400 transition-colors group-hover:text-slate-700" />
-                  </Link>
+                  {categoryTrail.length === 1 && (
+                    <Link
+                      href={localizeHref(lang, `/products`)}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="group flex items-center justify-between"
+                    >
+                      <span className="!text-[12px] !font-bold !uppercase !tracking-widest text-brand-ink group-hover:text-brand-ink transition-all duration-300">
+                        {labels.allProducts}
+                      </span>
+                      <ChevronRightIcon className="w-5 h-5 text-slate-400 transition-colors group-hover:text-slate-700" />
+                    </Link>
+                  )}
 
                   <div className="overflow-hidden">
                     <AnimatePresence mode="wait" initial={false}>
@@ -311,26 +313,30 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                     </AnimatePresence>
                   </div>
                   
-                  {categories.length > 0 && (
-                    <div className="w-8 h-px bg-gray-200 my-2" />
-                  )}
+                  {categoryTrail.length === 1 && (
+                    <>
+                      {categories.length > 0 && (
+                        <div className="w-8 h-px bg-gray-200 my-2" />
+                      )}
 
-                  {/* Pages */}
-                  {(navbarLinks || [])
-                    .filter((link: MenuLink) => link.href !== '/products' && link.href !== '/products/')
-                    .map((link: MenuLink, index: number) => (
-                    <Link
-                      key={index}
-                      href={localizeHref(lang, link.href)}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="group flex items-center justify-between"
-                    >
-                      <span className="!text-[12px] !font-bold !uppercase !tracking-widest text-brand-ink group-hover:text-brand-ink transition-all duration-300">
-                        {link.label[lang] || link.label['en']}
-                      </span>
-                      <ChevronRightIcon className="w-5 h-5 text-slate-400 transition-colors group-hover:text-slate-700" />
-                    </Link>
-                  ))}
+                      {/* Pages */}
+                      {(navbarLinks || [])
+                        .filter((link: MenuLink) => link.href !== '/products' && link.href !== '/products/')
+                        .map((link: MenuLink, index: number) => (
+                        <Link
+                          key={index}
+                          href={localizeHref(lang, link.href)}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="group flex items-center justify-between"
+                        >
+                          <span className="!text-[12px] !font-bold !uppercase !tracking-widest text-brand-ink group-hover:text-brand-ink transition-all duration-300">
+                            {link.label[lang] || link.label['en']}
+                          </span>
+                          <ChevronRightIcon className="w-5 h-5 text-slate-400 transition-colors group-hover:text-slate-700" />
+                        </Link>
+                      ))}
+                    </>
+                  )}
                 </nav>
               </div>
 
