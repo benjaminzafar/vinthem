@@ -24,8 +24,7 @@ export async function deleteProductAction(productId: string): Promise<ProductAct
       throw error;
     }
 
-    revalidatePath('/admin/products');
-    revalidatePath('/products');
+    revalidatePath('/', 'layout');
 
     return {
       success: true,
@@ -92,8 +91,7 @@ export async function bulkImportProductsAction(products: any[]): Promise<Product
       throw new Error(`Database error: ${error.message}`);
     }
 
-    revalidatePath('/admin/products');
-    revalidatePath('/products');
+    revalidatePath('/', 'layout');
 
     return {
       success: true,

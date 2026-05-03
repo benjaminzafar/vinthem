@@ -140,9 +140,7 @@ export async function bulkImportCategoriesAction(categories: any[]): Promise<Cat
       throw new Error(`Database error: ${error.message}`);
     }
 
-    revalidatePath('/admin');
-    revalidatePath('/');
-    revalidatePath('/products');
+    revalidatePath('/', 'layout');
 
     return {
       success: true,
@@ -230,9 +228,7 @@ export async function saveCategoryAction(input: SaveCategoryInput): Promise<Cate
       }
     }
 
-    revalidatePath('/admin');
-    revalidatePath('/');
-    revalidatePath('/products');
+    revalidatePath('/', 'layout');
 
     return {
       success: true,
@@ -291,9 +287,7 @@ export async function deleteCategoryAction(input: DeleteCategoryInput): Promise<
       throw categoryError;
     }
 
-    revalidatePath('/admin');
-    revalidatePath('/');
-    revalidatePath('/products');
+    revalidatePath('/', 'layout');
 
     return {
       success: true,
@@ -340,9 +334,7 @@ export async function deleteCategoriesAction(input: DeleteCategoriesInput): Prom
       throw error;
     }
 
-    revalidatePath('/admin');
-    revalidatePath('/');
-    revalidatePath('/products');
+    revalidatePath('/', 'layout');
 
     return {
       success: true,
