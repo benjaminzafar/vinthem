@@ -80,6 +80,56 @@ async function collectDescendantCategoryIds(supabase: ReturnType<typeof createAd
   return [...discovered];
 }
 
+export async function bulkImportCategoriesAction(categories: any[]): Promise<CategoryActionResponse> {
+  try {
+    await requireAdminUser();
+    const supabase = createAdminClient();
+
+    if (!categories || categories.length === 0) {
+      throw new Error('No collections provided for import.');
+    }
+
+    // Clean and validate data before insertion
+    const cleanedCategories = categories.map((c: any) => ({
+      name: c.name?.trim() || 'Untitled Collection',
+      slug: c.slug?.trim() || (c.name ? c.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-') : `col-${Date.now()}`),
+      description: c.description?.trim() || null,
+      is_featured: c.is_featured === 'true' || c.isFeatured === true || false,
+      show_in_hero: c.show_in_hero === 'true' || c.showInHero === true || false,
+      parent_id: c.parent_id || c.parentId || null,
+      image_url: c.image_url || c.imageUrl || null,
+      icon_url: c.icon_url || c.iconUrl || null,
+      translations: c.translations ? (typeof c.translations === 'string' ? JSON.parse(c.translations) : c.translations) : {},
+    }));
+
+    // Perform bulk upsert based on slug
+    const { error } = await supabase
+      .from('categories')
+      .upsert(cleanedCategories, { onConflict: 'slug' });
+
+    if (error) {
+      throw error;
+    }
+
+    revalidatePath('/admin');
+    revalidatePath('/');
+    revalidatePath('/products');
+
+    return {
+      success: true,
+      message: `Successfully imported ${cleanedCategories.length} collections.`,
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to import collections.';
+    logger.error('[Action Error] bulkImportCategoriesAction:', error);
+    return {
+      success: false,
+      message,
+      error: message,
+    };
+  }
+}
+
 async function requireAdmin() {
   await requireAdminUser();
 }

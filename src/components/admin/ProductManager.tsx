@@ -21,10 +21,11 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { isValidUrl } from '@/lib/utils';
 import { InfiniteScrollSentinel } from '@/components/admin/InfiniteScrollSentinel';
-import { deleteProductAction } from '@/app/actions/admin-products';
+import { downloadXLSX } from '@/utils/export';
+import Papa from 'papaparse';
+import { deleteProductAction, bulkImportProductsAction } from '@/app/actions/admin-products';
 import { AdminLoadingState } from '@/components/admin/AdminLoadingState';
 import { AdminHeader } from '@/components/admin/AdminHeader';
-import { downloadXLSX } from '@/utils/export';
 
 type ProductRecord = {
   id: string;
@@ -101,22 +102,36 @@ export function ProductManager({
       return;
     }
 
-    const toastId = toast.loading('Processing products catalog...');
+    const toastId = toast.loading('Processing and importing products...');
     
     try {
-      // Basic CSV reading for now - logic can be expanded to actual parsing
       const text = await file.text();
-      const rows = text.split('\n').filter(Boolean);
       
-      if (rows.length < 2) {
-        throw new Error('CSV file seems empty or malformed');
-      }
+      Papa.parse(text, {
+        header: true,
+        skipEmptyLines: true,
+        complete: async (results) => {
+          if (results.data.length === 0) {
+            toast.error('CSV file seems empty or malformed', { id: toastId });
+            return;
+          }
 
-      toast.success(`Success: Found ${rows.length - 1} products in catalog`, { id: toastId });
-      // Here you would normally call a server action to process the data
+          const result = await bulkImportProductsAction(results.data);
+          
+          if (result.success) {
+            toast.success(result.message, { id: toastId });
+            router.refresh();
+          } else {
+            toast.error(result.error || 'Import failed', { id: toastId });
+          }
+        },
+        error: (error: any) => {
+          toast.error('Failed to parse CSV: ' + error.message, { id: toastId });
+        }
+      });
       
     } catch (err: unknown) {
-      toast.error('Failed to parse catalog: ' + (err instanceof Error ? err.message : String(err)), { id: toastId });
+      toast.error('Critical error during import: ' + (err instanceof Error ? err.message : String(err)), { id: toastId });
     } finally {
       if (fileInputRef.current) fileInputRef.current.value = '';
     }

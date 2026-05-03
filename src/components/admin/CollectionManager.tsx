@@ -2,11 +2,13 @@
 import { logger } from '@/lib/logger';
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { deleteCategoriesAction } from '@/app/actions/categories';
+import { toMediaProxyUrl } from '@/lib/media';
+import Papa from 'papaparse';
+import { deleteCategoriesAction, bulkImportCategoriesAction } from '@/app/actions/categories';
+import { Plus, Package, Edit, Layers, Search, Trash2, Check, X, FileText } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { Product } from '@/store/useCartStore';
 import { Category } from '@/types';
-import { Plus, Package, Edit, Layers, Search, Trash2, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useCustomConfirm } from '@/components/ConfirmationContext';
@@ -14,7 +16,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import { InfiniteScrollSentinel } from '@/components/admin/InfiniteScrollSentinel';
 import Image from 'next/image';
 import { AdminLoadingState } from '@/components/admin/AdminLoadingState';
-import { toMediaProxyUrl } from '@/lib/media';
 
 export function CollectionManager({ 
   initialCategories = [],
@@ -34,6 +35,53 @@ export function CollectionManager({
   const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleCSVUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.csv')) {
+      toast.error('Please upload a valid CSV file');
+      return;
+    }
+
+    const toastId = toast.loading('Processing and importing collections...');
+    
+    try {
+      const text = await file.text();
+      
+      Papa.parse(text, {
+        header: true,
+        skipEmptyLines: true,
+        complete: async (results) => {
+          if (results.data.length === 0) {
+            toast.error('CSV file seems empty or malformed', { id: toastId });
+            return;
+          }
+
+          const result = await bulkImportCategoriesAction(results.data);
+          
+          if (result.success) {
+            toast.success(result.message, { id: toastId });
+            router.refresh();
+          } else {
+            toast.error(result.error || 'Import failed', { id: toastId });
+          }
+        },
+        error: (error: any) => {
+          toast.error('Failed to parse CSV: ' + error.message, { id: toastId });
+        }
+      });
+      
+    } catch (err: unknown) {
+      toast.error('Critical error during import: ' + (err instanceof Error ? err.message : String(err)), { id: toastId });
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
   const pageRef = useRef(0);
   const ITEMS_PER_PAGE = 30;
 
@@ -188,6 +236,20 @@ export function CollectionManager({
               className="pl-10 pr-4 h-10 bg-white border border-slate-300 rounded-none text-[13px] focus:outline-none focus:border-slate-900 transition-all w-full md:w-64 text-slate-900"
             />
           </div>
+          <button 
+            onClick={() => fileInputRef.current?.click()}
+            className="h-10 px-4 bg-white border border-slate-200 text-slate-600 rounded-none text-sm font-bold hover:border-slate-900 transition-all flex items-center gap-2"
+          >
+            <FileText className="w-4 h-4" />
+            <span className="hidden sm:inline">Import CSV</span>
+          </button>
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleCSVUpload} 
+            accept=".csv" 
+            className="hidden" 
+          />
           <button 
             onClick={() => router.push('/admin/collections/new')}
             className="h-10 px-4 sm:px-8 bg-slate-900 text-white rounded-none text-sm font-bold hover:bg-slate-800 transition-all flex items-center gap-2 active:scale-[0.98]"
