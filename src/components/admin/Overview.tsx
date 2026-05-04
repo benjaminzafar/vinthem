@@ -13,7 +13,9 @@ import {
   RefreshCw,
   ShoppingCart,
   TrendingDown,
+  Trash2,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import dynamic from 'next/dynamic';
 
 const AreaChart = dynamic(() => import('recharts').then((mod) => mod.AreaChart), { ssr: false });
@@ -26,6 +28,7 @@ import { Product } from '@/store/useCartStore';
 import { downloadXLSX } from '@/utils/export';
 import { StableChartContainer } from '@/components/admin/charts/StableChartContainer';
 import { AdminLoadingState } from '@/components/admin/AdminLoadingState';
+import { purgeTestDataAction } from '@/app/actions/admin-cleanup';
 import type { RawOverviewStats } from '@/lib/admin-overview';
 
 interface OverviewOrder {
@@ -454,6 +457,17 @@ export function Overview({ initialStats, onProductClick, onSeedClick }: Overview
 
   const secondaryActions = [
     ...(onSeedClick ? [{ label: 'Seed Test Data', icon: Database, onClick: onSeedClick }] : []),
+    { 
+      label: 'Purge Test Data', 
+      icon: Trash2, 
+      onClick: async () => {
+        if (!confirm('Are you sure you want to purge all test records?')) return;
+        const res = await purgeTestDataAction();
+        if (res.success) toast.success(res.message);
+        else toast.error(res.error || 'Cleanup failed');
+        void fetchAdminData(false);
+      } 
+    },
     { label: 'Export Report', icon: Download, onClick: () => void downloadXLSX(filteredOrders, 'store_report') },
   ];
 

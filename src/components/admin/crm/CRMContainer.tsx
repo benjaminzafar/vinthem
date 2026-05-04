@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { getCRMDataAction, syncAllToBrevoAction } from '@/app/actions/crm';
+import { purgeTestDataAction, purgeAllOrdersAction, purgeCRMDataAction } from '@/app/actions/admin-cleanup';
 import { useDebounce } from '@/hooks/useDebounce';
 import { CRMAnalytics } from './CRMAnalytics';
 import { CustomerTable } from './CustomerTable';
@@ -12,7 +13,7 @@ import { CRMDetailView } from './CRMDetailView';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Users, MessageSquare, RefreshCcw, Target, 
-  Megaphone
+  Megaphone, ShieldAlert, Trash2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { 
@@ -30,7 +31,7 @@ import type { CRMCustomer, CRMOrder, RefundRecord, ReviewRecord, SupportTicket a
 export function CRMContainer({ initialData }: { initialData?: CRMData }) {
   const [isSyncingBrevo, setIsSyncingBrevo] = useState(false);
   const [supabase] = useState(() => createClient());
-  const [activeTab, setActiveTab] = useState<'customers' | 'tickets' | 'refunds' | 'newsletter' | 'reviews'>('customers');
+  const [activeTab, setActiveTab] = useState<'customers' | 'tickets' | 'refunds' | 'newsletter' | 'reviews' | 'maintenance'>('customers');
   
   const [customers, setCustomers] = useState<CRMUser[]>(initialData?.users ?? []);
   const [loadingCustomers, setLoadingCustomers] = useState(!initialData?.users);
@@ -410,10 +411,11 @@ export function CRMContainer({ initialData }: { initialData?: CRMData }) {
               { id: 'refunds', label: 'Refunds', icon: RefreshCcw },
               { id: 'newsletter', label: 'Email', icon: Megaphone },
               { id: 'reviews', label: 'Reviews', icon: Target },
+              { id: 'maintenance', label: 'Maintenance', icon: ShieldAlert },
             ].map((tab) => (
               <button 
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as 'customers' | 'tickets' | 'refunds' | 'newsletter' | 'reviews')}
+                onClick={() => setActiveTab(tab.id as 'customers' | 'tickets' | 'refunds' | 'newsletter' | 'reviews' | 'maintenance')}
                 className={`h-full flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest border-b-2 transition-all ${
                   activeTab === tab.id 
                     ? 'text-slate-900 border-slate-900' 
@@ -466,8 +468,107 @@ export function CRMContainer({ initialData }: { initialData?: CRMData }) {
               {activeTab === 'reviews' && (
                 <OperationsManager type="reviews" data={normalizedReviews} loading={loadingReviews} />
               )}
+              {activeTab === 'maintenance' && (
+                <MaintenancePanel onRefresh={syncCRMData} />
+              )}
             </motion.div>
           </AnimatePresence>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MaintenancePanel({ onRefresh }: { onRefresh: () => void }) {
+  const [isPurging, setIsPurging] = useState(false);
+
+  const handleAction = async (action: () => Promise<any>, label: string) => {
+    if (!confirm(`Are you absolutely sure you want to ${label}? This action cannot be undone.`)) return;
+    
+    setIsPurging(true);
+    const toastId = toast.loading(`Executing ${label}...`);
+    try {
+      const result = await action();
+      if (result.success) {
+        toast.success(result.message, { id: toastId });
+        onRefresh();
+      } else {
+        toast.error(result.error || 'Action failed', { id: toastId });
+      }
+    } catch (err) {
+      toast.error('Unexpected error', { id: toastId });
+    } finally {
+      setIsPurging(false);
+    }
+  };
+
+  return (
+    <div className="max-w-3xl space-y-8 py-4">
+      <div>
+        <h3 className="text-[14px] font-bold text-slate-900 uppercase tracking-tight">Database Cleanup</h3>
+        <p className="text-[11px] text-slate-500 mt-1 uppercase tracking-widest font-bold">Safely remove test data or reset store state</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Purge Test Data */}
+        <div className="border border-slate-200 p-6 bg-slate-50 flex flex-col justify-between min-h-[160px]">
+          <div>
+            <div className="flex items-center gap-3 mb-2 text-slate-900">
+              <RefreshCcw className="w-4 h-4" />
+              <h4 className="text-xs font-bold uppercase tracking-widest">Purge Test Data</h4>
+            </div>
+            <p className="text-[11px] text-slate-500 leading-relaxed">
+              Deletes all orders specifically marked as "Test Data". This is safe for production use.
+            </p>
+          </div>
+          <button
+            onClick={() => handleAction(purgeTestDataAction, 'purge all test data')}
+            disabled={isPurging}
+            className="mt-4 flex items-center justify-center gap-2 w-full py-2 text-[10px] font-bold uppercase tracking-widest border border-slate-900 hover:bg-slate-900 hover:text-white transition-all disabled:opacity-50"
+          >
+            Run Purge
+          </button>
+        </div>
+
+        {/* Purge CRM */}
+        <div className="border border-slate-200 p-6 bg-slate-50 flex flex-col justify-between min-h-[160px]">
+          <div>
+            <div className="flex items-center gap-3 mb-2 text-slate-900">
+              <MessageSquare className="w-4 h-4" />
+              <h4 className="text-xs font-bold uppercase tracking-widest">Clear CRM Activity</h4>
+            </div>
+            <p className="text-[11px] text-slate-500 leading-relaxed">
+              Deletes all support tickets and refund requests. Users and orders will remain intact.
+            </p>
+          </div>
+          <button
+            onClick={() => handleAction(purgeCRMDataAction, 'delete all CRM activity')}
+            disabled={isPurging}
+            className="mt-4 flex items-center justify-center gap-2 w-full py-2 text-[10px] font-bold uppercase tracking-widest border border-slate-900 hover:bg-slate-900 hover:text-white transition-all disabled:opacity-50"
+          >
+            Clear CRM
+          </button>
+        </div>
+
+        {/* Dangerous: Clear All Orders */}
+        <div className="border border-rose-100 p-6 bg-rose-50/30 flex flex-col justify-between min-h-[160px] md:col-span-2">
+          <div>
+            <div className="flex items-center gap-3 mb-2 text-rose-900">
+              <ShieldAlert className="w-4 h-4" />
+              <h4 className="text-xs font-bold uppercase tracking-widest">Wipe All Orders</h4>
+            </div>
+            <p className="text-[11px] text-rose-700/70 leading-relaxed font-medium">
+              CRITICAL: This will delete EVERY order in the database. This will reset all statistics in the Store Overview. Only use this if you want to completely restart your store metrics.
+            </p>
+          </div>
+          <button
+            onClick={() => handleAction(purgeAllOrdersAction, 'WIPE ALL ORDERS FOREVER')}
+            disabled={isPurging}
+            className="mt-4 flex items-center justify-center gap-2 w-full py-2 text-[10px] font-bold uppercase tracking-widest bg-rose-600 text-white hover:bg-rose-700 transition-all disabled:opacity-50 shadow-sm"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            Wipe Database
+          </button>
         </div>
       </div>
     </div>
