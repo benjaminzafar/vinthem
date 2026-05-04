@@ -225,7 +225,6 @@ export async function customerReplySupportTicketAction(input: {
       .update({
         messages: nextMessages,
         status: 'open', // Re-open if it was resolved/pending
-        updated_at: new Date().toISOString(),
       })
       .eq('id', ticketId);
 
