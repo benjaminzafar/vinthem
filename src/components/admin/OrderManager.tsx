@@ -65,7 +65,7 @@ export function OrderManager({
         .select('*', { count: 'exact' });
 
       if (debouncedSearchQuery) {
-        query = query.or(`order_id.ilike.%${debouncedSearchQuery}%,id.ilike.%${debouncedSearchQuery}%`);
+        query = query.or(`order_id.ilike.%${debouncedSearchQuery}%,id.ilike.%${debouncedSearchQuery}%,customer_email.ilike.%${debouncedSearchQuery}%`);
       }
 
       const { data, count, error } = await query
@@ -258,6 +258,28 @@ export function OrderManager({
                                 </div>
                               </div>
                             ))}
+                          </div>
+
+                          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8 bg-white border border-slate-200 p-6">
+                            <div>
+                              <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-3">Customer Contact</h4>
+                              <p className="text-sm font-bold text-slate-900">{order.customerEmail || 'No email provided'}</p>
+                              <p className="text-[11px] text-slate-500 mt-1">Status: {order.user_id ? 'Registered User' : 'Guest Checkout'}</p>
+                            </div>
+                            <div>
+                              <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-3">Shipping Address</h4>
+                              {(order as any).customer_details?.address ? (
+                                <div className="text-sm text-slate-900 leading-relaxed">
+                                  <p className="font-bold">{(order as any).customer_details.name}</p>
+                                  <p>{(order as any).customer_details.address.line1}</p>
+                                  {(order as any).customer_details.address.line2 && <p>{(order as any).customer_details.address.line2}</p>}
+                                  <p>{(order as any).customer_details.address.postal_code} {(order as any).customer_details.address.city}</p>
+                                  <p>{(order as any).customer_details.address.country}</p>
+                                </div>
+                              ) : (
+                                <p className="text-sm text-slate-500 italic">No shipping address recorded</p>
+                              )}
+                            </div>
                           </div>
 
                           <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-12 pt-8 border-t border-slate-200">
