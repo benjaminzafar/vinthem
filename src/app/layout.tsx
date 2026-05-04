@@ -68,6 +68,17 @@ export async function generateMetadata(): Promise<Metadata> {
     icons: {
       icon: faviconUrl || "/favicon.ico",
     },
+    alternates: {
+      canonical: siteUrl,
+      languages: {
+        'en': '/',
+        'sv': '/sv',
+        'fi': '/fi',
+        'da': '/da',
+        'de': '/de',
+        'x-default': '/',
+      },
+    },
   };
 }
 
