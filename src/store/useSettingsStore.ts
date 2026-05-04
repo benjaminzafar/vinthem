@@ -369,6 +369,7 @@ export interface StorefrontSettings {
   finalizeAccountTitle: LocalizedString;
   finalizeAccountSubtitle: LocalizedString;
   continueToStripeText: LocalizedString;
+  sitemapText: LocalizedString;
 }
 
 interface SettingsStore {
@@ -428,6 +429,7 @@ export const defaultSettings: StorefrontSettings = {
   calculatedAtCheckoutText: { en: 'Calculated at checkout', sv: 'Beräknas i kassan', fi: 'Lasketaan kassalla', da: 'Beregnes ved kassen' },
   footerDescription: { en: 'A Stockholm-based store with over 20 years of retail experience, focusing on small useful products people actually need.', sv: 'En Stockholmsbaserad butik med över 20 års erfarenhet, med fokus på små användbara produkter som folk faktiskt behöver.', fi: 'Tukholmalainen kauppa, jolla on yli 20 vuoden kokemus, keskittyen pieniin hyödyllisiin tuotteisiin, joita ihmiset todella tarvitsevat.', da: 'En Stockholms-baseret butik med over 20 års erfaring med fokus på små nyttige produkter, som folk rent faktisk har brug for.' },
   footerCopyright: { en: '© 2026 Vinthem. All rights reserved.', sv: '© 2026 Vinthem. Alla rättigheter reserverade.', fi: '© 2026 Vinthem. Kaikki oikeudet pidätetään.', da: '© 2026 Vinthem. Alle rettigheder forbeholdes.' },
+  sitemapText: { en: 'Sitemap', sv: 'Sajtkarta', fi: 'Sivukartta', da: 'Sitemap', de: 'Sitemap' },
   menuText: { en: 'Menu', sv: 'Meny', fi: 'Valikko', da: 'Menu' },
   myProfileText: { en: 'My Profile', sv: 'Min Profil', fi: 'Oma Profiili', da: 'Min Profil' },
   adminPanelText: { en: 'Admin Panel', sv: 'Adminpanel', fi: 'Ylläpito', da: 'Admin Panel' },

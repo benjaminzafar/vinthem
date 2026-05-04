@@ -122,6 +122,9 @@ export default async function Footer({ settings }: FooterProps) {
             <Link href={localizeHref(lang, '/unsubscribe')} className="hover:text-brand-ink transition-colors">
               {settings.unsubscribeLinkText?.[lang] || 'Unsubscribe'}
             </Link>
+            <a href="/sitemap.xml" target="_blank" className="hover:text-brand-ink transition-colors">
+              {settings.sitemapText?.[lang] || 'Sitemap'}
+            </a>
           </div>
           <p className="text-center md:text-right order-first md:order-last">
             &copy; {new Date().getFullYear()} {settings.storeName?.[lang] || settings.storeName?.en}. {settings.footerCopyright?.[lang] || settings.footerCopyright?.en}
