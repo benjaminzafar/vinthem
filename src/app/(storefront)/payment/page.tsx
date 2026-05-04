@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 
 import PaymentClient from './PaymentClient';
 import { getSettings } from '@/lib/data';
+import { createClient } from '@/utils/supabase/server';
+import { redirect } from 'next/navigation';
 import type { StorefrontSettings } from '@/store/useSettingsStore';
 
 export const metadata: Metadata = {
@@ -10,6 +12,13 @@ export const metadata: Metadata = {
 };
 
 export default async function PaymentPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect('/auth?next=/payment');
+  }
+
   const settings = (await getSettings()) as Partial<StorefrontSettings>;
   return <PaymentClient initialSettings={settings} />;
 }
