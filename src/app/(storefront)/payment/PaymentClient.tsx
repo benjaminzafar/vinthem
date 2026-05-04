@@ -20,6 +20,7 @@ import { getClientLocale } from '@/lib/locale';
 interface ShippingDetails {
   name: string;
   email: string;
+  phone: string;
   address: string;
   city: string;
   postalCode: string;
@@ -45,6 +46,7 @@ function createInitialShippingDetails(
   return {
     name: userFullName || '',
     email: userEmail || '',
+    phone: '',
     address: '',
     city: '',
     postalCode: '',
@@ -206,6 +208,13 @@ export default function PaymentClient({ initialSettings }: PaymentClientProps) {
                     {settings.emailLabel?.[lang] || 'Email address'}
                   </label>
                   <input required type="email" name="email" value={shippingDetails.email} onChange={handleShippingChange} className="w-full rounded-none border border-slate-200 bg-slate-50 px-4 h-11 text-brand-ink focus:border-brand-ink focus:ring-1 focus:ring-brand-ink" />
+                </div>
+
+                <div className="col-span-2 md:col-span-1">
+                  <label className="mb-2 block text-[12px] font-semibold text-brand-muted">
+                    {settings.phoneLabel?.[lang] || 'Phone number'}
+                  </label>
+                  <input required type="tel" name="phone" value={shippingDetails.phone} onChange={handleShippingChange} className="w-full rounded-none border border-slate-200 bg-slate-50 px-4 h-11 text-brand-ink focus:border-brand-ink focus:ring-1 focus:ring-brand-ink" placeholder="+46..." />
                 </div>
 
                 <div className="col-span-2">

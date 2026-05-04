@@ -89,7 +89,8 @@ async function ProductsList({ lang, settings }: { lang: string, settings: Storef
       lang={lang} 
       labels={{
         topSubtitle: settings.featuredTopSubtitle?.[lang] || 'Curated Selection',
-        title: settings.featuredTitle?.[lang] || 'Featured Pieces'
+        title: settings.featuredTitle?.[lang] || 'Featured Pieces',
+        subtitle: settings.featuredSubtitle?.[lang]
       }} 
     />
   );
@@ -125,6 +126,7 @@ export default async function StorefrontPage() {
     id: c.id,
     name: c.name,
     slug: c.slug,
+    description: c.description,
     translations: c.translations,
     imageUrl: c.image_url,
     isFeatured: c.is_featured,

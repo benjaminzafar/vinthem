@@ -19,6 +19,11 @@ export function FeaturedProducts({ products, lang, labels }: FeaturedProductsPro
           <h2 className="text-[28px] md:text-[36px] font-bold text-slate-900 tracking-tight mb-6">
             {labels.title}
           </h2>
+          {labels.subtitle && (
+            <p className="text-slate-500 max-w-xl text-[15px] font-normal leading-relaxed mb-6">
+              {labels.subtitle}
+            </p>
+          )}
           <div className="w-10 h-[2px] bg-slate-900"></div>
         </div>
 
@@ -82,5 +87,6 @@ interface FeaturedProductsProps {
   labels: {
     topSubtitle: string;
     title: string;
+    subtitle?: string;
   };
 }

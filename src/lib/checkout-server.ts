@@ -30,6 +30,7 @@ export interface CheckoutItemInput {
 export interface CheckoutShippingInput {
   name?: string;
   email?: string;
+  phone?: string;
   address?: string;
   city?: string;
   postalCode?: string;
@@ -72,6 +73,7 @@ export function sanitizeShippingDetails(input?: CheckoutShippingInput) {
   return {
     name: sanitizeText(input?.name, 120),
     email: sanitizeText(input?.email, 180),
+    phone: sanitizeText(input?.phone, 32),
     address: sanitizeText(input?.address, 240),
     city: sanitizeText(input?.city, 120),
     postalCode: sanitizeText(input?.postalCode, 32),
@@ -270,6 +272,17 @@ export async function startCheckout(
     .insert({
       user_id: user?.id ?? null,
       customer_email: shippingDetails.email || null,
+      customer_details: {
+        name: shippingDetails.name,
+        email: shippingDetails.email,
+        phone: shippingDetails.phone,
+        address: {
+          line1: shippingDetails.address,
+          city: shippingDetails.city,
+          postal_code: shippingDetails.postalCode,
+          country: shippingDetails.country,
+        }
+      },
       items: validatedItems,
       total: estimate.total,
       currency: BASE_CURRENCY,
@@ -326,7 +339,7 @@ export async function startCheckout(
           },
         },
       ],
-      phone_number_collection: { enabled: true },
+      phone_number_collection: { enabled: false },
       line_items: validatedItems.map((item) => ({
         quantity: item.quantity,
         price_data: {

@@ -129,6 +129,7 @@ export interface StorefrontSettings {
   paymentFailedText: LocalizedString;
   shippingInformationText: LocalizedString;
   fullNameLabel: LocalizedString;
+  phoneLabel: LocalizedString;
   addressLabel: LocalizedString;
   cityLabel: LocalizedString;
   postalCodeLabel: LocalizedString;
@@ -334,21 +335,6 @@ export interface StorefrontSettings {
   byAuthorText: LocalizedString;
   backToJournalText: LocalizedString;
   articleNotFoundText: LocalizedString;
-  aboutHeroTitleText: LocalizedString;
-  aboutHeroSubtitleText: LocalizedString;
-  aboutPhilosophyTitleText: LocalizedString;
-  aboutPhilosophyDescription1Text: LocalizedString;
-  aboutPhilosophyDescription2Text: LocalizedString;
-  aboutSustainableMaterialsTitleText: LocalizedString;
-  aboutSustainableMaterialsDescriptionText: LocalizedString;
-  aboutContactUsTitleText: LocalizedString;
-  aboutContactUsDescriptionText: LocalizedString;
-  aboutEmailLabelText: LocalizedString;
-  aboutPhoneLabelText: LocalizedString;
-  aboutAddressLabelText: LocalizedString;
-  aboutEmailValueText: LocalizedString;
-  aboutPhoneValueText: LocalizedString;
-  aboutAddressValueText: LocalizedString;
   loadingPageText: LocalizedString;
   pageNotFoundTitleText: LocalizedString;
   pageNotFoundDescriptionText: LocalizedString;
@@ -506,6 +492,7 @@ export const defaultSettings: StorefrontSettings = {
   paymentFailedText: { en: 'Payment failed. Please try again.', sv: 'Betalningen misslyckades. Vänligen försök igen.', fi: 'Maksu epäonnistui. Yritä uudelleen.', da: 'Betaling mislykkedes. Prøv venligst igen.' },
   shippingInformationText: { en: 'Shipping Information', sv: 'Fraktinformation', fi: 'Toimitustiedot', da: 'Forsendelsesinformation' },
   fullNameLabel: { en: 'Full Name', sv: 'Fullständigt namn', fi: 'Koko nimi', da: 'Fulde navn' },
+  phoneLabel: { en: 'Phone Number', sv: 'Telefonnummer', fi: 'Puhelinnumero', da: 'Telefonnummer' },
   addressLabel: { en: 'Address', sv: 'Adress', fi: 'Osoite', da: 'Adresse' },
   cityLabel: { en: 'City', sv: 'Stad', fi: 'Kaupunki', da: 'By' },
   postalCodeLabel: { en: 'Postal Code', sv: 'Postnummer', fi: 'Postinumero', da: 'Postnummer' },
@@ -711,21 +698,6 @@ export const defaultSettings: StorefrontSettings = {
   byAuthorText: { en: 'By', sv: 'Av', fi: 'Kirjoittaja', da: 'Af' },
   backToJournalText: { en: 'Back to Journal', sv: 'Tillbaka till journalen', fi: 'Takaisin journaliin', da: 'Tillbage til journalen' },
   articleNotFoundText: { en: 'Article not found', sv: 'Artikeln hittades inte', fi: 'Artikkelia ei löytynyt', da: 'Artiklen blev ikke fundet' },
-  aboutHeroTitleText: { en: 'Our Story', sv: 'Vår Historia', fi: 'Tarina', da: 'Vores Historie' },
-  aboutHeroSubtitleText: { en: 'Stockholm based since 2004. Over 20 years of experience in retail, now bringing our curated selection of useful goods online.', sv: 'Baserad i Stockholm sedan 2004. Över 20 års erfarenhet av detaljhandel, nu tar vi vårt kurerade urval av användbara varor online.', fi: 'Tukholmassa vuodesta 2004. Yli 20 vuoden kokemus vähittäiskaupasta, nyt tuomme kuratoidun valikoimamme hyödyllisiä tuotteita verkkoon.', da: 'Baseret i Stockholm siden 2004. Over 20 års erfaring i detailhandlen, nu bringer vi vores kuraterede udvalg af nyttige varer online.' },
-  aboutPhilosophyTitleText: { en: 'The Vinthem Experience', sv: 'Vinthem-upplevelsen', fi: 'Vinthem-kokemus', da: 'Vinthem-oplevelsen' },
-  aboutPhilosophyDescription1Text: { en: 'Vinthem is a Stockholm-based store with over 20 years of retail experience. We focus on everyday items, small useful products, and things people actually need in daily life.', sv: 'Vinthem är en Stockholmsbaserad butik med över 20 års erfarenhet av detaljhandel. Vi fokuserar på vardagsföremål, små användbara produkter och saker folk faktiskt behöver i vardagen.', fi: 'Vinthem on Tukholmassa sijaitseva kauppa, jolla on yli 20 vuoden kokemus vähittäiskaupasta. Keskitymme arkisiin tavaroihin, pieniin hyödyllisiin tuotteisiin ja asioihin, joita ihmiset todella tarvitsevat jokapäiväisessä elämässä.', da: 'Vinthem er en Stockholms-baseret butik med over 20 års erfaring i detailhandlen. Vi fokuserer på hverdagsgenstande, små nyttige produkter og ting, som folk rent faktisk har brug for i dagligdagen.' },
-  aboutPhilosophyDescription2Text: { en: 'With our own warehouse and local operations, we ensure real stock and reliable delivery. Now, we are bringing that experience online to serve you better.', sv: 'Med eget lager och lokal verksamhet säkerställer vi riktigt lager och pålitlig leverans. Nu tar vi den erfarenheten online för att tjäna dig bättre.', fi: 'Oman varastomme ja paikallisen toimintamme ansiosta varmistamme todellisen varaston ja luotettavan toimituksen. Nyt tuomme tämän kokemuksen verkkoon palvellaksemme sinua paremmin.', da: 'Med eget lager og lokale operationer sikrer vi reelt lager og pålidelig levering. Nu bringer vi den erfaring online for at tjene dig bedre.' },
-  aboutSustainableMaterialsTitleText: { en: 'Sustainable Materials', sv: 'Hållbara material', fi: 'Kestävät materiaalit', da: 'Bæredygtige materialer' },
-  aboutSustainableMaterialsDescriptionText: { en: 'We are committed to minimizing our environmental impact. We source our materials responsibly, prioritizing FSC-certified woods, organic cottons, and recycled metals. Our packaging is 100% recyclable, and we continuously strive to reduce waste throughout our supply chain.', sv: 'Vi är fast beslutna att minimera vår miljöpåverkan. Vi köper våra material på ett ansvarsfullt sätt och prioriterar FSC-certifierat trä, ekologisk bomull och återvunnen metall. Våra förpackningar är 100 % återvinningsbara och vi strävar kontinuerligt efter att minska avfallet i hela vår leveranskedja.', fi: 'Olemme sitoutuneet minimoimaan ympäristövaikutuksemme. Hankimme materiaalimme vastuullisesti ja painotamme FSC-sertifioitua puuta, luomupuuvillaa ja kierrätettyjä metalleja. Pakkauksemme ovat 100 % kierrätettäviä, ja pyrimme jatkuvasti vähentämään jätettä koko toimitusketjussamme.', da: 'Vi er forpligtet til at minimere vores miljøpåvirkning. Vi indkøber vores materialer ansvarligt og prioriterer FSC-certificeret træ, økologisk bomuld og genbrugsmetaller. Vores emballage er 100 % genanvendelig, og vi stræber løbende efter at reducere spild i hele vores forsyningskæde.' },
-  aboutContactUsTitleText: { en: 'Contact Us', sv: 'Kontakta oss', fi: 'Ota yhteyttä', da: 'Kontakt os' },
-  aboutContactUsDescriptionText: { en: "Have a question or just want to say hello? We'd love to hear from you.", sv: 'Har du en fråga eller vill du bara säga hej? Vi vill gärna höra från dig.', fi: 'Onko sinulla kysyttävää tai haluatko vain sanoa hei? Kuulisimme mielellämme sinusta.', da: 'Har du et spørgsmål eller vil du bare sige hej? Vi vil meget gerne høre fra dig.' },
-  aboutEmailLabelText: { en: 'Email', sv: 'E-post', fi: 'Sähköposti', da: 'E-mail' },
-  aboutPhoneLabelText: { en: 'Phone', sv: 'Telefon', fi: 'Puhelin', da: 'Telefon' },
-  aboutAddressLabelText: { en: 'Address', sv: 'Adress', fi: 'Osoite', da: 'Adresse' },
-  aboutEmailValueText: { en: 'hello@vinthem.com', sv: 'hej@vinthem.com', fi: 'hei@vinthem.com', da: 'hej@vinthem.com' },
-  aboutPhoneValueText: { en: '+46 8 123 45 67', sv: '+46 8 123 45 67', fi: '+46 8 123 45 67', da: '+46 8 123 45 67' },
-  aboutAddressValueText: { en: 'Sveavägen 44, 111 34 Stockholm, Sweden', sv: 'Sveavägen 44, 111 34 Stockholm, Sverige', fi: 'Sveavägen 44, 111 34 Tukholma, Ruotsi', da: 'Sveavägen 44, 111 34 Stockholm, Sverige' },
   loadingPageText: { en: 'Loading page...', sv: 'Laddar sida...', fi: 'Ladataan sivua...', da: 'Indlæser side...' },
   pageNotFoundTitleText: { en: 'Page Not Found', sv: 'Sidan hittades inte', fi: 'Sivua ei löytynyt', da: 'Siden blev ikke fundet' },
   pageNotFoundDescriptionText: { en: "The page you are looking for doesn't exist or has been moved.", sv: 'Sidan du letar efter finns inte eller har flyttats.', fi: 'Etsimääsi sivua ei ole olemassa tai se on siirretty.', da: 'Siden, du leder efter, eksisterer ikke eller er blevet flyttet.' },
@@ -739,7 +711,7 @@ export const defaultSettings: StorefrontSettings = {
   navbarLinks: [
     { label: { en: 'Shop', sv: 'Handla', fi: 'Kauppa', da: 'Shop' }, href: '/products' },
     { label: { en: 'Journal', sv: 'Journal', fi: 'Journali', da: 'Journal' }, href: '/blog' },
-    { label: { en: 'Our Story', sv: 'Vår Historia', fi: 'Tarina', da: 'Vores Historie' }, href: '/about' }
+    { label: { en: 'Our Story', sv: 'Vår Historia', fi: 'Tarina', da: 'Vores Historie' }, href: '/p/about' }
   ],
   footerSections: [
     {
@@ -747,7 +719,7 @@ export const defaultSettings: StorefrontSettings = {
       links: [
         { label: { en: 'New Arrivals', sv: 'Nyheter', fi: 'Uutuudet', da: 'Nyheder' }, href: '/products' },
         { label: { en: 'Journal', sv: 'Journal', fi: 'Journali', da: 'Journal' }, href: '/blog' },
-        { label: { en: 'Our Story', sv: 'Vår Historia', fi: 'Tarina', da: 'Vores Historie' }, href: '/about' }
+        { label: { en: 'Our Story', sv: 'Vår Historia', fi: 'Tarina', da: 'Vores Historie' }, href: '/p/about' }
       ]
     },
     {
