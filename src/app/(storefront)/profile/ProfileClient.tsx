@@ -1257,36 +1257,6 @@ export function ProfileClient({
                                 placeholder="Detail your requirement..."
                                 className="w-full bg-white border-2 border-slate-300 p-10 text-sm font-bold text-slate-900 focus:outline-none focus:border-slate-950 h-64 resize-none"
                              />
-                             
-                             <div className="mt-4 flex flex-col gap-4">
-                                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest block">Attachments & Visual Evidence</label>
-                                <div className="flex items-center gap-4">
-                                  {supportImageUrl ? (
-                                    <div className="relative w-24 h-24 border border-slate-300 bg-white group">
-                                      <Image src={toMediaProxyUrl(supportImageUrl)} alt="Support attachment" fill className="object-cover" />
-                                      <button 
-                                        onClick={() => setSupportImageUrl('')}
-                                        className="absolute -top-2 -right-2 w-6 h-6 bg-white border border-slate-300 rounded-none flex items-center justify-center shadow-none hover:border-slate-900"
-                                      >
-                                        <X className="w-3 h-3" />
-                                      </button>
-                                    </div>
-                                  ) : (
-                                    <label className="w-24 h-24 border-2 border-dashed border-slate-200 hover:border-slate-900 bg-slate-50 flex items-center justify-center cursor-pointer transition-all">
-                                      <div className="flex flex-col items-center">
-                                        <Plus className="w-5 h-5 text-slate-300" />
-                                        <span className="text-[8px] font-bold uppercase text-slate-500 mt-1">Add Image</span>
-                                      </div>
-                                      <input type="file" className="hidden" accept="image/*" onChange={handleSupportFileUpload} />
-                                    </label>
-                                  )}
-                                  <div className="flex-1">
-                                    <p className="text-[10px] font-medium text-slate-500 leading-relaxed uppercase">
-                                       Upload a high-quality photo of the product or issue to expedite our technical audit.
-                                    </p>
-                                  </div>
-                                </div>
-                             </div>
                            </div>
                            <button 
                               onClick={handleSupportSubmit}
@@ -1296,13 +1266,13 @@ export function ProfileClient({
                               {isSubmittingSupport ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Transmit Official Request'}
                            </button>
                         </div>
-                      </div>
                      )}
                   </div>
                 )}
-              </motion.div>
-            </div>
-          )}
+              </div>
+            </motion.div>
+          </div>
+        )}
       </AnimatePresence>
     </div>
   </div>
