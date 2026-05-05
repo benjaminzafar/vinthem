@@ -1147,11 +1147,11 @@ export function ProfileClient({
         )}
       </AnimatePresence>
 
-      {/* SUPPORT MODAL (Standardized Design) */}
       <AnimatePresence>
         {supportOrder && (
-          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 md:p-12 lg:p-24">
+          <div key="support-modal-root" className="fixed inset-0 z-[1000] flex items-center justify-center p-4 md:p-12 lg:p-24">
             <motion.div 
+              key="support-overlay"
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
               exit={{ opacity: 0 }}
@@ -1160,13 +1160,13 @@ export function ProfileClient({
             />
             
             <motion.div
+              key="support-content"
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
               onClick={(e) => e.stopPropagation()}
               className="bg-white w-full max-w-4xl border-2 border-slate-900 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.3)] rounded-none pointer-events-auto flex flex-col max-h-[90vh] relative z-[1001]"
             >
-              {/* Modal Technical Header */}
               <div className="px-8 py-8 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-slate-50">
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
