@@ -99,8 +99,11 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
   const menuRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
   
+  const productsLink = (navbarLinks || []).find(link => link.href === '/products' || link.href === '/products/');
+  const productsLabel = productsLink ? (productsLink.label[lang] || productsLink.label['en']) : (settings.searchProductsResultsText?.[lang] || 'All Products');
+
   const localLabels = {
-    allProducts: settings.searchProductsResultsText?.[lang] || 'All Products',
+    allProducts: productsLabel,
     categories: settings.categoriesLabel?.[lang] || 'Categories',
     login: settings.loginText?.[lang] || 'Login',
     account: settings.accountLabel?.[lang] || 'Account',

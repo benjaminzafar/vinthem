@@ -63,6 +63,9 @@ export default async function Navigation() {
   // Truly dynamic: use settings or fallback ONLY to the active language to prevent ghost flags
   const availableLanguages = settings?.languages?.length ? settings.languages : [lang];
 
+  const productsLink = (settings?.navbarLinks || []).find((link: any) => link.href === '/products' || link.href === '/products/');
+  const productsLabel = productsLink ? (productsLink.label[lang] || productsLink.label['en']) : (settings?.searchProductsResultsText?.[lang] || 'All Products');
+
   return (
     <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
       <ConsentGuardian />
@@ -87,7 +90,7 @@ export default async function Navigation() {
                 adminDashboard: settings?.adminDashboardText?.[lang] || 'Admin Dashboard',
                 logout: settings?.logoutText?.[lang] || 'Logout',
                 login: settings?.loginText?.[lang] || 'Login',
-                allProducts: settings?.searchProductsResultsText?.[lang] || 'All Products'
+                allProducts: productsLabel
               }}
             />
           </div>
