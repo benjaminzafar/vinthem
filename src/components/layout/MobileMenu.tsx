@@ -435,9 +435,8 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                         {user && (
                           <button
                             onClick={async () => {
-                              await performClientLogout();
+                              await performClientLogout({ supabase, redirectTo: '/' });
                               setMobileMenuOpen(false);
-                              window.location.href = '/';
                             }}
                             className="flex items-center justify-between py-2 text-rose-500 hover:text-rose-700 transition-colors"
                           >
