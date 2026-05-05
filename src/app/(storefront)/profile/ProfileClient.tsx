@@ -1305,8 +1305,9 @@ export function ProfileClient({
         </div>
       )}
     </AnimatePresence>
-  </div>
-</div>
-</>
+        </div>
+      </div>
+    </div>
+  </>
   );
 }
