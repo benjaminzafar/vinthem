@@ -420,6 +420,31 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                           <ChevronRightIcon className="w-5 h-5 text-slate-400 transition-colors group-hover:text-slate-700" />
                         </Link>
                       ))}
+                      {/* User Actions Panel */}
+                      <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col gap-4">
+                        {isAdmin && (
+                          <Link
+                            href="/admin"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="flex items-center justify-between py-2 text-slate-500 hover:text-black transition-colors"
+                          >
+                            <span className="text-[12px] font-black uppercase tracking-[0.2em]">{labels.adminDashboard}</span>
+                          </Link>
+                        )}
+                        
+                        {user && (
+                          <button
+                            onClick={async () => {
+                              await performClientLogout();
+                              setMobileMenuOpen(false);
+                              window.location.href = '/';
+                            }}
+                            className="flex items-center justify-between py-2 text-rose-500 hover:text-rose-700 transition-colors"
+                          >
+                            <span className="text-[12px] font-black uppercase tracking-[0.2em]">{labels.logout}</span>
+                          </button>
+                        )}
+                      </div>
                     </>
                   )}
                 </nav>
