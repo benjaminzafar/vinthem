@@ -221,7 +221,7 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
               className="lg:hidden fixed top-0 left-0 h-[100dvh] w-full sm:w-[85vw] sm:max-w-sm bg-white border-r border-gray-100 z-[201] flex flex-col shadow-none will-change-transform overflow-hidden"
             >
               <div className="flex items-center justify-between h-16 px-6 border-b border-gray-100">
-                <span className="!text-[14px] !font-bold !uppercase !tracking-[0.1em] text-brand-ink">{labels.menu}</span>
+                <span className="!text-[16px] !font-bold !uppercase !tracking-[0.1em] text-brand-ink">{labels.menu}</span>
                 <button
                   onClick={() => setMobileMenuOpen(false)}
                   className="p-2 -mr-2 text-gray-500 hover:text-brand-ink transition-colors"
@@ -232,15 +232,15 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
               </div>
 
               <div className="flex-1 overflow-y-auto px-6 py-8 custom-scrollbar">
-                <nav className="flex flex-col space-y-6">
+                <nav className="flex flex-col space-y-8">
                   {/* Collections */}
                   {categoryTrail.length === 1 && (
                     <Link
                       href={localizeHref(lang, `/products`)}
                       onClick={() => setMobileMenuOpen(false)}
-                      className="group flex items-center justify-between"
+                      className="group flex items-center justify-between py-3"
                     >
-                      <span className="!text-[12px] !font-bold !uppercase !tracking-widest text-brand-ink group-hover:text-brand-ink transition-all duration-300">
+                      <span className="!text-[18px] !font-bold !uppercase !tracking-widest text-brand-ink group-hover:text-brand-ink transition-all duration-300">
                         {labels.allProducts}
                       </span>
                       <ChevronRightIcon className="w-5 h-5 text-slate-400 transition-colors group-hover:text-slate-700" />
@@ -261,7 +261,7 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                           <button
                             type="button"
                             onClick={goBackCategoryLevel}
-                            className="flex w-full items-center gap-2 pb-2 text-left text-[11px] font-bold uppercase tracking-widest text-slate-500 transition-colors hover:text-slate-900"
+                            className="flex w-full items-center gap-2 pb-2 text-left text-[14px] font-bold uppercase tracking-widest text-slate-500 transition-colors hover:text-slate-900"
                           >
                             <ChevronLeftIcon className="h-5 w-5" />
                             {categoryTrail[categoryTrail.length - 2]?.label || labels.allProducts}
@@ -277,16 +277,10 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                             <div key={category.id} className="group flex items-center justify-between">
                               <Link
                                 href={categoryHref}
-                                onClick={() => {
-                                  if (hasChildren) {
-                                    openCategoryLevel(category);
-                                  } else {
-                                    setMobileMenuOpen(false);
-                                  }
-                                }}
-                                className="flex min-w-0 flex-1 items-center py-1"
+                                onClick={() => setMobileMenuOpen(false)}
+                                className="flex min-w-0 flex-1 items-center py-3"
                               >
-                                <span className="!text-[14px] !font-bold !uppercase !tracking-[0.05em] text-brand-ink transition-all duration-300">
+                                <span className="!text-[18px] !font-bold !uppercase !tracking-[0.05em] text-brand-ink transition-all duration-300">
                                   {getCategoryLabel(category)}
                                 </span>
                               </Link>
@@ -295,14 +289,14 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                                 <button
                                   type="button"
                                   onClick={() => openCategoryLevel(category)}
-                                  className="group flex shrink-0 items-center justify-center py-1 text-slate-400 transition-colors hover:text-slate-700"
+                                  className="group flex shrink-0 items-center justify-center p-4 -mr-2 text-slate-400 transition-colors hover:text-slate-700 border-l border-slate-50"
                                   aria-label={`Open subcategories for ${getCategoryLabel(category)}`}
                                 >
-                                  <ChevronRightIcon className="h-5 w-5" />
+                                  <ChevronRightIcon className="h-6 w-6" />
                                 </button>
                               ) : (
-                                <span className="flex shrink-0 items-center justify-center py-1 text-slate-300">
-                                  <ChevronRightIcon className="h-5 w-5" />
+                                <span className="flex shrink-0 items-center justify-center p-4 -mr-2 text-slate-200 border-l border-slate-50 opacity-0">
+                                  <ChevronRightIcon className="h-6 w-6" />
                                 </span>
                               )}
                             </div>
@@ -326,9 +320,9 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                           key={index}
                           href={localizeHref(lang, link.href)}
                           onClick={() => setMobileMenuOpen(false)}
-                          className="group flex items-center justify-between"
+                          className="group flex items-center justify-between py-3"
                         >
-                          <span className="!text-[12px] !font-bold !uppercase !tracking-widest text-brand-ink group-hover:text-brand-ink transition-all duration-300">
+                          <span className="!text-[18px] !font-bold !uppercase !tracking-widest text-brand-ink group-hover:text-brand-ink transition-all duration-300">
                             {link.label[lang] || link.label['en']}
                           </span>
                           <ChevronRightIcon className="w-5 h-5 text-slate-400 transition-colors group-hover:text-slate-700" />
@@ -385,7 +379,7 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                         className="flex items-center gap-2 p-2.5 text-brand-ink hover:text-brand-muted transition-colors rounded-none hover:bg-slate-50"
                       >
                         <UserIcon className="w-5 h-5" strokeWidth={1.5} />
-                        <span className="text-[11px] font-bold uppercase tracking-widest">{labels.login}</span>
+                        <span className="text-[13px] font-bold uppercase tracking-widest">{labels.login}</span>
                       </Link>
                     )}
                   </div>

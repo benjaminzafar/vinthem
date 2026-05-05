@@ -140,7 +140,7 @@ export function LanguageSwitcher({ availableLanguages, variant = 'dropdown', dir
               className="fixed bottom-0 left-0 right-0 bg-white z-[1000] px-6 py-8 lg:hidden shadow-none-[0_-10px_40px_rgba(0,0,0,0.1)] border-t border-slate-100 rounded-t-2xl"
             >
               <div className="flex items-center justify-between mb-6 px-2">
-                <h3 className="text-[12px] font-bold uppercase tracking-widest text-brand-ink">
+                <h3 className="text-[14px] font-bold uppercase tracking-widest text-brand-ink">
                   Language
                 </h3>
                 <button 
@@ -162,10 +162,10 @@ export function LanguageSwitcher({ availableLanguages, variant = 'dropdown', dir
                       className={`flex items-center justify-between w-full py-4 px-4 rounded-none transition-all ${currentLocale === lng ? "bg-slate-50/80" : "bg-transparent hover:bg-slate-50/50"}`}
                     >
                       <div className="flex items-center gap-3">
-                        <span className={`text-[12px] font-bold uppercase tracking-widest transition-colors ${currentLocale === lng ? 'text-brand-ink' : 'text-brand-muted hover:text-brand-ink'}`}>
+                        <span className={`text-[16px] font-bold uppercase tracking-widest transition-colors ${currentLocale === lng ? 'text-brand-ink' : 'text-brand-muted hover:text-brand-ink'}`}>
                           {getLanguageName(lng)}
                         </span>
-                        <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-none border ${currentLocale === lng ? 'bg-white border-slate-200 text-brand-ink' : 'border-transparent text-slate-500'}`}>
+                        <span className={`text-[12px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-none border ${currentLocale === lng ? 'bg-white border-slate-200 text-brand-ink' : 'border-transparent text-slate-500'}`}>
                           {lng}
                         </span>
                       </div>
