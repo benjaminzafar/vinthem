@@ -15,6 +15,8 @@ import { Portal } from './Portal';
 import { Category } from '@/types';
 import { localizeHref } from '@/lib/i18n-routing';
 import { performClientLogout } from '@/lib/client-auth';
+import { isValidUrl } from '@/lib/utils';
+import { ShoppingBag, Plus } from 'lucide-react';
 
 const MenuIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -293,67 +295,100 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                         className="space-y-2"
                       >
                         {categoryTrail.length > 1 ? (
-                          <button
-                            type="button"
-                            onClick={goBackCategoryLevel}
-                            className="flex w-full items-center gap-2 pb-2 text-left text-[14px] font-bold uppercase tracking-widest text-slate-500 transition-colors hover:text-slate-900"
-                          >
-                            <ChevronLeftIcon className="h-5 w-5" />
-                            {categoryTrail[categoryTrail.length - 2]?.label || labels.allProducts}
-                          </button>
-                        ) : null}
+                          <div className="space-y-4">
+                            <button
+                              type="button"
+                              onClick={goBackCategoryLevel}
+                              className="flex w-full items-center gap-2 pb-2 text-left text-[14px] font-bold uppercase tracking-widest text-slate-500 transition-colors hover:text-slate-900"
+                            >
+                              <ChevronLeftIcon className="h-5 w-5" />
+                              {categoryTrail[categoryTrail.length - 2]?.label || labels.allProducts}
+                            </button>
+                            
+                            <div className="flex flex-col space-y-1">
+                              {currentCategories.map((category) => {
+                                const childCategories = categoryChildrenMap.get(category.id || null) || [];
+                                const hasChildren = childCategories.length > 0;
+                                const categoryHref = `/${lang}/products?category=${encodeURIComponent(category.slug)}`;
 
-                        {currentCategories.map((category) => {
-                          const childCategories = categoryChildrenMap.get(category.id || null) || [];
-                          const hasChildren = childCategories.length > 0;
-                          const categoryHref = `/${lang}/products?category=${encodeURIComponent(category.slug)}`;
+                                return (
+                                  <div key={category.id} className="group flex items-center justify-between border-b border-slate-50 last:border-0">
+                                    <Link
+                                      href={categoryHref}
+                                      onClick={() => setMobileMenuOpen(false)}
+                                      className="flex min-w-0 flex-1 items-center py-4"
+                                    >
+                                      <span className="!text-[16px] !font-bold !uppercase !tracking-[0.05em] text-brand-ink transition-all duration-300">
+                                        {getCategoryLabel(category)}
+                                      </span>
+                                    </Link>
 
-                          return (
-                            <div key={category.id} className="group flex items-center justify-between">
-                              <Link
-                                href={categoryHref}
-                                onClick={() => setMobileMenuOpen(false)}
-                                className="flex min-w-0 flex-1 items-center py-3"
-                              >
-                                <div className="flex items-center gap-4">
-                                  <div className="relative w-12 h-12 rounded-full overflow-hidden bg-slate-50 shrink-0 border border-slate-100">
-                                    {category.imageUrl ? (
-                                      <Image
-                                        src={category.imageUrl}
-                                        alt={getCategoryLabel(category)}
-                                        fill
-                                        className="object-cover"
-                                        sizes="48px"
-                                      />
-                                    ) : (
-                                      <div className="w-full h-full flex items-center justify-center text-slate-300">
-                                        <MenuIcon className="w-5 h-5" />
+                                    {hasChildren ? (
+                                      <button
+                                        type="button"
+                                        onClick={() => openCategoryLevel(category)}
+                                        className="group flex shrink-0 items-center justify-center p-4 -mr-2 text-slate-400 transition-colors hover:text-slate-700"
+                                        aria-label={`Open subcategories for ${getCategoryLabel(category)}`}
+                                      >
+                                        <ChevronRightIcon className="h-5 w-5" />
+                                      </button>
+                                    ) : null}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-3 gap-x-2 gap-y-6">
+                            {currentCategories.map((category) => {
+                              const childCategories = categoryChildrenMap.get(category.id || null) || [];
+                              const hasChildren = childCategories.length > 0;
+                              const categoryHref = `/${lang}/products?category=${encodeURIComponent(category.slug)}`;
+
+                              return (
+                                <div key={category.id} className="flex flex-col items-center">
+                                  <div className="relative group w-full">
+                                    <Link
+                                      href={categoryHref}
+                                      onClick={() => setMobileMenuOpen(false)}
+                                      className="flex flex-col items-center gap-3 w-full"
+                                    >
+                                      <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-slate-50 border border-slate-100/50 shadow-sm transition-transform active:scale-95 duration-200">
+                                        {isValidUrl(category.imageUrl) ? (
+                                          <Image
+                                            src={category.imageUrl}
+                                            alt={getCategoryLabel(category)}
+                                            fill
+                                            className="object-cover"
+                                            sizes="(max-width: 768px) 33vw, 120px"
+                                          />
+                                        ) : (
+                                          <div className="w-full h-full flex items-center justify-center text-slate-200">
+                                            <ShoppingBag className="w-8 h-8" strokeWidth={1} />
+                                          </div>
+                                        )}
                                       </div>
+                                      <span className="text-[10px] font-black uppercase tracking-[0.1em] text-brand-ink text-center leading-tight line-clamp-2 px-1">
+                                        {getCategoryLabel(category)}
+                                      </span>
+                                    </Link>
+
+                                    {hasChildren && (
+                                      <button
+                                        type="button"
+                                        onClick={() => openCategoryLevel(category)}
+                                        className="absolute -top-1 -right-1 w-6 h-6 bg-white border border-slate-100 rounded-full flex items-center justify-center text-slate-400 shadow-sm active:scale-110 transition-transform"
+                                        aria-label={`Open subcategories for ${getCategoryLabel(category)}`}
+                                      >
+                                        <Plus className="w-3.5 h-3.5" strokeWidth={3} />
+                                      </button>
                                     )}
                                   </div>
-                                  <span className="!text-[16px] !font-bold !uppercase !tracking-[0.05em] text-brand-ink transition-all duration-300">
-                                    {getCategoryLabel(category)}
-                                  </span>
                                 </div>
-                              </Link>
-
-                              {hasChildren ? (
-                                <button
-                                  type="button"
-                                  onClick={() => openCategoryLevel(category)}
-                                  className="group flex shrink-0 items-center justify-center p-4 -mr-2 text-slate-400 transition-colors hover:text-slate-700 border-l border-slate-50"
-                                  aria-label={`Open subcategories for ${getCategoryLabel(category)}`}
-                                >
-                                  <ChevronRightIcon className="h-6 w-6" />
-                                </button>
-                              ) : (
-                                <span className="flex shrink-0 items-center justify-center p-4 -mr-2 text-slate-200 border-l border-slate-50 opacity-0">
-                                  <ChevronRightIcon className="h-6 w-6" />
-                                </span>
-                              )}
-                            </div>
-                          );
-                        })}
+                              );
+                            })}
+                          </div>
+                        )}
                       </motion.div>
                     </AnimatePresence>
                   </div>
