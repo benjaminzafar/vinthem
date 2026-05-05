@@ -515,76 +515,55 @@ export function ProfileClient({
 
   return (
     <>
-    <div className="relative z-0 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 pt-0 pb-12 animate-in fade-in duration-500">
-      {/* Redesigned Header & Stats */}
-      <div className="mb-16">
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-12">
-          <div className="max-w-2xl">
-            <div className="flex items-center gap-3 mb-4">
-              <span className="h-[1px] w-8 bg-slate-900" />
-              <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-400">Personal Workspace</span>
-            </div>
-            <h1 className="text-4xl font-bold tracking-tighter text-slate-900 md:text-5xl lg:text-6xl">
-              Hello, {displayName.split(' ')[0]}.
-            </h1>
-            <p className="mt-6 text-[13px] font-medium leading-relaxed text-slate-500 uppercase tracking-widest opacity-80 max-w-xl">
-              Welcome back to your curated control center. Track your orders, manage security protocols, and review your history.
-            </p>
-          </div>
-          
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setActiveTab('orders')}
-              className="px-8 py-4 bg-slate-900 text-white text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-slate-800 transition-all flex items-center gap-3"
-            >
-              <History className="w-4 h-4" /> History
-            </button>
-            <button
-              onClick={() => setActiveTab('profile')}
-              className="px-8 py-4 bg-white border border-slate-200 text-slate-900 text-[11px] font-bold uppercase tracking-[0.2em] hover:border-slate-900 transition-all flex items-center gap-3"
-            >
-              <Settings className="w-4 h-4" /> Settings
-            </button>
-          </div>
-        </div>
+    <div className="relative z-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-24 animate-in fade-in duration-300">
+      {/* Simple WooCommerce Style Header */}
+      <div className="mb-12 border-b border-slate-200 pb-10">
+        <h1 className="text-2xl font-bold text-slate-900">
+          Hello <span className="text-slate-900">{displayName.split(' ')[0]}</span> (not <span className="text-slate-900">{displayName.split(' ')[0]}</span>?{' '}
+          <button 
+            onClick={async () => {
+              await performClientLogout({ supabase, redirectTo: '/' });
+            }}
+            className="text-rose-500 underline underline-offset-4 hover:text-rose-700"
+          >
+            Log out
+          </button>)
+        </h1>
+        <p className="mt-4 text-sm leading-relaxed text-slate-500 max-w-3xl">
+          From your account dashboard you can view your recent orders, manage your shipping and billing addresses, and edit your password and account details.
+        </p>
+      </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-slate-200 border border-slate-200 shadow-2xl shadow-slate-200/50">
-          <div className="bg-white p-8 lg:p-10 group hover:bg-slate-50 transition-all">
-            <div className="flex justify-between items-start mb-8">
-               <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">Lifetime Spend</p>
-               <div className="w-2 h-2 bg-slate-100 group-hover:bg-slate-900 transition-colors" />
-            </div>
-            <p className="text-2xl font-bold text-slate-900 tracking-tighter">{formatPrice(totalSpent, lang)}</p>
-            <div className="mt-8 h-[2px] w-0 bg-slate-900 group-hover:w-full transition-all duration-500" />
-          </div>
-
-          <div className="bg-white p-8 lg:p-10 group hover:bg-slate-50 transition-all">
-            <div className="flex justify-between items-start mb-8">
-               <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">Active Orders</p>
-               <div className="w-2 h-2 bg-slate-100 group-hover:bg-slate-900 transition-colors" />
-            </div>
-            <p className="text-2xl font-bold text-slate-900 tracking-tighter">{activeOrders}</p>
-            <div className="mt-8 h-[2px] w-0 bg-slate-900 group-hover:w-full transition-all duration-500" />
-          </div>
-
-          <div className="bg-white p-8 lg:p-10 group hover:bg-slate-50 transition-all">
-            <div className="flex justify-between items-start mb-8">
-               <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">Addresses</p>
-               <div className="w-2 h-2 bg-slate-100 group-hover:bg-slate-900 transition-colors" />
-            </div>
-            <p className="text-2xl font-bold text-slate-900 tracking-tighter">{addresses.length}</p>
-            <div className="mt-8 h-[2px] w-0 bg-slate-900 group-hover:w-full transition-all duration-500" />
-          </div>
-
-          <div className="bg-white p-8 lg:p-10 group hover:bg-slate-50 transition-all">
-            <div className="flex justify-between items-start mb-8">
-               <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">Support Open</p>
-               <div className="w-2 h-2 bg-slate-100 group-hover:bg-slate-900 transition-colors" />
-            </div>
-            <p className="text-2xl font-bold text-slate-900 tracking-tighter">{supportTickets.length + refundRequests.length}</p>
-            <div className="mt-8 h-[2px] w-0 bg-slate-900 group-hover:w-full transition-all duration-500" />
-          </div>
-        </div>
+      {/* Simple Grid Actions */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+        <button 
+          onClick={() => setActiveTab('orders')}
+          className="group flex flex-col items-center justify-center p-10 border border-slate-200 bg-white hover:border-slate-900 transition-all"
+        >
+          <Package className="w-8 h-8 mb-4 text-slate-300 group-hover:text-slate-900 transition-colors" />
+          <span className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Recent Orders</span>
+        </button>
+        <button 
+          onClick={() => setActiveTab('addresses')}
+          className="group flex flex-col items-center justify-center p-10 border border-slate-200 bg-white hover:border-slate-900 transition-all"
+        >
+          <MapPin className="w-8 h-8 mb-4 text-slate-300 group-hover:text-slate-900 transition-colors" />
+          <span className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Addresses</span>
+        </button>
+        <button 
+          onClick={() => setActiveTab('profile')}
+          className="group flex flex-col items-center justify-center p-10 border border-slate-200 bg-white hover:border-slate-900 transition-all"
+        >
+          <Settings className="w-8 h-8 mb-4 text-slate-300 group-hover:text-slate-900 transition-colors" />
+          <span className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Account Details</span>
+        </button>
+        <button 
+          onClick={() => setActiveTab('support')}
+          className="group flex flex-col items-center justify-center p-10 border border-slate-200 bg-white hover:border-slate-900 transition-all"
+        >
+          <MessageSquare className="w-8 h-8 mb-4 text-slate-300 group-hover:text-slate-900 transition-colors" />
+          <span className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Get Assistance</span>
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
