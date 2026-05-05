@@ -227,7 +227,7 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
             >
               <div className="flex items-center justify-between h-16 px-4 border-b border-gray-100 bg-white">
                 <div className="flex items-center gap-2">
-                  <LanguageSwitcher availableLanguages={availableLanguages} variant="dropdown" direction="down" align="left" />
+                  <LanguageSwitcher availableLanguages={availableLanguages} variant="drawer" align="left" />
                   
                   {user ? (
                     <div className="flex items-center">
