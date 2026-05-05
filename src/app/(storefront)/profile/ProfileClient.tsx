@@ -519,48 +519,33 @@ export function ProfileClient({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
         {/* Navigation Rail - Redesigned Sidebar */}
         <div className="lg:col-span-3">
-          <div className="mb-10 lg:sticky lg:top-32">
-            <div className="flex items-center gap-3 mb-8">
-               <div className="w-1.5 h-1.5 bg-slate-900 rounded-full" />
-               <h3 className="text-[11px] font-bold text-slate-900 uppercase tracking-[0.3em]">Workspace</h3>
-            </div>
-            
-            <nav className="space-y-1">
+          <div className="lg:sticky lg:top-32 space-y-12">
+            <nav className="flex flex-col space-y-1 border-l border-slate-100">
               {[
-                { id: 'orders', label: 'Order History', icon: Package },
-                { id: 'support', label: 'Support Center', icon: MessageSquare },
-                { id: 'profile', label: 'Security & Profile', icon: Settings },
-                { id: 'addresses', label: 'Shipping Registry', icon: MapPin },
+                { id: 'orders', label: 'Orders' },
+                { id: 'support', label: 'Support' },
+                { id: 'profile', label: 'Account' },
+                { id: 'addresses', label: 'Addresses' },
               ].map((item) => (
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`w-full flex items-center justify-between px-4 py-4 transition-all group ${
+                  className={`w-full flex items-center px-6 py-4 transition-all text-left border-l-2 -ml-[1px] ${
                     activeTab === item.id 
-                      ? 'bg-slate-900 text-white' 
-                      : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                      ? 'border-slate-900 text-slate-900' 
+                      : 'border-transparent text-slate-400 hover:text-slate-900'
                   }`}
                 >
-                  <div className="flex items-center gap-4">
-                    <item.icon className={`w-4 h-4 ${activeTab === item.id ? 'text-white' : 'text-slate-300 group-hover:text-slate-900'}`} />
-                    <span className="text-[11px] font-bold uppercase tracking-widest">{item.label}</span>
-                  </div>
-                  {activeTab === item.id && <div className="w-1 h-1 bg-white rounded-full" />}
+                  <span className="text-[12px] font-bold uppercase tracking-widest">{item.label}</span>
                 </button>
               ))}
-            </nav>
-
-            <div className="mt-12 pt-8 border-t border-slate-100">
               <button
                 onClick={handleSignOut}
-                className="w-full flex items-center gap-4 px-4 py-4 text-[10px] font-bold text-rose-500 hover:text-rose-700 uppercase tracking-[0.2em] transition-all group"
+                className="w-full flex items-center px-6 py-4 text-[12px] font-bold text-rose-500 hover:text-rose-700 uppercase tracking-widest transition-all text-left border-l-2 border-transparent -ml-[1px]"
               >
-                <div className="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center group-hover:bg-rose-100 transition-colors">
-                  <LogOut className="w-3.5 h-3.5" />
-                </div>
-                Sign Out
+                Log Out
               </button>
-            </div>
+            </nav>
           </div>
         </div>
 
@@ -575,9 +560,9 @@ export function ProfileClient({
                 exit={{ opacity: 0, y: -5 }}
                 className="space-y-6"
               >
-                <div className="h-10 flex items-center justify-between border-b-2 border-slate-300 pb-3">
-                  <h3 className="text-[13px] font-bold text-slate-900 uppercase tracking-widest">Order History</h3>
-                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">{orders.length} TOTAL</span>
+                <div className="h-10 flex items-center justify-between border-b border-slate-200 pb-3">
+                  <h3 className="text-[14px] font-bold text-slate-900 uppercase tracking-widest">Orders</h3>
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{orders.length} TOTAL</span>
                 </div>
 
                 {orders.length === 0 ? (
@@ -601,7 +586,7 @@ export function ProfileClient({
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 flex-1">
                                <div>
                                   <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">Order ID</p>
-                                  <p className="text-sm font-bold text-slate-900 font-mono tracking-tighter">#{order.orderId || order.id.slice(0, 10).toUpperCase()}</p>
+                                  <p className="text-sm font-bold text-slate-900 font-mono tracking-tighter">#{order.orderId || order.id.slice(0, 5).toUpperCase()}</p>
                                </div>
                                <div>
                                   <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">Order Date</p>
@@ -648,7 +633,14 @@ export function ProfileClient({
                                 <div className="p-8 space-y-8">
                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                                       <div className="space-y-6">
-                                         <h4 className="text-[11px] font-bold text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-2">Logistics Pipeline</h4>
+                                         <h4 className="text-[11px] font-bold text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-2">Status Details</h4>
+                                          <p className="text-sm font-bold text-slate-900 uppercase tracking-tight">{order.status || 'Processing'}</p>
+                                          <p className="text-[11px] text-slate-500 font-bold uppercase tracking-widest">
+                                            Last Update: {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : '---'}
+                                          </p>
+                                       </div>
+                                       {/* removed old content */}
+                                       <div className="hidden">
                                          <div className="space-y-6 relative pl-6 border-l border-slate-300">
                                             <div className="relative">
                                                <div className="absolute -left-[31px] top-1 w-2 h-2 bg-slate-900" />
@@ -700,9 +692,9 @@ export function ProfileClient({
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-6"
               >
-                <div className="h-10 flex items-center justify-between border-b-2 border-slate-300 pb-3">
-                  <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Support Activity</h3>
-                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+                <div className="h-10 flex items-center justify-between border-b border-slate-200 pb-3">
+                  <h3 className="text-[14px] font-bold text-slate-900 uppercase tracking-widest">Support</h3>
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
                     {supportTickets.length + refundRequests.length} TOTAL
                   </span>
                 </div>
@@ -729,7 +721,7 @@ export function ProfileClient({
                       <div key={ticket.id} className="border border-slate-300 bg-white p-6">
                         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                           <div>
-                            <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Support Ticket</p>
+                            <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Support Ticket #{ticket.id.slice(0, 5).toUpperCase()}</p>
                             <h4 className="mt-2 text-sm font-bold uppercase tracking-tight text-slate-900">
                               {ticket.subject || 'Customer support request'}
                             </h4>
@@ -817,7 +809,7 @@ export function ProfileClient({
                           <div>
                             <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Refund Request</p>
                             <h4 className="mt-2 text-sm font-bold uppercase tracking-tight text-slate-900">
-                              Order #{refund.order_id || refund.id.slice(0, 8).toUpperCase()}
+                              Order #{refund.order_id || refund.id.slice(0, 5).toUpperCase()}
                             </h4>
                             <p className="mt-3 text-sm leading-6 text-slate-600">{refund.reason || 'No reason provided.'}</p>
                           </div>
@@ -844,12 +836,11 @@ export function ProfileClient({
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-6"
               >
-                <div className="h-10 flex items-center justify-between border-b-2 border-slate-300 pb-3">
-                  <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Workspace Settings</h3>
-                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">SECURITY VERIFIED</span>
+                <div className="h-10 flex items-center justify-between border-b border-slate-200 pb-3">
+                  <h3 className="text-[14px] font-bold text-slate-900 uppercase tracking-widest">Account Details</h3>
                 </div>
 
-                <div className="bg-white border border-slate-300 p-12 space-y-12">
+                <div className="bg-white border border-slate-300 p-8 space-y-8">
                    <div className="max-w-xl space-y-12">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                          <div className="space-y-3">
@@ -952,10 +943,9 @@ export function ProfileClient({
                  animate={{ opacity: 1, y: 0 }}
                  className="space-y-6"
               >
-                 <div className="flex flex-col gap-4 border-b-2 border-slate-300 pb-3 sm:flex-row sm:items-center sm:justify-between">
+                 <div className="flex flex-col gap-4 border-b border-slate-200 pb-3 sm:flex-row sm:items-center sm:justify-between">
                    <div>
-                     <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">{settings.savedAddressesTitleText?.[lang] || 'Saved Addresses'}</h3>
-                     <p className="mt-2 text-xs font-medium text-slate-500">{settings.addAddressFasterCheckoutText?.[lang] || 'Add an address for faster checkout.'}</p>
+                     <h3 className="text-[14px] font-bold text-slate-900 uppercase tracking-widest">{settings.savedAddressesTitleText?.[lang] || 'Addresses'}</h3>
                    </div>
                    <button
                      onClick={openAddAddressModal}
@@ -1171,8 +1161,8 @@ export function ProfileClient({
               <div className="px-8 py-8 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-slate-50">
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
-                     <span className="text-[10px] font-bold bg-slate-900 text-white px-2 py-0.5 tracking-widest uppercase">Support Protocol</span>
-                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">REF: #{supportOrder.orderId || supportOrder.id.slice(0,10).toUpperCase()}</span>
+                     <span className="text-[10px] font-bold bg-slate-900 text-white px-2 py-0.5 tracking-widest uppercase">Support Inquiry</span>
+                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">REF: #{supportOrder.orderId || supportOrder.id.slice(0, 5).toUpperCase()}</span>
                   </div>
                   <h3 className="text-xl font-bold text-slate-900 uppercase tracking-tight">How can we assist?</h3>
                 </div>

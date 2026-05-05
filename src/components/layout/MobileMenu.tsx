@@ -432,31 +432,6 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                           <ChevronRightIcon className="w-5 h-5 text-slate-400 transition-colors group-hover:text-slate-700" />
                         </Link>
                       ))}
-                      {/* Simple User Actions */}
-                      <div className="mt-auto pt-8 border-t border-slate-100 px-2 pb-6">
-                        {user && (
-                          <button
-                            onClick={async () => {
-                              await performClientLogout({ supabase, redirectTo: '/' });
-                              setMobileMenuOpen(false);
-                            }}
-                            className="w-full flex items-center justify-center py-4 text-rose-500 hover:text-rose-700 transition-colors border border-rose-100 bg-rose-50/30 rounded-xl"
-                          >
-                            <LogOut className="w-4 h-4 mr-2" />
-                            <span className="text-[11px] font-bold uppercase tracking-widest">{localLabels.logout}</span>
-                          </button>
-                        )}
-                        {!user && (
-                           <Link
-                             href={localizeHref(lang, '/auth')}
-                             onClick={() => setMobileMenuOpen(false)}
-                             className="w-full flex items-center justify-center py-4 text-slate-500 hover:text-black transition-colors border border-slate-200 bg-slate-50 rounded-xl"
-                           >
-                             <User className="w-4 h-4 mr-2" />
-                             <span className="text-[11px] font-bold uppercase tracking-widest">{localLabels.login}</span>
-                           </Link>
-                        )}
-                      </div>
                     </>
                   )}
                 </nav>
