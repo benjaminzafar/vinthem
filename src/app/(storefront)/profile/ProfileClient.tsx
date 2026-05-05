@@ -515,7 +515,6 @@ export function ProfileClient({
 
   return (
     <>
-    <div className="relative z-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-24 animate-in fade-in duration-300">
     <div className="relative z-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-24 animate-in fade-in duration-500">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
         {/* Navigation Rail - Redesigned Sidebar */}
@@ -1305,9 +1304,9 @@ export function ProfileClient({
         </div>
       )}
     </AnimatePresence>
-        </div>
       </div>
     </div>
-  </>
+  </div>
+</>
   );
 }
