@@ -1301,10 +1301,12 @@ export function ProfileClient({
                   </div>
                 )}
               </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-    </>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  </div>
+</div>
+</>
   );
 }
