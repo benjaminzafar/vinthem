@@ -18,7 +18,7 @@ import { performClientLogout } from '@/lib/client-auth';
 import { isValidUrl } from '@/lib/utils';
 import { toMediaPublicUrl } from '@/lib/media';
 import { getOptimizedImageUrl } from '@/utils/image-utils';
-import { ShoppingBag, Plus } from 'lucide-react';
+import { ShoppingBag, Plus, LayoutDashboard, LogOut, Settings, User } from 'lucide-react';
 
 const MenuIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -109,20 +109,8 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
     language: settings.languageLabel?.[lang] || 'Language'
   };
 
-  // Sync "All Products" label with navbar if possible
-  const productsNavLink = (settings?.navbarLinks || []).find((l: any) => l.href === '/products' || l.href === '/products/');
-  const allProductsLabel = productsNavLink?.label?.[lang] || productsNavLink?.label?.['en'] || localLabels.allProducts;
-
-  // Extract Support Links for the User Panel
-  const supportSection = (settings?.footerSections || []).find((s: any) => 
-    s.title?.en?.toLowerCase() === 'support' || 
-    s.title?.sv?.toLowerCase() === 'support' ||
-    s.title?.[lang]?.toLowerCase() === 'support'
-  );
-  const supportLinks = supportSection?.links || [];
-
   const [isDesktop, setIsDesktop] = useState(false);
-  const [categoryTrail, setCategoryTrail] = useState<CategoryTrailItem[]>(createRootCategoryTrail(allProductsLabel));
+  const [categoryTrail, setCategoryTrail] = useState<CategoryTrailItem[]>(createRootCategoryTrail(localLabels.allProducts));
   const [categoryDirection, setCategoryDirection] = useState(1);
 
   const getCategoryLabel = (category: Category) => category.translations?.[lang]?.name || category.name;
@@ -444,29 +432,61 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                           <ChevronRightIcon className="w-5 h-5 text-slate-400 transition-colors group-hover:text-slate-700" />
                         </Link>
                       ))}
-                      {/* User Actions Panel */}
-                      <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col gap-3">
-                        {isAdmin && (
-                          <Link
-                            href="/admin"
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="flex items-center justify-between py-2 text-slate-500 hover:text-black transition-colors"
-                          >
-                            <span className="text-[12px] font-black uppercase tracking-[0.2em]">{localLabels.adminDashboard}</span>
-                          </Link>
-                        )}
-                        
-                        {user && (
-                          <button
-                            onClick={async () => {
-                              await performClientLogout({ supabase, redirectTo: '/' });
-                              setMobileMenuOpen(false);
-                            }}
-                            className="flex items-center justify-between py-2 text-rose-500 hover:text-rose-700 transition-colors"
-                          >
-                            <span className="text-[12px] font-black uppercase tracking-[0.2em]">{localLabels.logout}</span>
-                          </button>
-                        )}
+                      {/* User Actions Panel - Redesigned Hub */}
+                      <div className="mt-auto pt-8 border-t border-slate-100">
+                        <div className="bg-slate-50 p-2 space-y-1 border border-slate-100">
+                          {isAdmin && (
+                            <Link
+                              href="/admin"
+                              onClick={() => setMobileMenuOpen(false)}
+                              className="flex items-center gap-3 p-3 text-slate-600 hover:text-black hover:bg-white transition-all group"
+                            >
+                              <div className="w-8 h-8 bg-white border border-slate-200 flex items-center justify-center group-hover:bg-slate-900 group-hover:text-white transition-colors">
+                                <LayoutDashboard className="w-4 h-4" />
+                              </div>
+                              <span className="text-[11px] font-bold uppercase tracking-widest">{localLabels.adminDashboard}</span>
+                            </Link>
+                          )}
+                          
+                          {user ? (
+                            <>
+                              <Link
+                                href={localizeHref(lang, '/profile')}
+                                onClick={() => setMobileMenuOpen(false)}
+                                className="flex items-center gap-3 p-3 text-slate-600 hover:text-black hover:bg-white transition-all group"
+                              >
+                                <div className="w-8 h-8 bg-white border border-slate-200 flex items-center justify-center group-hover:bg-slate-900 group-hover:text-white transition-colors">
+                                  <User className="w-4 h-4" />
+                                </div>
+                                <span className="text-[11px] font-bold uppercase tracking-widest">{localLabels.account}</span>
+                              </Link>
+                              
+                              <button
+                                onClick={async () => {
+                                  await performClientLogout({ supabase, redirectTo: '/' });
+                                  setMobileMenuOpen(false);
+                                }}
+                                className="w-full flex items-center gap-3 p-3 text-rose-500 hover:text-rose-700 hover:bg-rose-50/50 transition-all group mt-2 border-t border-slate-200 pt-4"
+                              >
+                                <div className="w-8 h-8 bg-white border border-rose-100 flex items-center justify-center group-hover:bg-rose-500 group-hover:text-white transition-colors">
+                                  <LogOut className="w-4 h-4" />
+                                </div>
+                                <span className="text-[11px] font-bold uppercase tracking-widest">{localLabels.logout}</span>
+                              </button>
+                            </>
+                          ) : (
+                            <Link
+                              href={localizeHref(lang, '/auth')}
+                              onClick={() => setMobileMenuOpen(false)}
+                              className="flex items-center gap-3 p-3 text-slate-600 hover:text-black hover:bg-white transition-all group"
+                            >
+                              <div className="w-8 h-8 bg-white border border-slate-200 flex items-center justify-center group-hover:bg-slate-900 group-hover:text-white transition-colors">
+                                <User className="w-4 h-4" />
+                              </div>
+                              <span className="text-[11px] font-bold uppercase tracking-widest">{localLabels.login}</span>
+                            </Link>
+                          )}
+                        </div>
                       </div>
                     </>
                   )}

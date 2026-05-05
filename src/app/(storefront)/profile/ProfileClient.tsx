@@ -1210,26 +1210,26 @@ export function ProfileClient({
               className="bg-white w-full max-w-4xl border-2 border-slate-900 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.3)] rounded-none pointer-events-auto flex flex-col max-h-[90vh] relative z-[1001]"
             >
               {/* Modal Technical Header */}
-              <div className="px-12 py-12 border-b-2 border-slate-300 flex flex-col md:flex-row md:items-center justify-between gap-8 bg-slate-50">
-                <div className="space-y-4">
+              <div className="px-8 py-8 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-slate-50">
+                <div className="space-y-2">
                   <div className="flex items-center gap-3">
-                     <span className="text-[11px] font-bold bg-slate-900 text-white px-2 py-0.5 tracking-widest uppercase">Support Protocol</span>
-                     <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">REF: #{supportOrder.orderId || supportOrder.id.slice(0,10).toUpperCase()}</span>
+                     <span className="text-[10px] font-bold bg-slate-900 text-white px-2 py-0.5 tracking-widest uppercase">Support Protocol</span>
+                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">REF: #{supportOrder.orderId || supportOrder.id.slice(0,10).toUpperCase()}</span>
                   </div>
-                  <h3 className="text-2xl font-bold text-slate-900 uppercase tracking-tight">How can we assist?</h3>
+                  <h3 className="text-xl font-bold text-slate-900 uppercase tracking-tight">How can we assist?</h3>
                 </div>
                 <button 
                    disabled={isSubmittingSupport}
                    onClick={() => setSupportOrder(null)} 
-                   className="w-12 h-12 bg-white flex items-center justify-center text-slate-900 transition-all border border-slate-300 hover:border-slate-950"
+                   className="w-10 h-10 bg-white flex items-center justify-center text-slate-900 transition-all border border-slate-200 hover:border-slate-900 hover:bg-slate-900 hover:text-white"
                 >
-                  <X className="w-6 h-6" />
+                  <X className="w-5 h-5" />
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-12">
+              <div className="flex-1 overflow-y-auto p-8">
                 {!supportType ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-slate-300 border border-slate-300 max-w-3xl mx-auto">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl mx-auto">
                      {[
                        { id: 'help', label: 'General Help', desc: 'Questions on logistics or data', icon: HelpCircle },
                        { id: 'replacement', label: 'Replacement', desc: 'Report damaged inventory', icon: RefreshCcw },
@@ -1239,13 +1239,13 @@ export function ProfileClient({
                        <button
                          key={opt.id}
                          onClick={() => setSupportType(opt.id as SupportType)}
-                         className="flex flex-col items-start p-10 bg-white hover:bg-slate-50 transition-all group"
+                         className="flex flex-col items-start p-8 bg-slate-50 border border-slate-200 hover:border-slate-900 hover:bg-white transition-all group"
                        >
-                         <div className="w-12 h-12 bg-slate-900 flex items-center justify-center mb-8 text-white">
-                            <opt.icon className="w-5 h-5" />
+                         <div className="w-10 h-10 bg-white border border-slate-200 flex items-center justify-center mb-6 text-slate-900 group-hover:bg-slate-900 group-hover:text-white transition-colors">
+                            <opt.icon className="w-4 h-4" />
                          </div>
-                         <p className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-2">{opt.label}</p>
-                         <p className="text-[11px] text-slate-500 font-bold uppercase tracking-widest leading-relaxed">{opt.desc}</p>
+                         <p className="text-[12px] font-bold text-slate-900 uppercase tracking-widest mb-2">{opt.label}</p>
+                         <p className="text-[10px] text-slate-500 font-medium uppercase tracking-widest leading-relaxed">{opt.desc}</p>
                        </button>
                      ))}
                   </div>
