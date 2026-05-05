@@ -1297,16 +1297,18 @@ export function ProfileClient({
                            </button>
                         </div>
                      )}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
-          </motion.div>
-        </div>
-      )}
-    </AnimatePresence>
-      </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   </div>
+</div>
 </>
   );
 }
