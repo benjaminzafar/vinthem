@@ -139,6 +139,7 @@ export function ProfileClient({
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
   const [addressFeedback, setAddressFeedback] = useState<InlineFeedback | null>(null);
   const [supportFeedback, setSupportFeedback] = useState<InlineFeedback | null>(null);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const searchParams = useSearchParams();
   
   useEffect(() => {
@@ -520,20 +521,90 @@ export function ProfileClient({
   const totalSpent = orders.reduce((sum, order) => sum + Number(order.total || 0), 0);
   const activeOrders = orders.filter((order) => !['Delivered', 'Cancelled'].includes(order.status || '')).length;
 
+  const navItems = [
+    { id: 'orders', label: 'Orders', icon: Package },
+    { id: 'support', label: 'Support', icon: MessageSquare },
+    { id: 'profile', label: 'Account', icon: Settings },
+    { id: 'addresses', label: 'Addresses', icon: MapPin },
+  ];
+
   return (
     <>
     <div className="relative z-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-24 animate-in fade-in duration-500">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
-        {/* Navigation Rail - Redesigned Sidebar */}
-        <div className="lg:col-span-3">
+        
+        {/* Mobile Dropdown Navigation */}
+        <div className="lg:hidden mb-8">
+          <div className="relative">
+            <button
+              onClick={() => setIsMobileNavOpen(!isMobileNavOpen)}
+              className="w-full flex items-center justify-between border border-slate-300 bg-white px-6 py-4 transition-all"
+            >
+              <div className="flex items-center gap-3">
+                {(() => {
+                  const activeItem = navItems.find(i => i.id === activeTab);
+                  const Icon = activeItem?.icon || Package;
+                  return (
+                    <>
+                      <Icon className="w-4 h-4 text-slate-900" />
+                      <span className="text-[12px] font-bold uppercase tracking-widest text-slate-900">
+                        {activeItem?.label || 'Orders'}
+                      </span>
+                    </>
+                  );
+                })()}
+              </div>
+              <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform duration-300 ${isMobileNavOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            <AnimatePresence>
+              {isMobileNavOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="absolute top-full left-0 right-0 z-50 bg-white border-x border-b border-slate-300 shadow-xl overflow-hidden"
+                >
+                  <div className="flex flex-col">
+                    {navItems.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => {
+                            setActiveTab(item.id);
+                            setIsMobileNavOpen(false);
+                          }}
+                          className={`w-full flex items-center gap-3 px-6 py-4 text-left transition-colors ${
+                            activeTab === item.id 
+                              ? 'bg-slate-50 text-slate-900' 
+                              : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                          }`}
+                        >
+                          <Icon className="w-4 h-4" />
+                          <span className="text-[12px] font-bold uppercase tracking-widest">{item.label}</span>
+                        </button>
+                      );
+                    })}
+                    <button
+                      onClick={handleSignOut}
+                      className="w-full flex items-center gap-3 px-6 py-4 text-left text-rose-500 hover:bg-rose-50 transition-colors border-t border-slate-100"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span className="text-[12px] font-bold uppercase tracking-widest">Log Out</span>
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+
+        {/* Desktop Navigation Rail - Hidden on Mobile */}
+        <div className="hidden lg:col-span-3 lg:block">
           <div className="lg:sticky lg:top-32 space-y-12">
             <nav className="flex flex-col space-y-1 border-l border-slate-100">
-              {[
-                { id: 'orders', label: 'Orders' },
-                { id: 'support', label: 'Support' },
-                { id: 'profile', label: 'Account' },
-                { id: 'addresses', label: 'Addresses' },
-              ].map((item) => (
+              {navItems.map((item) => (
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}

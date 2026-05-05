@@ -14,6 +14,7 @@ Permanent project memory and problem log. Read before each task and update after
 
 ## Problem Log
 
+| 2026-05-05 | **Mobile Dashboard Dropdown Navigation** | **FIXED MISTAKE**: Replaced the vertical navigation rail in the mobile profile view with a premium, clean dropdown menu. This improves mobile UX by hiding long lists of buttons behind a single interactive selector for Orders, Support, Account, and Addresses. |
 | 2026-05-05 | **Account Dropdown Redesign** | **FIXED MISTAKE**: Redesigned the desktop account dropdown to include direct links to Orders, Support, Account, and Addresses. Implemented `tab` query parameter handling in `ProfileClient.tsx` to ensure seamless navigation from the header to specific dashboard sections. |
 | 2026-05-05 | **Menu Label Synchronization** | **FIXED MISTAKE**: Resolved an issue where the mobile menu label for "Products" was out of sync with the desktop menu. Hardened `Navigation.tsx` and `MobileMenu.tsx` to prioritize labels from `navbarLinks` for the `/products` path, ensuring that if a user changes the menu name in the dashboard, it reflects consistently across both desktop and mobile views. |
 | 2026-05-05 | **User Dashboard & Mobile Menu Hardening** | **FIXED MISTAKE**: Removed redundant Login/Logout buttons from the mobile menu drawer to eliminate UX clutter. Redesigned the User Profile Dashboard to a 'super simple' minimalist vertical list (WooCommerce-inspired) and simplified the order detail view. Shortened all displayed system IDs (Tickets and Orders) to 5 characters for better readability. |
