@@ -292,7 +292,7 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                       className="group flex items-center justify-between py-3"
                     >
                       <span className="!text-[18px] !font-bold !uppercase !tracking-widest text-brand-ink group-hover:text-brand-ink transition-all duration-300">
-                        {allProductsLabel}
+                        {localLabels.allProducts}
                       </span>
                       <ChevronRightIcon className="w-5 h-5 text-slate-400 transition-colors group-hover:text-slate-700" />
                     </Link>
