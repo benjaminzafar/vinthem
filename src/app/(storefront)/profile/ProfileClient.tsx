@@ -509,6 +509,12 @@ export function ProfileClient({
 
   if (!user) return null;
 
+  const displayName = profile?.full_name || user.email?.split('@')[0] || 'Member';
+  const totalSpent = orders.reduce((sum, order) => sum + Number(order.total || 0), 0);
+  const activeOrders = orders.filter((order) => !['Delivered', 'Cancelled'].includes(order.status || '')).length;
+
+  return (
+    <>
     <div className="relative z-0 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 pt-0 pb-12 animate-in fade-in duration-500">
       {/* Redesigned Header & Stats */}
       <div className="mb-16">
