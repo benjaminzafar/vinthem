@@ -362,6 +362,8 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                                             fill
                                             className="object-cover"
                                             sizes="(max-width: 768px) 33vw, 120px"
+                                            priority
+                                            quality={60}
                                           />
                                         ) : (
                                           <div className="w-full h-full flex items-center justify-center text-slate-200">
