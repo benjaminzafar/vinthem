@@ -79,6 +79,7 @@ export default async function Navigation() {
               lang={lang}
               categories={categories}
               availableLanguages={availableLanguages}
+              settings={settings}
               labels={{
                 menu: settings?.menuText?.[lang] || 'Menu',
                 language: settings?.languageLabel?.[lang] || 'Language',

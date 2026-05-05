@@ -73,6 +73,7 @@ interface MobileMenuProps {
   lang: string;
   categories: Category[];
   availableLanguages: string[];
+  settings: any;
   labels: {
     menu: string;
     language: string;
@@ -93,12 +94,35 @@ const createRootCategoryTrail = (label: string): CategoryTrailItem[] => [
   { id: null, label },
 ];
 
-export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, availableLanguages, labels }: MobileMenuProps) {
+export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, availableLanguages, settings, labels }: MobileMenuProps) {
   const { isMobileMenuOpen, setMobileMenuOpen } = useUIStore();
   const menuRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
+  
+  const localLabels = {
+    allProducts: settings.searchProductsResultsText?.[lang] || 'All Products',
+    categories: settings.categoriesLabel?.[lang] || 'Categories',
+    login: settings.loginText?.[lang] || 'Login',
+    account: settings.accountLabel?.[lang] || 'Account',
+    adminDashboard: settings.adminDashboardText?.[lang] || 'Admin Dashboard',
+    logout: settings.logoutText?.[lang] || 'Log Out',
+    language: settings.languageLabel?.[lang] || 'Language'
+  };
+
+  // Sync "All Products" label with navbar if possible
+  const productsNavLink = (settings?.navbarLinks || []).find((l: any) => l.href === '/products' || l.href === '/products/');
+  const allProductsLabel = productsNavLink?.label?.[lang] || productsNavLink?.label?.['en'] || localLabels.allProducts;
+
+  // Extract Support Links for the User Panel
+  const supportSection = (settings?.footerSections || []).find((s: any) => 
+    s.title?.en?.toLowerCase() === 'support' || 
+    s.title?.sv?.toLowerCase() === 'support' ||
+    s.title?.[lang]?.toLowerCase() === 'support'
+  );
+  const supportLinks = supportSection?.links || [];
+
   const [isDesktop, setIsDesktop] = useState(false);
-  const [categoryTrail, setCategoryTrail] = useState<CategoryTrailItem[]>(createRootCategoryTrail(labels.allProducts));
+  const [categoryTrail, setCategoryTrail] = useState<CategoryTrailItem[]>(createRootCategoryTrail(allProductsLabel));
   const [categoryDirection, setCategoryDirection] = useState(1);
 
   const getCategoryLabel = (category: Category) => category.translations?.[lang]?.name || category.name;
@@ -237,7 +261,7 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                         className="flex items-center gap-2 px-3.5 py-2 bg-slate-50/80 hover:bg-slate-100 text-brand-ink transition-all text-[11px] font-bold uppercase tracking-widest border border-slate-200/50 rounded-full"
                       >
                         <UserIcon className="w-3.5 h-3.5" strokeWidth={2} />
-                        <span>{labels.account}</span>
+                        <span>{localLabels.account}</span>
                       </Link>
                       {isAdmin && (
                         <Link
@@ -256,7 +280,7 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                       className="flex items-center gap-2 px-3.5 py-2 bg-slate-50/80 hover:bg-slate-100 text-brand-ink transition-all text-[11px] font-bold uppercase tracking-widest border border-slate-200/50 rounded-full"
                     >
                       <UserIcon className="w-3.5 h-3.5" strokeWidth={2} />
-                      <span>{labels.login}</span>
+                      <span>{localLabels.login}</span>
                     </Link>
                   )}
                 </div>
@@ -280,7 +304,7 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                       className="group flex items-center justify-between py-3"
                     >
                       <span className="!text-[18px] !font-bold !uppercase !tracking-widest text-brand-ink group-hover:text-brand-ink transition-all duration-300">
-                        {labels.allProducts}
+                        {allProductsLabel}
                       </span>
                       <ChevronRightIcon className="w-5 h-5 text-slate-400 transition-colors group-hover:text-slate-700" />
                     </Link>
@@ -421,14 +445,28 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                         </Link>
                       ))}
                       {/* User Actions Panel */}
-                      <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col gap-4">
+                      <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col gap-3">
+                        {/* Support Links from Settings */}
+                        {supportLinks.map((link: any, idx: number) => (
+                          <Link
+                            key={`support-${idx}`}
+                            href={localizeHref(lang, link.href)}
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="flex items-center justify-between py-2 text-slate-500 hover:text-black transition-colors"
+                          >
+                            <span className="text-[12px] font-black uppercase tracking-[0.2em]">
+                              {link.label?.[lang] || link.label?.['en']}
+                            </span>
+                          </Link>
+                        ))}
+
                         {isAdmin && (
                           <Link
                             href="/admin"
                             onClick={() => setMobileMenuOpen(false)}
                             className="flex items-center justify-between py-2 text-slate-500 hover:text-black transition-colors"
                           >
-                            <span className="text-[12px] font-black uppercase tracking-[0.2em]">{labels.adminDashboard}</span>
+                            <span className="text-[12px] font-black uppercase tracking-[0.2em]">{localLabels.adminDashboard}</span>
                           </Link>
                         )}
                         
@@ -440,7 +478,7 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                             }}
                             className="flex items-center justify-between py-2 text-rose-500 hover:text-rose-700 transition-colors"
                           >
-                            <span className="text-[12px] font-black uppercase tracking-[0.2em]">{labels.logout}</span>
+                            <span className="text-[12px] font-black uppercase tracking-[0.2em]">{localLabels.logout}</span>
                           </button>
                         )}
                       </div>
