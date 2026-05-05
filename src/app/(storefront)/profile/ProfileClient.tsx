@@ -1296,9 +1296,8 @@ export function ProfileClient({
                               {isSubmittingSupport ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Transmit Official Request'}
                            </button>
                         </div>
-                     )}
                       </div>
-                    )}
+                     )}
                   </div>
                 )}
               </div>
