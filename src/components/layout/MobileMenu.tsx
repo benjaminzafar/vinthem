@@ -223,7 +223,7 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
               className="lg:hidden fixed top-0 left-0 h-[100dvh] w-full sm:w-[85vw] sm:max-w-sm bg-white border-r border-gray-100 z-[201] flex flex-col shadow-none will-change-transform overflow-hidden"
             >
-              <div className="flex items-center justify-between h-20 px-6 border-b border-gray-100 bg-white">
+              <div className="flex items-center justify-between h-16 px-4 border-b border-gray-100 bg-white">
                 <div className="flex items-center gap-2">
                   <LanguageSwitcher availableLanguages={availableLanguages} variant="dropdown" direction="down" align="left" />
                   
