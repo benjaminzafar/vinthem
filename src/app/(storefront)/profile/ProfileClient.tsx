@@ -516,94 +516,53 @@ export function ProfileClient({
   return (
     <>
     <div className="relative z-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-24 animate-in fade-in duration-300">
-      {/* Simple WooCommerce Style Header */}
-      <div className="mb-12 border-b border-slate-200 pb-10">
-        <h1 className="text-2xl font-bold text-slate-900">
-          Hello <span className="text-slate-900">{displayName.split(' ')[0]}</span> (not <span className="text-slate-900">{displayName.split(' ')[0]}</span>?{' '}
-          <button 
-            onClick={async () => {
-              await performClientLogout({ supabase, redirectTo: '/' });
-            }}
-            className="text-rose-500 underline underline-offset-4 hover:text-rose-700"
-          >
-            Log out
-          </button>)
-        </h1>
-        <p className="mt-4 text-sm leading-relaxed text-slate-500 max-w-3xl">
-          From your account dashboard you can view your recent orders, manage your shipping and billing addresses, and edit your password and account details.
-        </p>
-      </div>
+    <div className="relative z-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-24 animate-in fade-in duration-500">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
+        {/* Navigation Rail - Redesigned Sidebar */}
+        <div className="lg:col-span-3">
+          <div className="mb-10 lg:sticky lg:top-32">
+            <div className="flex items-center gap-3 mb-8">
+               <div className="w-1.5 h-1.5 bg-slate-900 rounded-full" />
+               <h3 className="text-[11px] font-bold text-slate-900 uppercase tracking-[0.3em]">Workspace</h3>
+            </div>
+            
+            <nav className="space-y-1">
+              {[
+                { id: 'orders', label: 'Order History', icon: Package },
+                { id: 'support', label: 'Support Center', icon: MessageSquare },
+                { id: 'profile', label: 'Security & Profile', icon: Settings },
+                { id: 'addresses', label: 'Shipping Registry', icon: MapPin },
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className={`w-full flex items-center justify-between px-4 py-4 transition-all group ${
+                    activeTab === item.id 
+                      ? 'bg-slate-900 text-white' 
+                      : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                  }`}
+                >
+                  <div className="flex items-center gap-4">
+                    <item.icon className={`w-4 h-4 ${activeTab === item.id ? 'text-white' : 'text-slate-300 group-hover:text-slate-900'}`} />
+                    <span className="text-[11px] font-bold uppercase tracking-widest">{item.label}</span>
+                  </div>
+                  {activeTab === item.id && <div className="w-1 h-1 bg-white rounded-full" />}
+                </button>
+              ))}
+            </nav>
 
-      {/* Simple Grid Actions */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-        <button 
-          onClick={() => setActiveTab('orders')}
-          className="group flex flex-col items-center justify-center p-10 border border-slate-200 bg-white hover:border-slate-900 transition-all"
-        >
-          <Package className="w-8 h-8 mb-4 text-slate-300 group-hover:text-slate-900 transition-colors" />
-          <span className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Recent Orders</span>
-        </button>
-        <button 
-          onClick={() => setActiveTab('addresses')}
-          className="group flex flex-col items-center justify-center p-10 border border-slate-200 bg-white hover:border-slate-900 transition-all"
-        >
-          <MapPin className="w-8 h-8 mb-4 text-slate-300 group-hover:text-slate-900 transition-colors" />
-          <span className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Addresses</span>
-        </button>
-        <button 
-          onClick={() => setActiveTab('profile')}
-          className="group flex flex-col items-center justify-center p-10 border border-slate-200 bg-white hover:border-slate-900 transition-all"
-        >
-          <Settings className="w-8 h-8 mb-4 text-slate-300 group-hover:text-slate-900 transition-colors" />
-          <span className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Account Details</span>
-        </button>
-        <button 
-          onClick={() => setActiveTab('support')}
-          className="group flex flex-col items-center justify-center p-10 border border-slate-200 bg-white hover:border-slate-900 transition-all"
-        >
-          <MessageSquare className="w-8 h-8 mb-4 text-slate-300 group-hover:text-slate-900 transition-colors" />
-          <span className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Get Assistance</span>
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-        {/* Navigation Column */}
-        <div className="lg:col-span-3 space-y-6">
-          <div className="h-10 border-b-2 border-slate-300 pb-3 hidden lg:flex items-center">
-            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Navigation</h3>
-          </div>
-          <nav className="grid grid-cols-1 border border-slate-300 bg-white sm:grid-cols-3 lg:block">
-            {[
-              { id: 'orders', label: 'Orders', icon: Package },
-              { id: 'support', label: 'Support', icon: MessageSquare },
-              { id: 'profile', label: 'Settings', icon: Settings },
-              { id: 'addresses', label: 'Addresses', icon: MapPin },
-            ].map((item) => (
+            <div className="mt-12 pt-8 border-t border-slate-100">
               <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center justify-between px-5 py-4 transition-all lg:px-6 ${
-                  activeTab === item.id 
-                    ? 'bg-slate-50 text-slate-900' 
-                    : 'text-slate-500 hover:bg-slate-50/50 hover:text-slate-900'
-                } ${item.id !== 'addresses' ? 'border-b border-slate-300 sm:border-r lg:border-r-0' : ''} ${item.id === 'addresses' ? 'sm:border-r-0' : ''}`}
+                onClick={handleSignOut}
+                className="w-full flex items-center gap-4 px-4 py-4 text-[10px] font-bold text-rose-500 hover:text-rose-700 uppercase tracking-[0.2em] transition-all group"
               >
-                <div className="flex items-center gap-3 lg:gap-4">
-                  <item.icon className={`w-4 h-4 ${activeTab === item.id ? 'text-slate-900' : 'text-slate-300'}`} />
-                  <span className="text-[13px] font-bold tracking-tight uppercase">{item.label}</span>
+                <div className="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center group-hover:bg-rose-100 transition-colors">
+                  <LogOut className="w-3.5 h-3.5" />
                 </div>
-                {activeTab === item.id && <div className="w-1.5 h-1.5 bg-slate-900" />}
+                Sign Out
               </button>
-            ))}
-          </nav>
-
-          <button
-            onClick={handleSignOut}
-            className="w-full hidden lg:flex items-center gap-4 px-6 py-4 text-xs font-bold text-rose-500 hover:bg-rose-50 border border-rose-100 uppercase tracking-widest transition-all"
-          >
-            <LogOut className="w-4 h-4" />
-            Sign Out
-          </button>
+            </div>
+          </div>
         </div>
 
         {/* Content Column */}
