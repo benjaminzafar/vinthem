@@ -432,60 +432,55 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                           <ChevronRightIcon className="w-5 h-5 text-slate-400 transition-colors group-hover:text-slate-700" />
                         </Link>
                       ))}
-                      {/* User Actions Panel - Redesigned Hub */}
-                      <div className="mt-auto pt-8 border-t border-slate-100">
-                        <div className="bg-slate-50 p-2 space-y-1 border border-slate-100">
-                          {isAdmin && (
-                            <Link
-                              href="/admin"
-                              onClick={() => setMobileMenuOpen(false)}
-                              className="flex items-center gap-3 p-3 text-slate-600 hover:text-black hover:bg-white transition-all group"
-                            >
-                              <div className="w-8 h-8 bg-white border border-slate-200 flex items-center justify-center group-hover:bg-slate-900 group-hover:text-white transition-colors">
-                                <LayoutDashboard className="w-4 h-4" />
-                              </div>
-                              <span className="text-[11px] font-bold uppercase tracking-widest">{localLabels.adminDashboard}</span>
-                            </Link>
-                          )}
+                      {/* User Actions Panel - Redesigned Visual Hub */}
+                      <div className="mt-auto px-2 pb-6">
+                        <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white shadow-2xl relative overflow-hidden group">
+                          <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl" />
                           
-                          {user ? (
-                            <>
-                              <Link
-                                href={localizeHref(lang, '/profile')}
-                                onClick={() => setMobileMenuOpen(false)}
-                                className="flex items-center gap-3 p-3 text-slate-600 hover:text-black hover:bg-white transition-all group"
-                              >
-                                <div className="w-8 h-8 bg-white border border-slate-200 flex items-center justify-center group-hover:bg-slate-900 group-hover:text-white transition-colors">
-                                  <User className="w-4 h-4" />
-                                </div>
-                                <span className="text-[11px] font-bold uppercase tracking-widest">{localLabels.account}</span>
-                              </Link>
-                              
-                              <button
-                                onClick={async () => {
-                                  await performClientLogout({ supabase, redirectTo: '/' });
-                                  setMobileMenuOpen(false);
-                                }}
-                                className="w-full flex items-center gap-3 p-3 text-rose-500 hover:text-rose-700 hover:bg-rose-50/50 transition-all group mt-2 border-t border-slate-200 pt-4"
-                              >
-                                <div className="w-8 h-8 bg-white border border-rose-100 flex items-center justify-center group-hover:bg-rose-500 group-hover:text-white transition-colors">
-                                  <LogOut className="w-4 h-4" />
-                                </div>
-                                <span className="text-[11px] font-bold uppercase tracking-widest">{localLabels.logout}</span>
-                              </button>
-                            </>
-                          ) : (
-                            <Link
-                              href={localizeHref(lang, '/auth')}
-                              onClick={() => setMobileMenuOpen(false)}
-                              className="flex items-center gap-3 p-3 text-slate-600 hover:text-black hover:bg-white transition-all group"
-                            >
-                              <div className="w-8 h-8 bg-white border border-slate-200 flex items-center justify-center group-hover:bg-slate-900 group-hover:text-white transition-colors">
-                                <User className="w-4 h-4" />
-                              </div>
-                              <span className="text-[11px] font-bold uppercase tracking-widest">{localLabels.login}</span>
-                            </Link>
-                          )}
+                          <div className="relative z-10">
+                            <div className="flex items-center gap-4 mb-8">
+                               <div className="w-12 h-12 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-lg font-black tracking-tighter">
+                                 {user?.email?.[0].toUpperCase() || 'V'}
+                               </div>
+                               <div className="flex-1 min-w-0">
+                                 <p className="text-[9px] font-black uppercase tracking-[0.3em] text-white/40 mb-1">Authenticated Session</p>
+                                 <p className="text-sm font-bold truncate pr-4">{user?.email || 'Guest Member'}</p>
+                               </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-3">
+                               {isAdmin && (
+                                 <Link
+                                   href="/admin"
+                                   onClick={() => setMobileMenuOpen(false)}
+                                   className="flex flex-col items-center justify-center p-5 bg-white/5 hover:bg-white/10 rounded-[1.5rem] transition-all border border-white/5 active:scale-95"
+                                 >
+                                   <LayoutDashboard className="w-5 h-5 mb-2 text-white/80" />
+                                   <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-white/60">Admin</span>
+                                 </Link>
+                               )}
+                               
+                               <Link
+                                 href={localizeHref(lang, '/profile')}
+                                 onClick={() => setMobileMenuOpen(false)}
+                                 className={`flex flex-col items-center justify-center p-5 bg-white/5 hover:bg-white/10 rounded-[1.5rem] transition-all border border-white/5 active:scale-95 ${!isAdmin ? 'col-span-2' : ''}`}
+                               >
+                                 <Settings className="w-5 h-5 mb-2 text-white/80" />
+                                 <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-white/60">{localLabels.account}</span>
+                               </Link>
+
+                               <button
+                                 onClick={async () => {
+                                   await performClientLogout({ supabase, redirectTo: '/' });
+                                   setMobileMenuOpen(false);
+                                 }}
+                                 className="flex flex-col items-center justify-center p-5 bg-rose-500/10 hover:bg-rose-500/20 rounded-[1.5rem] transition-all border border-rose-500/10 col-span-2 active:scale-95"
+                               >
+                                 <LogOut className="w-5 h-5 mb-2 text-rose-400" />
+                                 <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-rose-400">{localLabels.logout}</span>
+                               </button>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </>

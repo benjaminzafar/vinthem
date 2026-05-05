@@ -509,59 +509,74 @@ export function ProfileClient({
 
   if (!user) return null;
 
-  const displayName = profile?.full_name || user.email?.split('@')[0] || 'Member';
-  const totalSpent = orders.reduce((sum, order) => sum + Number(order.total || 0), 0);
-  const activeOrders = orders.filter((order) => !['Delivered', 'Cancelled'].includes(order.status || '')).length;
-
-  return (
-    <>
-    <div className="relative z-0 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 pt-0 pb-12 animate-in fade-in duration-300">
-      <div className="mb-8 border border-slate-300 bg-white">
-        <div className="grid gap-0 lg:grid-cols-[1.5fr_1fr]">
-          <div className="border-b border-slate-300 p-8 lg:border-b-0 lg:border-r lg:p-10">
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 bg-slate-900" />
-              <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Customer Workspace</span>
+    <div className="relative z-0 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 pt-0 pb-12 animate-in fade-in duration-500">
+      {/* Redesigned Header & Stats */}
+      <div className="mb-16">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-12">
+          <div className="max-w-2xl">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="h-[1px] w-8 bg-slate-900" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-400">Personal Workspace</span>
             </div>
-            <h1 className="mt-4 text-2xl font-bold tracking-tight text-slate-900">
+            <h1 className="text-4xl font-bold tracking-tighter text-slate-900 md:text-5xl lg:text-6xl">
               Hello, {displayName.split(' ')[0]}.
             </h1>
-            <p className="mt-3 max-w-2xl text-xs font-medium leading-relaxed text-slate-500 uppercase tracking-widest opacity-70">
-              Manage your orders, personal data, saved addresses, and support requests from one calm control center.
+            <p className="mt-6 text-[13px] font-medium leading-relaxed text-slate-500 uppercase tracking-widest opacity-80 max-w-xl">
+              Welcome back to your curated control center. Track your orders, manage security protocols, and review your history.
             </p>
-            <div className="mt-8 hidden flex-wrap gap-3 lg:flex">
-              <button
-                onClick={() => setActiveTab('orders')}
-                className="inline-flex items-center gap-2 border border-slate-900 bg-slate-900 px-5 py-3 text-[11px] font-bold uppercase tracking-widest text-white transition-all hover:bg-slate-800"
-              >
-                <History className="h-4 w-4" /> Review Orders
-              </button>
-              <button
-                onClick={() => setActiveTab('profile')}
-                className="inline-flex items-center gap-2 border border-slate-300 px-5 py-3 text-[11px] font-bold uppercase tracking-widest text-slate-900 transition-all hover:bg-slate-50"
-              >
-                <ShieldCheck className="h-4 w-4" /> Security Settings
-              </button>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setActiveTab('orders')}
+              className="px-8 py-4 bg-slate-900 text-white text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-slate-800 transition-all flex items-center gap-3"
+            >
+              <History className="w-4 h-4" /> History
+            </button>
+            <button
+              onClick={() => setActiveTab('profile')}
+              className="px-8 py-4 bg-white border border-slate-200 text-slate-900 text-[11px] font-bold uppercase tracking-[0.2em] hover:border-slate-900 transition-all flex items-center gap-3"
+            >
+              <Settings className="w-4 h-4" /> Settings
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-slate-200 border border-slate-200 shadow-2xl shadow-slate-200/50">
+          <div className="bg-white p-8 lg:p-10 group hover:bg-slate-50 transition-all">
+            <div className="flex justify-between items-start mb-8">
+               <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">Lifetime Spend</p>
+               <div className="w-2 h-2 bg-slate-100 group-hover:bg-slate-900 transition-colors" />
             </div>
+            <p className="text-2xl font-bold text-slate-900 tracking-tighter">{formatPrice(totalSpent, lang)}</p>
+            <div className="mt-8 h-[2px] w-0 bg-slate-900 group-hover:w-full transition-all duration-500" />
           </div>
 
-          <div className="grid grid-cols-2 bg-slate-50/50">
-            <div className="border-b border-r border-slate-200 p-6 lg:p-8">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Lifetime Spend</p>
-              <p className="mt-3 text-lg font-bold text-slate-900">{formatPrice(totalSpent, lang)}</p>
+          <div className="bg-white p-8 lg:p-10 group hover:bg-slate-50 transition-all">
+            <div className="flex justify-between items-start mb-8">
+               <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">Active Orders</p>
+               <div className="w-2 h-2 bg-slate-100 group-hover:bg-slate-900 transition-colors" />
             </div>
-            <div className="border-b border-slate-200 p-6 lg:p-8">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Active Orders</p>
-              <p className="mt-3 text-lg font-bold text-slate-900">{activeOrders}</p>
+            <p className="text-2xl font-bold text-slate-900 tracking-tighter">{activeOrders}</p>
+            <div className="mt-8 h-[2px] w-0 bg-slate-900 group-hover:w-full transition-all duration-500" />
+          </div>
+
+          <div className="bg-white p-8 lg:p-10 group hover:bg-slate-50 transition-all">
+            <div className="flex justify-between items-start mb-8">
+               <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">Addresses</p>
+               <div className="w-2 h-2 bg-slate-100 group-hover:bg-slate-900 transition-colors" />
             </div>
-            <div className="border-r border-slate-200 p-6 lg:p-8">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Saved Addresses</p>
-              <p className="mt-3 text-lg font-bold text-slate-900">{addresses.length}</p>
+            <p className="text-2xl font-bold text-slate-900 tracking-tighter">{addresses.length}</p>
+            <div className="mt-8 h-[2px] w-0 bg-slate-900 group-hover:w-full transition-all duration-500" />
+          </div>
+
+          <div className="bg-white p-8 lg:p-10 group hover:bg-slate-50 transition-all">
+            <div className="flex justify-between items-start mb-8">
+               <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">Support Open</p>
+               <div className="w-2 h-2 bg-slate-100 group-hover:bg-slate-900 transition-colors" />
             </div>
-            <div className="p-6 lg:p-8">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Support Cases</p>
-              <p className="mt-3 text-lg font-bold text-slate-900">{supportTickets.length + refundRequests.length}</p>
-            </div>
+            <p className="text-2xl font-bold text-slate-900 tracking-tighter">{supportTickets.length + refundRequests.length}</p>
+            <div className="mt-8 h-[2px] w-0 bg-slate-900 group-hover:w-full transition-all duration-500" />
           </div>
         </div>
       </div>
