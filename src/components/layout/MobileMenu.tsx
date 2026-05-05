@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'motion/react';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
@@ -220,11 +221,45 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
               className="lg:hidden fixed top-0 left-0 h-[100dvh] w-full sm:w-[85vw] sm:max-w-sm bg-white border-r border-gray-100 z-[201] flex flex-col shadow-none will-change-transform overflow-hidden"
             >
-              <div className="flex items-center justify-between h-16 px-6 border-b border-gray-100">
-                <span className="!text-[16px] !font-bold !uppercase !tracking-[0.1em] text-brand-ink">{labels.menu}</span>
+              <div className="flex items-center justify-between h-20 px-6 border-b border-gray-100 bg-white">
+                <div className="flex items-center gap-2">
+                  <LanguageSwitcher availableLanguages={availableLanguages} variant="dropdown" direction="down" align="left" />
+                  
+                  {user ? (
+                    <div className="flex items-center">
+                       <Link
+                        href={localizeHref(lang, '/profile')}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-2 px-3.5 py-2 bg-slate-50/80 hover:bg-slate-100 text-brand-ink transition-all text-[11px] font-bold uppercase tracking-widest border border-slate-200/50 rounded-full"
+                      >
+                        <UserIcon className="w-3.5 h-3.5" strokeWidth={2} />
+                        <span>{labels.account}</span>
+                      </Link>
+                      {isAdmin && (
+                        <Link
+                          href="/admin"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="ml-2 p-2 text-slate-400 hover:text-brand-ink transition-colors"
+                        >
+                          <SettingsIcon className="w-4 h-4" strokeWidth={2} />
+                        </Link>
+                      )}
+                    </div>
+                  ) : (
+                    <Link
+                      href={localizeHref(lang, '/auth')}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-2 px-3.5 py-2 bg-slate-50/80 hover:bg-slate-100 text-brand-ink transition-all text-[11px] font-bold uppercase tracking-widest border border-slate-200/50 rounded-full"
+                    >
+                      <UserIcon className="w-3.5 h-3.5" strokeWidth={2} />
+                      <span>{labels.login}</span>
+                    </Link>
+                  )}
+                </div>
+                
                 <button
                   onClick={() => setMobileMenuOpen(false)}
-                  className="p-2 -mr-2 text-gray-500 hover:text-brand-ink transition-colors"
+                  className="p-2 -mr-2 text-gray-400 hover:text-brand-ink transition-colors"
                   aria-label="Close menu"
                 >
                   <XIcon className="w-5 h-5" />
@@ -280,9 +315,26 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                                 onClick={() => setMobileMenuOpen(false)}
                                 className="flex min-w-0 flex-1 items-center py-3"
                               >
-                                <span className="!text-[18px] !font-bold !uppercase !tracking-[0.05em] text-brand-ink transition-all duration-300">
-                                  {getCategoryLabel(category)}
-                                </span>
+                                <div className="flex items-center gap-4">
+                                  <div className="relative w-12 h-12 rounded-full overflow-hidden bg-slate-50 shrink-0 border border-slate-100">
+                                    {category.imageUrl ? (
+                                      <Image
+                                        src={category.imageUrl}
+                                        alt={getCategoryLabel(category)}
+                                        fill
+                                        className="object-cover"
+                                        sizes="48px"
+                                      />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center text-slate-300">
+                                        <MenuIcon className="w-5 h-5" />
+                                      </div>
+                                    )}
+                                  </div>
+                                  <span className="!text-[16px] !font-bold !uppercase !tracking-[0.05em] text-brand-ink transition-all duration-300">
+                                    {getCategoryLabel(category)}
+                                  </span>
+                                </div>
                               </Link>
 
                               {hasChildren ? (
@@ -333,58 +385,7 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                 </nav>
               </div>
 
-              {/* Fixed Bottom Section */}
-              <div className="px-6 py-4 border-t border-gray-100 bg-white shrink-0 mt-auto">
-                <div className="flex items-center justify-between">
-                  {/* Compact Language Selector (Mobile Drawer) */}
-                  <LanguageSwitcher availableLanguages={availableLanguages} variant="drawer" direction="up" align="left" />
-
-                  {/* Compact User Actions */}
-                  <div className="flex items-center gap-1">
-                    {user ? (
-                      <>
-                        {isAdmin && (
-                          <Link
-                            href="/admin"
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="p-2.5 text-slate-500 hover:text-brand-ink transition-colors rounded-none hover:bg-slate-50"
-                            aria-label={labels.adminDashboard}
-                          >
-                            <SettingsIcon className="w-5 h-5" strokeWidth={1.5} />
-                          </Link>
-                        )}
-                        <Link
-                          href={localizeHref(lang, '/profile')}
-                          onClick={() => setMobileMenuOpen(false)}
-                          className="p-2.5 text-slate-500 hover:text-brand-ink transition-colors rounded-none hover:bg-slate-50"
-                          aria-label={labels.account}
-                        >
-                          <UserIcon className="w-5 h-5" strokeWidth={1.5} />
-                        </Link>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            void handleLogout(e);
-                          }}
-                          className="p-2.5 text-red-400 hover:text-red-600 transition-colors rounded-none hover:bg-red-50"
-                          aria-label={labels.logout}
-                        >
-                          <LogOutIcon className="w-5 h-5" strokeWidth={1.5} />
-                        </button>
-                      </>
-                    ) : (
-                      <Link
-                        href={localizeHref(lang, '/auth')}
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center gap-2 p-2.5 text-brand-ink hover:text-brand-muted transition-colors rounded-none hover:bg-slate-50"
-                      >
-                        <UserIcon className="w-5 h-5" strokeWidth={1.5} />
-                        <span className="text-[13px] font-bold uppercase tracking-widest">{labels.login}</span>
-                      </Link>
-                    )}
-                  </div>
-                </div>
-              </div>
+              {/* Removed Bottom Section */}
             </motion.div>
           </Portal>
         )}
