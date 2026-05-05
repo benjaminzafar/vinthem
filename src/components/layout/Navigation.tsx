@@ -171,6 +171,9 @@ export default async function Navigation() {
                     locale={lang}
                     labels={{
                       profile: settings?.myProfileText?.[lang] || 'My Profile',
+                      orders: settings?.ordersText?.[lang] || 'Orders',
+                      support: 'Support',
+                      addresses: settings?.addressesText?.[lang] || 'Addresses',
                       adminPanel: settings?.adminPanelText?.[lang] || 'Admin Panel',
                       logout: settings?.logoutText?.[lang] || 'Logout',
                       loggedOutSuccess: settings?.loggedOutSuccessText?.[lang] || 'Logged out successfully'

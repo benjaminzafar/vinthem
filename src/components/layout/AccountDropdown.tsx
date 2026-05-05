@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { User, Settings, LogOut } from 'lucide-react';
+import { User, Settings, LogOut, Package, MessageSquare, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { logger } from '@/lib/logger';
 import { createClient } from '@/utils/supabase/client';
@@ -18,6 +18,9 @@ interface AccountDropdownProps {
   locale: string;
   labels: {
     profile: string;
+    orders: string;
+    support: string;
+    addresses: string;
     adminPanel: string;
     logout: string;
     loggedOutSuccess: string;
@@ -84,19 +87,46 @@ export function AccountDropdown({ user, isAdmin, locale, labels }: AccountDropdo
             </div>
             
             <Link 
-              href={localizeHref(locale, '/profile')} 
+              href={localizeHref(locale, '/profile?tab=orders')} 
+              onClick={() => setIsOpen(false)}
+              className="flex items-center px-6 py-2.5 text-sm text-gray-600 hover:text-brand-ink hover:bg-gray-50 transition-colors"
+            >
+              <Package className="w-4 h-4 mr-3" />
+              {labels.orders}
+            </Link>
+
+            <Link 
+              href={localizeHref(locale, '/profile?tab=support')} 
+              onClick={() => setIsOpen(false)}
+              className="flex items-center px-6 py-2.5 text-sm text-gray-600 hover:text-brand-ink hover:bg-gray-50 transition-colors"
+            >
+              <MessageSquare className="w-4 h-4 mr-3" />
+              {labels.support}
+            </Link>
+
+            <Link 
+              href={localizeHref(locale, '/profile?tab=profile')} 
               onClick={() => setIsOpen(false)}
               className="flex items-center px-6 py-2.5 text-sm text-gray-600 hover:text-brand-ink hover:bg-gray-50 transition-colors"
             >
               <User className="w-4 h-4 mr-3" />
               {labels.profile}
             </Link>
+
+            <Link 
+              href={localizeHref(locale, '/profile?tab=addresses')} 
+              onClick={() => setIsOpen(false)}
+              className="flex items-center px-6 py-2.5 text-sm text-gray-600 hover:text-brand-ink hover:bg-gray-50 transition-colors"
+            >
+              <MapPin className="w-4 h-4 mr-3" />
+              {labels.addresses}
+            </Link>
             
             {isAdmin && (
               <Link 
                 href="/admin" 
                 onClick={() => setIsOpen(false)}
-                className="flex items-center px-6 py-2.5 text-sm text-gray-600 hover:text-brand-ink hover:bg-gray-50 transition-colors"
+                className="flex items-center px-6 py-2.5 text-sm text-gray-600 hover:text-brand-ink hover:bg-gray-50 transition-colors mt-2 pt-2 border-t border-gray-50"
               >
                 <Settings className="w-4 h-4 mr-3" />
                 {labels.adminPanel}

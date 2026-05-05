@@ -155,6 +155,13 @@ export function ProfileClient({
       router.replace(localizeHref(lang, '/profile'));
     }
   }, [searchParams, router, lang]);
+
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab && ['orders', 'support', 'profile', 'addresses'].includes(tab)) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
   // Support UI State
   const [supportOrder, setSupportOrder] = useState<ProfileOrder | null>(null);
   const [supportType, setSupportType] = useState<SupportType>(null);
