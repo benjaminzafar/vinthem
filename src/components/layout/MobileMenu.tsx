@@ -17,6 +17,7 @@ import { localizeHref } from '@/lib/i18n-routing';
 import { performClientLogout } from '@/lib/client-auth';
 import { isValidUrl } from '@/lib/utils';
 import { toMediaPublicUrl } from '@/lib/media';
+import { getOptimizedImageUrl } from '@/utils/image-utils';
 import { ShoppingBag, Plus } from 'lucide-react';
 
 const MenuIcon = ({ className }: { className?: string }) => (
@@ -357,13 +358,14 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                                       <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-slate-50 border border-slate-100/50 shadow-sm transition-transform active:scale-95 duration-200">
                                         {category.imageUrl ? (
                                           <Image
-                                            src={toMediaPublicUrl(category.imageUrl)}
+                                            src={getOptimizedImageUrl(category.imageUrl, 240, 75)}
                                             alt={getCategoryLabel(category)}
                                             fill
                                             className="object-cover"
                                             sizes="(max-width: 768px) 33vw, 120px"
                                             priority
-                                            quality={60}
+                                            fetchPriority="high"
+                                            unoptimized={true}
                                           />
                                         ) : (
                                           <div className="w-full h-full flex items-center justify-center text-slate-200">
