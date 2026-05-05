@@ -199,7 +199,7 @@ export async function renderPolicyPage(slug: string) {
               </span>
             </div>
 
-            <h1 className="mt-6 text-4xl font-bold tracking-tight text-slate-900 md:text-5xl">
+            <h1 className="mt-6 text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">
               {title}
             </h1>
 

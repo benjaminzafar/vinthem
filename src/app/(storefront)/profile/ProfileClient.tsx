@@ -523,10 +523,10 @@ export function ProfileClient({
               <div className="h-2 w-2 bg-slate-900" />
               <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Customer Workspace</span>
             </div>
-            <h1 className="mt-4 text-[28px] font-bold tracking-tight text-slate-900">
+            <h1 className="mt-4 text-2xl font-bold tracking-tight text-slate-900">
               Hello, {displayName.split(' ')[0]}.
             </h1>
-            <p className="mt-4 max-w-2xl text-[13px] font-medium leading-relaxed text-slate-500">
+            <p className="mt-3 max-w-2xl text-xs font-medium leading-relaxed text-slate-500 uppercase tracking-widest opacity-70">
               Manage your orders, personal data, saved addresses, and support requests from one calm control center.
             </p>
             <div className="mt-8 hidden flex-wrap gap-3 lg:flex">
@@ -545,22 +545,22 @@ export function ProfileClient({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 bg-slate-50">
-            <div className="border-b border-r border-slate-300 p-6">
-              <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Lifetime Spend</p>
-              <p className="mt-4 text-[20px] font-bold text-slate-900">{formatPrice(totalSpent, lang)}</p>
+          <div className="grid grid-cols-2 bg-slate-50/50">
+            <div className="border-b border-r border-slate-200 p-6 lg:p-8">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Lifetime Spend</p>
+              <p className="mt-3 text-lg font-bold text-slate-900">{formatPrice(totalSpent, lang)}</p>
             </div>
-            <div className="border-b border-slate-300 p-6">
-              <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Active Orders</p>
-              <p className="mt-4 text-[20px] font-bold text-slate-900">{activeOrders}</p>
+            <div className="border-b border-slate-200 p-6 lg:p-8">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Active Orders</p>
+              <p className="mt-3 text-lg font-bold text-slate-900">{activeOrders}</p>
             </div>
-            <div className="border-r border-slate-300 p-6">
-              <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Saved Addresses</p>
-              <p className="mt-4 text-[20px] font-bold text-slate-900">{addresses.length}</p>
+            <div className="border-r border-slate-200 p-6 lg:p-8">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Saved Addresses</p>
+              <p className="mt-3 text-lg font-bold text-slate-900">{addresses.length}</p>
             </div>
-            <div className="p-6">
-              <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Support Cases</p>
-              <p className="mt-4 text-[20px] font-bold text-slate-900">{supportTickets.length + refundRequests.length}</p>
+            <div className="p-6 lg:p-8">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Support Cases</p>
+              <p className="mt-3 text-lg font-bold text-slate-900">{supportTickets.length + refundRequests.length}</p>
             </div>
           </div>
         </div>
