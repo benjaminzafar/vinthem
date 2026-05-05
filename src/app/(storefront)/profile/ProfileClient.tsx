@@ -1300,10 +1300,9 @@ export function ProfileClient({
                      )}
                   </div>
                 )}
-              </div>
-            </motion.div>
-          </div>
-        )}
+              </motion.div>
+            </div>
+          )}
       </AnimatePresence>
     </div>
   </div>
