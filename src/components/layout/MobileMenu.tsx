@@ -446,20 +446,6 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                       ))}
                       {/* User Actions Panel */}
                       <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col gap-3">
-                        {/* Support Links from Settings */}
-                        {supportLinks.map((link: any, idx: number) => (
-                          <Link
-                            key={`support-${idx}`}
-                            href={localizeHref(lang, link.href)}
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="flex items-center justify-between py-2 text-slate-500 hover:text-black transition-colors"
-                          >
-                            <span className="text-[12px] font-black uppercase tracking-[0.2em]">
-                              {link.label?.[lang] || link.label?.['en']}
-                            </span>
-                          </Link>
-                        ))}
-
                         {isAdmin && (
                           <Link
                             href="/admin"
