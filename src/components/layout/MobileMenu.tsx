@@ -378,10 +378,10 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                                       <button
                                         type="button"
                                         onClick={() => openCategoryLevel(category)}
-                                        className="absolute -top-1 -right-1 w-6 h-6 bg-white border border-slate-100 rounded-full flex items-center justify-center text-slate-400 shadow-sm active:scale-110 transition-transform"
+                                        className="absolute -top-2 -right-2 w-8 h-8 bg-white border border-slate-200 rounded-full flex items-center justify-center text-black shadow-md active:scale-110 transition-transform z-10"
                                         aria-label={`Open subcategories for ${getCategoryLabel(category)}`}
                                       >
-                                        <Plus className="w-3.5 h-3.5" strokeWidth={3} />
+                                        <Plus className="w-5 h-5" strokeWidth={3} />
                                       </button>
                                     )}
                                   </div>
