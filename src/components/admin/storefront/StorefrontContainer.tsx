@@ -29,6 +29,7 @@ const CATEGORIES = [
   { id: 'branding', name: 'Identity & Brand', icon: Sparkles, color: 'text-zinc-900', bg: 'bg-zinc-50' },
   { id: 'navigation', name: 'Layout & Links', icon: Layout, color: 'text-zinc-900', bg: 'bg-zinc-50' },
   { id: 'homepage', name: 'Live Display', icon: ImageIcon, color: 'text-zinc-900', bg: 'bg-zinc-50' },
+  { id: 'dashboard', name: 'User Dashboard', icon: Users, color: 'text-zinc-900', bg: 'bg-zinc-50' },
   { id: 'labels', name: 'System Labels', icon: AlignLeft, color: 'text-zinc-900', bg: 'bg-zinc-50' },
   { id: 'multilang', name: 'Globalization', icon: Languages, color: 'text-zinc-900', bg: 'bg-zinc-50' },
 ];
@@ -935,6 +936,40 @@ Text to translate: "${sourceText}"`;
           )}
 
 
+
+          {activeCategory === 'dashboard' && (
+            <motion.div key="dashboard" initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }}>
+              <div className="grid grid-cols-1 gap-4">
+                <SettingCard id="DashboardNav" title="Navigation Rail Labels" icon={Layout}>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <LocalizedSettingInput label="Orders Label" value={settings.ordersText} onChange={v => handleUpdate('ordersText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('ordersText', 'Orders Label')} isTranslating={generatingId === 'ordersText-translate'} />
+                      <LocalizedSettingInput label="Support Label" value={settings.supportText} onChange={v => handleUpdate('supportText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('supportText', 'Support Label')} isTranslating={generatingId === 'supportText-translate'} />
+                      <LocalizedSettingInput label="Account Label" value={settings.profileText} onChange={v => handleUpdate('profileText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('profileText', 'Account Label')} isTranslating={generatingId === 'profileText-translate'} />
+                      <LocalizedSettingInput label="Addresses Label" value={settings.addressesText} onChange={v => handleUpdate('addressesText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('addressesText', 'Addresses Label')} isTranslating={generatingId === 'addressesText-translate'} />
+                      <LocalizedSettingInput label="Log Out Label" value={settings.logoutText} onChange={v => handleUpdate('logoutText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('logoutText', 'Log Out Label')} isTranslating={generatingId === 'logoutText-translate'} />
+                   </div>
+                </SettingCard>
+
+                <SettingCard id="DashboardOrders" title="Orders & Interaction" icon={Package}>
+                   <div className="grid grid-cols-1 gap-8">
+                      <LocalizedSettingInput label="Get Help Button" value={settings.getHelpText} onChange={v => handleUpdate('getHelpText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('getHelpText', 'Get Help Button')} isTranslating={generatingId === 'getHelpText-translate'} />
+                      <LocalizedSettingInput label="Total Suffix (e.g. TOTAL)" value={settings.totalSuffixText} onChange={v => handleUpdate('totalSuffixText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('totalSuffixText', 'Total Suffix')} isTranslating={generatingId === 'totalSuffixText-translate'} />
+                      <LocalizedSettingInput label="Saved Addresses Title" value={settings.savedAddressesText} onChange={v => handleUpdate('savedAddressesText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('savedAddressesText', 'Saved Addresses Title')} isTranslating={generatingId === 'savedAddressesText-translate'} />
+                      
+                      <div className="pt-6 border-t border-zinc-100">
+                        <p className="text-[11px] font-black uppercase tracking-widest text-zinc-900 mb-4">Order Status Labels</p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                           <LocalizedSettingInput label="Status: Delivered" value={settings.orderStatusDelivered} onChange={v => handleUpdate('orderStatusDelivered', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('orderStatusDelivered', 'Status: Delivered')} isTranslating={generatingId === 'orderStatusDelivered-translate'} />
+                           <LocalizedSettingInput label="Status: Shipped" value={settings.orderStatusShipped} onChange={v => handleUpdate('orderStatusShipped', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('orderStatusShipped', 'Status: Shipped')} isTranslating={generatingId === 'orderStatusShipped-translate'} />
+                           <LocalizedSettingInput label="Status: In Transit" value={settings.orderStatusInTransit} onChange={v => handleUpdate('orderStatusInTransit', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('orderStatusInTransit', 'Status: In Transit')} isTranslating={generatingId === 'orderStatusInTransit-translate'} />
+                           <LocalizedSettingInput label="Status: Processing" value={settings.orderStatusProcessing} onChange={v => handleUpdate('orderStatusProcessing', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('orderStatusProcessing', 'Status: Processing')} isTranslating={generatingId === 'orderStatusProcessing-translate'} />
+                        </div>
+                      </div>
+                   </div>
+                </SettingCard>
+              </div>
+            </motion.div>
+          )}
 
           {activeCategory === 'labels' && (
             <motion.div key="labels" initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }}>
