@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'motion/react';
@@ -104,7 +104,7 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
   const productsLink = (navbarLinks || []).find(link => link.href === '/products' || link.href === '/products/');
   const productsLabelFromSettings = productsLink ? (productsLink.label[lang] || productsLink.label['en']) : (settings.searchProductsResultsText?.[lang]);
 
-  const localLabels = {
+  const localLabels = useMemo(() => ({
     allProducts: productsLabelFromSettings || t('allProducts', lang),
     categories: t('categories', lang, settings.categoriesLabel?.[lang]),
     login: t('login', lang, settings.loginText?.[lang]),
@@ -112,13 +112,22 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
     adminDashboard: t('adminDashboard', lang, settings.adminDashboardText?.[lang]),
     logout: t('logout', lang, settings.logoutText?.[lang]),
     language: t('language', lang, settings.languageLabel?.[lang])
-  };
+  }), [productsLabelFromSettings, lang, settings]);
 
   const [isDesktop, setIsDesktop] = useState(false);
-  const [categoryTrail, setCategoryTrail] = useState<CategoryTrailItem[]>(createRootCategoryTrail(localLabels.allProducts));
+  const [categoryTrailIds, setCategoryTrailIds] = useState<(string | null)[]>([null]);
   const [categoryDirection, setCategoryDirection] = useState(1);
 
-  const getCategoryLabel = (category: Category) => category.translations?.[lang]?.name || category.name;
+  // Sync category trail root label when language or labels change
+  const getCategoryLabel = useCallback((category: Category) => category.translations?.[lang]?.name || category.name, [lang]);
+
+  const categoryTrail = useMemo(() => {
+    return categoryTrailIds.map(id => {
+      if (id === null) return { id: null, label: localLabels.allProducts };
+      const cat = categories.find(c => c.id === id);
+      return { id, label: cat ? getCategoryLabel(cat) : (id as string) };
+    });
+  }, [categoryTrailIds, localLabels.allProducts, categories, getCategoryLabel]);
 
   const categoryChildrenMap = new Map<string | null, Category[]>();
 
@@ -190,18 +199,15 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
 
   const openCategoryLevel = (category: Category) => {
     setCategoryDirection(1);
-    setCategoryTrail((previous) => [
+    setCategoryTrailIds((previous) => [
       ...previous,
-      {
-        id: category.id || null,
-        label: getCategoryLabel(category),
-      },
+      category.id || null
     ]);
   };
 
   const goBackCategoryLevel = () => {
     setCategoryDirection(-1);
-    setCategoryTrail((previous) => (
+    setCategoryTrailIds((previous) => (
       previous.length > 1 ? previous.slice(0, previous.length - 1) : previous
     ));
   };
@@ -215,7 +221,7 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
         onClick={() => {
           if (!isMobileMenuOpen) {
             setCategoryDirection(1);
-            setCategoryTrail(createRootCategoryTrail(labels.allProducts));
+            setCategoryTrailIds([null]);
           }
           setMobileMenuOpen(!isMobileMenuOpen);
         }}

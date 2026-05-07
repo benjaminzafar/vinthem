@@ -6,6 +6,7 @@ import { ChevronDown, Loader2, Globe, Check, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { getClientLocale, persistLocaleCookie } from '@/lib/locale';
 import { normalizeLocalizedPath } from '@/lib/i18n-routing';
+import { t } from '@/lib/dictionary';
 import { Portal } from './Portal';
 
 export const getLanguageName = (code: string) => {
@@ -141,7 +142,7 @@ export function LanguageSwitcher({ availableLanguages, variant = 'dropdown', dir
             >
               <div className="flex items-center justify-between mb-6 px-2">
                 <h3 className="text-[14px] font-bold uppercase tracking-widest text-brand-ink">
-                  Language
+                  {t('language', currentLocale)}
                 </h3>
                 <button 
                   onClick={() => setIsOpen(false)} 

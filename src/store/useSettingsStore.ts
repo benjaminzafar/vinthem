@@ -206,6 +206,7 @@ export interface StorefrontSettings {
   totalSuffixText: LocalizedString;
   noOrdersYetText: LocalizedString;
   noOrdersDescriptionText: LocalizedString;
+  noSupportActivityYetText: LocalizedString;
   startShoppingText: LocalizedString;
   totalLabelText: LocalizedString;
   deliveredStatusText: LocalizedString;
@@ -575,6 +576,7 @@ export const defaultSettings: StorefrontSettings = {
   totalSuffixText: { en: 'TOTAL', sv: 'TOTALT', fi: 'YHTEENSÄ', da: 'TOTAL' },
   noOrdersYetText: { en: 'No orders yet', sv: 'Inga beställningar än', fi: 'Ei vielä tilauksia', da: 'Ingen ordrer endnu' },
   noOrdersDescriptionText: { en: "You haven't placed any orders yet. Start exploring our collection.", sv: 'Du har inte lagt några beställningar än. Börja utforska vår kollektion.', fi: 'Et ole vielä tehnyt tilauksia. Aloita mallistoomme tutustuminen.', da: 'Du har ikke afgivet nogen ordrer endnu. Begynd at udforske vores kollektion.' },
+  noSupportActivityYetText: { en: 'No support activity yet', sv: 'Ingen supportaktivitet än', fi: 'Ei vielä tukipyyntöjä', da: 'Ingen supportaktivitet endnu' },
   startShoppingText: { en: 'Start Shopping', sv: 'Börja handla', fi: 'Aloita ostokset', da: 'Begynd at shoppe' },
   totalLabelText: { en: 'Total', sv: 'Totalt', fi: 'Yhteensä', da: 'Total' },
   deliveredStatusText: { en: 'Delivered', sv: 'Levererad', fi: 'Toimitettu', da: 'Leveret' },

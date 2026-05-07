@@ -999,6 +999,7 @@ Return ONLY the raw JSON object.`;
                       <LocalizedSettingInput label="Account Label" value={settings.profileText} onChange={v => handleUpdate('profileText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('profileText', 'Account Label')} isTranslating={generatingId === 'profileText-translate'} />
                       <LocalizedSettingInput label="Addresses Label" value={settings.addressesText} onChange={v => handleUpdate('addressesText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('addressesText', 'Addresses Label')} isTranslating={generatingId === 'addressesText-translate'} />
                       <LocalizedSettingInput label="Log Out Label" value={settings.logoutText} onChange={v => handleUpdate('logoutText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('logoutText', 'Log Out Label')} isTranslating={generatingId === 'logoutText-translate'} />
+                      <LocalizedSettingInput label="No Support Activity Label" value={settings.noSupportActivityYetText} onChange={v => handleUpdate('noSupportActivityYetText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('noSupportActivityYetText', 'No support activity yet')} isTranslating={generatingId === 'noSupportActivityYetText-translate'} />
                    </div>
                 </SettingCard>
 
@@ -1026,6 +1027,14 @@ Return ONLY the raw JSON object.`;
           {activeCategory === 'labels' && (
             <motion.div key="labels" initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }}>
               <div className="grid grid-cols-1 gap-4">
+                <SettingCard id="LabelsNav" title="Global Navigation & Account" icon={Layout}>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <LocalizedSettingInput label="Account / Profile Label" value={settings.accountLabel} onChange={v => handleUpdate('accountLabel', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('accountLabel', 'Account Label')} isTranslating={generatingId === 'accountLabel-translate'} />
+                      <LocalizedSettingInput label="Login / Sign In Label" value={settings.loginText} onChange={v => handleUpdate('loginText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('loginText', 'Login Label')} isTranslating={generatingId === 'loginText-translate'} />
+                      <LocalizedSettingInput label="Menu Label (Mobile)" value={settings.menuText} onChange={v => handleUpdate('menuText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('menuText', 'Menu Label')} isTranslating={generatingId === 'menuText-translate'} />
+                      <LocalizedSettingInput label="Language Label" value={settings.languageLabel} onChange={v => handleUpdate('languageLabel', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('languageLabel', 'Language Label')} isTranslating={generatingId === 'languageLabel-translate'} />
+                   </div>
+                </SettingCard>
                 <SettingCard id="LabelsCore" title="Core UI Labels" icon={AlignLeft}>
                    <div className="grid grid-cols-1 gap-8">
                       <LocalizedSettingInput label="Shop Now Button" value={settings.shopNowText} onChange={v => handleUpdate('shopNowText', v)} languages={settings.languages} onAITranslate={() => handleAITranslate('shopNowText', 'Shop Now Button')} onAIAutoComplete={() => handleAIAutoComplete('shopNowText', 'Shop Now Button')} isGenerating={generatingId === 'shopNowText-fill'} isTranslating={generatingId === 'shopNowText-translate'} />

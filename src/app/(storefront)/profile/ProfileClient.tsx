@@ -778,9 +778,9 @@ export function ProfileClient({
                 className="space-y-6"
               >
                 <div className="h-10 flex items-center justify-between border-b border-slate-200 pb-3">
-                  <h3 className="text-[14px] font-bold text-slate-900 uppercase tracking-widest">Support</h3>
+                  <h3 className="text-[14px] font-bold text-slate-900 uppercase tracking-widest">{t('support', lang, settings.supportText?.[lang])}</h3>
                   <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
-                    {supportTickets.length + refundRequests.length} TOTAL
+                    {supportTickets.length + refundRequests.length} {t('total', lang, settings.totalSuffixText?.[lang])}
                   </span>
                 </div>
 
@@ -797,7 +797,7 @@ export function ProfileClient({
                 {supportTickets.length === 0 && refundRequests.length === 0 ? (
                   <div className="border border-slate-300 bg-white py-20 text-center">
                     <MessageSquare className="mx-auto mb-4 h-10 w-10 text-slate-200" />
-                    <p className="text-[13px] font-bold uppercase tracking-widest text-slate-900">No support activity yet</p>
+                    <p className="text-[13px] font-bold uppercase tracking-widest text-slate-900">{t('noSupportActivityYet', lang, settings.noSupportActivityYetText?.[lang])}</p>
                     <p className="mt-3 text-[13px] text-slate-500">Open any order and use the help button when you need assistance.</p>
                   </div>
                 ) : (
