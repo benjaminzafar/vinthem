@@ -11,6 +11,7 @@ import { useCustomConfirm } from '@/components/ConfirmationContext';
 import { useDebounce } from '@/hooks/useDebounce';
 import { BlogPost } from '@/types';
 import { isValidUrl } from '@/lib/utils';
+import { toMediaPublicUrl } from '@/lib/media';
 
 type BlogManagerProps = {
   initialPosts?: BlogPost[];
@@ -177,8 +178,8 @@ export function BlogManager({ initialPosts = [] }: BlogManagerProps) {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-4">
                         <div className="relative h-12 w-16 overflow-hidden rounded-none-[4px] border border-slate-200 bg-slate-50">
-                          {isValidUrl(post.imageUrl) ? (
-                            <Image src={post.imageUrl} alt="" fill sizes="128px" className="object-cover" />
+                          {isValidUrl(toMediaPublicUrl(post.imageUrl)) ? (
+                            <Image src={toMediaPublicUrl(post.imageUrl)} alt="" fill sizes="128px" className="object-cover" />
                           ) : null}
                         </div>
                         <div className="min-w-0">

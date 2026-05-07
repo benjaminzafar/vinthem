@@ -203,7 +203,7 @@ export function SupportManager({ tickets, loading }: SupportManagerProps) {
                                       <p className={`${msg.sender === 'admin' ? '' : 'font-medium'} ${msg.text.startsWith('[SYSTEM]') ? 'italic text-[11px]' : ''}`}>
                                         {msg.text.startsWith('[SYSTEM]') ? msg.text.replace('[SYSTEM]', '🤖') : msg.text}
                                       </p>
-                                      {msg.imageUrl && isValidUrl(msg.imageUrl) && (
+                                      {msg.imageUrl && isValidUrl(toMediaProxyUrl(msg.imageUrl)) && (
                                         <div className="mt-3 relative aspect-video w-full rounded-none overflow-hidden border border-slate-200">
                                           <Image src={toMediaProxyUrl(msg.imageUrl)} alt="Attachment" fill className="object-cover" />
                                         </div>

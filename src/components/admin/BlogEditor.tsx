@@ -352,7 +352,7 @@ Content: "${formData.content.en}"`;
               </div>
               <div className="p-6">
                 <div className="group relative mb-4 aspect-[4/3] cursor-pointer overflow-hidden rounded-none-[4px] border-2 border-dashed border-slate-200 bg-slate-50 transition-all hover:border-slate-900">
-                  {isValidUrl(formData.imageUrl) ? (
+                  {isValidUrl(toMediaProxyUrl(formData.imageUrl)) ? (
                     <Image src={toMediaProxyUrl(formData.imageUrl)} alt="" fill sizes="(max-width: 768px) 100vw, 600px" className="object-cover" />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center">

@@ -726,7 +726,7 @@ Product Options: ${JSON.stringify(formData.options || [])}`;
               <div className="p-6 pt-2">
                 <label className="relative aspect-square bg-slate-50 border-2 border-dashed border-slate-200 rounded-none-[4px] flex items-center justify-center overflow-hidden hover:border-slate-900 transition-all cursor-pointer group mb-4">
 
-                   {isValidUrl(formData.imageUrl) ? (
+                   {isValidUrl(toMediaProxyUrl(formData.imageUrl)) ? (
                      <div className="relative w-full h-full">
                        <Image 
                          src={toMediaProxyUrl(formData.imageUrl)} 

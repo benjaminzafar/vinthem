@@ -20,6 +20,7 @@ import { Category } from '@/types';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { isValidUrl } from '@/lib/utils';
+import { toMediaPublicUrl } from '@/lib/media';
 import { InfiniteScrollSentinel } from '@/components/admin/InfiniteScrollSentinel';
 import { downloadXLSX } from '@/utils/export';
 import Papa from 'papaparse';
@@ -457,8 +458,8 @@ export function ProductManager({
                   <td className="admin-table-cell px-4 sm:px-6 py-4">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 bg-slate-50 border border-slate-200 rounded-none flex items-center justify-center overflow-hidden shrink-0">
-                        {isValidUrl(product.imageUrl) ? (
-                          <Image src={product.imageUrl} alt="" width={48} height={48} className="w-full h-full object-cover" />
+                        {isValidUrl(toMediaPublicUrl(product.imageUrl)) ? (
+                          <Image src={toMediaPublicUrl(product.imageUrl)} alt="" width={48} height={48} className="w-full h-full object-cover" />
                         ) : (
                           <Package className="w-5 h-5 text-slate-300" />
                         )}
