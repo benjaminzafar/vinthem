@@ -18,6 +18,7 @@ import { performClientLogout } from '@/lib/client-auth';
 import { isValidUrl } from '@/lib/utils';
 import { toMediaPublicUrl } from '@/lib/media';
 import { getOptimizedImageUrl } from '@/utils/image-utils';
+import { t } from '@/lib/dictionary';
 import { ShoppingBag, Plus, LayoutDashboard, LogOut, Settings, User } from 'lucide-react';
 
 const MenuIcon = ({ className }: { className?: string }) => (
@@ -101,16 +102,16 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
   const supabase = createClient();
   
   const productsLink = (navbarLinks || []).find(link => link.href === '/products' || link.href === '/products/');
-  const productsLabel = productsLink ? (productsLink.label[lang] || productsLink.label['en']) : (settings.searchProductsResultsText?.[lang] || 'All Products');
+  const productsLabelFromSettings = productsLink ? (productsLink.label[lang] || productsLink.label['en']) : (settings.searchProductsResultsText?.[lang]);
 
   const localLabels = {
-    allProducts: productsLabel,
-    categories: settings.categoriesLabel?.[lang] || 'Categories',
-    login: settings.loginText?.[lang] || 'Login',
-    account: settings.accountLabel?.[lang] || 'Account',
-    adminDashboard: settings.adminDashboardText?.[lang] || 'Admin Dashboard',
-    logout: settings.logoutText?.[lang] || 'Log Out',
-    language: settings.languageLabel?.[lang] || 'Language'
+    allProducts: productsLabelFromSettings || t('allProducts', lang),
+    categories: t('categories', lang, settings.categoriesLabel?.[lang]),
+    login: t('login', lang, settings.loginText?.[lang]),
+    account: t('account', lang, settings.accountLabel?.[lang]),
+    adminDashboard: t('adminDashboard', lang, settings.adminDashboardText?.[lang]),
+    logout: t('logout', lang, settings.logoutText?.[lang]),
+    language: t('language', lang, settings.languageLabel?.[lang])
   };
 
   const [isDesktop, setIsDesktop] = useState(false);

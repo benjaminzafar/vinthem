@@ -17,6 +17,7 @@ import type { StorefrontSettings } from '@/store/useSettingsStore';
 import { useStorefrontSettings } from '@/hooks/useStorefrontSettings';
 import { getClientLocale } from '@/lib/locale';
 import { getOptimizedImageUrl } from '@/utils/image-utils';
+import { t } from '@/lib/dictionary';
 
 interface ShippingDetails {
   name: string;
@@ -202,7 +203,7 @@ export default function PaymentClient({ initialSettings, initialAddresses = [] }
           animate={{ opacity: 1, y: 0 }}
           className="mb-8 text-[12px] font-bold uppercase tracking-widest text-brand-ink"
         >
-          {settings.paymentTitle?.[lang] || 'Checkout'}
+          {t('checkout', lang, settings.paymentTitle?.[lang])}
         </motion.h1>
       </div>
 
@@ -217,7 +218,7 @@ export default function PaymentClient({ initialSettings, initialAddresses = [] }
             >
               <h2 className="mb-8 flex items-center text-[12px] font-bold uppercase tracking-widest text-brand-ink">
                 <Truck className="mr-3 h-5 w-5 text-brand-ink" strokeWidth={1.5} />
-                {settings.shippingInformationText?.[lang] || 'Shipping Information'}
+                {t('shipping', lang, settings.shippingInformationText?.[lang])}
               </h2>
 
               {initialAddresses.length > 0 && (
@@ -309,7 +310,7 @@ export default function PaymentClient({ initialSettings, initialAddresses = [] }
 
                 <div className="col-span-2">
                   <label className="mb-2 block text-[12px] font-semibold text-brand-muted">
-                    {settings.countryLabelText?.[lang] || 'Country'}
+                    {t('country', lang, settings.countryLabelText?.[lang])}
                   </label>
                   <select required name="country" value={shippingDetails.country} onChange={handleShippingChange} className="w-full appearance-none rounded-none border border-slate-200 bg-slate-50 px-4 h-11 text-brand-ink focus:border-brand-ink focus:ring-1 focus:ring-brand-ink">
                     {settings.shippingCountries?.map((c) => (
@@ -336,7 +337,7 @@ export default function PaymentClient({ initialSettings, initialAddresses = [] }
             >
               <h2 className="mb-8 flex items-center text-[12px] font-bold uppercase tracking-widest text-brand-ink">
                 <Lock className="mr-3 h-5 w-5 text-brand-ink" strokeWidth={1.5} />
-                {settings.paymentDetailsText?.[lang] || 'Payment Details'}
+                {t('payment', lang, settings.paymentDetailsText?.[lang])}
               </h2>
 
               <div className="space-y-4 rounded-none border border-slate-200 bg-slate-50 px-5 py-5 text-[14px] text-brand-muted">
@@ -427,7 +428,7 @@ export default function PaymentClient({ initialSettings, initialAddresses = [] }
               <div className="mb-3 border-t border-gray-100 pt-6">
                 <div className="flex items-end justify-between">
                   <span className="text-[12px] font-semibold text-brand-muted">
-                    {settings.totalText?.[lang] || 'Total'}
+                    {t('total', lang, settings.totalText?.[lang])}
                   </span>
                   <span className="text-[24px] font-semibold tracking-tight text-brand-ink">
                     {isEstimating ? '...' : formatPrice(effectiveEstimate.total, lang)}

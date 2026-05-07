@@ -14,6 +14,7 @@ import { LoginLink } from './LoginLink';
 import { cookies } from 'next/headers';
 import { localizeHref } from '@/lib/i18n-routing';
 import { ConsentGuardian } from '../auth/ConsentGuardian';
+import { t } from '@/lib/dictionary';
 
 const UserIcon = ({ className, strokeWidth = 1.5 }: { className?: string; strokeWidth?: number }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -65,7 +66,17 @@ export default async function Navigation() {
   const availableLanguages = settings?.languages?.length ? settings.languages : [lang];
 
   const productsLink = (settings?.navbarLinks || []).find((link: any) => link.href === '/products' || link.href === '/products/');
-  const productsLabel = productsLink ? (productsLink.label[lang] || productsLink.label['en']) : (settings?.searchProductsResultsText?.[lang] || 'All Products');
+  const productsLabel = productsLink ? (productsLink.label[lang] || productsLink.label['en']) : (settings?.searchProductsResultsText?.[lang]);
+
+  const labels = {
+    allProducts: productsLabel || t('allProducts', lang),
+    menu: t('menu', lang, settings?.menuText?.[lang]),
+    language: t('language', lang, settings?.languageLabel?.[lang]),
+    account: t('account', lang, settings?.accountLabel?.[lang]),
+    adminDashboard: t('adminDashboard', lang, settings?.adminDashboardText?.[lang]),
+    logout: t('logout', lang, settings?.logoutText?.[lang]),
+    login: t('login', lang, settings?.loginText?.[lang])
+  };
 
   return (
     <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
@@ -85,13 +96,13 @@ export default async function Navigation() {
               availableLanguages={availableLanguages}
               settings={settings}
               labels={{
-                menu: settings?.menuText?.[lang] || 'Menu',
-                language: settings?.languageLabel?.[lang] || 'Language',
-                account: settings?.accountLabel?.[lang] || 'Account',
-                adminDashboard: settings?.adminDashboardText?.[lang] || 'Admin Dashboard',
-                logout: settings?.logoutText?.[lang] || 'Logout',
-                login: settings?.loginText?.[lang] || 'Login',
-                allProducts: productsLabel
+                menu: labels.menu,
+                language: labels.language,
+                account: labels.account,
+                adminDashboard: labels.adminDashboard,
+                logout: labels.logout,
+                login: labels.login,
+                allProducts: labels.allProducts
               }}
             />
           </div>
@@ -138,7 +149,7 @@ export default async function Navigation() {
               {/* Search Action */}
               <div className="relative group flex items-center h-full">
                 <SearchBar
-                  placeholder={settings?.searchPlaceholder?.[lang]}
+                  placeholder={t('searchPlaceholder', lang, settings?.searchPlaceholder?.[lang])}
                   categories={categories}
                   lang={lang}
                   labels={{
@@ -171,19 +182,19 @@ export default async function Navigation() {
                     isAdmin={isAdmin}
                     locale={lang}
                     labels={{
-                      profile: settings?.myProfileText?.[lang] || 'My Profile',
-                      orders: settings?.ordersText?.[lang] || 'Orders',
-                      support: 'Support',
-                      addresses: settings?.addressesText?.[lang] || 'Addresses',
-                      adminPanel: settings?.adminPanelText?.[lang] || 'Admin Panel',
-                      logout: settings?.logoutText?.[lang] || 'Logout',
+                      profile: t('account', lang, settings?.myProfileText?.[lang] || settings?.profileText?.[lang]),
+                      orders: t('orders', lang, settings?.ordersText?.[lang]),
+                      support: t('support', lang),
+                      addresses: t('addresses', lang, settings?.addressesText?.[lang]),
+                      adminPanel: t('adminDashboard', lang, settings?.adminPanelText?.[lang] || settings?.adminDashboardText?.[lang]),
+                      logout: t('logout', lang, settings?.logoutText?.[lang]),
                       loggedOutSuccess: settings?.loggedOutSuccessText?.[lang] || 'Logged out successfully'
                     }}
                   />
                 ) : (
                   <LoginLink 
                     lang={lang} 
-                    loginText={settings?.loginText?.[lang] || 'Login'} 
+                    loginText={labels.login} 
                   />
                 )}
               </div>

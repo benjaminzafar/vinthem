@@ -38,6 +38,7 @@ import { deleteAddressAction, saveAddressAction, setDefaultAddressAction } from 
 import type { StorefrontSettings } from '@/store/useSettingsStore';
 import { localizeHref } from '@/lib/i18n-routing';
 import { performClientLogout } from '@/lib/client-auth';
+import { t } from '@/lib/dictionary';
 
 interface ProfileClientProps {
   initialOrders: ProfileOrder[];
@@ -522,10 +523,10 @@ export function ProfileClient({
   const activeOrders = orders.filter((order) => !['Delivered', 'Cancelled'].includes(order.status || '')).length;
 
   const navItems = [
-    { id: 'orders', label: settings.ordersText?.[lang] || 'Orders', icon: Package },
-    { id: 'support', label: settings.supportText?.[lang] || 'Support', icon: MessageSquare },
-    { id: 'profile', label: settings.profileText?.[lang] || 'Account', icon: Settings },
-    { id: 'addresses', label: settings.addressesText?.[lang] || 'Addresses', icon: MapPin },
+    { id: 'orders', label: t('orders', lang, settings.ordersText?.[lang]), icon: Package },
+    { id: 'support', label: t('support', lang, settings.supportText?.[lang]), icon: MessageSquare },
+    { id: 'profile', label: t('account', lang, settings.profileText?.[lang]), icon: Settings },
+    { id: 'addresses', label: t('addresses', lang, settings.addressesText?.[lang]), icon: MapPin },
   ];
 
   return (
@@ -591,7 +592,7 @@ export function ProfileClient({
                       className="w-full flex items-center gap-3 px-6 py-4 text-left text-rose-500 hover:bg-rose-50 transition-colors border-t border-slate-100"
                     >
                       <LogOut className="w-4 h-4" />
-                      <span className="text-[12px] font-bold uppercase tracking-widest">{settings.logoutText?.[lang] || 'Log Out'}</span>
+                      <span className="text-[12px] font-bold uppercase tracking-widest">{t('logout', lang, settings.logoutText?.[lang])}</span>
                     </button>
                   </div>
                 </motion.div>
@@ -621,7 +622,7 @@ export function ProfileClient({
                 onClick={handleSignOut}
                 className="w-full flex items-center px-6 py-4 text-[12px] font-bold text-rose-500 hover:text-rose-700 uppercase tracking-widest transition-all text-left border-l-2 border-transparent -ml-[1px]"
               >
-                {settings.logoutText?.[lang] || 'Log Out'}
+                {t('logout', lang, settings.logoutText?.[lang])}
               </button>
             </nav>
           </div>
@@ -639,16 +640,16 @@ export function ProfileClient({
                 className="space-y-6"
               >
                 <div className="h-10 flex items-center justify-between border-b border-slate-200 pb-3">
-                  <h3 className="text-[14px] font-bold text-slate-900 uppercase tracking-widest">{settings.ordersText?.[lang] || 'Orders'}</h3>
-                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{orders.length} {settings.totalSuffixText?.[lang] || 'TOTAL'}</span>
+                  <h3 className="text-[14px] font-bold text-slate-900 uppercase tracking-widest">{t('orders', lang, settings.ordersText?.[lang])}</h3>
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{orders.length} {t('total', lang, settings.totalSuffixText?.[lang])}</span>
                 </div>
 
                 {orders.length === 0 ? (
                   <div className="border border-slate-300 bg-white py-24 text-center">
                     <Package className="w-10 h-10 mx-auto text-slate-200 mb-4" />
-                    <p className="text-[13px] font-bold text-slate-900 uppercase tracking-widest">{settings.noOrdersYetText?.[lang] || 'No order records found'}</p>
+                    <p className="text-[13px] font-bold text-slate-900 uppercase tracking-widest">{t('noOrdersYet', lang, settings.noOrdersYetText?.[lang])}</p>
                     <button onClick={() => router.push(`/${lang}`)} className="mt-4 text-[11px] font-bold text-slate-500 hover:text-slate-900 transition-all uppercase underline underline-offset-4 tracking-widest">
-                       {settings.continueShoppingText?.[lang] || 'Return to Storefront'}
+                       {t('returnToStorefront', lang, settings.continueShoppingText?.[lang])}
                     </button>
                   </div>
                 ) : (
@@ -667,15 +668,15 @@ export function ProfileClient({
                                   <p className="text-sm font-bold text-slate-900 font-mono tracking-tighter">#{order.orderId || order.id.slice(0, 5).toUpperCase()}</p>
                                </div>
                                <div>
-                                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">{settings.dateLabelText?.[lang] || 'Order Date'}</p>
+                                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">{t('date', lang, settings.dateLabelText?.[lang])}</p>
                                   <p className="text-sm font-bold text-slate-900">{order.createdAt ? new Date(order.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '---'}</p>
                                </div>
                                <div>
-                                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">{settings.totalLabelText?.[lang] || 'Order Total'}</p>
+                                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">{t('total', lang, settings.totalLabelText?.[lang])}</p>
                                   <p className="text-sm font-bold text-slate-900">{formatPrice(order.total, lang, undefined, order.currency ?? undefined)}</p>
                                </div>
                                <div>
-                                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">{settings.statusLabelText?.[lang] || 'Progress'}</p>
+                                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">{t('status', lang, settings.statusLabelText?.[lang])}</p>
                                   <span className={`inline-flex px-2 py-0.5 text-[11px] font-bold uppercase tracking-widest border rounded-none ${
                                     order.status === 'Delivered' ? 'bg-emerald-50 text-emerald-700 border-emerald-300' :
                                     order.status === 'Shipped' ? 'bg-blue-50 text-blue-700 border-blue-300' :
@@ -697,7 +698,7 @@ export function ProfileClient({
                                  }}
                                  className="text-[11px] font-bold uppercase tracking-widest text-slate-900 border border-slate-900 px-6 py-2 hover:bg-slate-900 hover:text-white transition-all flex items-center whitespace-nowrap"
                                >
-                                 {settings.getHelpText?.[lang] || 'Get Help'}
+                                 {t('getHelp', lang, settings.getHelpText?.[lang])}
                                </button>
                                <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform duration-300 ${isExpanded ? 'rotate-180 text-slate-900' : ''}`} />
                             </div>
@@ -1029,7 +1030,7 @@ export function ProfileClient({
               >
                  <div className="flex flex-col gap-4 border-b border-slate-200 pb-3 sm:flex-row sm:items-center sm:justify-between">
                    <div>
-                     <h3 className="text-[14px] font-bold text-slate-900 uppercase tracking-widest">{settings.savedAddressesTitleText?.[lang] || 'Addresses'}</h3>
+                     <h3 className="text-[14px] font-bold text-slate-900 uppercase tracking-widest">{t('addresses', lang, settings.savedAddressesTitleText?.[lang])}</h3>
                    </div>
                    <button
                      onClick={openAddAddressModal}
