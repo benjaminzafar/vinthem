@@ -17,8 +17,8 @@ const SEARCH_BOT_USER_AGENT_PATTERN = /bot|crawler|spider|bingpreview|slurp|duck
 
 export function isSupportedLanguage(value: string | null | undefined): value is string {
   if (!value) return false;
-  // Match any 2-letter ISO language code (e.g., en, sv, no, de, zh)
-  return /^[a-z]{2}$/i.test(value);
+  const normalized = value.toLowerCase();
+  return SUPPORTED_LANGUAGES.includes(normalized);
 }
 
 export function extractLanguageFromPathname(pathname: string): SupportedLanguage | null {

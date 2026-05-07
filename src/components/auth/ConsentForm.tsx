@@ -41,17 +41,12 @@ export function ConsentForm({ lang }: { lang: string }) {
       if (result.success) {
         toast.success('Preferences saved!');
         
-        // 1. Prevent double-locale (/en/en)
-        let targetPath = next;
+        // 1. Prevent double-locale (/en/sv)
+        const { stripLanguageFromPathname } = await import('@/lib/i18n-routing');
+        const cleanPath = stripLanguageFromPathname(next);
         const langPrefix = `/${lang}`;
         
-        if (lang && !targetPath.startsWith(langPrefix + '/') && targetPath !== langPrefix) {
-          if (targetPath.startsWith('/')) {
-             targetPath = `${langPrefix}${targetPath}`;
-          } else {
-             targetPath = `${langPrefix}/${targetPath}`;
-          }
-        }
+        const targetPath = cleanPath === '/' ? langPrefix : `${langPrefix}${cleanPath}`;
         
         router.push(targetPath);
         router.refresh();
