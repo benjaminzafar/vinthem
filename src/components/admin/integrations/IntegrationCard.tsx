@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { CheckCircle2, XCircle, HelpCircle, Save, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface IntegrationCardProps {

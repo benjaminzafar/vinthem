@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useTransition, useCallback, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   Globe, Layout, ImageIcon, AlignLeft, Info, Save, 
   Loader2, Sparkles, Upload, Mail, FileCode, Users, 
@@ -385,6 +385,58 @@ Text to translate: "${sourceText}"`;
       }
     } catch (error) {
       toast.error(getAIErrorMessage(error, 'Translation failed'), { id: toastId });
+    } finally {
+      setGeneratingId(null);
+    }
+  };
+
+  const handleAIShippingFix = async () => {
+    const input = shippingCountryDraft.trim();
+    if (!input) {
+      toast.error('Enter a country name or code first.');
+      return;
+    }
+
+    setGeneratingId('shipping-ai');
+    const toastId = toast.loading(`AI is identifying "${input}"...`);
+
+    try {
+      const prompt = `Identify the country from this input: "${input}". 
+Return a valid JSON object for an e-commerce shipping configuration.
+Languages to provide names for: ${settings.languages.join(', ')}.
+Schema: { "code": "ISO 2-letter uppercase", "name": { "en": "Name", "sv": "Name", "fi": "Name", "da": "Name", "de": "Name" } }
+Ensure names are correct for EACH requested language.
+Return ONLY the raw JSON object.`;
+
+      const model = genAI.getGenerativeModel({ 
+        promptProfile: 'storefront',
+        generationConfig: { temperature: 0.1 }
+      });
+      
+      const result = await model.generateContent(prompt);
+      const text = result.response.text();
+      const cleanedJson = extractFirstJsonObject(text);
+      if (!cleanedJson) throw new Error('AI returned invalid format');
+      
+      const parsed = JSON.parse(cleanedJson);
+      
+      if (!parsed.code || !parsed.name) throw new Error('AI response missing fields');
+
+      const existingCountries = settings.shippingCountries || [];
+      const alreadyExists = existingCountries.some(
+        (country) => country.code.toUpperCase() === parsed.code.toUpperCase()
+      );
+
+      if (alreadyExists) {
+        toast.info(`${parsed.name.en || parsed.code} is already in the list.`, { id: toastId });
+      } else {
+        handleUpdate('shippingCountries', [...existingCountries, parsed]);
+        setShippingCountryDraft('');
+        toast.success(`Neural Sync: Added ${parsed.name.en || parsed.code} (${parsed.code})`, { id: toastId });
+      }
+    } catch (error) {
+      toast.error('AI failed to resolve country. Try manual ISO code.', { id: toastId });
+      logger.error('[AI] Shipping fix failed:', error);
     } finally {
       setGeneratingId(null);
     }
@@ -1305,7 +1357,20 @@ Text to translate: "${sourceText}"`;
                               >
                                 <Plus className="w-3.5 h-3.5" /> Add
                               </button>
-                           </div>
+                              <button
+                                onClick={handleAIShippingFix}
+                                disabled={generatingId === 'shipping-ai' || !shippingCountryDraft.trim()}
+                                className="h-11 px-5 bg-white border border-zinc-200 text-zinc-900 rounded-none text-[11px] font-black uppercase tracking-widest hover:bg-zinc-50 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+                                title="AI Auto-Fix (Code & Localized Names)"
+                              >
+                                {generatingId === 'shipping-ai' ? (
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                ) : (
+                                  <Sparkles className="w-3.5 h-3.5 text-zinc-400" />
+                                )}
+                                AI Fix
+                              </button>
+                            </div>
                            <p className="text-xs text-zinc-500 font-medium">
                              Just enter the country once. The region code and translated labels are prepared automatically.
                            </p>

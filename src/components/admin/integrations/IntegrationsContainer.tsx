@@ -2,7 +2,7 @@
 
 import React, { useState, useTransition } from 'react';
 import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   Sparkles, Megaphone, Truck, Settings2, 
   ShieldCheck, Loader2, Search, Globe, Activity 
