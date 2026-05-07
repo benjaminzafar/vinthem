@@ -19,9 +19,19 @@ export const getLanguageName = (code: string) => {
     no: 'Norsk',
     nb: 'Norsk Bokmål',
     nn: 'Nynorsk',
-    is: 'Íslenska'
+    is: 'Íslenska',
+    lt: 'Lietuvių',
+    ee: 'Eesti',
+    lv: 'Latviešu',
+    et: 'Eesti', // 'et' is standard for Estonian, 'ee' is sometimes used as country code
+    fr: 'Français',
+    es: 'Español',
+    it: 'Italiano',
+    pl: 'Polski',
+    nl: 'Nederlands'
   };
-  return names[code.toLowerCase()] || code.toUpperCase();
+  const safeCode = code.toLowerCase();
+  return names[safeCode] || safeCode.toUpperCase();
 };
 
 interface LanguageSwitcherProps {
