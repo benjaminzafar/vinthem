@@ -128,6 +128,7 @@ export interface StorefrontSettings {
   orderPlacedSuccessText: LocalizedString;
   paymentFailedText: LocalizedString;
   shippingInformationText: LocalizedString;
+  savedAddressesText: LocalizedString;
   fullNameLabel: LocalizedString;
   phoneLabel: LocalizedString;
   addressLabel: LocalizedString;
@@ -493,6 +494,7 @@ export const defaultSettings: StorefrontSettings = {
   orderPlacedSuccessText: { en: 'Order placed successfully!', sv: 'Beställningen har lagts!', fi: 'Tilaus tehty onnistuneesti!', da: 'Ordre afgivet med succes!' },
   paymentFailedText: { en: 'Payment failed. Please try again.', sv: 'Betalningen misslyckades. Vänligen försök igen.', fi: 'Maksu epäonnistui. Yritä uudelleen.', da: 'Betaling mislykkedes. Prøv venligst igen.' },
   shippingInformationText: { en: 'Shipping Information', sv: 'Fraktinformation', fi: 'Toimitustiedot', da: 'Forsendelsesinformation' },
+  savedAddressesText: { en: 'Saved Addresses', sv: 'Sparade adresser', fi: 'Tallennetut osoitteet', da: 'Gemte adresser' },
   fullNameLabel: { en: 'Full Name', sv: 'Fullständigt namn', fi: 'Koko nimi', da: 'Fulde navn' },
   phoneLabel: { en: 'Phone Number', sv: 'Telefonnummer', fi: 'Puhelinnumero', da: 'Telefonnummer' },
   addressLabel: { en: 'Address', sv: 'Adress', fi: 'Osoite', da: 'Adresse' },

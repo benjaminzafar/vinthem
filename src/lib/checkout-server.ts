@@ -266,6 +266,46 @@ export async function startCheckout(
   const adminClient = createAdminClient();
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  
+  if (user && shippingDetails.address && shippingDetails.city) {
+    try {
+      const { data: existingAddresses } = await adminClient
+        .from('addresses')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('street', shippingDetails.address)
+        .eq('city', shippingDetails.city)
+        .eq('postal_code', shippingDetails.postalCode)
+        .limit(1);
+
+      if (!existingAddresses || existingAddresses.length === 0) {
+        const nameParts = (shippingDetails.name || '').split(' ');
+        const firstName = nameParts[0] || 'Member';
+        const lastName = nameParts.slice(1).join(' ') || '-';
+
+        const { count: defaultCount } = await adminClient
+          .from('addresses')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('is_default', true);
+
+        await adminClient.from('addresses').insert({
+          user_id: user.id,
+          first_name: firstName,
+          last_name: lastName,
+          street: shippingDetails.address,
+          city: shippingDetails.city,
+          postal_code: shippingDetails.postalCode,
+          country: shippingDetails.country,
+          is_default: !defaultCount || defaultCount === 0,
+        });
+        
+        logger.info(`Auto-saved new address for user ${user.id} during checkout`);
+      }
+    } catch (err) {
+      logger.error('Failed to auto-save address during checkout:', err);
+    }
+  }
 
   const { data: orderData, error: orderError } = await adminClient
     .from('orders')

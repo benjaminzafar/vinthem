@@ -96,6 +96,16 @@ async function fetchUserAddresses(
   return data ?? [];
 }
 
+export async function getUserAddressesAction(): Promise<AddressRecord[]> {
+  try {
+    const { supabase, user } = await getAuthenticatedClient();
+    return await fetchUserAddresses(supabase, user.id);
+  } catch (error) {
+    logger.error('[Action Error] getUserAddressesAction:', error);
+    return [];
+  }
+}
+
 export async function saveAddressAction(input: AddressInput): Promise<ProfileActionResult> {
   try {
     const { supabase, user } = await getAuthenticatedClient();

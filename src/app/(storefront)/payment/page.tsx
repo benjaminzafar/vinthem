@@ -20,5 +20,8 @@ export default async function PaymentPage() {
   }
 
   const settings = (await getSettings()) as Partial<StorefrontSettings>;
-  return <PaymentClient initialSettings={settings} />;
+  const { getUserAddressesAction } = await import('@/app/actions/profile');
+  const addresses = await getUserAddressesAction();
+
+  return <PaymentClient initialSettings={settings} initialAddresses={addresses} />;
 }

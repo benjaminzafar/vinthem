@@ -16,6 +16,7 @@ import { useCartStore } from '@/store/useCartStore';
 import type { StorefrontSettings } from '@/store/useSettingsStore';
 import { useStorefrontSettings } from '@/hooks/useStorefrontSettings';
 import { getClientLocale } from '@/lib/locale';
+import { getOptimizedImageUrl } from '@/utils/image-utils';
 
 interface ShippingDetails {
   name: string;
@@ -54,11 +55,23 @@ function createInitialShippingDetails(
   };
 }
 
-interface PaymentClientProps {
-  initialSettings: Partial<StorefrontSettings>;
+interface AddressRecord {
+  id: string;
+  firstName: string;
+  lastName: string;
+  street: string;
+  city: string;
+  postalCode: string;
+  country: string;
+  isDefault: boolean;
 }
 
-export default function PaymentClient({ initialSettings }: PaymentClientProps) {
+interface PaymentClientProps {
+  initialSettings: Partial<StorefrontSettings>;
+  initialAddresses?: AddressRecord[];
+}
+
+export default function PaymentClient({ initialSettings, initialAddresses = [] }: PaymentClientProps) {
   const { items } = useCartStore();
   const { user } = useAuthStore();
   const settings = useStorefrontSettings(initialSettings);
@@ -66,13 +79,25 @@ export default function PaymentClient({ initialSettings }: PaymentClientProps) {
   const lang = getClientLocale(pathname);
   const market = resolveMarket(lang);
 
-  const [shippingDetails, setShippingDetails] = useState<ShippingDetails>(() =>
-    createInitialShippingDetails(
+  const [shippingDetails, setShippingDetails] = useState<ShippingDetails>(() => {
+    const defaultAddress = initialAddresses.find(a => a.isDefault) || initialAddresses[0];
+    if (defaultAddress) {
+      return {
+        name: `${defaultAddress.firstName} ${defaultAddress.lastName}`,
+        email: user?.email || '',
+        phone: '', // Phone is not stored in address record currently, but we can add it later if needed
+        address: defaultAddress.street,
+        city: defaultAddress.city,
+        postalCode: defaultAddress.postalCode,
+        country: defaultAddress.country,
+      };
+    }
+    return createInitialShippingDetails(
       market.country,
       user?.email,
       typeof user?.user_metadata?.full_name === 'string' ? user.user_metadata.full_name : undefined,
-    ),
-  );
+    );
+  });
   const [estimate, setEstimate] = useState<CheckoutEstimateState | null>(null);
   const [isEstimating, setIsEstimating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -195,6 +220,50 @@ export default function PaymentClient({ initialSettings }: PaymentClientProps) {
                 {settings.shippingInformationText?.[lang] || 'Shipping Information'}
               </h2>
 
+              {initialAddresses.length > 0 && (
+                <div className="mb-8">
+                  <label className="mb-2 block text-[12px] font-semibold text-brand-muted">
+                    {settings.savedAddressesText?.[lang] || 'Saved Addresses'}
+                  </label>
+                  <select 
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (!val) {
+                        setShippingDetails(curr => ({
+                          ...curr,
+                          name: typeof user?.user_metadata?.full_name === 'string' ? user.user_metadata.full_name : '',
+                          address: '',
+                          city: '',
+                          postalCode: '',
+                          country: market.country,
+                        }));
+                        return;
+                      }
+                      const addr = initialAddresses.find(a => a.id === val);
+                      if (addr) {
+                        setShippingDetails(curr => ({
+                          ...curr,
+                          name: `${addr.firstName} ${addr.lastName}`,
+                          address: addr.street,
+                          city: addr.city,
+                          postalCode: addr.postalCode,
+                          country: addr.country,
+                        }));
+                      }
+                    }}
+                    className="w-full appearance-none rounded-none border border-slate-200 bg-white px-4 h-11 text-brand-ink focus:border-brand-ink focus:ring-1 focus:ring-brand-ink"
+                    defaultValue={initialAddresses.find(a => a.isDefault)?.id || initialAddresses[0]?.id}
+                  >
+                    {initialAddresses.map(addr => (
+                      <option key={addr.id} value={addr.id}>
+                        {addr.street}, {addr.city} ({addr.firstName} {addr.lastName})
+                      </option>
+                    ))}
+                    <option value="">New Address...</option>
+                  </select>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 gap-x-8 gap-y-6 md:grid-cols-2">
                 <div className="col-span-2 md:col-span-1">
                   <label className="mb-2 block text-[12px] font-semibold text-brand-muted">
@@ -300,7 +369,7 @@ export default function PaymentClient({ initialSettings }: PaymentClientProps) {
                   <div key={item.id} className="flex gap-4">
                     <div className="relative h-20 w-16 shrink-0 overflow-hidden rounded-none border border-slate-100 bg-slate-50">
                       {item.imageUrl && item.imageUrl.trim() !== '' ? (
-                        <Image src={item.imageUrl} alt={item.title} fill className="object-cover" sizes="64px" />
+                        <Image src={getOptimizedImageUrl(item.imageUrl, 150, 75)} alt={item.title} fill className="object-cover" sizes="64px" unoptimized={true} />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center text-[10px] text-gray-500">IMG</div>
                       )}
