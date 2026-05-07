@@ -522,10 +522,10 @@ export function ProfileClient({
   const activeOrders = orders.filter((order) => !['Delivered', 'Cancelled'].includes(order.status || '')).length;
 
   const navItems = [
-    { id: 'orders', label: 'Orders', icon: Package },
-    { id: 'support', label: 'Support', icon: MessageSquare },
-    { id: 'profile', label: 'Account', icon: Settings },
-    { id: 'addresses', label: 'Addresses', icon: MapPin },
+    { id: 'orders', label: settings.ordersText?.[lang] || 'Orders', icon: Package },
+    { id: 'support', label: settings.supportText?.[lang] || 'Support', icon: MessageSquare },
+    { id: 'profile', label: settings.profileText?.[lang] || 'Account', icon: Settings },
+    { id: 'addresses', label: settings.addressesText?.[lang] || 'Addresses', icon: MapPin },
   ];
 
   return (
@@ -591,7 +591,7 @@ export function ProfileClient({
                       className="w-full flex items-center gap-3 px-6 py-4 text-left text-rose-500 hover:bg-rose-50 transition-colors border-t border-slate-100"
                     >
                       <LogOut className="w-4 h-4" />
-                      <span className="text-[12px] font-bold uppercase tracking-widest">Log Out</span>
+                      <span className="text-[12px] font-bold uppercase tracking-widest">{settings.logoutText?.[lang] || 'Log Out'}</span>
                     </button>
                   </div>
                 </motion.div>
@@ -621,7 +621,7 @@ export function ProfileClient({
                 onClick={handleSignOut}
                 className="w-full flex items-center px-6 py-4 text-[12px] font-bold text-rose-500 hover:text-rose-700 uppercase tracking-widest transition-all text-left border-l-2 border-transparent -ml-[1px]"
               >
-                Log Out
+                {settings.logoutText?.[lang] || 'Log Out'}
               </button>
             </nav>
           </div>
@@ -639,16 +639,16 @@ export function ProfileClient({
                 className="space-y-6"
               >
                 <div className="h-10 flex items-center justify-between border-b border-slate-200 pb-3">
-                  <h3 className="text-[14px] font-bold text-slate-900 uppercase tracking-widest">Orders</h3>
-                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{orders.length} TOTAL</span>
+                  <h3 className="text-[14px] font-bold text-slate-900 uppercase tracking-widest">{settings.ordersText?.[lang] || 'Orders'}</h3>
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{orders.length} {settings.totalSuffixText?.[lang] || 'TOTAL'}</span>
                 </div>
 
                 {orders.length === 0 ? (
                   <div className="border border-slate-300 bg-white py-24 text-center">
                     <Package className="w-10 h-10 mx-auto text-slate-200 mb-4" />
-                    <p className="text-[13px] font-bold text-slate-900 uppercase tracking-widest">No order records found</p>
+                    <p className="text-[13px] font-bold text-slate-900 uppercase tracking-widest">{settings.noOrdersYetText?.[lang] || 'No order records found'}</p>
                     <button onClick={() => router.push(`/${lang}`)} className="mt-4 text-[11px] font-bold text-slate-500 hover:text-slate-900 transition-all uppercase underline underline-offset-4 tracking-widest">
-                       Return to Storefront
+                       {settings.continueShoppingText?.[lang] || 'Return to Storefront'}
                     </button>
                   </div>
                 ) : (
@@ -663,25 +663,28 @@ export function ProfileClient({
                           >
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 flex-1">
                                <div>
-                                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">Order ID</p>
+                                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">{settings.orderLabelText?.[lang] || 'Order ID'}</p>
                                   <p className="text-sm font-bold text-slate-900 font-mono tracking-tighter">#{order.orderId || order.id.slice(0, 5).toUpperCase()}</p>
                                </div>
                                <div>
-                                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">Order Date</p>
+                                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">{settings.dateLabelText?.[lang] || 'Order Date'}</p>
                                   <p className="text-sm font-bold text-slate-900">{order.createdAt ? new Date(order.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '---'}</p>
                                </div>
                                <div>
-                                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">Order Total</p>
+                                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">{settings.totalLabelText?.[lang] || 'Order Total'}</p>
                                   <p className="text-sm font-bold text-slate-900">{formatPrice(order.total, lang, undefined, order.currency ?? undefined)}</p>
                                </div>
                                <div>
-                                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">Progress</p>
+                                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">{settings.statusLabelText?.[lang] || 'Progress'}</p>
                                   <span className={`inline-flex px-2 py-0.5 text-[11px] font-bold uppercase tracking-widest border rounded-none ${
                                     order.status === 'Delivered' ? 'bg-emerald-50 text-emerald-700 border-emerald-300' :
                                     order.status === 'Shipped' ? 'bg-blue-50 text-blue-700 border-blue-300' :
                                     'bg-amber-50 text-amber-700 border-amber-300'
                                   }`}>
-                                    {order.status || 'Processing'}
+                                    {order.status === 'Delivered' ? (settings.orderStatusDelivered?.[lang] || 'Delivered') :
+                                      order.status === 'Shipped' ? (settings.orderStatusShipped?.[lang] || 'Shipped') :
+                                      order.status === 'In Transit' ? (settings.orderStatusInTransit?.[lang] || 'In Transit') :
+                                      (settings.orderStatusProcessing?.[lang] || order.status || 'Processing')}
                                   </span>
                                </div>
                             </div>
@@ -694,7 +697,7 @@ export function ProfileClient({
                                  }}
                                  className="text-[11px] font-bold uppercase tracking-widest text-slate-900 border border-slate-900 px-6 py-2 hover:bg-slate-900 hover:text-white transition-all flex items-center whitespace-nowrap"
                                >
-                                 Get Help
+                                 {settings.getHelpText?.[lang] || 'Get Help'}
                                </button>
                                <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform duration-300 ${isExpanded ? 'rotate-180 text-slate-900' : ''}`} />
                             </div>
@@ -711,10 +714,13 @@ export function ProfileClient({
                                 <div className="p-8 space-y-8">
                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                                       <div className="space-y-6">
-                                         <h4 className="text-[11px] font-bold text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-2">Status Details</h4>
-                                          <p className="text-sm font-bold text-slate-900 uppercase tracking-tight">{order.status || 'Processing'}</p>
+                                         <h4 className="text-[11px] font-bold text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-2">{settings.statusLabelText?.[lang] || 'Status Details'}</h4>
+                                          <p className="text-sm font-bold text-slate-900 uppercase tracking-tight">{order.status === 'Delivered' ? (settings.orderStatusDelivered?.[lang] || 'Delivered') :
+                                      order.status === 'Shipped' ? (settings.orderStatusShipped?.[lang] || 'Shipped') :
+                                      order.status === 'In Transit' ? (settings.orderStatusInTransit?.[lang] || 'In Transit') :
+                                      (settings.orderStatusProcessing?.[lang] || order.status || 'Processing')}</p>
                                           <p className="text-[11px] text-slate-500 font-bold uppercase tracking-widest">
-                                            Last Update: {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : '---'}
+                                            {settings.lastUpdatedText?.[lang] || 'Last Update'}: {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : '---'}
                                           </p>
                                        </div>
                                        {/* removed old content */}
@@ -736,7 +742,7 @@ export function ProfileClient({
                                       </div>
 
                                       <div className="bg-white border border-slate-300 p-8">
-                                         <h4 className="text-[11px] font-bold text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-3 mb-6">Manifest Summary</h4>
+                                         <h4 className="text-[11px] font-bold text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-3 mb-6">{settings.orderItemsTitleText?.[lang] || 'Manifest Summary'}</h4>
                                          <div className="space-y-4">
                                             {order.items?.map((item, idx) => (
                                               <div key={idx} className="flex justify-between items-center text-sm">
@@ -745,7 +751,7 @@ export function ProfileClient({
                                               </div>
                                             ))}
                                             <div className="pt-6 border-t-2 border-slate-900 flex justify-between items-center font-bold text-lg mt-4">
-                                               <span className="text-xs uppercase tracking-widest text-slate-500">Total Valuation</span>
+                                               <span className="text-xs uppercase tracking-widest text-slate-500">{settings.totalText?.[lang] || 'Total Valuation'}</span>
                                                <span className="text-slate-900 tracking-tighter underline underline-offset-8 decoration-slate-300 decoration-2">{formatPrice(order.total, lang, undefined, order.currency ?? undefined)}</span>
                                             </div>
                                          </div>

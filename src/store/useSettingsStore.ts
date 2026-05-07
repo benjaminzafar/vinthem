@@ -135,6 +135,7 @@ export interface StorefrontSettings {
   cityLabel: LocalizedString;
   postalCodeLabel: LocalizedString;
   paymentDetailsText: LocalizedString;
+  getHelpText: LocalizedString;
   payText: LocalizedString;
   signInTitle: LocalizedString;
   signUpTitle: LocalizedString;
@@ -199,8 +200,10 @@ export interface StorefrontSettings {
   accountTitleText: LocalizedString;
   accountDescriptionText: LocalizedString;
   ordersText: LocalizedString;
+  supportText: LocalizedString;
   profileText: LocalizedString;
   addressesText: LocalizedString;
+  totalSuffixText: LocalizedString;
   noOrdersYetText: LocalizedString;
   noOrdersDescriptionText: LocalizedString;
   startShoppingText: LocalizedString;
@@ -501,6 +504,7 @@ export const defaultSettings: StorefrontSettings = {
   cityLabel: { en: 'City', sv: 'Stad', fi: 'Kaupunki', da: 'By' },
   postalCodeLabel: { en: 'Postal Code', sv: 'Postnummer', fi: 'Postinumero', da: 'Postnummer' },
   paymentDetailsText: { en: 'Payment Details', sv: 'Betalningsuppgifter', fi: 'Maksutiedot', da: 'Betalingsoplysninger' },
+  getHelpText: { en: 'Get Help', sv: 'Få hjälp', fi: 'Pyydä apua', da: 'Få hjælp' },
   payText: { en: 'Pay', sv: 'Betala', fi: 'Maksa', da: 'Betal' },
   signInTitle: { en: 'Sign In', sv: 'Logga in', fi: 'Kirjaudu sisään', da: 'Log ind' },
   signUpTitle: { en: 'Sign Up', sv: 'Registrera dig', fi: 'Rekisteröidy', da: 'Tilmeld dig' },
@@ -565,8 +569,10 @@ export const defaultSettings: StorefrontSettings = {
   accountTitleText: { en: 'Your Account', sv: 'Ditt konto', fi: 'Tilisi', da: 'Din konto' },
   accountDescriptionText: { en: 'Manage your orders, profile details, and shipping addresses in one place.', sv: 'Hantera dina beställningar, profiluppgifter och leveransadresser på ett ställe.', fi: 'Hallitse tilauksiasi, profiilitietojasi ja toimitusosoitteitasi yhdessä paikassa.', da: 'Administrer dine ordrer, profiloplysninger og forsendelsesadresser på ét sted.' },
   ordersText: { en: 'Orders', sv: 'Beställningar', fi: 'Tilaukset', da: 'Ordrer' },
+  supportText: { en: 'Support', sv: 'Support', fi: 'Tuki', da: 'Support' },
   profileText: { en: 'Profile', sv: 'Profil', fi: 'Profiili', da: 'Profil' },
   addressesText: { en: 'Addresses', sv: 'Adresser', fi: 'Osoitteet', da: 'Adresser' },
+  totalSuffixText: { en: 'TOTAL', sv: 'TOTALT', fi: 'YHTEENSÄ', da: 'TOTAL' },
   noOrdersYetText: { en: 'No orders yet', sv: 'Inga beställningar än', fi: 'Ei vielä tilauksia', da: 'Ingen ordrer endnu' },
   noOrdersDescriptionText: { en: "You haven't placed any orders yet. Start exploring our collection.", sv: 'Du har inte lagt några beställningar än. Börja utforska vår kollektion.', fi: 'Et ole vielä tehnyt tilauksia. Aloita mallistoomme tutustuminen.', da: 'Du har ikke afgivet nogen ordrer endnu. Begynd at udforske vores kollektion.' },
   startShoppingText: { en: 'Start Shopping', sv: 'Börja handla', fi: 'Aloita ostokset', da: 'Begynd at shoppe' },
