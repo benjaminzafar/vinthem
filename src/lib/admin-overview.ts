@@ -13,6 +13,7 @@ export async function fetchAdminOverviewStats(): Promise<RawOverviewStats> {
     supabase
       .from('orders')
       .select('id, total, status, created_at, order_id, customer_email, items')
+      .neq('status', 'Pending')
       .order('created_at', { ascending: false }),
     supabase
       .from('products')

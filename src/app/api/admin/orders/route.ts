@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
     const from = safePage * ITEMS_PER_PAGE;
     const to = from + ITEMS_PER_PAGE - 1;
 
-    let query = supabase.from('orders').select('*', { count: 'exact' });
+    let query = supabase.from('orders').select('*', { count: 'exact' }).neq('status', 'Pending');
 
     if (search) {
       query = query.or(`order_id.ilike.%${search}%,id.ilike.%${search}%`);

@@ -65,6 +65,7 @@ export default async function AdminTabPage({ params, searchParams }: TabPageProp
     const { data } = await supabase
       .from('orders')
       .select('*')
+      .neq('status', 'Pending')
       .order('created_at', { ascending: false });
     
     const initialOrders: AdminOrder[] = (data || []).map((o) => {
