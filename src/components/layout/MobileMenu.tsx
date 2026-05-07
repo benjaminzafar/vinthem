@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'motion/react';
 import { createClient } from '@/utils/supabase/client';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 // Removed broken lucide imports
 import { useUIStore } from '@/store/useUIStore';
 import { StorefrontSettings, MenuLink } from '@/store/useSettingsStore';
@@ -96,6 +96,7 @@ const createRootCategoryTrail = (label: string): CategoryTrailItem[] => [
 
 export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, availableLanguages, settings, labels }: MobileMenuProps) {
   const { isMobileMenuOpen, setMobileMenuOpen } = useUIStore();
+  const pathname = usePathname();
   const menuRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
   
@@ -258,15 +259,29 @@ export function MobileMenu({ user, isAdmin, navbarLinks, lang, categories, avail
                         <Link
                           href="/admin"
                           onClick={() => setMobileMenuOpen(false)}
-                          className="ml-2 p-2 text-slate-400 hover:text-brand-ink transition-colors"
+                          className="ml-2 p-2 text-slate-400 hover:text-brand-ink transition-colors flex items-center justify-center border border-slate-200/50 rounded-full bg-slate-50/80 hover:bg-slate-100"
                         >
                           <SettingsIcon className="w-4 h-4" strokeWidth={2} />
                         </Link>
                       )}
+
+                      <button
+                        onClick={async () => {
+                          await performClientLogout({ 
+                            supabase, 
+                            redirectTo: pathname 
+                          });
+                          setMobileMenuOpen(false);
+                        }}
+                        className="ml-2 p-2 text-slate-400 hover:text-brand-ink transition-colors flex items-center justify-center border border-slate-200/50 rounded-full bg-slate-50/80 hover:bg-slate-100"
+                        aria-label={localLabels.logout}
+                      >
+                        <LogOut className="w-4 h-4" strokeWidth={2} />
+                      </button>
                     </div>
                   ) : (
                     <Link
-                      href={localizeHref(lang, '/auth')}
+                      href={localizeHref(lang, `/auth?redirect=${encodeURIComponent(pathname)}`)}
                       onClick={() => setMobileMenuOpen(false)}
                       className="flex items-center gap-2 px-3.5 py-2 bg-slate-50/80 hover:bg-slate-100 text-brand-ink transition-all text-[11px] font-bold uppercase tracking-widest border border-slate-200/50 rounded-full"
                     >

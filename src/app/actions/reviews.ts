@@ -32,21 +32,46 @@ function sanitizeReviewComment(value: string): string {
   return value.replace(/[<>]/g, '').trim();
 }
 
-async function hasUserPurchasedProduct(userId: string, productId: string) {
+async function hasUserPurchasedProduct(userId: string, productId: string, userEmail?: string | null) {
   const adminSupabase = createAdminClient();
-  const { data: orders, error: ordersError } = await adminSupabase
+  
+  // 1. Fetch orders where user_id matches OR customer_email matches (for guest checkouts)
+  let query = adminSupabase
     .from('orders')
-    .select('items')
-    .eq('user_id', userId);
+    .select('items, status, user_id, customer_email');
+    
+  if (userEmail) {
+    query = query.or(`user_id.eq.${userId},customer_email.eq.${userEmail}`);
+  } else {
+    query = query.eq('user_id', userId);
+  }
+
+  const { data: orders, error: ordersError } = await query;
 
   if (ordersError) {
+    logger.error('[Reviews] Error fetching orders for purchase check:', ordersError);
     throw ordersError;
   }
 
-  return (orders ?? []).some((order) =>
-    Array.isArray(order.items) &&
-    order.items.some((item: OrderItem) => item.id === productId)
-  );
+  if (!orders || orders.length === 0) {
+    return false;
+  }
+
+  // 2. Check if any non-cancelled order contains the target product
+  return orders.some((order) => {
+    // Only allow reviews for orders that are not cancelled
+    if (order.status === 'Cancelled') return false;
+    
+    if (!Array.isArray(order.items)) return false;
+
+    return order.items.some((item: any) => {
+      // Robust ID check: handle 'id', 'product_id', and ensure string comparison
+      const itemId = String(item.id || item.product_id || '').trim();
+      const targetId = String(productId || '').trim();
+      
+      return itemId !== '' && itemId === targetId;
+    });
+  });
 }
 
 export async function checkPurchasedProductAction(productId: string): Promise<{ purchased: boolean; error?: string }> {
@@ -64,7 +89,7 @@ export async function checkPurchasedProductAction(productId: string): Promise<{ 
     }
 
     return {
-      purchased: await hasUserPurchasedProduct(user.id, productId.trim()),
+      purchased: await hasUserPurchasedProduct(user.id, productId.trim(), user.email),
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to verify purchase history.';
@@ -104,7 +129,7 @@ export async function submitProductReviewAction(input: CustomerReviewInput): Pro
       throw new Error('Review comment is required.');
     }
 
-    const hasPurchased = await hasUserPurchasedProduct(user.id, productId);
+    const hasPurchased = await hasUserPurchasedProduct(user.id, productId, user.email);
 
     if (!hasPurchased) {
       throw new Error('Only customers who purchased this product can leave a review.');

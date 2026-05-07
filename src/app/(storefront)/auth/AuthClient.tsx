@@ -222,7 +222,7 @@ export function AuthClient({ initialSettings, supabaseConfig }: AuthClientProps)
           password,
           options: {
             data: { full_name: name },
-            emailRedirectTo: `${window.location.origin}/auth/callback`
+            emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTarget)}`
           }
         });
         if (error) throw error;
@@ -298,7 +298,7 @@ export function AuthClient({ initialSettings, supabaseConfig }: AuthClientProps)
       const { error } = await authClient.auth.signInWithOAuth({
         provider: 'google',
         options: { 
-          redirectTo: `${window.location.origin}/auth/callback` 
+          redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTarget)}` 
         },
       });
       if (error) throw error;

@@ -11,6 +11,7 @@ import type { StorefrontSettings } from '@/store/useSettingsStore';
 import { useStorefrontSettings } from '@/hooks/useStorefrontSettings';
 
 import { User } from '@supabase/supabase-js';
+import { useAuthStore } from '@/store/useAuthStore';
 
 interface ReviewsProps {
   productId: string;
@@ -60,10 +61,10 @@ export default function Reviews({ productId, initialSettings, lang }: ReviewsPro
     };
   }, [productId]);
 
+  const { user } = useAuthStore();
+  
   useEffect(() => {
     const checkPurchase = async () => {
-      const { data: authData } = await supabase.auth.getUser();
-      const user = authData?.user;
       if (!user) {
         setHasPurchased(false);
         return;
@@ -79,7 +80,7 @@ export default function Reviews({ productId, initialSettings, lang }: ReviewsPro
     };
 
     checkPurchase();
-  }, [productId, supabase]);
+  }, [productId, user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,18 +114,12 @@ export default function Reviews({ productId, initialSettings, lang }: ReviewsPro
     }
   };
 
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setCurrentUser(data?.user ?? null);
-    });
-  }, []);
 
   return (
     <div className="mt-16 mb-16">
       <h2 className="text-[20px] md:text-[24px] font-bold text-brand-ink mb-8 tracking-tight">{settings.customerReviewsText?.[lang] || 'Customer Reviews'}</h2>
       
-      {currentUser ? (
+      {user ? (
         hasPurchased === true ? (
           <form onSubmit={handleSubmit} className="mb-12 bg-zinc-50/50 p-6 sm:p-8 rounded-none border border-zinc-100">
             <div className="flex items-center gap-2 mb-6">
@@ -174,7 +169,10 @@ export default function Reviews({ productId, initialSettings, lang }: ReviewsPro
         <div className="mb-12 p-8 rounded-none border border-dashed border-slate-200 bg-slate-50/30 text-center">
           <p className="text-[12px] text-slate-500 font-bold uppercase tracking-wider mb-4">Please log in to leave a review.</p>
           <button 
-            onClick={() => window.location.href = '/auth'}
+            onClick={() => {
+              const redirectUrl = encodeURIComponent(window.location.pathname);
+              window.location.href = `/${lang}/auth?redirect=${redirectUrl}`;
+            }}
             className="text-[12px] font-bold uppercase tracking-[0.2em] text-slate-950 border-b-2 border-slate-950 pb-1 hover:opacity-70 transition-opacity"
           >
             Sign In Now
