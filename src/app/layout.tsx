@@ -66,7 +66,7 @@ export async function generateMetadata(): Promise<Metadata> {
       "vinthem hours", "vinthem support", "vinthem faq", "vinthem shipping policy"
     ],
     icons: {
-      icon: faviconUrl || "/favicon.ico",
+      icon: faviconUrl || "/icon.png",
     },
     alternates: {
       canonical: siteUrl,
@@ -108,7 +108,7 @@ export default async function RootLayout({
       "Vinthem Shop", "Vinhem Store", "Vinthem Official", "Vinthem Brand", "Vinthem.com"
     ],
     "url": siteUrl,
-    "logo": faviconUrl || `${siteUrl}/favicon.ico`,
+    "logo": faviconUrl || `${siteUrl}/icon.png`,
     "description": settings.seoDescription?.[lang] || "Vinthem - Stockholm based quality everyday essentials with 20+ years of retail experience.",
     "address": {
       "@type": "PostalAddress",
